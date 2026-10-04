@@ -101,7 +101,7 @@ local bannerText = makeText(banner, {
 -- =====================================================================
 -- SOL ÜST: sayaçlar (Rebirth sayısı ve Win)
 -- =====================================================================
-local function makeStatChip(order, icon, color)
+local function makeStatChip(order, icon, color, imageId)
 	local chip = create("Frame", {
 		Position = UDim2.fromOffset(14, 64 + (order - 1) * 46),
 		Size = UDim2.fromOffset(160, 40),
@@ -110,11 +110,21 @@ local function makeStatChip(order, icon, color)
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 20) }, chip)
 	create("UIStroke", { Thickness = 2, Color = color }, chip)
-	makeText(chip, {
-		Position = UDim2.fromOffset(8, 2),
-		Size = UDim2.fromOffset(34, 36),
-		Text = icon,
-	}, 28, 0)
+	if imageId and imageId ~= "" then
+		create("ImageLabel", {
+			BackgroundTransparency = 1,
+			Position = UDim2.fromOffset(6, 2),
+			Size = UDim2.fromOffset(36, 36),
+			Image = imageId,
+			ScaleType = Enum.ScaleType.Fit,
+		}, chip)
+	else
+		makeText(chip, {
+			Position = UDim2.fromOffset(8, 2),
+			Size = UDim2.fromOffset(34, 36),
+			Text = icon,
+		}, 28, 0)
+	end
 	return makeText(chip, {
 		Position = UDim2.fromOffset(46, 3),
 		Size = UDim2.new(1, -56, 1, -6),
@@ -122,13 +132,14 @@ local function makeStatChip(order, icon, color)
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 26, 2)
 end
-local rebirthLabel = makeStatChip(1, "🔄", Color3.fromRGB(255, 80, 170))
+local rebirthLabel = makeStatChip(1, "🔄", Color3.fromRGB(255, 80, 170), Config.Icons.Rebirth)
 local winLabel = makeStatChip(2, "🏆", Color3.fromRGB(255, 200, 60))
 
 -- =====================================================================
 -- SOL: 2 sütun x 3 satır kare butonlar (Pets, Rebirth, Eggs, Shoes, Walls, Home)
 -- =====================================================================
-local function makeSquareButton(position, icon, label, color)
+-- imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji
+local function makeSquareButton(position, icon, label, color, imageId)
 	local button = create("TextButton", {
 		Position = position,
 		Size = UDim2.fromOffset(74, 74),
@@ -138,11 +149,21 @@ local function makeSquareButton(position, icon, label, color)
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-	makeText(button, {
-		Position = UDim2.fromScale(0.1, 0.04),
-		Size = UDim2.fromScale(0.8, 0.56),
-		Text = icon,
-	}, 40, 0)
+	if imageId and imageId ~= "" then
+		create("ImageLabel", {
+			BackgroundTransparency = 1,
+			Position = UDim2.fromScale(0.07, 0.03),
+			Size = UDim2.fromScale(0.86, 0.6),
+			Image = imageId,
+			ScaleType = Enum.ScaleType.Fit,
+		}, button)
+	else
+		makeText(button, {
+			Position = UDim2.fromScale(0.1, 0.04),
+			Size = UDim2.fromScale(0.8, 0.56),
+			Text = icon,
+		}, 40, 0)
+	end
 	local caption = makeText(button, {
 		Position = UDim2.fromScale(0.04, 0.64),
 		Size = UDim2.fromScale(0.92, 0.3),
@@ -152,18 +173,19 @@ local function makeSquareButton(position, icon, label, color)
 	return button, caption
 end
 
-local function makeGridButton(index, icon, label, color)
+local function makeGridButton(index, icon, label, color, imageId)
 	local column = (index - 1) % 2
 	local row = (index - 1) // 2
-	return makeSquareButton(UDim2.fromOffset(14 + column * 82, 160 + row * 82), icon, label, color)
+	return makeSquareButton(UDim2.fromOffset(14 + column * 82, 160 + row * 82), icon, label, color, imageId)
 end
 
-local shopButton = makeGridButton(1, "🛒", "Shop", Color3.fromRGB(235, 50, 120))
-local rebirthButton, rebirthCaption = makeGridButton(2, "🔄", "Rebirth", Color3.fromRGB(90, 90, 105))
-local soundsButton, soundsCaption = makeGridButton(3, "🎵", "Sounds", Color3.fromRGB(235, 60, 140))
-local backpackButton = makeGridButton(4, "🎒", "Backpack", Color3.fromRGB(235, 130, 40))
-local petsButton = makeGridButton(5, "🐾", "Pets", Color3.fromRGB(215, 120, 50))
-local giftsButton = makeGridButton(6, "🎁", "Gifts", Color3.fromRGB(70, 200, 70))
+local icons = Config.Icons
+local shopButton = makeGridButton(1, "🛒", "Shop", Color3.fromRGB(235, 50, 120), icons.Shop)
+local rebirthButton, rebirthCaption = makeGridButton(2, "🔄", "Rebirth", Color3.fromRGB(90, 90, 105), icons.Rebirth)
+local settingsButton = makeGridButton(3, "⚙️", "Settings", Color3.fromRGB(110, 130, 165), icons.Settings)
+local backpackButton = makeGridButton(4, "🎒", "Backpack", Color3.fromRGB(235, 130, 40), icons.Backpack)
+local petsButton = makeGridButton(5, "🐾", "Pets", Color3.fromRGB(215, 120, 50), icons.Pets)
+local giftsButton = makeGridButton(6, "🎁", "Gifts", Color3.fromRGB(70, 200, 70), icons.Gifts)
 
 -- Kodlar: butonların altında küçük bir hap buton, kod giriş penceresini açar (CodesPanel)
 local codesButton = create("TextButton", {
@@ -667,13 +689,21 @@ shopButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Sounds: tüm sesleri (efekt + müzik) açıp kapatır. Durum SoundsOn özniteliğinde tutulur (teyp de buna bakar ve gerekirse açar).
-local function refreshSoundsButton()
-	local soundsOn = player:GetAttribute("SoundsOn") ~= false
-	soundsCaption.Text = if soundsOn then "Sounds" else "Muted"
-	soundsButton.BackgroundColor3 = if soundsOn then Color3.fromRGB(235, 60, 140) else Color3.fromRGB(90, 90, 105)
+-- Settings: ses efektleri, müzik, kazanç yazıları, ekran sarsıntısı ve isim etiketleri ayarları (korumalı yüklenir)
+local SettingsPanelModule = loadOptional("SettingsPanel")
+local toggleSettings = nil
+if SettingsPanelModule then
+	local okSettings, result = pcall(SettingsPanelModule.init, screenGui)
+	if okSettings then
+		toggleSettings = result
+	else
+		warn(`[Client] SettingsPanel init failed: {result}`)
+	end
 end
-player:GetAttributeChangedSignal("SoundsOn"):Connect(refreshSoundsButton)
-soundsButton.MouseButton1Click:Connect(function()
-	player:SetAttribute("SoundsOn", player:GetAttribute("SoundsOn") == false)
+settingsButton.MouseButton1Click:Connect(function()
+	if toggleSettings then
+		toggleSettings()
+	else
+		showToast(false, "Settings are not available right now.")
+	end
 end)

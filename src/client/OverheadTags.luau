@@ -53,6 +53,18 @@ local function attach(targetPlayer, character)
 	gui.Adornee = head
 	gui.Parent = head
 
+	-- Settings'te "Name tags" kapalıysa etiket görünmez (bu oyuncunun ekranında)
+	local viewer = Players.LocalPlayer
+	local function applyVisibility()
+		gui.Enabled = viewer:GetAttribute("NameTags") ~= false
+	end
+	applyVisibility()
+	local visibilityConnection = viewer:GetAttributeChangedSignal("NameTags"):Connect(applyVisibility)
+	gui.Destroying:Connect(function()
+		visibilityConnection:Disconnect()
+	end)
+
+
 	local power = styledLabel(gui, 0, 0.55, Color3.fromRGB(255, 225, 90))
 	local nameLabel = styledLabel(gui, 0.55, 0.45, Color3.new(1, 1, 1))
 	nameLabel.Text = targetPlayer.DisplayName

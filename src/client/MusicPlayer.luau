@@ -1,12 +1,13 @@
 -- Teyp (müzik çalar): sağ altta. Üstte kaset penceresi (şarkı adı kayan yazıyla), altta solda önceki / duraklat-devam / sonraki,
 -- sağda ses kademesi (- / çubuklar / +). Müziği client/Sfx çalar; burası sadece arayüzdür.
--- "Sounds" anahtarı kapalıyken pencere "SOUNDS OFF" yazar; butonlara basmak sesi geri açar.
+-- Settings'te "Music" kapalıyken pencere "MUSIC OFF" yazar; butonlara basmak müziği geri açar (ve ayarı kaydeder).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Sfx = require(script.Parent.Sfx)
+local PlayerSettings = require(script.Parent.PlayerSettings)
 
 local MusicPlayer = {}
 
@@ -126,17 +127,17 @@ function MusicPlayer.init(screenGui)
 		marquee.Position = UDim2.fromOffset(marqueeX, 0)
 	end)
 
-	-- Sesler kapalıysa açar (teyp butonlarına basmak "dinlemek istiyorum" demektir)
+	-- Müzik kapalıysa açar (teyp butonlarına basmak "dinlemek istiyorum" demektir)
 	local function wakeSounds()
-		if player:GetAttribute("SoundsOn") == false then
-			player:SetAttribute("SoundsOn", true)
+		if not PlayerSettings.get("MusicOn") then
+			PlayerSettings.set("MusicOn", true)
 		end
 	end
 
 	local function refreshText()
-		if player:GetAttribute("SoundsOn") == false then
+		if player:GetAttribute("MusicOn") == false then
 			scrolling = false
-			marquee.Text = "SOUNDS OFF"
+			marquee.Text = "MUSIC OFF"
 			marquee.TextColor3 = Color3.fromRGB(150, 155, 175)
 			marquee.Position = UDim2.fromOffset(10, 0)
 			return
@@ -348,7 +349,7 @@ function MusicPlayer.init(screenGui)
 		refreshPlayIcon()
 		refreshText()
 	end)
-	player:GetAttributeChangedSignal("SoundsOn"):Connect(refreshText)
+	player:GetAttributeChangedSignal("MusicOn"):Connect(refreshText)
 	refreshPips()
 	refreshPlayIcon()
 	refreshText()

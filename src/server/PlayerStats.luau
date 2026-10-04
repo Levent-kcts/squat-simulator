@@ -47,9 +47,15 @@ local function getStat(player, name)
 	return leaderstats and leaderstats:FindFirstChild(name)
 end
 
+-- Kaydedilebilir oyuncu ayarları (Config.Settings): sadece bu anahtarlar kabul edilir
+local SETTING_KEYS = {}
+for _, setting in Config.Settings do
+	SETTING_KEYS[setting.key] = true
+end
+
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, LastLoginDay = 0, LoginStreak = 0, Redeemed = {}, Receipts = {}, EquippedPets = {} }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, LastLoginDay = 0, LoginStreak = 0, Redeemed = {}, Receipts = {}, EquippedPets = {}, Settings = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -82,6 +88,13 @@ local function sanitize(raw)
 	end
 	if type(raw.MusicLevel) == "number" then
 		data.MusicLevel = math.clamp(math.floor(raw.MusicLevel), 0, Config.Music.maxLevel)
+	end
+	if type(raw.Settings) == "table" then
+		for key, value in raw.Settings do
+			if SETTING_KEYS[key] and type(value) == "boolean" then
+				data.Settings[key] = value
+			end
+		end
 	end
 	if type(raw.LoginStreak) == "number" then
 		data.LoginStreak = math.max(0, math.floor(raw.LoginStreak))
@@ -314,6 +327,7 @@ local function save(player)
 		LastLoginDay = profile.lastLoginDay,
 		LoginStreak = profile.loginStreak,
 		MusicLevel = profile.musicLevel,
+		Settings = profile.settings,
 		Redeemed = profile.redeemed,
 		Receipts = profile.receipts,
 		Pets = profile.pets,
@@ -458,6 +472,7 @@ local function setup(player)
 		lastLoginDay = 0, -- günlük giriş ödülü: son giriş günü (UTC gün numarası) ve art arda gün sayısı
 		loginStreak = 0,
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
+		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
 		redeemed = {}, -- kullanılmış kodlar
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
@@ -481,6 +496,10 @@ local function setup(player)
 	profile.redeemed = data.Redeemed
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
+	profile.settings = data.Settings
+	for key, value in data.Settings do
+		player:SetAttribute(key, value)
+	end
 	profile.receipts = data.Receipts
 	profile.pets = data.Pets
 	profile.trails = data.Trails
@@ -942,6 +961,18 @@ function PlayerStats.hatchEgg(player, eggId, count)
 		table.insert(parts, `Deleted {#deleted}: {summarize(deleted)}`)
 	end
 	return true, table.concat(parts, " | "), results
+end
+
+-- Bir oyuncu ayarını (Config.Settings) kaydeder ve istemciye öznitelik olarak yansıtır. Dönüş: başarılı mı
+function PlayerStats.setSetting(player, key, value)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or type(key) ~= "string" or type(value) ~= "boolean" or not SETTING_KEYS[key] then
+		return false
+	end
+	profile.settings[key] = value
+	player:SetAttribute(key, value)
+	requestSave(player)
+	return true
 end
 
 -- Teypin müzik ses kademesini kaydeder (istemci değiştirdikten kısa süre sonra bildirir). Dönüş: başarılı mı

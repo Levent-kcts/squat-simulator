@@ -78,7 +78,7 @@ end
 -- Ekranın rastgele bir yerinde beliren, yukarı süzülüp kaybolan kazanç yazısı ("🦵 +12"): her hareketten sonra karakterin üstünde değil,
 -- ekranın ortasındaki geniş bölgede (kenar çubuklarından ve alt barlardan uzakta) farklı noktalarda çıkar. icon: emoji, scale: boyut çarpanı
 function Juice.screenPop(text, color, icon, scale)
-	if not screenGuiRef then
+	if not screenGuiRef or player:GetAttribute("ShowGain") == false then
 		return
 	end
 	scale = scale or 1
@@ -184,6 +184,9 @@ end
 -- Kamera sarsıntısı: şiddet stud, süre saniye. Humanoid.CameraOffset kullanılır, süre bitince sıfırlanır.
 local shakeToken = 0
 function Juice.shake(strength, duration)
+	if player:GetAttribute("CameraShake") == false then
+		return
+	end
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then

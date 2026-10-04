@@ -131,9 +131,11 @@ local shopFunction = Instance.new("RemoteFunction")
 shopFunction.Name = "Shop"
 shopFunction.Parent = ReplicatedStorage
 
-shopFunction.OnServerInvoke = function(player, action, id)
+shopFunction.OnServerInvoke = function(player, action, id, value)
 	if action == "BuyItem" and type(id) == "string" then
 		return PlayerStats.buyItem(player, id)
+	elseif action == "SetSetting" and type(id) == "string" and type(value) == "boolean" then
+		return PlayerStats.setSetting(player, id, value)
 	elseif action == "SetMusicLevel" and type(id) == "number" then
 		return PlayerStats.setMusicLevel(player, id)
 	elseif action == "ToggleAutoDelete" and type(id) == "string" then

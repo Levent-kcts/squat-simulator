@@ -1,4 +1,4 @@
--- Ses efektleri: Config.Sounds'taki olay adlarını çalar. Sol menüdeki "Sounds" anahtarı kapalıysa (SoundsOn = false) hiçbir şey çalmaz.
+-- Ses efektleri: Config.Sounds'taki olay adlarını çalar. Settings penceresinde "Sound effects" kapalıysa (SfxOn = false) efekt çalmaz; "Music" kapalıysa (MusicOn = false) müziğin sesi 0 olur.
 -- Bir olayın tek sesi (id) ya da birkaç sesi (ids) olabilir: varsayılan rastgele seçilir, pick = "first" ise yüklenebilen ilki çalar.
 -- Ses dosyası yüklenemezse (kaldırılmış, izin yok) elenir; hepsi elenirse fallback çalar, o da yoksa o olay sessiz kalır.
 -- Sesler oyun başında BİR KERE yüklenir ve havuzdan çalınır (her seferinde yeni Sound kurulsaydı çalma gecikirdi). Oyun hiçbir durumda etkilenmez.
@@ -69,7 +69,7 @@ function Sfx.play(name)
 	if not def then
 		return
 	end
-	if player:GetAttribute("SoundsOn") == false then
+	if player:GetAttribute("SfxOn") == false then
 		return
 	end
 	local now = os.clock()
@@ -122,7 +122,7 @@ end
 -- ARKA PLAN MÜZİĞİ (arayüzü client/MusicPlayer: ses kademesi, duraklat, önceki/sonraki şarkı, şarkı adı)
 -- =====================================================================
 -- Config.Music.tracks sırayla çalar, liste bitince baştan başlar. Yüklenemeyen parça atlanır; hiçbiri çalmazsa döngü durur
--- (sonsuz hızlı deneme olmasın). "Sounds" anahtarı kapanınca müziğin sesi 0 olur.
+-- (sonsuz hızlı deneme olmasın). Settings'te "Music" kapanınca müziğin sesi 0 olur.
 local musicSound = nil
 local musicLevel = (Config.Music and Config.Music.defaultLevel) or 4 -- ses kademesi: 0 .. maxLevel
 local currentTrack = { name = "", index = 0, total = 0 } -- çalan (ya da yüklenen) parça
@@ -140,7 +140,7 @@ end
 local function applyMusicVolume()
 	if musicSound then
 		local step = Config.Music.volumeStep or 0.045
-		musicSound.Volume = if player:GetAttribute("SoundsOn") == false then 0 else musicLevel * step
+		musicSound.Volume = if player:GetAttribute("MusicOn") == false then 0 else musicLevel * step
 	end
 end
 
@@ -273,7 +273,7 @@ local function playlist(music)
 	sound.Parent = SoundService
 	musicSound = sound
 	applyMusicVolume()
-	player:GetAttributeChangedSignal("SoundsOn"):Connect(applyMusicVolume)
+	player:GetAttributeChangedSignal("MusicOn"):Connect(applyMusicVolume)
 
 	-- İlk parça, kayıtlı ses kademesiyle başlasın (veri yüklenmezse en fazla 10 sn beklenir)
 	waitForData(10)

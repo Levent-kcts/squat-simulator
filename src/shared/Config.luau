@@ -191,6 +191,22 @@ return {
 		},
 	},
 
+	-- Oyuncu ayarları (sol menüdeki Settings penceresi, client/SettingsPanel). key = Player özniteliği: false kapalı, yoksa/true açık.
+	-- Sunucu bu anahtarları kaydeder (PlayerStats.setSetting; listede olmayan anahtar kabul edilmez). Yeni ayar eklemek için buraya satır ekle
+	-- ve ilgili yerde özniteliğe bak.
+	Settings = {
+		{ key = "SfxOn", name = "Sound effects", detail = "Wall breaks, growing, buying..." },
+		{ key = "MusicOn", name = "Music", detail = "Background music (tape at the bottom right)" },
+		{ key = "ShowGain", name = "Gain numbers", detail = "The +N that pops up on your screen" },
+		{ key = "CameraShake", name = "Screen shake", detail = "Shake when walls break" },
+		{ key = "NameTags", name = "Name tags", detail = "Power and name above players" },
+	},
+
+	-- Sol menüdeki ve sayaçtaki ikonlar. Roblox'a yüklenmiş görsellerin "rbxassetid://..." değeri; BOŞ ikon emoji olarak görünür.
+	-- Hazır, şeffaf arka planlı görseller assets/icons/ klasöründe (shop, rebirth, settings, backpack, pets, gifts: 256x256 PNG).
+	-- Studio'da Asset Manager > Bulk Import ile yükle, çıkan ID'leri buraya yaz.
+	Icons = { Shop = "", Rebirth = "", Settings = "", Backpack = "", Pets = "", Gifts = "" },
+
 	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
 	Guide = { MaxStage = 3 },
 
