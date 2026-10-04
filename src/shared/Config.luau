@@ -169,22 +169,25 @@ return {
 		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.25, speed = { 0.6, 0.65 } },
 	},
 
-	-- Arka plan müziği: tracks listesindeki parçalar SIRAYLA çalar, liste bitince baştan başlar (sonsuz döngü). "Sounds" anahtarı kapatınca ses 0 olur.
-	-- Yüklenemeyen parça atlanır. Hepsi Creator Store'dan ücretsiz, sözsüz, neşeli parçalar (~22 dk); parça eklemek/çıkarmak için listeyi değiştir.
-	-- Müzik sesi efektleri bastırmasın diye düşük tutulur.
+	-- Arka plan müziği (sağ alttaki teyp, client/MusicPlayer): tracks SIRAYLA çalar, liste bitince baştan başlar (sonsuz döngü).
+	-- Yüklenemeyen parça atlanır. Hepsi Creator Store'dan ücretsiz, sözsüz, neşeli parçalar (~22 dk); name teypte kayan yazıyla görünür.
+	-- Ses kademeli ayarlanır: kademe x volumeStep = ses (0 = sessiz, defaultLevel başlangıç kademesi). "Sounds" anahtarı kapatınca ses 0 olur.
+	-- Müzik sesi efektleri bastırmasın diye varsayılan düşük tutulur (4 x 0.045 = 0.18).
 	Music = {
-		volume = 0.18,
+		maxLevel = 10,
+		defaultLevel = 4,
+		volumeStep = 0.045,
 		tracks = {
-			"rbxassetid://93310229093873", -- Green Hill Cubes BGM (2:05)
-			"rbxassetid://103462270700363", -- Blend and Bounce (2:53)
-			"rbxassetid://84770156902104", -- Mining Fun BGM (2:11)
-			"rbxassetid://101506812412180", -- Primary Color Party (2:18)
-			"rbxassetid://95159768281123", -- Craft & Jump BGM (2:00)
-			"rbxassetid://134096897250664", -- Gradient Hopscotch (2:09)
-			"rbxassetid://127582244484162", -- Sunny Mine Day BGM (2:02)
-			"rbxassetid://113182399122383", -- Color Wheel Spin (2:13)
-			"rbxassetid://87764582879259", -- Pixel Picnic BGM (2:10)
-			"rbxassetid://86374052601075", -- Swatch Dance (2:16)
+			{ id = "rbxassetid://93310229093873", name = "Green Hill Cubes" }, -- 2:05
+			{ id = "rbxassetid://103462270700363", name = "Blend and Bounce" }, -- 2:53
+			{ id = "rbxassetid://84770156902104", name = "Mining Fun" }, -- 2:11
+			{ id = "rbxassetid://101506812412180", name = "Primary Color Party" }, -- 2:18
+			{ id = "rbxassetid://95159768281123", name = "Craft & Jump" }, -- 2:00
+			{ id = "rbxassetid://134096897250664", name = "Gradient Hopscotch" }, -- 2:09
+			{ id = "rbxassetid://127582244484162", name = "Sunny Mine Day" }, -- 2:02
+			{ id = "rbxassetid://113182399122383", name = "Color Wheel Spin" }, -- 2:13
+			{ id = "rbxassetid://87764582879259", name = "Pixel Picnic" }, -- 2:10
+			{ id = "rbxassetid://86374052601075", name = "Swatch Dance" }, -- 2:16
 		},
 	},
 

@@ -24,7 +24,6 @@ local Moves = require(script.Moves)
 local clickEvent = ReplicatedStorage:WaitForChild("Click")
 local moveEvent = ReplicatedStorage:WaitForChild("MoveEvent")
 local notifyEvent = ReplicatedStorage:WaitForChild("Notify")
-local teleportEvent = ReplicatedStorage:WaitForChild("Teleport")
 local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 
 local player = Players.LocalPlayer
@@ -219,36 +218,6 @@ local function makeMenuButton(row, icon, label, color)
 end
 local trailsButton = makeMenuButton(0, "✨", "Trails", Color3.fromRGB(255, 70, 170))
 local aurasButton = makeMenuButton(1, "🔮", "Auras", Color3.fromRGB(170, 70, 240))
-
--- Işınlanma butonları: sağ altta küçük yuvarlak simgeler (Eggs, Shoes, Skins, Train, Walls, Home)
-local TELEPORT_COUNT = 6
-local function makeTeleportButton(order, icon, color, destination, tip)
-	local button = create("TextButton", {
-		AnchorPoint = Vector2.new(1, 1),
-		Position = UDim2.new(1, -14 - (TELEPORT_COUNT - order) * 58, 1, -14),
-		Size = UDim2.fromOffset(50, 50),
-		Text = "",
-		AutoButtonColor = true,
-		BackgroundColor3 = color,
-	}, screenGui)
-	create("UICorner", { CornerRadius = UDim.new(1, 0) }, button)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-	makeText(button, {
-		Position = UDim2.fromScale(0.15, 0.15),
-		Size = UDim2.fromScale(0.7, 0.7),
-		Text = icon,
-	}, 28, 0)
-	button.MouseButton1Click:Connect(function()
-		teleportEvent:FireServer(destination)
-	end)
-	return button
-end
-makeTeleportButton(1, "🥚", Color3.fromRGB(40, 190, 230), "Eggs")
-makeTeleportButton(2, "👟", Color3.fromRGB(240, 200, 40), "Shoes")
-makeTeleportButton(3, "🎨", Color3.fromRGB(190, 90, 255), "Skins")
-makeTeleportButton(4, "🦵", Color3.fromRGB(60, 120, 255), "Train")
-makeTeleportButton(5, "🧱", Color3.fromRGB(230, 70, 70), "Walls")
-makeTeleportButton(6, "🏠", Color3.fromRGB(70, 200, 100), "Home")
 
 -- Rebirth butonunun üstündeki yüzde rozeti (level / üst sınır)
 local rebirthBadge = makeText(rebirthButton, {
@@ -451,6 +420,7 @@ WallClient.init(onProgress)
 safeInit("Guide", loadOptional("Guide"), WallClient)
 local Sfx = loadOptional("Sfx")
 safeInit("Sfx", Sfx)
+safeInit("MusicPlayer", loadOptional("MusicPlayer"), screenGui) -- sağ alttaki teyp
 
 -- =====================================================================
 -- HAREKET (tıklama / Auto Click)
@@ -697,11 +667,13 @@ shopButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Sounds: ses ayarı. Oyunda henüz ses yok; bayrak ileride eklenecek sesler için hazır tutuluyor.
-local soundsOn = true
-soundsButton.MouseButton1Click:Connect(function()
-	soundsOn = not soundsOn
-	player:SetAttribute("SoundsOn", soundsOn)
+-- Sounds: tüm sesleri (efekt + müzik) açıp kapatır. Durum SoundsOn özniteliğinde tutulur (teyp de buna bakar ve gerekirse açar).
+local function refreshSoundsButton()
+	local soundsOn = player:GetAttribute("SoundsOn") ~= false
 	soundsCaption.Text = if soundsOn then "Sounds" else "Muted"
 	soundsButton.BackgroundColor3 = if soundsOn then Color3.fromRGB(235, 60, 140) else Color3.fromRGB(90, 90, 105)
+end
+player:GetAttributeChangedSignal("SoundsOn"):Connect(refreshSoundsButton)
+soundsButton.MouseButton1Click:Connect(function()
+	player:SetAttribute("SoundsOn", player:GetAttribute("SoundsOn") == false)
 end)

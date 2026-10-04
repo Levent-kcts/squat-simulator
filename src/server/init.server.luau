@@ -126,37 +126,6 @@ clickEvent.OnServerEvent:Connect(function(player)
 	end)
 end)
 
--- Işınlanma butonları (sol taraftaki arayüz): hedefler sunucuda sabit, istemci sadece adını yollar
-local teleportEvent = Instance.new("RemoteEvent")
-teleportEvent.Name = "Teleport"
-teleportEvent.Parent = ReplicatedStorage
-
-local TELEPORTS = {
-	Home = Config.SpawnPosition,
-	Eggs = Vector3.new(0, 5, Config.Lobby.BackZ - 28),
-	Shoes = Vector3.new(-(Config.Lobby.HalfWidth - 39), 5, Config.Lobby.ShoeShelfZ),
-	Skins = Vector3.new(-(Config.Lobby.HalfWidth - 39), 5, Config.Lobby.SkinShelfZ),
-	Train = Vector3.new(Config.Lobby.HalfWidth - 50, 5, Config.Lobby.TrainingShelfZ), -- antrenman alanının önü
-}
-local lastTeleport = {}
-
-teleportEvent.OnServerEvent:Connect(function(player, destination)
-	if type(destination) ~= "string" then
-		return
-	end
-	local now = os.clock()
-	if now - (lastTeleport[player] or 0) < 1.5 then
-		return
-	end
-	lastTeleport[player] = now
-
-	if destination == "Walls" then
-		WallService.teleportToWalls(player)
-	elseif TELEPORTS[destination] and player.Character then
-		player.Character:PivotTo(CFrame.new(TELEPORTS[destination]))
-	end
-end)
-
 -- Mağaza: eşya satın alma ve yumurta açma
 local shopFunction = Instance.new("RemoteFunction")
 shopFunction.Name = "Shop"
@@ -201,5 +170,4 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
 	busyUntil[player] = nil
-	lastTeleport[player] = nil
 end)

@@ -118,47 +118,126 @@ local function preload()
 	end)
 end
 
--- Arka plan müziği: Config.Music.tracks sırayla çalar, liste bitince baştan başlar. Yüklenemeyen parça atlanır;
--- hiçbiri çalmazsa döngü durur (sonsuz hızlı deneme olmasın). "Sounds" anahtarı kapanınca sesi 0 olur.
+-- =====================================================================
+-- ARKA PLAN MÜZİĞİ (arayüzü client/MusicPlayer: ses kademesi, sonraki şarkı, şarkı adı)
+-- =====================================================================
+-- Config.Music.tracks sırayla çalar, liste bitince baştan başlar. Yüklenemeyen parça atlanır; hiçbiri çalmazsa döngü durur
+-- (sonsuz hızlı deneme olmasın). "Sounds" anahtarı kapanınca müziğin sesi 0 olur.
+local musicSound = nil
+local musicLevel = (Config.Music and Config.Music.defaultLevel) or 4 -- ses kademesi: 0 .. maxLevel
+local currentTrack = { name = "", index = 0, total = 0 } -- çalan (ya da yüklenen) parça
+local trackListeners = {}
+local levelListeners = {}
+local skipRequested = false
+
+local function musicMaxLevel()
+	return (Config.Music and Config.Music.maxLevel) or 10
+end
+
+local function applyMusicVolume()
+	if musicSound then
+		local step = Config.Music.volumeStep or 0.045
+		musicSound.Volume = if player:GetAttribute("SoundsOn") == false then 0 else musicLevel * step
+	end
+end
+
+local function setTrack(name, index, total)
+	currentTrack = { name = name, index = index, total = total }
+	for _, listener in trackListeners do
+		task.spawn(listener, currentTrack)
+	end
+end
+
+function Sfx.getMusicLevel()
+	return musicLevel
+end
+
+function Sfx.getMusicMaxLevel()
+	return musicMaxLevel()
+end
+
+function Sfx.setMusicLevel(level)
+	level = math.clamp(math.floor(level + 0.5), 0, musicMaxLevel())
+	if level == musicLevel then
+		return
+	end
+	musicLevel = level
+	applyMusicVolume()
+	for _, listener in levelListeners do
+		task.spawn(listener, level)
+	end
+end
+
+-- Şu an çalan parça: { name, index, total } (yüklenirken name = "Loading...")
+function Sfx.getTrack()
+	return currentTrack
+end
+
+function Sfx.nextTrack()
+	skipRequested = true
+	if musicSound then
+		musicSound:Stop()
+	end
+end
+
+function Sfx.onTrackChanged(listener)
+	table.insert(trackListeners, listener)
+end
+
+function Sfx.onMusicLevelChanged(listener)
+	table.insert(levelListeners, listener)
+end
+
 local function playlist(music)
 	local tracks = music.tracks
 	local sound = Instance.new("Sound")
 	sound.Name = "Music"
 	sound.Looped = false
 	sound.Parent = SoundService
-	local function apply()
-		sound.Volume = if player:GetAttribute("SoundsOn") == false then 0 else (music.volume or 0.2)
-	end
-	apply()
-	player:GetAttributeChangedSignal("SoundsOn"):Connect(apply)
+	musicSound = sound
+	applyMusicVolume()
+	player:GetAttributeChangedSignal("SoundsOn"):Connect(applyMusicVolume)
 
 	local index = 1
 	local skipped = 0 -- üst üste çalınamayan parça sayısı
 	while skipped < #tracks do
-		sound.SoundId = tracks[index]
+		local track = tracks[index]
+		setTrack("Loading...", index, #tracks)
+		sound.SoundId = track.id
 		local started = os.clock()
-		while not sound.IsLoaded and os.clock() - started < 15 do
+		while not sound.IsLoaded and not skipRequested and os.clock() - started < 15 do
 			task.wait(0.1)
 		end
-		if sound.IsLoaded and sound.TimeLength > 0 then
+		if skipRequested then
+			skipRequested = false
+		elseif sound.IsLoaded and sound.TimeLength > 0 then
 			skipped = 0
 			-- Sıradaki parçayı çalarken önceden indir: geçişte boşluk kalmasın
-			local nextId = tracks[index % #tracks + 1]
+			local nextId = tracks[index % #tracks + 1].id
 			task.spawn(function()
 				local probe = Instance.new("Sound")
 				probe.SoundId = nextId
 				pcall(ContentProvider.PreloadAsync, ContentProvider, { probe })
 				probe:Destroy()
 			end)
+			setTrack(track.name, index, #tracks)
 			sound:Play()
-			sound.Ended:Wait()
+			-- Parça bitene ya da "sonraki" istenene kadar bekle (çalmaya başlaması için 3 sn tolerans)
+			local began = os.clock()
+			while not skipRequested and (sound.IsPlaying or os.clock() - began < 3) do
+				task.wait(0.2)
+			end
+			skipRequested = false
 		else
 			skipped += 1
-			warn(`[Sfx] Müzik parçası yüklenemedi, atlanıyor: {tracks[index]}`)
+			warn(`[Sfx] Müzik parçası yüklenemedi, atlanıyor: {track.id}`)
 		end
+		sound:Stop()
 		index = index % #tracks + 1
 	end
 	warn("[Sfx] Hiçbir müzik parçası çalınamadı, müzik kapalı.")
+	setTrack("No music", 0, 0)
+	musicSound = nil
 	sound:Destroy()
 end
 
