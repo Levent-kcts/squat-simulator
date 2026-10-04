@@ -198,13 +198,17 @@ return {
 	CameraMaxZoom = 40,
 
 	-- Işıklandırma ve ışık efekti (server/EnvironmentService). Kapalı mekanda aydınlığı ortam ışığı verir (karanlık/mavi hava istenmedi).
-	-- Bloom: ışık panelleri, neon ve parlak nesneler çevresine yumuşak bir parıltı yayar (referans oyundaki gibi). Çok parlak/bulanık gelirse
-	-- Intensity'yi düşür, Threshold'u yükselt; hiç parıltı yoksa tersini yap. Bloom.Enabled = false efekti tamamen kapatır.
+	-- PanelGlow: lobideki tavan panellerinin çevresinde SADECE tavan yüzeyinde yumuşak bir hale (üst üste bindirilmiş şeffaf katmanlar);
+	-- aşağıya inen parıltı yok. Size = hale genişliği (stud; panel 7), Layers = katman sayısı (çok = daha yumuşak), Alpha = her katmanın
+	-- görünürlüğü (0.05 = %5; tavan fazla beyazlaşırsa düşür).
+	-- Bloom: TÜM EKRANI saran parıltı efekti. Denendi, bu parlak sahnede her şeyi beyaza boğdu ve aşağıya kadar indi: KAPALI. Açarsan
+	-- Threshold'u yüksek tut (>= 1.5) ve Intensity'yi düşük (<= 0.2); denemeden açma.
 	Lighting = {
 		Brightness = 2,
 		Exposure = 0,
 		Ambient = Color3.fromRGB(172, 175, 196),
-		Bloom = { Enabled = true, Intensity = 0.5, Size = 24, Threshold = 0.9 },
+		PanelGlow = { Enabled = true, Size = 17, Layers = 6, Alpha = 0.05 },
+		Bloom = { Enabled = false, Intensity = 0.2, Size = 16, Threshold = 1.5 },
 		Color = { Saturation = 0.1, Contrast = 0.06 }, -- hafif canlı renk (ColorCorrection); Saturation = 0 ve Contrast = 0 ise etkisiz
 	},
 

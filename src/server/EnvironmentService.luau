@@ -165,6 +165,10 @@ function EnvironmentService.init()
 				Vector3.new(x, ceiling - 0.25, z),
 				40
 			)
+			if light.PanelGlow.Enabled then
+				-- Hale, damga çıkıntılarının altında (tavan - 0.25) ince bir katman olarak durur
+				Build.ceilingHalo(folder, "LobbyLightHalo", Vector3.new(x, ceiling - 0.25, z), light.PanelGlow.Size, light.PanelGlow.Layers, light.PanelGlow.Alpha)
+			end
 		end
 		z -= 32
 	end
