@@ -301,7 +301,6 @@ function Juice.init(screenGui)
 		if delta > 0 and ready() then
 			local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
 			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.fromRGB(90, 220, 255), "🦵")
-			sfx("Hit")
 		end
 	end)
 

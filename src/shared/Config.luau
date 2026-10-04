@@ -136,15 +136,25 @@ return {
 	-- id = "" ise o olay sessiz kalır. volume 0-1, speed: { en yavaş, en hızlı } çalma hızı (her çalışta rastgele; ton çeşitliliği).
 	-- Aşağıdakiler geçici: Roblox'un kendi hazır sesleri. Daha güzel sesler için Creator Store'dan ses bulup id'leri değiştir.
 	Sounds = {
-		Hit = { id = "rbxasset://sounds/action_jump_land.mp3", volume = 0.35, speed = { 0.9, 1.15 } }, -- hareket bitince (kas kazanımı)
-		WallBreak = { id = "rbxasset://sounds/impact_explosion_03.mp3", volume = 0.5, speed = { 0.95, 1.2 } },
-		LevelUp = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.6, speed = { 1.9, 2.1 } },
-		Win = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.7, speed = { 1.5, 1.6 } },
-		Rebirth = { id = "rbxasset://sounds/action_get_up.mp3", volume = 0.8, speed = { 0.7, 0.75 } },
-		Hatch = { id = "rbxasset://sounds/impact_water.mp3", volume = 0.5, speed = { 1.3, 1.5 } },
-		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.7, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca
-		Buy = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.5, speed = { 1.3, 1.4 } },
-		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 0.6, 0.65 } },
+		-- Squat / tekme: sade, kısa bir hava (whoosh) sesi; hareketin BAŞINDA çalar, kas kazanımında ayrıca ses yok. Roblox'un kendi UI whoosh sesleri.
+		Squat = { id = "rbxassetid://15675028888", volume = 0.25, speed = { 0.95, 1.1 } }, -- Roblox_UI_Whoosh_02 (0.5 sn, yumuşak)
+		Kick = { id = "rbxassetid://15675012262", volume = 0.28, speed = { 0.95, 1.1 } }, -- Roblox_UI_Whoosh_04 (0.35 sn)
+		-- Duvar kırılma: lego kırılma sesi (Creator Store'daki ücretsiz sesler; her seferinde biri rastgele seçilir, yüklenemeyen elenir).
+		-- ids bozulursa fallback çalar. gap: aynı sesin en sık çalma aralığı (bir vuruşta üst üste duvar kırılınca gürültü olmasın)
+		WallBreak = {
+			ids = { "rbxassetid://15351953300", "rbxassetid://93173820310993", "rbxassetid://90091919296355" },
+			fallback = "rbxasset://sounds/action_footsteps_plastic.mp3",
+			volume = 0.45,
+			speed = { 0.95, 1.1 },
+			gap = 0.3,
+		},
+		LevelUp = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.35, speed = { 1.9, 2.1 } },
+		Win = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 1.5, 1.6 } },
+		Rebirth = { id = "rbxasset://sounds/action_get_up.mp3", volume = 0.5, speed = { 0.7, 0.75 } },
+		Hatch = { id = "rbxasset://sounds/impact_water.mp3", volume = 0.35, speed = { 1.3, 1.5 } },
+		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca
+		Buy = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.3, speed = { 1.3, 1.4 } },
+		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.25, speed = { 0.6, 0.65 } },
 	},
 
 	-- Arka plan müziği (döngüde çalar, "Sounds" anahtarı kapatınca susar). id boşsa müzik yok; Creator Store'dan beğendiğin bir müziğin

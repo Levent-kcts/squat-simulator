@@ -449,6 +449,8 @@ DevPanel.init(screenGui)
 PetFollowers.init()
 WallClient.init(onProgress)
 safeInit("Guide", loadOptional("Guide"), WallClient)
+local Sfx = loadOptional("Sfx")
+safeInit("Sfx", Sfx)
 
 -- =====================================================================
 -- HAREKET (tıklama / Auto Click)
@@ -480,6 +482,9 @@ local function tryAction()
 
 	busyUntil = os.clock() + Config.MoveDuration[move]
 	Moves.play(character, move)
+	if Sfx then
+		pcall(Sfx.play, move) -- "Squat" / "Kick" hava sesi
+	end
 	clickEvent:FireServer()
 end
 
@@ -525,9 +530,6 @@ local toast = makeText(screenGui, {
 	Visible = false,
 }, 28, 3)
 local toastId = 0
-
-local Sfx = loadOptional("Sfx")
-safeInit("Sfx", Sfx)
 
 
 local function showToast(ok, message)
