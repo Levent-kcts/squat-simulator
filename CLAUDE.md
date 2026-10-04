@@ -45,7 +45,7 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
   sonrası (en az 10 sn arayla) ve oyuncu çıkarken. Studio'da kayıt için oyun yayınlanmış ve API erişimi açık olmalı.
 - Lobi düzeni (124x130, spawn tam ortada; referans fotoğraflara göre küçültüldü: yumurtalar da Shelf standında, antrenman pedi 9 stud, ayakkabı/skin rafları fotoğraflardan ölçülü olduğu için değişmedi): ÖN duvar koridor (kırılan duvarlar), ARKA duvar yumurtalar, SOL duvar (duvarlara bakarken sol) iki raf: ayakkabılar (Config.Lobby.ShoeShelfZ) ve skinler (SkinShelfZ) yan yana, koridor girişi ucuna yaslı; sol duvarın arka ucu (yumurta tarafındaki sol köşe, z > 41) YENİ ŞEYLER İÇİN BOŞ BIRAKILDI (sahibi sonra dolduracak), SAĞ duvar antrenman alanı (aşağıdaki ANTRENMAN kuralı).
 - Ortam: kapalı, aydınlık, lego çıkıntılı pastel salon + koridor. Kırılan duvarlar canlı şeker renkli (Plastic).
-  HUD referans oyundan esinli: üstte hedef şeridi, sol üstte Rebirth/Win sayaçları, solda 2x3 kare buton (Shop [yakında], Rebirth, Sounds, Backpack, Pets, Gifts). Backpack > Trails ve Auras; Gifts > Playtime Rewards. Sağ altta küçük ışınlanma simgeleri (Eggs, Shoes, Walls, Home; hedefler sunucuda sabit: init.server TELEPORTS). Altta level çubuğu ve Auto Click. Lobi `EnvironmentService`'te.
+  HUD referans oyundan esinli: üstte hedef şeridi, sol üstte Rebirth/Win sayaçları, solda 2x3 kare buton (Shop [Robux ürünleri], Rebirth, Sounds [ses ve müzik anahtarı], Backpack, Pets, Gifts). Backpack > Trails ve Auras; Gifts > Playtime Rewards. Sağ altta küçük ışınlanma simgeleri (Eggs, Shoes, Walls, Home; hedefler sunucuda sabit: init.server TELEPORTS). Altta level çubuğu ve Auto Click. Lobi `EnvironmentService`'te.
 - Koridor kapalıdır (tavan var). Yan duvarlar ve tavan her aşamada farklı renktir; yeni renk Win butonundan sonra başlar.
 
 ## Yapı
@@ -66,10 +66,15 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 - `src/client/ShelfClient.luau`: raf etiketleri (isim, güç çarpanı, fiyat/durum satırları) ve postament renkleri (sarı kullanılan / yeşil sahip / kırmızı değil), ortaktır; `client/ShoeShop.luau` ve `SkinShop.luau` ona ayar verir.
 - `src/server/EnvironmentService.luau`, `Build.luau`: lobi, ışıklandırma, ortak parça yardımcıları.
 - `src/server/WallService.luau`: oyuncu başına can takibi, hasar, Win butonları, zemin/yan duvarlar.
-- `src/client/init.client.luau`: HUD ve tıklama girişi. `WallClient.luau`: oyuncuya özel duvarlar ve can göstergesi. `Shop.luau`: mağaza arayüzü. `PetFollowers.luau`: pet görselleri.
+- `src/client/init.client.luau`: HUD ve tıklama girişi. `WallClient.luau`: oyuncuya özel duvarlar ve can göstergesi. `ShopPanel.luau`: Robux ürünleri penceresi. `PetFollowers.luau`: pet görselleri.
 
 - Oyuncu dostu katman (client/Juice, Sfx, OverheadTags, Reveal, Guide, BoostHud; server/Leaderboards): hepsi SADECE görseldir/geri bildirimdir, oyun mantığını etkilemez ve init.client'ta `safeInit(loadOptional(...))` ile korumalı yüklenir (bir modül hata verirse oyun çalışır). Yeni özellik eklerken aynı kalıbı kullan. Sesler Config.Sounds'tan, nadirlik Config.Rarities'ten, çevrimdışı kazanç Config.Offline'dan gelir.
 - `tools/simulate.py`: Config.luau'daki sayılarla aktif bir oyuncunun ilerleyişini (rebirth zamanları, bölgeler, çarpanlar) simüle eder; denge ayarı yaparken önce/sonra bununla kıyasla (`python tools/simulate.py 12`). `tools/search.py` parametre aratır.
+
+## Proje durumu (ayrıntı README.md'de: bölüm 5 yapılacaklar, bölüm 7 yapılanlar)
+- YAPILDI: temel oyun, level/rebirth, duvarlar, Win odaları (genişleyen oda, VIP pedi), ayakkabı/skin/yumurta/pet/trail/aura, antrenman alanı (rebirth ile açılan 10 ped), sıralama panoları, oyuncu dostu katman (efekt, ses, etiket, açılış kartları, yol gösterici, günlük ödül, çevrimdışı kazanç, kodlar), Shop + Robux makbuz işleme (ID'ler bekleniyor), simülasyonla denge ayarı. HİÇBİRİ son turdan beri Studio'da denenmedi: sahibi test edince hata/geri bildirim gelecek.
+- YAPILACAK (sırayla): sahibinin Roblox işleri (yayın + API, Robux ürün/game pass ID'leri, ses/müzik ID'leri) > Studio test geri bildirimi ve denge ince ayarı > günlük görevler, pet birleştirme makinesi, sağ duvarın boş köşesi, özel antrenörler, kaslı bacak ikonu, yeni dünyalar > EN SON Blender modelleri.
+- Yedek: ayrı yedek yok (silindi); geri dönüş için yerel git geçmişi (`git log`).
 
 ## Kurallar
 - README.md proje devir dosyasıdır. Her anlamlı değişiklikten sonra (yeni özellik, değişen kural, yeni karar, bulunan hata, yapılacaklar listesi) README.md'yi GÜNCELLE: yeni şeyleri ekle, artık geçerli olmayanları çıkar. Oturum sıfırlanınca devamlılık buradan sağlanır.
