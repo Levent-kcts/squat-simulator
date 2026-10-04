@@ -658,6 +658,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	count = math.clamp(math.floor(count or 1), 1, maxCount)
 
 	local kept, deleted = {}, {}
+	local results = {} -- açılış sırasıyla { id, kept }: istemcideki açılış ekranı için
 	for _ = 1, count do
 		if wins.Value < egg.price then
 			break
@@ -668,6 +669,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 			break
 		end
 		wins.Value -= egg.price
+		table.insert(results, { id = pet.id, kept = not willDelete })
 		if willDelete then
 			table.insert(deleted, pet)
 		else
@@ -691,10 +693,10 @@ function PlayerStats.hatchEgg(player, eggId, count)
 
 	if #kept == 1 and #deleted == 0 then
 		local pet = kept[1]
-		return true, `Hatched {pet.name}! (+{math.floor(pet.mult * 100 + 0.5)}% muscle)`
+		return true, `Hatched {pet.name}! (+{math.floor(pet.mult * 100 + 0.5)}% muscle)`, results
 	end
 	if #kept == 0 and #deleted == 1 then
-		return true, `{deleted[1].name} was auto-deleted`
+		return true, `{deleted[1].name} was auto-deleted`, results
 	end
 
 	local parts = {}
@@ -704,7 +706,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	if #deleted > 0 then
 		table.insert(parts, `Deleted {#deleted}: {summarize(deleted)}`)
 	end
-	return true, table.concat(parts, " | ")
+	return true, table.concat(parts, " | "), results
 end
 
 -- Bir petin "yumurtadan çıkınca anında sil" işaretini açar/kapatır. Dönüş: başarılı mı, mesaj

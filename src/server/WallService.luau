@@ -107,8 +107,7 @@ local function createWinButton(folder, stage, def)
 	part.CanCollide = false -- üstünden geçilsin, takılmasın
 	part.Size = Vector3.new(9, 0.6, 6)
 	-- Ped odanın köşelerine yakın durur (oda genişse dışa kayar, koridor genişliğinde eski yerinde kalır)
-	local padX = math.max(cfg.Width / 2 - 6, cfg.Width / 2 + (cfg.ChamberExtra or 0) - 11)
-	part.Position = Vector3.new(def.side * padX, Layout.FloorTop + 0.3, Layout.padZ(stage))
+	part.Position = Vector3.new(def.side * Layout.padX(), Layout.FloorTop + 0.3, Layout.padZ(stage))
 	part.Material = Enum.Material.Neon
 	part.Color = if def.vip then Color3.fromRGB(255, 80, 220) else Color3.fromRGB(255, 220, 40)
 	part.Parent = folder

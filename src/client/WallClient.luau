@@ -10,10 +10,18 @@ local Format = require(Shared:WaitForChild("Format"))
 
 local cfg = Config.Wall
 
+-- Efekt modülü korumalı yüklenir: hata verirse duvarlar yine çalışır
+local okJuice, Juice = pcall(require, script.Parent.Juice)
+
 local WallClient = {}
 
 -- Hayatta olan ilk duvarın sırası (Count + 1 = hepsi kırık)
 local currentFrontier = 1
+
+-- Hayatta olan ilk duvarın sırası (Count + 1 = hepsi kırık). Yol gösterici bunu okur.
+function WallClient.getFrontier()
+	return currentFrontier
+end
 
 -- Oyuncu, ilk sağlam duvarın vuruş menzilinde mi? (tekme mi squat mı seçmek için)
 function WallClient.isNearWall(position)
@@ -100,11 +108,15 @@ local function createWall(folder, index)
 end
 
 local function setHp(wall, hp)
+	local wasAlive = wall.hp > 0
 	wall.hp = hp
 	if hp <= 0 then
 		wall.part.CanCollide = false
 		wall.part.Transparency = 1
 		wall.gui.Enabled = false
+		if wasAlive and okJuice then
+			pcall(Juice.wallBroken, wall.part) -- kırılma patlaması + sarsıntı (yakındaysa)
+		end
 		return
 	end
 

@@ -39,4 +39,14 @@ for _, area in Config.Training.Areas do
 	Catalog.TrainingAreaById[area.id] = area
 end
 
+-- Pet nadirliği (Config.Rarities): çarpanı sınırın altında kalan ilk sınıf
+function Catalog.rarityOf(pet)
+	for _, rarity in Config.Rarities do
+		if pet.mult < rarity.maxMult then
+			return rarity
+		end
+	end
+	return Config.Rarities[#Config.Rarities]
+end
+
 return Catalog

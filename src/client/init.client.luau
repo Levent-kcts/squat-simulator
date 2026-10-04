@@ -35,6 +35,29 @@ player.CameraMaxZoomDistance = Config.CameraMaxZoom
 
 local FONT = Enum.Font.FredokaOne
 
+-- Yeni/isteğe bağlı modüller korumalı yüklenir ve başlatılır: biri hata verirse oyunun geri kalanı çalışmaya devam eder
+local function loadOptional(name)
+	local module = script:FindFirstChild(name)
+	if not module then
+		return nil
+	end
+	local ok, result = pcall(require, module)
+	if not ok then
+		warn(`[Client] Could not load {name}: {result}`)
+		return nil
+	end
+	return result
+end
+
+local function safeInit(label, module, ...)
+	if module and module.init then
+		local ok, err = pcall(module.init, ...)
+		if not ok then
+			warn(`[Client] {label} init failed: {err}`)
+		end
+	end
+end
+
 local function create(className, props, parent)
 	local instance = Instance.new(className)
 	for key, value in props do
@@ -374,10 +397,13 @@ end
 ShoeShop.init()
 SkinShop.init()
 TrainingClient.init()
+safeInit("Juice", loadOptional("Juice"), screenGui)
+safeInit("OverheadTags", loadOptional("OverheadTags"))
 EggShop.init(screenGui)
 DevPanel.init(screenGui)
 PetFollowers.init()
 WallClient.init(onProgress)
+safeInit("Guide", loadOptional("Guide"), WallClient)
 
 -- =====================================================================
 -- HAREKET (tıklama / Auto Click)

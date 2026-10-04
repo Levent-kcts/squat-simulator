@@ -89,6 +89,9 @@ return {
 		AutosaveInterval = 30, -- saniye (ayrıca Win/satın alma/pet sonrası da hemen kaydedilir)
 	},
 
+	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
+	Guide = { MaxStage = 3 },
+
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
 	CameraMaxZoom = 40,
 
@@ -219,6 +222,14 @@ return {
 	},
 
 	-- Petler. mult = bacak kası çarpanına eklenen oran (0.1 = +%10). Hangi yumurtadan çıktıkları aşağıdaki Eggs listesindedir.
+	-- Pet nadirliği (çarpanına göre): yumurta açılış ekranında kart rengi ve etiket. maxMult: bu değerin ALTINDAKİ petler bu sınıftadır.
+	Rarities = {
+		{ name = "Common", maxMult = 0.3, color = Color3.fromRGB(185, 190, 205) },
+		{ name = "Rare", maxMult = 0.7, color = Color3.fromRGB(70, 170, 255) },
+		{ name = "Epic", maxMult = 1.2, color = Color3.fromRGB(180, 90, 255) },
+		{ name = "Legendary", maxMult = 3.5, color = Color3.fromRGB(255, 190, 40) },
+		{ name = "Mythic", maxMult = math.huge, color = Color3.fromRGB(255, 70, 140) },
+	},
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)
 	MaxOwnedPets = 50,
 	Pets = {

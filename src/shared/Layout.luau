@@ -61,6 +61,11 @@ function Layout.padZ(stage)
 	return Layout.wallZ(stage * cfg.GroupSize) - cfg.ButtonGap + 6
 end
 
+-- Win pedlerinin yatay konumu (sağda normal ped +padX, solda VIP pedi -padX): oda genişse köşelere yaklaşır, koridor genişliğinde eski yerinde kalır
+function Layout.padX()
+	return math.max(cfg.Width / 2 - 6, cfg.Width / 2 + (cfg.ChamberExtra or 0) - 11)
+end
+
 -- Pozisyon, index'inci duvarın önünde vuruş menzilinde mi? (duvarın ön yüzüne yatay mesafe)
 function Layout.withinReach(index, position)
 	local frontZ = Layout.wallZ(index) + cfg.Thickness / 2

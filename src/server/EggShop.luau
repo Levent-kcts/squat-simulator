@@ -116,9 +116,11 @@ function EggShop.init(notifyEvent)
 		end
 		lastOpen[player.UserId] = now
 
-		local ok, message = PlayerStats.hatchEgg(player, eggId, count)
-		notifyEvent:FireClient(player, ok, message)
-		return ok, message
+		local ok, message, results = PlayerStats.hatchEgg(player, eggId, count)
+		if not ok or not results then
+			notifyEvent:FireClient(player, ok, message) -- başarısızlık mesajı; başarıda istemci açılış ekranını gösterir
+		end
+		return ok, message, results
 	end
 end
 

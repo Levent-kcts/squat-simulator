@@ -15,6 +15,9 @@ local Format = require(Shared:WaitForChild("Format"))
 
 local EggShop = {}
 
+-- Açılış ekranı korumalı yüklenir: hata verirse yumurta açma yine çalışır (sadece sonuç ekranı görünmez)
+local okReveal, Reveal = pcall(require, script.Parent.Reveal)
+
 local GREEN = Color3.fromRGB(60, 255, 100) -- açabilirsin
 local RED = Color3.fromRGB(255, 50, 50) -- yeterli Win yok
 local GRAY = Color3.fromRGB(110, 110, 120) -- pet envanteri dolu
@@ -356,8 +359,19 @@ function EggShop.init(screenGui)
 			return false
 		end
 		opening = true
-		local ok = openFunction:InvokeServer(currentEgg.id, Config.EggMultiOptions[multiIndex])
+		-- Açılıştan önce sahip olunan petler: yeni gelenlere "NEW!" rozeti vermek için
+		local ownedBefore = {}
+		for id in string.gmatch(player:GetAttribute("OwnedPets") or "", "[^,]+") do
+			ownedBefore[id] = true
+		end
+		local ok, message, results = openFunction:InvokeServer(currentEgg.id, Config.EggMultiOptions[multiIndex])
 		opening = false
+		if ok and results and okReveal then
+			local shown, err = pcall(Reveal.show, screenGui, results, ownedBefore)
+			if not shown then
+				warn(`[Reveal] {err}`)
+			end
+		end
 		-- Sonuç mesajını sunucu bildirim olarak yollar; başarısızsa (Win bitti, envanter dolu) otomatiği kapat
 		if not ok then
 			autoOn = false
