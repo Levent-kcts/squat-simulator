@@ -197,6 +197,17 @@ return {
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
 	CameraMaxZoom = 40,
 
+	-- Işıklandırma ve ışık efekti (server/EnvironmentService). Kapalı mekanda aydınlığı ortam ışığı verir (karanlık/mavi hava istenmedi).
+	-- Bloom: ışık panelleri, neon ve parlak nesneler çevresine yumuşak bir parıltı yayar (referans oyundaki gibi). Çok parlak/bulanık gelirse
+	-- Intensity'yi düşür, Threshold'u yükselt; hiç parıltı yoksa tersini yap. Bloom.Enabled = false efekti tamamen kapatır.
+	Lighting = {
+		Brightness = 2,
+		Exposure = 0,
+		Ambient = Color3.fromRGB(172, 175, 196),
+		Bloom = { Enabled = true, Intensity = 0.5, Size = 24, Threshold = 0.9 },
+		Color = { Saturation = 0.1, Contrast = 0.06 }, -- hafif canlı renk (ColorCorrection); Saturation = 0 ve Contrast = 0 ise etkisiz
+	},
+
 	-- Başlangıç lobisi: spawn'ın bulunduğu geniş kapalı salon
 	Lobby = {
 		HalfWidth = 62, -- salonun yarı genişliği (stud; salon 124 x 130, referans fotoğraflardaki gibi derli toplu). Sol duvar ayakkabılar, sağ duvar antrenman alanı, arka duvar yumurtalar, ön duvar koridor

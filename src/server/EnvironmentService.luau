@@ -19,12 +19,36 @@ local EnvironmentService = {}
 function EnvironmentService.init()
 	-- Kapalı mekan: tavan güneşi keser, aydınlığı ORTAM ışığı verir. Karanlık/mavi havayı kaldırmak için ortam ışığı yüksek ve pozlama nötr;
 	-- koridorda ve Win odalarında ayrıca ışık paneli YOK (sahibi istemedi), orası da ortam ışığıyla aydınlıktır.
+	local light = Config.Lighting
 	Lighting.ClockTime = 14
-	Lighting.Brightness = 2
-	Lighting.ExposureCompensation = 0
-	Lighting.Ambient = Color3.fromRGB(172, 175, 196)
-	Lighting.OutdoorAmbient = Color3.fromRGB(172, 175, 196)
+	Lighting.Brightness = light.Brightness
+	Lighting.ExposureCompensation = light.Exposure
+	Lighting.Ambient = light.Ambient
+	Lighting.OutdoorAmbient = light.Ambient
 	Lighting.GlobalShadows = true
+
+	-- Işık efekti: parıltı (bloom) ve hafif renk canlılığı. Efektler Lighting'de durur ve tüm oyunculara görünür; eskileri silinir
+	for _, name in { "GameBloom", "GameColor" } do
+		local old = Lighting:FindFirstChild(name)
+		if old then
+			old:Destroy()
+		end
+	end
+	if light.Bloom.Enabled then
+		local bloom = Instance.new("BloomEffect")
+		bloom.Name = "GameBloom"
+		bloom.Intensity = light.Bloom.Intensity
+		bloom.Size = light.Bloom.Size
+		bloom.Threshold = light.Bloom.Threshold
+		bloom.Parent = Lighting
+	end
+	if light.Color.Saturation ~= 0 or light.Color.Contrast ~= 0 then
+		local color = Instance.new("ColorCorrectionEffect")
+		color.Name = "GameColor"
+		color.Saturation = light.Color.Saturation
+		color.Contrast = light.Color.Contrast
+		color.Parent = Lighting
+	end
 
 	local folder = Instance.new("Folder")
 	folder.Name = "Lobby"
