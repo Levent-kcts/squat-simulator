@@ -169,9 +169,24 @@ return {
 		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.25, speed = { 0.6, 0.65 } },
 	},
 
-	-- Arka plan müziği (döngüde çalar, "Sounds" anahtarı kapatınca susar). id boşsa müzik yok; Creator Store'dan beğendiğin bir müziğin
-	-- "rbxassetid://..." ID'sini yaz. Müzik sesi efektleri bastırmasın diye düşük tutulur.
-	Music = { id = "", volume = 0.25 },
+	-- Arka plan müziği: tracks listesindeki parçalar SIRAYLA çalar, liste bitince baştan başlar (sonsuz döngü). "Sounds" anahtarı kapatınca ses 0 olur.
+	-- Yüklenemeyen parça atlanır. Hepsi Creator Store'dan ücretsiz, sözsüz, neşeli parçalar (~22 dk); parça eklemek/çıkarmak için listeyi değiştir.
+	-- Müzik sesi efektleri bastırmasın diye düşük tutulur.
+	Music = {
+		volume = 0.18,
+		tracks = {
+			"rbxassetid://93310229093873", -- Green Hill Cubes BGM (2:05)
+			"rbxassetid://103462270700363", -- Blend and Bounce (2:53)
+			"rbxassetid://84770156902104", -- Mining Fun BGM (2:11)
+			"rbxassetid://101506812412180", -- Primary Color Party (2:18)
+			"rbxassetid://95159768281123", -- Craft & Jump BGM (2:00)
+			"rbxassetid://134096897250664", -- Gradient Hopscotch (2:09)
+			"rbxassetid://127582244484162", -- Sunny Mine Day BGM (2:02)
+			"rbxassetid://113182399122383", -- Color Wheel Spin (2:13)
+			"rbxassetid://87764582879259", -- Pixel Picnic BGM (2:10)
+			"rbxassetid://86374052601075", -- Swatch Dance (2:16)
+		},
+	},
 
 	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
 	Guide = { MaxStage = 3 },

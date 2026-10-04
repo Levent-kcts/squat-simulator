@@ -118,25 +118,57 @@ local function preload()
 	end)
 end
 
--- Arka plan müziğini başlatır (Config.Music.id doluysa). "Sounds" anahtarı kapanınca sesi 0 olur.
+-- Arka plan müziği: Config.Music.tracks sırayla çalar, liste bitince baştan başlar. Yüklenemeyen parça atlanır;
+-- hiçbiri çalmazsa döngü durur (sonsuz hızlı deneme olmasın). "Sounds" anahtarı kapanınca sesi 0 olur.
+local function playlist(music)
+	local tracks = music.tracks
+	local sound = Instance.new("Sound")
+	sound.Name = "Music"
+	sound.Looped = false
+	sound.Parent = SoundService
+	local function apply()
+		sound.Volume = if player:GetAttribute("SoundsOn") == false then 0 else (music.volume or 0.2)
+	end
+	apply()
+	player:GetAttributeChangedSignal("SoundsOn"):Connect(apply)
+
+	local index = 1
+	local skipped = 0 -- üst üste çalınamayan parça sayısı
+	while skipped < #tracks do
+		sound.SoundId = tracks[index]
+		local started = os.clock()
+		while not sound.IsLoaded and os.clock() - started < 15 do
+			task.wait(0.1)
+		end
+		if sound.IsLoaded and sound.TimeLength > 0 then
+			skipped = 0
+			-- Sıradaki parçayı çalarken önceden indir: geçişte boşluk kalmasın
+			local nextId = tracks[index % #tracks + 1]
+			task.spawn(function()
+				local probe = Instance.new("Sound")
+				probe.SoundId = nextId
+				pcall(ContentProvider.PreloadAsync, ContentProvider, { probe })
+				probe:Destroy()
+			end)
+			sound:Play()
+			sound.Ended:Wait()
+		else
+			skipped += 1
+			warn(`[Sfx] Müzik parçası yüklenemedi, atlanıyor: {tracks[index]}`)
+		end
+		index = index % #tracks + 1
+	end
+	warn("[Sfx] Hiçbir müzik parçası çalınamadı, müzik kapalı.")
+	sound:Destroy()
+end
+
 function Sfx.init()
 	task.spawn(preload)
 
 	local music = Config.Music
-	if not music or music.id == nil or music.id == "" then
-		return
+	if music and music.tracks and #music.tracks > 0 then
+		task.spawn(playlist, music)
 	end
-	local sound = Instance.new("Sound")
-	sound.Name = "Music"
-	sound.SoundId = music.id
-	sound.Looped = true
-	sound.Parent = SoundService
-	local function apply()
-		sound.Volume = if player:GetAttribute("SoundsOn") == false then 0 else (music.volume or 0.25)
-	end
-	apply()
-	player:GetAttributeChangedSignal("SoundsOn"):Connect(apply)
-	sound:Play()
 end
 
 return Sfx
