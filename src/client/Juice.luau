@@ -10,6 +10,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Format = require(Shared:WaitForChild("Format"))
+local Progression = require(Shared:WaitForChild("Progression"))
 
 local Juice = {}
 
@@ -317,7 +318,8 @@ function Juice.init(screenGui)
 	-- Başlangıçta level atlamak çok sık olur: büyük yazı en fazla 4 saniyede bir çıkar, küçük patlama her seferinde
 	local lastBanner = 0
 	level:GetPropertyChangedSignal("Value"):Connect(function()
-		local gained = level.Value > last.level
+		local previousLevel = last.level
+		local gained = level.Value > previousLevel
 		last.level = level.Value
 		if gained and ready() then
 			if os.clock() - lastBanner > 4 then
@@ -325,7 +327,8 @@ function Juice.init(screenGui)
 				Juice.banner("LEVEL UP!", GOLD)
 			end
 			Juice.celebrate(GOLD, 40)
-			sfx("LevelUp")
+			-- Her level atlayışında vücut büyür: kas aşaması da değiştiyse (yeni kas çıktı/irileşti) daha güçlü ses
+			sfx(if Progression.legStage(level.Value) > Progression.legStage(previousLevel) then "GrowBig" else "Grow")
 		end
 	end)
 

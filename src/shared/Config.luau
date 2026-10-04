@@ -136,9 +136,22 @@ return {
 	-- id = "" ise o olay sessiz kalır. volume 0-1, speed: { en yavaş, en hızlı } çalma hızı (her çalışta rastgele; ton çeşitliliği).
 	-- Aşağıdakiler geçici: Roblox'un kendi hazır sesleri. Daha güzel sesler için Creator Store'dan ses bulup id'leri değiştir.
 	Sounds = {
-		-- Squat / tekme: sade, kısa bir hava (whoosh) sesi; hareketin BAŞINDA çalar, kas kazanımında ayrıca ses yok. Roblox'un kendi UI whoosh sesleri.
-		Squat = { id = "rbxassetid://15675028888", volume = 0.25, speed = { 0.95, 1.1 } }, -- Roblox_UI_Whoosh_02 (0.5 sn, yumuşak)
-		Kick = { id = "rbxassetid://15675012262", volume = 0.28, speed = { 0.95, 1.1 } }, -- Roblox_UI_Whoosh_04 (0.35 sn)
+		-- Vücut büyümesi (her level atlayışında karakter büyür): Grow kısa bir güçlenme sesi, GrowBig yeni kas çıkınca/irileşince çalan daha güçlü ses.
+		-- Squat/tekme sesi YOK (gecikiyordu, sahibi kaldırttı). pick = "first": yüklenebilen ilk ses çalar (ses her seferinde aynı kalsın).
+		Grow = {
+			ids = { "rbxassetid://18613451236", "rbxassetid://96518360714287", "rbxassetid://114672007947933" },
+			pick = "first",
+			volume = 0.35,
+			speed = { 0.97, 1.05 },
+			gap = 0.4,
+		},
+		GrowBig = {
+			ids = { "rbxassetid://133977339172345", "rbxassetid://90395161583182", "rbxassetid://109916245799751" },
+			pick = "first",
+			volume = 0.5,
+			speed = { 0.97, 1.03 },
+			gap = 1,
+		},
 		-- Duvar kırılma: lego kırılma sesi (Creator Store'daki ücretsiz sesler; her seferinde biri rastgele seçilir, yüklenemeyen elenir).
 		-- ids bozulursa fallback çalar. gap: aynı sesin en sık çalma aralığı (bir vuruşta üst üste duvar kırılınca gürültü olmasın)
 		WallBreak = {
@@ -148,7 +161,6 @@ return {
 			speed = { 0.95, 1.1 },
 			gap = 0.3,
 		},
-		LevelUp = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.35, speed = { 1.9, 2.1 } },
 		Win = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 1.5, 1.6 } },
 		Rebirth = { id = "rbxasset://sounds/action_get_up.mp3", volume = 0.5, speed = { 0.7, 0.75 } },
 		Hatch = { id = "rbxasset://sounds/impact_water.mp3", volume = 0.35, speed = { 1.3, 1.5 } },

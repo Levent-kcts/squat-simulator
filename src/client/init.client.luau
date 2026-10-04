@@ -482,9 +482,6 @@ local function tryAction()
 
 	busyUntil = os.clock() + Config.MoveDuration[move]
 	Moves.play(character, move)
-	if Sfx then
-		pcall(Sfx.play, move) -- "Squat" / "Kick" hava sesi
-	end
 	clickEvent:FireServer()
 end
 

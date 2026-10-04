@@ -1,8 +1,8 @@
 -- Ses efektleri: Config.Sounds'taki olay adlarını çalar. Sol menüdeki "Sounds" anahtarı kapalıysa (SoundsOn = false) hiçbir şey çalmaz.
--- Bir olayın tek sesi (id) ya da rastgele seçilen birkaç sesi (ids) olabilir. Ses dosyası yüklenemezse (kaldırılmış, izin yok) elenir;
--- hepsi elenirse fallback çalar, o da yoksa o olay sessiz kalır. Oyun hiçbir durumda etkilenmez.
+-- Bir olayın tek sesi (id) ya da birkaç sesi (ids) olabilir: varsayılan rastgele seçilir, pick = "first" ise yüklenebilen ilki çalar.
+-- Ses dosyası yüklenemezse (kaldırılmış, izin yok) elenir; hepsi elenirse fallback çalar, o da yoksa o olay sessiz kalır.
+-- Sesler oyun başında BİR KERE yüklenir ve havuzdan çalınır (her seferinde yeni Sound kurulsaydı çalma gecikirdi). Oyun hiçbir durumda etkilenmez.
 local ContentProvider = game:GetService("ContentProvider")
-local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -15,7 +15,9 @@ local player = Players.LocalPlayer
 local rng = Random.new()
 local lastPlayed = {} -- [olay] = zaman: aynı ses saniyede çok sık çalıp kulağı yormasın
 local failed = {} -- [ses id'si] = true: yüklenemeyen sesler bir daha denenmez
+local pools = {} -- [ses id'si] = { Sound, ... }: önceden kurulmuş, yüklenmiş sesler
 local MIN_GAP = 0.06
+local POOL_SIZE = 3 -- aynı ses üst üste bindiğinde en fazla bu kadar kopya
 
 -- Bu seferlik çalınacak ses id'si (yüklenemeyenler elenir)
 local function pickId(def)
@@ -27,9 +29,39 @@ local function pickId(def)
 		end
 	end
 	if #usable > 0 then
+		if def.pick == "first" then
+			return usable[1]
+		end
 		return usable[rng:NextInteger(1, #usable)]
 	end
 	return def.fallback
+end
+
+local function newSound(id)
+	local sound = Instance.new("Sound")
+	sound.SoundId = id
+	sound.Parent = SoundService
+	return sound
+end
+
+-- Havuzdan çalmayan bir kopya verir; hepsi çalıyorsa yeni kopya kurar, havuz doluysa ilkini baştan çalar
+local function acquire(id)
+	local pool = pools[id]
+	if not pool then
+		pool = { newSound(id) }
+		pools[id] = pool
+	end
+	for _, sound in pool do
+		if not sound.IsPlaying then
+			return sound
+		end
+	end
+	if #pool < POOL_SIZE then
+		local sound = newSound(id)
+		table.insert(pool, sound)
+		return sound
+	end
+	return pool[1]
 end
 
 function Sfx.play(name)
@@ -50,43 +82,40 @@ function Sfx.play(name)
 	end
 	lastPlayed[name] = now
 
-	local sound = Instance.new("Sound")
-	sound.SoundId = id
+	local sound = acquire(id)
 	sound.Volume = def.volume or 0.5
 	local speed = def.speed
-	if speed then
-		sound.PlaybackSpeed = rng:NextNumber(speed[1], speed[2])
-	end
-	sound.Parent = SoundService
+	sound.PlaybackSpeed = if speed then rng:NextNumber(speed[1], speed[2]) else 1
+	sound.TimePosition = 0
 	sound:Play()
-	-- Süre bilinmeden silmemek için bitişte; yüklenemezse de 5 saniye sonra temizlenir
-	sound.Ended:Once(function()
-		sound:Destroy()
-	end)
-	Debris:AddItem(sound, 5)
 end
 
--- Tüm ses dosyalarını önceden yükler; yüklenemeyenleri işaretler (Sfx.play onları atlar)
+-- Tüm ses dosyalarını önceden kurar ve yükler; yüklenemeyenleri işaretler (Sfx.play onları atlar)
 local function preload()
-	local probes = {}
+	local sounds = {}
 	for _, def in Config.Sounds or {} do
+		local list = { def.fallback }
 		for _, id in def.ids or { def.id } do
-			if id ~= nil and id ~= "" and string.find(id, "^rbxassetid://") then
-				local probe = Instance.new("Sound")
-				probe.SoundId = id
-				table.insert(probes, probe)
+			table.insert(list, id)
+		end
+		for _, id in list do
+			if id ~= nil and id ~= "" and not pools[id] then
+				local sound = newSound(id)
+				pools[id] = { sound }
+				table.insert(sounds, sound)
 			end
 		end
 	end
-	pcall(ContentProvider.PreloadAsync, ContentProvider, probes, function(contentId, status)
+	pcall(ContentProvider.PreloadAsync, ContentProvider, sounds, function(contentId, status)
 		if status == Enum.AssetFetchStatus.Failure then
 			failed[contentId] = true
 			warn(`[Sfx] Ses yüklenemedi, atlanıyor: {contentId}`)
+			for _, sound in pools[contentId] or {} do
+				sound:Destroy()
+			end
+			pools[contentId] = nil
 		end
 	end)
-	for _, probe in probes do
-		probe:Destroy()
-	end
 end
 
 -- Arka plan müziğini başlatır (Config.Music.id doluysa). "Sounds" anahtarı kapanınca sesi 0 olur.
