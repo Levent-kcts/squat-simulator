@@ -64,6 +64,7 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 - Koridor odasında (WallService) bloklar birbirine TAM yüzlerinde değer: yüzeyleri aynı düzlemde üst üste binerse çıkıntılı doku titrer, 0.5 stud bile boşluk kalırsa dışarısı mavi görünür (yan duvar, omuz, zemin/tavan şeritleri bu yüzden yüz hesabıyla kuruldu). Lobi/koridor girişinde de parçalar üst üste binmemeli (z-fighting); Win pedi etiketleri stud boyutlu (BillboardGui scale).
 - `Config.Save.StoreName` değişirse herkesin kaydı sıfırlanır.
 - Ayakkabı rengi ayağa Neon malzemeyle yazılır: bu avatarda (R15, dokusuz mesh) mat malzemede ayak/alt bacak rengi ekranda DEĞİŞMİYORDU, oysa sunucu ve istemci `Color` değerini doğru okuyordu (BodyColors, doku, UsePartColor, ikinci parça denendi; nedeni bulunamadı). Skin boyaması (tüm vücut) ve Neon çalışıyor. Bu mat ayakkabı yolunu tekrar denemeden önce bunu bil.
+- **Işıklandırma:** kapalı mekanda tavan güneşi keser, aydınlığı ortam ışığı verir; bu yüzden `EnvironmentService` ortam ışığını yüksek (172,175,196), pozlamayı nötr (0) tutar (eskiden pozlama -0.4 ve koyu mavi ortam ışığı sahneyi karanlık gösteriyordu). Tavan ışık panelleri yalnızca lobide, küçük (7x7) ve seyrek (16 adet); koridor ve Win odalarında hiç ışık paneli yok.
 
 ## 5. Yapılacaklar
 

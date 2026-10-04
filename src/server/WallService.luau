@@ -288,9 +288,6 @@ function WallService.init(notify)
 				Build.block(folder, `ChamberRoof_{stage}`, Vector3.new(extra, 1, roofTop - roofBottom), Vector3.new(stripX, ceiling + 0.5, (roofTop + roofBottom) / 2), color, Enum.Material.Plastic, true)
 			end
 		end
-		if hasChamber then
-			Build.ceilingLight(folder, `ChamberLight_{stage}`, Vector3.new(14, 0.5, 14), Vector3.new(0, ceiling - 0.25, (nearFace + farFace) / 2), 40)
-		end
 		Build.block(
 			folder,
 			`Roof_{stage}`,
@@ -299,13 +296,6 @@ function WallService.init(notify)
 			color,
 			Enum.Material.Plastic,
 			true
-		)
-		Build.ceilingLight(
-			folder,
-			`Light_{stage}`,
-			Vector3.new(14, 0.5, 14),
-			Vector3.new(0, ceiling - 0.25, sectionCenter),
-			40
 		)
 	end
 	Build.block(

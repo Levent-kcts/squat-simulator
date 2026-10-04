@@ -17,12 +17,13 @@ local TILE_COLOR = Color3.fromRGB(140, 150, 205)
 local EnvironmentService = {}
 
 function EnvironmentService.init()
-	-- Kapalı mekan: ortam ışığı yüksek olmalı, yoksa tavanın altı simsiyah kalır
+	-- Kapalı mekan: tavan güneşi keser, aydınlığı ORTAM ışığı verir. Karanlık/mavi havayı kaldırmak için ortam ışığı yüksek ve pozlama nötr;
+	-- koridorda ve Win odalarında ayrıca ışık paneli YOK (sahibi istemedi), orası da ortam ışığıyla aydınlıktır.
 	Lighting.ClockTime = 14
-	Lighting.Brightness = 1
-	Lighting.ExposureCompensation = -0.4
-	Lighting.Ambient = Color3.fromRGB(95, 100, 125)
-	Lighting.OutdoorAmbient = Color3.fromRGB(95, 100, 125)
+	Lighting.Brightness = 2
+	Lighting.ExposureCompensation = 0
+	Lighting.Ambient = Color3.fromRGB(172, 175, 196)
+	Lighting.OutdoorAmbient = Color3.fromRGB(172, 175, 196)
 	Lighting.GlobalShadows = true
 
 	local folder = Instance.new("Folder")
@@ -129,18 +130,19 @@ function EnvironmentService.init()
 		Enum.Material.Plastic,
 		true
 	)
-	local z = back - 20
-	while z > zFront + 10 do
-		for _, x in { -40, -13, 13, 40 } do
+	-- Tavan ışık panelleri: salona oranla küçük (7x7), seyrek ızgara (16 adet)
+	local z = back - 18
+	while z > zFront + 8 do
+		for _, x in { -42, -14, 14, 42 } do
 			Build.ceilingLight(
 				folder,
 				"LobbyLight",
-				Vector3.new(16, 0.5, 16),
+				Vector3.new(7, 0.5, 7),
 				Vector3.new(x, ceiling - 0.25, z),
-				45
+				40
 			)
 		end
-		z -= 50
+		z -= 32
 	end
 
 	-- Koridor girişinin üstünde yönlendirme tabelası (lobi içinden okunur)

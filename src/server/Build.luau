@@ -33,12 +33,12 @@ function Build.ceilingLight(parent, name, size, position, range)
 	panel.Size = size
 	panel.Position = position
 	panel.Material = Enum.Material.Neon
-	panel.Color = Color3.fromRGB(255, 255, 255)
+	panel.Color = Color3.fromRGB(228, 231, 242) -- saf beyaz Neon aşırı parlıyordu
 	panel.Parent = parent
 
 	local light = Instance.new("PointLight")
 	light.Range = range
-	light.Brightness = 0.5
+	light.Brightness = 0.4
 	light.Color = Color3.fromRGB(235, 240, 255)
 	light.Shadows = false
 	light.Parent = panel
