@@ -80,6 +80,9 @@ local function sanitize(raw)
 			end
 		end
 	end
+	if type(raw.MusicLevel) == "number" then
+		data.MusicLevel = math.clamp(math.floor(raw.MusicLevel), 0, Config.Music.maxLevel)
+	end
 	if type(raw.LoginStreak) == "number" then
 		data.LoginStreak = math.max(0, math.floor(raw.LoginStreak))
 	end
@@ -310,6 +313,7 @@ local function save(player)
 		LastSeen = os.time(),
 		LastLoginDay = profile.lastLoginDay,
 		LoginStreak = profile.loginStreak,
+		MusicLevel = profile.musicLevel,
 		Redeemed = profile.redeemed,
 		Receipts = profile.receipts,
 		Pets = profile.pets,
@@ -453,6 +457,7 @@ local function setup(player)
 		claimedGifts = {}, -- oyun süresi ödülleri (bu oturum)
 		lastLoginDay = 0, -- günlük giriş ödülü: son giriş günü (UTC gün numarası) ve art arda gün sayısı
 		loginStreak = 0,
+		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		redeemed = {}, -- kullanılmış kodlar
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
@@ -474,6 +479,8 @@ local function setup(player)
 	profile.skins = data.Skins
 	profile.equippedSkin = data.EquippedSkin
 	profile.redeemed = data.Redeemed
+	profile.musicLevel = data.MusicLevel
+	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	profile.receipts = data.Receipts
 	profile.pets = data.Pets
 	profile.trails = data.Trails
@@ -935,6 +942,18 @@ function PlayerStats.hatchEgg(player, eggId, count)
 		table.insert(parts, `Deleted {#deleted}: {summarize(deleted)}`)
 	end
 	return true, table.concat(parts, " | "), results
+end
+
+-- Teypin müzik ses kademesini kaydeder (istemci değiştirdikten kısa süre sonra bildirir). Dönüş: başarılı mı
+function PlayerStats.setMusicLevel(player, level)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or type(level) ~= "number" or level ~= level then
+		return false
+	end
+	profile.musicLevel = math.clamp(math.floor(level), 0, Config.Music.maxLevel)
+	player:SetAttribute("MusicLevel", profile.musicLevel)
+	requestSave(player)
+	return true
 end
 
 -- Bir petin "yumurtadan çıkınca anında sil" işaretini açar/kapatır. Dönüş: başarılı mı, mesaj

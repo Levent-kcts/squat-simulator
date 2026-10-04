@@ -41,7 +41,7 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
   hemen takılır, sahip olunana basınca takılır, istenen skin seçilebilir), karakter ve kaslar o renge boyanır (AppearanceCleaner.paint, LegGrowth); oyuncunun gömleği KALIR, sadece ten rengi değişir
   (Config.Appearance.HideShirtWithSkin = true yapılırsa gömlek dokusu da gizlenir; skin kalkınca asıl renkler geri gelir), çarpan bacak kası kazancına girer (Config.Skins mult). Rebirth ayakkabı gibi skinleri de sıfırlar.
   Sadece fantezi renkler kullan: gerçek ten tonlarını fiyat/güç sıralamasına sokma.
-- Bacak kası, Win, eşyalar, skinler ve petler DataStore ile kaydedilir: 30 sn'de bir otomatik, ayrıca Win/satın alma/pet
+- Bacak kası, Win, eşyalar, skinler, petler ve teypin müzik ses kademesi (MusicLevel; rebirth sıfırlamaz) DataStore ile kaydedilir: 30 sn'de bir otomatik, ayrıca Win/satın alma/pet
   sonrası (en az 10 sn arayla) ve oyuncu çıkarken. Studio'da kayıt için oyun yayınlanmış ve API erişimi açık olmalı.
 - Lobi düzeni (124x130, spawn tam ortada; referans fotoğraflara göre küçültüldü: yumurtalar da Shelf standında, antrenman pedi 9 stud, ayakkabı/skin rafları fotoğraflardan ölçülü olduğu için değişmedi): ÖN duvar koridor (kırılan duvarlar), ARKA duvar yumurtalar, SOL duvar (duvarlara bakarken sol) iki raf: ayakkabılar (Config.Lobby.ShoeShelfZ) ve skinler (SkinShelfZ) yan yana, koridor girişi ucuna yaslı; sol duvarın arka ucu (yumurta tarafındaki sol köşe, z > 41) YENİ ŞEYLER İÇİN BOŞ BIRAKILDI (sahibi sonra dolduracak), SAĞ duvar antrenman alanı (aşağıdaki ANTRENMAN kuralı).
 - Ortam: kapalı, aydınlık, lego çıkıntılı pastel salon + koridor. Kırılan duvarlar canlı şeker renkli (Plastic).

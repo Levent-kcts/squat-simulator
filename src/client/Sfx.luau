@@ -156,13 +156,30 @@ function Sfx.getMusicMaxLevel()
 	return musicMaxLevel()
 end
 
-function Sfx.setMusicLevel(level)
+-- Ses kademesini ayarlar. silent = true ise sunucuya kaydedilmez (kayıttan okunan değer için).
+-- Kullanıcı değişikliği 2 sn sessiz kalınca sunucuya yollanır (art arda tıklamalar tek istek olur).
+local saveToken = 0
+local function scheduleSave()
+	saveToken += 1
+	local token = saveToken
+	task.delay(2, function()
+		local shop = ReplicatedStorage:FindFirstChild("Shop")
+		if token == saveToken and shop then
+			pcall(shop.InvokeServer, shop, "SetMusicLevel", musicLevel)
+		end
+	end)
+end
+
+function Sfx.setMusicLevel(level, silent)
 	level = math.clamp(math.floor(level + 0.5), 0, musicMaxLevel())
 	if level == musicLevel then
 		return
 	end
 	musicLevel = level
 	applyMusicVolume()
+	if not silent then
+		scheduleSave()
+	end
 	for _, listener in levelListeners do
 		task.spawn(listener, level)
 	end
@@ -188,6 +205,22 @@ function Sfx.onMusicLevelChanged(listener)
 	table.insert(levelListeners, listener)
 end
 
+-- Sunucudaki kayıtlı ses kademesini uygular (oyuncu verisi yüklenince MusicLevel özniteliği gelir)
+local function syncSavedLevel()
+	local saved = player:GetAttribute("MusicLevel")
+	if type(saved) == "number" then
+		Sfx.setMusicLevel(saved, true)
+	end
+end
+
+local function waitForData(timeout)
+	local waited = 0
+	while player:GetAttribute("DataLoaded") ~= true and waited < timeout do
+		task.wait(0.2)
+		waited += 0.2
+	end
+end
+
 local function playlist(music)
 	local tracks = music.tracks
 	local sound = Instance.new("Sound")
@@ -197,6 +230,10 @@ local function playlist(music)
 	musicSound = sound
 	applyMusicVolume()
 	player:GetAttributeChangedSignal("SoundsOn"):Connect(applyMusicVolume)
+
+	-- İlk parça, kayıtlı ses kademesiyle başlasın (veri yüklenmezse en fazla 10 sn beklenir)
+	waitForData(10)
+	syncSavedLevel()
 
 	local index = 1
 	local skipped = 0 -- üst üste çalınamayan parça sayısı
@@ -243,6 +280,12 @@ end
 
 function Sfx.init()
 	task.spawn(preload)
+
+	-- Veri geç yüklenirse de kayıtlı kademe uygulansın
+	task.spawn(function()
+		waitForData(60)
+		syncSavedLevel()
+	end)
 
 	local music = Config.Music
 	if music and music.tracks and #music.tracks > 0 then
