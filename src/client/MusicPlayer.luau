@@ -1,6 +1,6 @@
--- Teyp (müzik çalar): sağ altta. Ses kademesini açıp kısar (- / +, ya da çubuklara tıkla), sonraki şarkıya geçer (NEXT),
--- şarkı adı pencerede kayan yazıyla görünür. Müziği client/Sfx çalar; burası sadece arayüzdür.
--- "Sounds" anahtarı kapalıyken pencere "SOUNDS OFF" yazar; + / NEXT / çubuklar sesi geri açar.
+-- Teyp (müzik çalar): sağ altta. Üstte kaset penceresi (şarkı adı kayan yazıyla), altta solda önceki / duraklat-devam / sonraki,
+-- sağda ses kademesi (- / çubuklar / +). Müziği client/Sfx çalar; burası sadece arayüzdür.
+-- "Sounds" anahtarı kapalıyken pencere "SOUNDS OFF" yazar; butonlara basmak sesi geri açar.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -12,8 +12,13 @@ local MusicPlayer = {}
 
 local FONT = Enum.Font.FredokaOne
 local MARQUEE_SPEED = 55 -- kayan yazının hızı (piksel/sn)
-local BODY_WIDTH = 252
-local BODY_HEIGHT = 98
+local BODY_WIDTH = 296
+local BODY_HEIGHT = 100
+
+local ICON_COLOR = Color3.fromRGB(245, 245, 250) -- önceki/sonraki simgeleri ve orta düğmenin dolgusu
+local DARK = Color3.fromRGB(34, 36, 46) -- orta düğmedeki duraklat/oynat simgesi
+local LIME = Color3.fromRGB(120, 255, 150)
+local AMBER = Color3.fromRGB(255, 215, 90)
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -32,6 +37,28 @@ local function text(parent, props, strokeThickness)
 	local label = create("TextLabel", props, parent)
 	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
 	return label
+end
+
+-- Üçgen simgesi (yazı karakterine güvenmeden, ince dikey şeritlerden): parent'ın ortasına çizilir.
+-- pointRight = true ise sağa, değilse sola bakar. offsetX: şeritlerin başlangıcı (parent'ın solundan)
+local STRIPS = 8
+local function triangle(parent, pointRight, size, color, offsetX)
+	local width = size * 0.9
+	local stripWidth = width / STRIPS
+	for i = 0, STRIPS - 1 do
+		local progress = (i + 0.5) / STRIPS
+		if not pointRight then
+			progress = 1 - progress
+		end
+		create("Frame", {
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, offsetX + i * stripWidth, 0.5, 0),
+			Size = UDim2.fromOffset(stripWidth + 0.6, math.max(1.5, size * (1 - progress))),
+			BackgroundColor3 = color,
+			BorderSizePixel = 0,
+		}, parent)
+	end
+	return width
 end
 
 -- Ses çubuğu rengi: düşük kademe yeşil, orta sarı, yüksek turuncu
@@ -64,7 +91,7 @@ function MusicPlayer.init(screenGui)
 	-- Kaset penceresi: şarkı adı sağdan sola kayar
 	local window = create("Frame", {
 		Position = UDim2.fromOffset(10, 10),
-		Size = UDim2.new(1, -20, 0, 32),
+		Size = UDim2.new(1, -20, 0, 30),
 		BackgroundColor3 = Color3.fromRGB(14, 16, 24),
 		ClipsDescendants = true,
 	}, body)
@@ -74,7 +101,7 @@ function MusicPlayer.init(screenGui)
 		BackgroundTransparency = 1,
 		Font = FONT,
 		TextSize = 20,
-		TextColor3 = Color3.fromRGB(120, 255, 150),
+		TextColor3 = LIME,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextWrapped = false,
 		AutomaticSize = Enum.AutomaticSize.X,
@@ -99,6 +126,13 @@ function MusicPlayer.init(screenGui)
 		marquee.Position = UDim2.fromOffset(marqueeX, 0)
 	end)
 
+	-- Sesler kapalıysa açar (teyp butonlarına basmak "dinlemek istiyorum" demektir)
+	local function wakeSounds()
+		if player:GetAttribute("SoundsOn") == false then
+			player:SetAttribute("SoundsOn", true)
+		end
+	end
+
 	local function refreshText()
 		if player:GetAttribute("SoundsOn") == false then
 			scrolling = false
@@ -120,15 +154,134 @@ function MusicPlayer.init(screenGui)
 			marquee.Text = label
 			resetMarquee()
 		end
-		marquee.TextColor3 = Color3.fromRGB(120, 255, 150)
-		scrolling = true
+		-- Duraklatılınca yazı durur ve sarıya döner
+		local paused = Sfx.isPaused()
+		marquee.TextColor3 = if paused then AMBER else LIME
+		scrolling = not paused
 	end
 
-	-- Alt sıra: [-] [ses çubukları] [+] [NEXT]
-	local function makeButton(x, width, color, caption)
+	-- ---- Alt sıra, sol: önceki / duraklat-devam / sonraki ----
+	local ROW_TOP, ROW_HEIGHT = 46, 44
+
+	-- Şeffaf simge butonu (üzerine gelince hafif parlar, basınca küçülür)
+	local function makeIconButton(x, width, height)
 		local button = create("TextButton", {
-			Position = UDim2.fromOffset(x, 50),
-			Size = UDim2.fromOffset(width, 38),
+			Position = UDim2.fromOffset(x, ROW_TOP + (ROW_HEIGHT - height) / 2),
+			Size = UDim2.fromOffset(width, height),
+			Text = "",
+			AutoButtonColor = false,
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			BackgroundTransparency = 1,
+		}, body)
+		create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
+		local scale = create("UIScale", { Scale = 1 }, button)
+		button.MouseEnter:Connect(function()
+			button.BackgroundTransparency = 0.82
+		end)
+		button.MouseLeave:Connect(function()
+			button.BackgroundTransparency = 1
+			scale.Scale = 1
+		end)
+		button.MouseButton1Down:Connect(function()
+			scale.Scale = 0.88
+		end)
+		button.MouseButton1Up:Connect(function()
+			scale.Scale = 1
+		end)
+		return button
+	end
+
+	-- Çift üçgen (◀◀ / ▶▶), butonun ortasında
+	local function doubleTriangle(button, pointRight)
+		local size = 15
+		local total = size * 0.9 * 2 - 3 -- iki üçgen biraz iç içe
+		local start = 34 / 2 - total / 2 -- butonlar 34 piksel genişliğinde
+		triangle(button, pointRight, size, ICON_COLOR, start)
+		triangle(button, pointRight, size, ICON_COLOR, start + size * 0.9 - 3)
+	end
+
+	local previousButton = makeIconButton(10, 34, 34)
+	doubleTriangle(previousButton, false)
+	local nextButton = makeIconButton(96, 34, 34)
+	doubleTriangle(nextButton, true)
+
+	-- Orta düğme: yuvarlak, içinde duraklat (iki çubuk) ya da oynat (üçgen) simgesi
+	local playButton = create("TextButton", {
+		Position = UDim2.fromOffset(48, ROW_TOP),
+		Size = UDim2.fromOffset(44, ROW_HEIGHT),
+		Text = "",
+		AutoButtonColor = false,
+		BackgroundColor3 = ICON_COLOR,
+	}, body)
+	create("UICorner", { CornerRadius = UDim.new(1, 0) }, playButton)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, playButton)
+	local playScale = create("UIScale", { Scale = 1 }, playButton)
+	playButton.MouseButton1Down:Connect(function()
+		playScale.Scale = 0.92
+	end)
+	playButton.MouseButton1Up:Connect(function()
+		playScale.Scale = 1
+	end)
+	playButton.MouseLeave:Connect(function()
+		playScale.Scale = 1
+	end)
+
+	local pauseIcon = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(18, 20),
+		BackgroundTransparency = 1,
+	}, playButton)
+	for _, x in { 0, 11 } do
+		local bar = create("Frame", {
+			Position = UDim2.fromOffset(x, 0),
+			Size = UDim2.fromOffset(7, 20),
+			BackgroundColor3 = DARK,
+			BorderSizePixel = 0,
+		}, pauseIcon)
+		create("UICorner", { CornerRadius = UDim.new(0, 2) }, bar) -- köşeleri hafif yuvarlak
+	end
+	local playIcon = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.5, 1, 0.5, 0), -- üçgen görsel olarak ortada dursun diye biraz sağda
+		Size = UDim2.fromOffset(18, 22),
+		BackgroundTransparency = 1,
+		Visible = false,
+	}, playButton)
+	triangle(playIcon, true, 22, DARK, 0)
+
+	local function refreshPlayIcon()
+		local paused = Sfx.isPaused()
+		pauseIcon.Visible = not paused
+		playIcon.Visible = paused
+	end
+
+	previousButton.MouseButton1Click:Connect(function()
+		wakeSounds()
+		Sfx.previousTrack()
+	end)
+	nextButton.MouseButton1Click:Connect(function()
+		wakeSounds()
+		Sfx.nextTrack()
+	end)
+	playButton.MouseButton1Click:Connect(function()
+		wakeSounds()
+		Sfx.togglePause()
+	end)
+
+	-- İki bölüm arasına ince ayraç
+	create("Frame", {
+		Position = UDim2.fromOffset(136, ROW_TOP + 6),
+		Size = UDim2.fromOffset(2, ROW_HEIGHT - 12),
+		BackgroundColor3 = Color3.fromRGB(88, 94, 120),
+		BorderSizePixel = 0,
+	}, body)
+
+	-- ---- Alt sıra, sağ: ses kademesi [-] [çubuklar] [+] ----
+	local function makeVolumeButton(x, color, caption)
+		local button = create("TextButton", {
+			Position = UDim2.fromOffset(x, ROW_TOP + 5),
+			Size = UDim2.fromOffset(28, 34),
 			Text = "",
 			AutoButtonColor = true,
 			BackgroundColor3 = color,
@@ -145,17 +298,8 @@ function MusicPlayer.init(screenGui)
 		return button
 	end
 
-	-- Sesi açmak/skip için: ses kapalıysa önce açılır
-	local function wakeSounds()
-		if player:GetAttribute("SoundsOn") == false then
-			player:SetAttribute("SoundsOn", true)
-		end
-	end
-
-	local minus = makeButton(10, 36, Color3.fromRGB(235, 70, 90), "-")
-	local plus = makeButton(148, 36, Color3.fromRGB(70, 200, 100), "+")
-	local nextButton = makeButton(190, 52, Color3.fromRGB(70, 140, 255), "NEXT")
-
+	local minus = makeVolumeButton(146, Color3.fromRGB(235, 70, 90), "-")
+	local plus = makeVolumeButton(258, Color3.fromRGB(70, 200, 100), "+")
 	minus.MouseButton1Click:Connect(function()
 		Sfx.setMusicLevel(Sfx.getMusicLevel() - 1)
 	end)
@@ -163,21 +307,17 @@ function MusicPlayer.init(screenGui)
 		wakeSounds()
 		Sfx.setMusicLevel(Sfx.getMusicLevel() + 1)
 	end)
-	nextButton.MouseButton1Click:Connect(function()
-		wakeSounds()
-		Sfx.nextTrack()
-	end)
 
 	-- Ses çubukları (merdiven gibi büyür); tıklanan çubuğun kademesine ayarlanır
 	local pips = {}
-	local PIP_WIDTH, PIP_GAP = 7, 2
+	local PIP_WIDTH, PIP_GAP = 6, 2
 	local pipArea = create("Frame", {
-		Position = UDim2.fromOffset(52, 50),
-		Size = UDim2.fromOffset(maxLevel * (PIP_WIDTH + PIP_GAP) - PIP_GAP, 38),
+		Position = UDim2.fromOffset(178, ROW_TOP + 5),
+		Size = UDim2.fromOffset(maxLevel * (PIP_WIDTH + PIP_GAP) - PIP_GAP, 34),
 		BackgroundTransparency = 1,
 	}, body)
 	for index = 1, maxLevel do
-		local height = 8 + (index - 1) * (30 / math.max(1, maxLevel - 1))
+		local height = 7 + (index - 1) * (27 / math.max(1, maxLevel - 1))
 		local pip = create("TextButton", {
 			AnchorPoint = Vector2.new(0, 1),
 			Position = UDim2.new(0, (index - 1) * (PIP_WIDTH + PIP_GAP), 1, 0),
@@ -204,8 +344,13 @@ function MusicPlayer.init(screenGui)
 
 	Sfx.onTrackChanged(refreshText)
 	Sfx.onMusicLevelChanged(refreshPips)
+	Sfx.onPausedChanged(function()
+		refreshPlayIcon()
+		refreshText()
+	end)
 	player:GetAttributeChangedSignal("SoundsOn"):Connect(refreshText)
 	refreshPips()
+	refreshPlayIcon()
 	refreshText()
 end
 

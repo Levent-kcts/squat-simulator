@@ -119,7 +119,7 @@ local function preload()
 end
 
 -- =====================================================================
--- ARKA PLAN MÜZİĞİ (arayüzü client/MusicPlayer: ses kademesi, sonraki şarkı, şarkı adı)
+-- ARKA PLAN MÜZİĞİ (arayüzü client/MusicPlayer: ses kademesi, duraklat, önceki/sonraki şarkı, şarkı adı)
 -- =====================================================================
 -- Config.Music.tracks sırayla çalar, liste bitince baştan başlar. Yüklenemeyen parça atlanır; hiçbiri çalmazsa döngü durur
 -- (sonsuz hızlı deneme olmasın). "Sounds" anahtarı kapanınca müziğin sesi 0 olur.
@@ -129,6 +129,9 @@ local currentTrack = { name = "", index = 0, total = 0 } -- çalan (ya da yükle
 local trackListeners = {}
 local levelListeners = {}
 local skipRequested = false
+local pendingStep = 1 -- bir sonraki parça için yön: +1 sonraki, -1 önceki
+local musicPaused = false
+local pauseListeners = {}
 
 local function musicMaxLevel()
 	return (Config.Music and Config.Music.maxLevel) or 10
@@ -190,11 +193,52 @@ function Sfx.getTrack()
 	return currentTrack
 end
 
-function Sfx.nextTrack()
+-- Duraklatma durumunu değiştirir (müzik çalar dinleyicilerine haber verir)
+local function setPaused(paused)
+	if musicPaused == paused then
+		return
+	end
+	musicPaused = paused
+	if musicSound then
+		if paused then
+			musicSound:Pause()
+		elseif musicSound.IsPaused then
+			musicSound:Resume()
+		end
+	end
+	for _, listener in pauseListeners do
+		task.spawn(listener, paused)
+	end
+end
+
+function Sfx.isPaused()
+	return musicPaused
+end
+
+function Sfx.togglePause()
+	setPaused(not musicPaused)
+end
+
+-- Sonraki / önceki parçaya geç. Duraklatılmışsa yeni parça çalmaya başlar.
+local function skipTrack(step)
+	pendingStep = step
 	skipRequested = true
+	setPaused(false)
 	if musicSound then
 		musicSound:Stop()
 	end
+end
+
+function Sfx.nextTrack()
+	skipTrack(1)
+end
+
+function Sfx.previousTrack()
+	skipTrack(-1)
+end
+
+function Sfx.onPausedChanged(listener)
+	table.insert(pauseListeners, listener)
 end
 
 function Sfx.onTrackChanged(listener)
@@ -258,11 +302,19 @@ local function playlist(music)
 				probe:Destroy()
 			end)
 			setTrack(track.name, index, #tracks)
-			sound:Play()
-			-- Parça bitene ya da "sonraki" istenene kadar bekle (çalmaya başlaması için 3 sn tolerans)
-			local began = os.clock()
-			while not skipRequested and (sound.IsPlaying or os.clock() - began < 3) do
+			-- Duraklatılmışken parça başlamaz; devam edilince çalar
+			while musicPaused and not skipRequested do
 				task.wait(0.2)
+			end
+			if not skipRequested then
+				if not sound.IsPlaying then
+					sound:Play()
+				end
+				-- Parça bitene, duraklatılana ya da önceki/sonraki istenene kadar bekle (çalmaya başlaması için 3 sn tolerans)
+				local began = os.clock()
+				while not skipRequested and (sound.IsPlaying or musicPaused or os.clock() - began < 3) do
+					task.wait(0.2)
+				end
 			end
 			skipRequested = false
 		else
@@ -270,7 +322,8 @@ local function playlist(music)
 			warn(`[Sfx] Müzik parçası yüklenemedi, atlanıyor: {track.id}`)
 		end
 		sound:Stop()
-		index = index % #tracks + 1
+		index = (index - 1 + pendingStep) % #tracks + 1
+		pendingStep = 1
 	end
 	warn("[Sfx] Hiçbir müzik parçası çalınamadı, müzik kapalı.")
 	setTrack("No music", 0, 0)
