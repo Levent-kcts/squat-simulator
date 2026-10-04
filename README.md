@@ -1,0 +1,71 @@
+# Squat Simulator (Roblox) - Proje Devir Notları
+
+Bu dosya, konuşma/oturum sıfırlandığında **nerede kaldığımızı** hatırlamak için yazıldı. Kurallar ve dosya yapısı için ayrıca `CLAUDE.md` var (Claude onu her oturumda okur). Burası "proje bugün ne durumda, ne yapılacak" özetidir.
+
+- Proje sahibi: IT öğrencisi, Roblox deneyimi yok. Sohbet **Türkçe**, oyun içindeki TÜM yazılar **İngilizce**. Kod yorumları Türkçe.
+- Kodu Claude yazar, sahibi Studio'da dener; ekran görüntüsü ve Output'taki kırmızı hata yazılarını yollar.
+- Oyunun adı: **Squat Simulator**. Roblox'taki adı yayınlarken sahibi girecek.
+
+## 1. Çalıştırma (her oturum başında)
+
+1. Proje klasöründe: `rojo serve`  (Rojo/Rokit kurulu; Claude'un kabuğunda PATH'e `%USERPROFILE%\.rokit\bin` eklenir)
+2. Roblox Studio'da Baseplate aç, Rojo eklentisinden **Connect**.
+3. **Play**'e bas. Harita/arayüz Play'de kodla üretilir; Edit modunda sadece script'ler görünür.
+4. Hata olursa: View > Output'taki kırmızı satırlar. Studio'nun log dosyası da bakılabilir: `%LOCALAPPDATA%\Roblox\logs` (en yeni `*Studio*` dosyası, "CreatorError" satırları).
+5. Kodda kontrol: `rojo build -o x.rbxl` sadece proje yapısını doğrular, Luau sözdizimini DENETLEMEZ. Bu yüzden ayrıca proje klasöründe `python tools/check.py` çalıştır (resmi `luau-analyze` + yapı denetleyicisi; analizci `%USERPROFILE%\.luau\luau-analyze.exe` konumunda, yoksa luau-lang/luau GitHub sürümlerinden `luau-windows.zip` indirilip oraya açılır). Hata olursa Studio'da ekran boş kalır; Output'ta `Expected <eof>` gibi satırlar çıkar.
+
+Kayıt (DataStore) Studio'da şunlar olmadan çalışmaz: oyunu yayınlamak (File > Publish to Roblox) ve Home > Game Settings > Security > "Enable Studio Access to API Services". Çalışmazsa sol altta küçük turuncu uyarı çıkar, ilerleme kaydedilmez (bu bilerek böyle, eski veri silinmesin diye).
+
+Test için DEV paneli (sağ üstte, sadece Studio/oyun sahibi): level, rebirth, Win, kas, ayakkabı, skin, pet, duvar atlatma, RESET ALL. `Config.DevTools.Enabled = false` yaparak kapatılır (yayından önce önerilir).
+
+## 2. Oyun özeti
+
+Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı lobi. Oyuncu ekrana tıklar; karakter duvara yakınsa **tekme**, uzaksa **squat** yapar. Hareket bitince **bacak kası** artar ve duvara hasar gider.
+
+- Bacak kası kazancı = 1 x petler x level çarpanı x rebirth çarpanı x aura x **skin** x süreli güçlendirme. **Ayakkabılar kazancı etkilemez.**
+- Duvara hasar = toplam bacak kası x ayakkabı hasar çarpanı.
+- Bir hareket sürerken yeni tıklama yok sayılır (sunucu da zorlar); puan hareket SONUNDA verilir. Havadayken hareket başlamaz.
+- **Level toplam bacak kasından hesaplanır** (1->2: 10 kas, 10->11: 22 kas, birikerek). Level sınırı = 20 + 10 x rebirth. Sınırda çubuk "MAX" yazar.
+- **Rebirth**: level 1, bacak kası 0 ve TÜM Win 0 olur, duvarlar baştan; ayakkabılar ve skinler de sıfırlanır (petler, iz ve aura korunur); kalıcı çarpan (1 + 0.5 x rebirth). Onay ekranı var; "SKIP?" Robux butonu yer tutucu.
+- Duvarlar **oyuncuya özeldir**: sunucu canları oyuncu başına tutar, parçaları her oyuncu kendi ekranında oluşturur (client/WallClient). Sunucuda duvar Part'ı üretme!
+- Duvar canları: grup 1 = 25, grup 2 = 250, grup 3 = 3000, sonrası x12 (her aşamadaki 5 duvarın canı eşit). Hasar aşamanın 5. duvarından ötesine geçmez.
+- Her aşama sonunda **genişleyen oda** (koridor her yana 10 stud açılır, oda ~52 x 30 stud, `Config.Wall.ChamberExtra`; yan duvarlar, zemin ve tavan buna göre) ve içinde solda pembe **VIP pedi** (normalin 2 katı Win, etiketi "+2 Wins", "+6 Wins" gibi; tabelası yok) + sağda sarı normal **Win pedi** ("+1 Win"). VIP pedine basan, game pass'i olmayana Robux satın alma penceresi açılır (`Config.VipGamePassId`, ID girilene kadar 'VIP (2x Wins) is coming soon!' mesajı çıkar); pass'i olan 2x Win alır. Basınca ödül (1, 3, 7, 15, 31...), tur başa sarar, spawn'a ışınlar. Win para birimi.
+- **Karakter büyümesi**: level arttıkça boy/genişlik büyür (Humanoid ölçek değerleri), Config.Body.MaxLevel (1000) seviyesinde durur. Bacak kasları (yuvarlak parçalar) oyun başında YOK; Config.Legs.StageLevels (5, 20, 100, 250, 500, 1000) levellerinde belirir. Herkese siyah **şort** takılır (çocuklara uygunluk için KALDIRMA). Katmanlı kıyafet/aksesuar kaldırılır, oyuncunun kendi teni korunur, pantolon dokusu kalkar.
+- Kozmetik/ekonomi: **15 ayakkabı** (sol duvar rafı, ayaktan basarak alınır; sahip olunanlara basınca takılır, takılı ayakkabının rengi karakterin iki ayağını parlak (Neon) boyar; TÜM ayakkabılar neon renklidir ve parlaklık güçle artar: neon renk yoğunluğu %55 -> %87 + ayakta yanan ışık; Neon Kicks'e (Config.MaxGlowShoeId) kadar artar, daha güçlüler aynı parlaklıkta kalır; ShoeModel.tier/neonColor), **15 skin** (ayakkabı rafının yanındaki aynı stand: postamente basınca Win karşılığı karakter o renge boyanır, bacak kası çarpanı x1.1 - x4 verir; sahip olduğun skinlerden istediğini postamente basarak takarsın (ucuz olanlar da kullanılır), yanında renkli manken durur; oyuncunun gömleği çıkmaz, sadece ten/bacak rengi değişir [`Config.Appearance.HideShirtWithSkin = true` gömleği de gizler]; sadece fantezi renkler). Raftaki her eşyanın üstünde isim, güç çarpanı ve fiyat yazar), **6 yumurta** (arka duvar; yaklaşınca panel: E aç, R otomatik, T 1/3/10; pet kartına tıklayıp çarpı koyunca o pet anında silinir), **13 pet** (Pets menüsünden elle takılır, max 3), **Trails** (Win ile, hız bonusu, sırttan çıkan iz), **Auras** (Win ile, kas çarpanı, parçacık), **Playtime Rewards** (Gifts, oturum başına 10 ödül), Auto Click butonu.
+- **Antrenman alanı** (sağ duvar, `server/TrainingArea` + `Config.Training`): referans oyundaki gibi 3 basamakta 4 + 3 + 3 = 10 büyük renkli ped (`Config.Training.RowCounts`). Pedler SADECE REBİRTH ile açılır (Win ile satın alma yok): Green x1 ücretsiz, Blue x1.5 (1 rebirth), Red x3 (3), Orange x5 (5), Magenta x9 (8), Cyan x18 (12), Yellow x36 (17), Purple x100 (24), Rainbow x250 (32), Black x999 (45). Pede GİRİNCE sunucu rebirth sayısına bakarak doğrular: açıksa karakter OTOMATİK SQUAT yapar (istemci `TrainingArea` özniteliğini görünce kendiliğinden tıklar) ve kazanç pedin çarpanıyla çarpılır; kilitliyse 'needs N Rebirths' mesajı çıkar. Kilitli pedler sönük, üstlerinde çarpan + 'Rebirth N' etiketi var. Her pedde yer tutucu antrenör (`server/Mannequin`) ve her antrenörün ismi var (Coach Sprout ... Coach Shadow, `Config.Training.Areas[].trainer`, etiketlerin en üst satırı). Antrenman alanı koridor tarafına kaydırıldı (`TrainingShelfZ = -12`); sağ duvarın arka ucu (yumurta tarafındaki sağ köşe, z > 23) yeni şeyler için boş. DEV > Rebirth +10 ile test edilir. Referans fotoğraftaki gibi üst basamaklara çıktıkça ped, şerit ve antrenör büyür: ped 8.5 / 11 / 13.5 stud, antrenör x1 / x1.25 / x1.5, şerit derinliği 12 / 14.5 / 17 (`Config.Training.RowPadSizes / RowDepths / TrainerScales / RowLength`).
+- Lobi (124 x 130): ön duvar koridor, arka duvar yumurtalar (aynı Shelf standı, 2 şerit 3 + 3, referans fotoğraftaki gibi yumurtalar küçük ped önünde, pedin arkasında), sol duvar **iki raf** (ayakkabılar `Config.Lobby.ShoeShelfZ` ve skinler `SkinShelfZ` yan yana, koridor girişi ucuna yaslı; ikisi de `server/Shelf` ile kurulan aynı stand: 3 basamaklı şerit, kenar çıkıntıları, uçlarda rampa). **Sol duvarın arka ucu (yumurta tarafındaki sol köşe) yeni şeyler için boş bırakıldı**, sağ duvar **antrenman alanı** (3 basamakta 12 renkli büyük ped, aşağıda anlatıldı).
+- HUD: üstte hedef şeridi, sol üstte Rebirth/Win sayaçları, solda 2x3 buton (Shop [yakında], Rebirth, Sounds [ses yok, sadece anahtar], Backpack > Trails/Auras sekmeleri, Pets, Gifts), sağ altta ışınlanma simgeleri (Eggs, Shoes, Walls, Home), altta level çubuğu + Auto Click.
+
+## 3. Dosya haritası (`src/`)
+
+- `shared/`: `Config.luau` (TÜM sayılar/ayarlar), `Layout`, `Progression`, `Catalog`, `Format`, `ShoeModel` (raftaki ayakkabının parça listesi)
+- `server/`: `init.server` (olaylar, ışınlanma, mağaza RemoteFunction), `PlayerStats` (veri, kayıt, level, pet/aura/iz/ödül işlemleri), `WallService`, `EnvironmentService`, `Shelf` (ortak raf/stand kurucusu), `ShoeShop`, `SkinShop`, `Mannequin` (ortak manken: skin mankeni + antrenör), `EggShop`, `TrainingArea`, `LegGrowth`, `AppearanceCleaner` (skin boyama dahil), `TrailService`, `AuraService`, `DevTools`, `Build`
+- `client/`: `init.client` (HUD, tıklama, Auto Click, buton bağlantıları), `WallClient`, `Moves` (kodla tekme/squat, AnimationConstraint/Motor6D), `EggShop` (panel), `ShelfClient` (raf etiketleri/renkleri, ortak), `TrainingClient` (antrenman pedi etiketleri/kilit görünümü), `ShoeShop`, `SkinShop` (ikisi de ShelfClient'a ayar verir), `PetsPanel`, `GiftsPanel`, `CosmeticPanel` (Trails/Auras), `RebirthPanel`, `DevPanel`, `PetFollowers`
+
+## 4. Önemli teknik notlar (hata yaşanmış yerler)
+
+- Yeni avatarlar eklem olarak `Motor6D` değil `AnimationConstraint` kullanır; bunun `C0`'ı salt okunurdur, `Attachment0.CFrame` değiştirilir (Moves.luau).
+- Bacak parçalarını elle ölçekleme (kıyafetler ve kaslar bozuluyordu). Boyut Humanoid ölçek değerleriyle yapılır; ölçek değişince Moves hareketi bırakır.
+- Güvenlik: para/skor/hasar/satın alma HER ZAMAN sunucuda. İstemciye güvenme.
+- Kayıt yüklenemezse o oturumda KAYDETME.
+- `Config.Wall.Height` = `CeilingHeight - 0.2` olmalı (yoksa duvarın üstünde boşluk kalır).
+- Koridor odasında (WallService) bloklar birbirine TAM yüzlerinde değer: yüzeyleri aynı düzlemde üst üste binerse çıkıntılı doku titrer, 0.5 stud bile boşluk kalırsa dışarısı mavi görünür (yan duvar, omuz, zemin/tavan şeritleri bu yüzden yüz hesabıyla kuruldu). Lobi/koridor girişinde de parçalar üst üste binmemeli (z-fighting); Win pedi etiketleri stud boyutlu (BillboardGui scale).
+- `Config.Save.StoreName` değişirse herkesin kaydı sıfırlanır.
+- Ayakkabı rengi ayağa Neon malzemeyle yazılır: bu avatarda (R15, dokusuz mesh) mat malzemede ayak/alt bacak rengi ekranda DEĞİŞMİYORDU, oysa sunucu ve istemci `Color` değerini doğru okuyordu (BodyColors, doku, UsePartColor, ikinci parça denendi; nedeni bulunamadı). Skin boyaması (tüm vücut) ve Neon çalışıyor. Bu mat ayakkabı yolunu tekrar denemeden önce bunu bil.
+
+## 5. Yapılacaklar (sırayla öneri)
+
+1. **Bugün eklenen her şeyi Studio'da test et**: yeni sol menü, Gifts/Playtime, Auras, Pets paneli (yan yana kartlar), Backpack sekmeleri, level'ın kasa bağlanması, kas/şort görünümü, **ayakkabının ayakta görünmesi** (DEV > All Shoes, rafta bir ayakkabıya bas: iki ayak parlak neon renge döner; skin alınca ayaklar ayakkabı renginde kalır; rebirth'te eski renk geri gelir), **skin rafı** (DEV > Wins +1M, postamente bas: karakter + kaslar renk değiştirir, gömlek KALIR, rebirth'te eski renk geri gelir; raf etiketlerinde isim + güç + fiyat yazar). Hataları Claude'a ilet.
+2. **Denge ayarı** (hepsi geçici): level sınırı 20+10/rebirth ile "görünüm max level 1000" uyumsuz; duvar canı x12 artışı; ayakkabı/skin/yumurta/iz/aura fiyatları ve skin çarpanları; iz hızları; ödül süreleri; level için gereken kas.
+3. **Antrenörler** (antrenman alanı): her pedde şimdilik renkli manken (yer tutucu) duruyor; sahibi sonra özel antrenörleri/modelleri ayarlayacak. Pedlerin çarpanları, fiyatları, rebirth şartları geçici (Config.Training).
+4. **Shop** menüsü (Robux ve özel eşyalar) - sahibi "daha sonra" dedi.
+5. Efektler ve sesler (duvar kırılma, tıklama, Win), günlük/ücretsiz ödül, yeni dünyalar.
+6. **EN SON: Blender modelleri** (temel oyun bitince): ayakkabı (15), pet (13), yumurta (6) için yumuşak/sevimli Blender modelleri. Blender 5.2 bilgisayarda kurulu (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`), komut satırından Python ile üretilir, önizleme görüntüsü alınır, `.fbx` dosyaları `assets/` klasörüne konur. Önce 3 örnek (Old Sneakers, ilk yumurta, ilk pet) yapılıp sahibine gösterilir. Sahibi dosyaları Studio'da Asset Manager > Bulk Import ile yükler, asset ID'leri Claude'a verir; Claude Config'e mesh ID alanı ekleyip kodla yerleştirir (ID boşsa şimdiki blok model kalır). Rafta ayakkabı modeli `shared/ShoeModel.luau` içinde; karakterin ayağında ise parça eklenmez, ayak parçası ayakkabının renginde ve Neon malzemeyle boyanır (AppearanceCleaner.applyShoes). Blender'a geçince 15 ayrı model yerine 4-5 temel kalıp önerildi (renkler kodla), sahibi onaylamadı/karar bekliyor. Yumurta/pet için renkler yine kodla boyanır, modeller renk bölgelerine ayrılır.
+7. **Sahibinin Roblox tarafında yapacakları**: oyunu yayınlayıp API erişimini açmak; oyun adını "Squat Simulator" yapmak; VIP game pass oluşturup ID'yi `Config.VipGamePassId`'ye yazmak; Robux ürünleri (trail/aura/skip/gifts unlock) için Developer Product oluşturup ID'leri `robuxProductId` / `Rebirth.SkipProductId` alanlarına yazmak (sonra sunucuda `ProcessReceipt` bağlanacak); isteğe bağlı görsel/ses ID'leri (doku, pet resimleri, sesler).
+
+## 6. Sahibinin tercihleri
+
+- Referans: "Punch simulator" tarzı oyunlar (lego çıkıntılı pastel salon, şeker renkli duvarlar, kalın siyah kenarlı FredokaOne yazı, pembe level çubuğu). Aşırı parlak olmasın.
+- Arayüz kalabalık olmasın; referans görsellere benzesin.
+- Çocuklara uygun: kalça bölgesi her zaman kapalı.
+- Kod yazarken küçük, test edilebilir adımlar; değişiklik sonrası ne yapıldığını ve nasıl test edileceğini kısa anlat.
