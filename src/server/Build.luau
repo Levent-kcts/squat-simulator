@@ -23,7 +23,8 @@ function Build.block(parent, name, size, position, color, material, studs)
 end
 
 -- Tavandan sarkan parlak ışık paneli. Salonu aydınlatır.
-function Build.ceilingLight(parent, name, size, position, range)
+-- color / brightness verilmezse varsayılanlar kullanılır (lobide Config.Lighting değerleri geçilir)
+function Build.ceilingLight(parent, name, size, position, range, color, brightness)
 	local panel = Instance.new("Part")
 	panel.Name = name
 	panel.Anchored = true
@@ -33,12 +34,12 @@ function Build.ceilingLight(parent, name, size, position, range)
 	panel.Size = size
 	panel.Position = position
 	panel.Material = Enum.Material.Neon
-	panel.Color = Color3.fromRGB(240, 243, 255) -- saf beyaz Neon aşırı parlıyordu; bloom efekti (Config.Lighting) parıltıyı verir
+	panel.Color = color or Color3.fromRGB(205, 212, 240) -- Neon'da açık renk göz alır, bu yüzden beyaza yakın değil
 	panel.Parent = parent
 
 	local light = Instance.new("PointLight")
 	light.Range = range
-	light.Brightness = 0.4
+	light.Brightness = brightness or 0.25
 	light.Color = Color3.fromRGB(235, 240, 255)
 	light.Shadows = false
 	light.Parent = panel

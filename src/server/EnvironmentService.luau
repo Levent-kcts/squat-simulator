@@ -163,7 +163,9 @@ function EnvironmentService.init()
 				"LobbyLight",
 				Vector3.new(7, 0.5, 7),
 				Vector3.new(x, ceiling - 0.25, z),
-				40
+				40,
+				light.PanelColor,
+				light.PanelLightBrightness
 			)
 			if light.PanelGlow.Enabled then
 				-- Hale, damga çıkıntılarının altında (tavan - 0.25) ince bir katman olarak durur

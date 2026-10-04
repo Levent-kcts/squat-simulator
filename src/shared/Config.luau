@@ -207,7 +207,11 @@ return {
 		Brightness = 2,
 		Exposure = 0,
 		Ambient = Color3.fromRGB(172, 175, 196),
-		PanelGlow = { Enabled = true, Size = 17, Layers = 6, Alpha = 0.05 },
+		-- Panel rengi: Neon malzeme rengi ne kadar açıksa o kadar göz alır (saf beyaz kör ediyordu); tavan rengine yakın, yumuşak bir ton.
+		-- Daha parlak istersen PanelColor'ı beyaza doğru aç, göz alırsa tavan rengine (150,160,215) doğru kapat. LightBrightness = nokta ışığı gücü.
+		PanelColor = Color3.fromRGB(205, 212, 240),
+		PanelLightBrightness = 0.25,
+		PanelGlow = { Enabled = true, Size = 14, Layers = 6, Alpha = 0.03 },
 		Bloom = { Enabled = false, Intensity = 0.2, Size = 16, Threshold = 1.5 },
 		Color = { Saturation = 0.1, Contrast = 0.06 }, -- hafif canlı renk (ColorCorrection); Saturation = 0 ve Contrast = 0 ise etkisiz
 	},
