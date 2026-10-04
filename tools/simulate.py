@@ -36,8 +36,10 @@ def num(text, key, default=None):
 LEVEL = block("Level")
 REBIRTH = block("Rebirth")
 BASE_TAPS = num(LEVEL, "BaseTaps")
-TAPS_PER_LEVEL = eval(re.search(r"TapsPerLevel = ([^,]+),", LEVEL).group(1))
+TAPS_PER_LEVEL = 0
 GROWTH = num(LEVEL, "GrowthPerLevel")  # varsa üstel büyüme
+TAPS_AT_LEVEL10 = num(LEVEL, "TapsAtLevel10", 22)
+CONFIG_POWER = num(LEVEL, "CostPower")  # kuvvet yasası (varsayılan maliyet modeli)
 BASE_MAX_LEVEL = num(LEVEL, "BaseMaxLevel")
 MAX_LEVEL_PER_REBIRTH = num(LEVEL, "MaxLevelPerRebirth")
 LEVEL_MULT = num(LEVEL, "MultiplierPerLevel")
@@ -78,9 +80,23 @@ if "rebirth_mult" in OVERRIDES:
     REBIRTH_MULT = float(OVERRIDES["rebirth_mult"])
 if "levels_per_rebirth" in OVERRIDES:
     MAX_LEVEL_PER_REBIRTH = float(OVERRIDES["levels_per_rebirth"])
+if "hp_growth" in OVERRIDES:
+    HEALTH_GROWTH = float(OVERRIDES["hp_growth"])
+if "price_scale" in OVERRIDES:
+    scale = float(OVERRIDES["price_scale"])
+    ITEMS = [(p * scale, d) for p, d in ITEMS]
+    SKINS = [(p * scale, m) for p, m in SKINS]
+    AURAS = [(p * scale, m) for p, m in AURAS]
+    EGGS = [(p * scale, pets) for p, pets in EGGS]
+
+
+POLY_P = float(OVERRIDES["poly"]) if "poly" in OVERRIDES else CONFIG_POWER
 
 
 def taps_needed(level):
+    if POLY_P:
+        # kuvvet yasası: level 1 = 10, level 10 = 22 (sahibinin verdiği iki nokta), büyüme üstü p
+        return max(1, round(BASE_TAPS + (TAPS_AT_LEVEL10 - BASE_TAPS) / 9 ** POLY_P * (level - 1) ** POLY_P))
     if GROWTH:
         return max(1, round(BASE_TAPS * GROWTH ** (level - 1)))
     return math.floor(BASE_TAPS + (level - 1) * TAPS_PER_LEVEL + 0.5)
@@ -117,14 +133,16 @@ class Player:
         self._pet_cache_len = -1
         self.last_stage = 0
         self.last_won = 0
+        self.earned = 0.0
         self._pet_cache = 1.0
 
     def cap(self):
         return BASE_MAX_LEVEL + self.rebirths * MAX_LEVEL_PER_REBIRTH
 
     def pet_mult(self):
-        if self._pet_cache_len != len(self.pets):
-            self._pet_cache_len = len(self.pets)
+        key = (len(self.pets), self.pets[0] if self.pets else 0, self.pets[2] if len(self.pets) > 2 else 0)
+        if self._pet_cache_len != key:
+            self._pet_cache_len = key
             self._pet_cache = 1 + sum(sorted(self.pets, reverse=True)[:3])
         return self._pet_cache
 
@@ -229,6 +247,7 @@ class Player:
         won = reward(stage)
         self.last_won = won
         self.wins += won
+        self.earned += won
         return trip_time, won
 
 
@@ -241,23 +260,21 @@ def run(hours):
     since_trip = 0.0
     trip_every = float(OVERRIDES.get("trip_every", 90))
     while p.t < horizon:
-        # 10 saniyelik antrenman (en iyi açık bölgede, squat)
-        step = 10
-        for _ in range(step):
-            p.add_muscle(p.gain() * p.zone() / MOVE["Squat"])
-            p.t += 1
-            if p.level >= p.cap():
-                break
+        # Zaman adımı: başta ince (level hızlı atlıyor), sonra kalınlaşır (hız için)
+        step = 1 if p.t < 600 else (5 if p.t < 3600 else 20)
+        p.add_muscle(p.gain() * p.zone() * step / MOVE["Squat"])
+        p.t += step
         since_trip += step
         at_cap = p.level >= p.cap()
-        if since_trip >= trip_every or at_cap:
+        if since_trip >= trip_every or (at_cap and since_trip >= 20):
             p.wall_trip()
             p.spend()
             since_trip = 0.0
         if at_cap:
             if first_cap is None:
                 first_cap = p.t
-            log.append((p.t, p.rebirths + 1, p.zone(), p.pet_mult(), p.aura, p.wins, p.muscle, p.shoe, p.skin, p.last_stage, p.last_won))
+            log.append((p.t, p.rebirths + 1, p.zone(), p.pet_mult(), p.aura, p.wins, p.muscle, p.shoe, p.skin, p.last_stage, p.last_won, p.earned))
+            p.earned = 0.0
             p.rebirth()
     return p, log, first_cap
 
@@ -272,10 +289,10 @@ def fmt(seconds):
 
 if __name__ == "__main__":
     p, log, first_cap = run(HOURS)
-    print(f"Seviye maliyeti: {'x%.3f üstel' % GROWTH if GROWTH else 'doğrusal'}, level çarpanı +{LEVEL_MULT}/level, rebirth +{REBIRTH_MULT}, rebirth başına +{MAX_LEVEL_PER_REBIRTH:.0f} level sınırı")
+    print(f"Seviye maliyeti: {'kuvvet yasası ^%.2f' % POLY_P if POLY_P else ('x%.3f üstel' % GROWTH if GROWTH else 'doğrusal')}, level çarpanı +{LEVEL_MULT}/level, rebirth +{REBIRTH_MULT}, rebirth başına +{MAX_LEVEL_PER_REBIRTH:.0f} level sınırı")
     print(f"İlk level sınırına (20) ulaşma: {fmt(first_cap) if first_cap else 'yok'}")
-    print("rebirth | zaman     | bölge | pet   | aura | skin | ayakkabı | kas (rebirth anı) | aşama | sefer Win | kalan Win")
-    for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won in log:
+    print("rebirth | zaman     | bölge | pet   | aura | skin | ayakkabı | kas (rebirth anı) | aşama | sefer Win | kalan Win | devirde kazanılan Win")
+    for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won, earned in log:
         if r <= 12 or r % 5 == 0:
-            print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | x{skin:<3g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:,.0f}")
+            print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | x{skin:<3g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")

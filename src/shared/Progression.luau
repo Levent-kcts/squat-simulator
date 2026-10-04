@@ -5,9 +5,15 @@ local Config = require(script.Parent.Config)
 
 local Progression = {}
 
--- Bu levelden bir sonrakine geçmek için kazanılması gereken bacak kası (level 1 = 10, level 10 = 22)
+-- Bu levelden bir sonrakine geçmek için kazanılması gereken bacak kası (level 1 = 10, level 10 = 22; sonrası kuvvet yasasıyla artar).
+-- CostPower yoksa eski doğrusal formül kullanılır.
 function Progression.tapsNeeded(level)
-	return math.floor(Config.Level.BaseTaps + (level - 1) * Config.Level.TapsPerLevel + 0.5)
+	local lc = Config.Level
+	if lc.CostPower then
+		local scale = (lc.TapsAtLevel10 - lc.BaseTaps) / 9 ^ lc.CostPower
+		return math.max(1, math.floor(lc.BaseTaps + scale * (level - 1) ^ lc.CostPower + 0.5))
+	end
+	return math.floor(lc.BaseTaps + (level - 1) * lc.TapsPerLevel + 0.5)
 end
 
 -- Verilen rebirth sayısında ulaşılabilecek en yüksek level

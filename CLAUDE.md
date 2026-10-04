@@ -6,13 +6,13 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 - Ekranın herhangi bir yerine tıklamak bacak kasını artırır (UI butonlarına tıklamak sayılmaz).
 - Tıklama başı bacak kası kazancı = Config.MusclePerClick x (1 + takılı petlerin çarpanları) x level çarpanı x rebirth çarpanı x aura x takılı skinin çarpanı. AYAKKABI KAZANCI ETKİLEMEZ.
 - Duvara hasar = toplam bacak kası x takılı ayakkabının 'damage' çarpanı (ayakkabı yoksa x1). Ayakkabılar sadece hasar çarpanıdır.
-- LEVEL, TOPLAM BACAK KASINDAN hesaplanır (Progression.levelFromMuscle): level 1'den 2'ye 10 kas, level 10'dan 11'e 22 kas gerekir (Config.Level), toplamlar birikerek ilerler. Çubuk o level içinde kazanılan kası gösterir. Rebirth kası sıfırladığı için level de 1 olur. Level'ı doğrudan set etme; PlayerStats.syncLevel kasa göre ayarlar.
+- LEVEL, TOPLAM BACAK KASINDAN hesaplanır (Progression.levelFromMuscle): level 1'den 2'ye 10 kas, level 10'dan 11'e 22 kas gerekir, sonrası kuvvet yasasıyla artar (Config.Level.CostPower; tools/simulate.py ile ayarlandı), toplamlar birikerek ilerler. Çubuk o level içinde kazanılan kası gösterir. Rebirth kası sıfırladığı için level de 1 olur. Level'ı doğrudan set etme; PlayerStats.syncLevel kasa göre ayarlar.
   Level, rebirth sayısına bağlı üst sınıra (20 + 10 x rebirth) kadar çıkar. Sınırda alttaki bar 'MAX' yazar; rebirth yapmadan level atlanamaz.
   REBIRTH (sol taraftaki Rebirth butonu onay ekranı açar: önce/sonra çarpan ve max level, uyarı, level çubuğu, Rebirth ve Robux'lu 'SKIP?' butonu; client/RebirthPanel): level 1'e, bacak kası ve TÜM Win'ler 0'a döner, duvarlar baştan kurulur; ayakkabılar da sıfırlanır (petler, iz ve aura korunur);
   kalıcı çarpan kazanılır (Config.Rebirth). Alt çubuk artık duvar değil LEVEL ilerlemesini gösterir.
 - Hasar = oyuncunun toplam bacak kası. Hasar, oyuncunun kendi ilk sağlam duvarına gider (yakında olmalı).
 - 100 duvar tek sıra halinde ard arda dizilir (20 aşama x 5 duvar), en düşük canlıdan başlanır
-  (aynı gruptaki duvarların canı eşit: 25, 250, 3000, sonra x12). Hasar duvarlara sırayla uygulanır, taşan hasar sonraki duvara geçer
+  (aynı gruptaki duvarların canı eşit: 25, 250, 3000, sonra x5). Hasar duvarlara sırayla uygulanır, taşan hasar sonraki duvara geçer
   ama her 5'li aşamanın sonunu geçmez.
 - DUVARLAR HER OYUNCUYA ÖZELDİR. Sunucu canları oyuncu başına tutar (WallService), duvar parçalarını her
   oyuncu kendi ekranında oluşturur (client/WallClient). Diğer oyuncular senin duvarlarını görmez, seni duvarın

@@ -14,8 +14,12 @@ return {
 	-- Level, rebirth sayısına bağlı bir üst sınıra kadar çıkar. Sınıra gelince rebirth yapılabilir.
 	-- Her level tıklama başı kazancı artırır (MultiplierPerLevel).
 	Level = {
-		BaseTaps = 10,
-		TapsPerLevel = 4 / 3, -- level 1 = 10, level 10 = 22 bacak kası (referans oyundaki değerler)
+		BaseTaps = 10, -- 1. level 10 kas ister
+		-- Bir sonraki levele geçmek için gereken kas KUVVET YASASIYLA büyür: 10 + (TapsAtLevel10 - 10) / 9^CostPower x (level - 1)^CostPower
+		-- (level 1 = 10, level 10 = 22; sonrası hızla artar). Üstel (1.09^level) yerine kuvvet yasası seçildi: rebirth başına süre düzgün uzasın,
+		-- tools/simulate.py ile ölçüldü (aktif oyuncu: 1. rebirth ~5 dk, 5. ~2 sa, 12. ~12 sa, 20. ~1.2 gün, 45. ~3.5 gün).
+		CostPower = 4.2,
+		TapsAtLevel10 = 22,
 		BaseMaxLevel = 20, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level
 		MaxLevelPerRebirth = 10, -- her rebirth bu kadar yüksek level izni verir
 		MultiplierPerLevel = 0.1, -- level 20 = x2.9
@@ -143,6 +147,10 @@ return {
 		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 0.6, 0.65 } },
 	},
 
+	-- Arka plan müziği (döngüde çalar, "Sounds" anahtarı kapatınca susar). id boşsa müzik yok; Creator Store'dan beğendiğin bir müziğin
+	-- "rbxassetid://..." ID'sini yaz. Müzik sesi efektleri bastırmasın diye düşük tutulur.
+	Music = { id = "", volume = 0.25 },
+
 	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
 	Guide = { MaxStage = 3 },
 
@@ -168,10 +176,10 @@ return {
 
 		-- Duvar canı: AYNI gruptaki (aşamadaki) 5 duvarın canı eşittir. Referans oyundaki değerler:
 		-- 1. grup 25, 2. grup 250, 3. grup 3000. Listede olmayan sonraki gruplar, bir öncekinin
-		-- HealthGrowthAfter katı olur (3. grup 3000 ise 4. grup 3000 x 12 = 36000).
+		-- HealthGrowthAfter katı olur (3. grup 3000 ise 4. grup 3000 x 5 = 15000).
 		-- Sonraki grupları oyunun ekonomisine (çarpanlar, rebirth) göre ayrıca dengelemek gerekecek.
 		GroupHealth = { 25, 250, 3000 },
-		HealthGrowthAfter = 12,
+		HealthGrowthAfter = 5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; tools/simulate.py)
 
 		Width = 32, -- koridorun ve duvarın genişliği (stud)
 		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır
@@ -215,20 +223,20 @@ return {
 	MaxGlowShoeId = "neon", -- ayakkabı parlaklığı bu ayakkabıya (Neon Kicks) kadar artar, daha güçlüleri aynı parlaklıkta kalır
 	Items = {
 		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
-		{ id = "canvas", name = "Canvas Shoes", price = 10, damage = 2, color = Color3.fromRGB(120, 170, 255) },
-		{ id = "running", name = "Running Shoes", price = 30, damage = 3, color = Color3.fromRGB(255, 140, 60) },
-		{ id = "trail", name = "Trail Boots", price = 80, damage = 4, color = Color3.fromRGB(0, 230, 170) },
-		{ id = "hightops", name = "High-Tops", price = 200, damage = 6, color = Color3.fromRGB(255, 70, 160) },
-		{ id = "cleats", name = "Cleats", price = 500, damage = 8, color = Color3.fromRGB(60, 220, 90) },
-		{ id = "jump", name = "Jump Shoes", price = 1200, damage = 12, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "speed", name = "Speed Sneakers", price = 3000, damage = 16, color = Color3.fromRGB(60, 200, 255) },
-		{ id = "power", name = "Power Boots", price = 7500, damage = 25, color = Color3.fromRGB(255, 70, 70) },
-		{ id = "titan", name = "Titan Boots", price = 18000, damage = 35, color = Color3.fromRGB(40, 80, 255) },
-		{ id = "neon", name = "Neon Kicks", price = 45000, damage = 50, color = Color3.fromRGB(255, 60, 230) },
-		{ id = "golden", name = "Golden Sneakers", price = 110000, damage = 75, color = Color3.fromRGB(255, 200, 40) },
-		{ id = "crystal", name = "Crystal Kicks", price = 270000, damage = 100, color = Color3.fromRGB(150, 240, 255) },
-		{ id = "thunder", name = "Thunder Boots", price = 650000, damage = 150, color = Color3.fromRGB(170, 90, 255) },
-		{ id = "radiant", name = "Radiant Shoes", price = 1600000, damage = 250, color = Color3.fromRGB(255, 255, 140) },
+		{ id = "canvas", name = "Canvas Shoes", price = 8, damage = 2, color = Color3.fromRGB(120, 170, 255) },
+		{ id = "running", name = "Running Shoes", price = 20, damage = 3, color = Color3.fromRGB(255, 140, 60) },
+		{ id = "trail", name = "Trail Boots", price = 45, damage = 4, color = Color3.fromRGB(0, 230, 170) },
+		{ id = "hightops", name = "High-Tops", price = 100, damage = 6, color = Color3.fromRGB(255, 70, 160) },
+		{ id = "cleats", name = "Cleats", price = 220, damage = 8, color = Color3.fromRGB(60, 220, 90) },
+		{ id = "jump", name = "Jump Shoes", price = 450, damage = 12, color = Color3.fromRGB(255, 230, 60) },
+		{ id = "speed", name = "Speed Sneakers", price = 900, damage = 16, color = Color3.fromRGB(60, 200, 255) },
+		{ id = "power", name = "Power Boots", price = 1800, damage = 25, color = Color3.fromRGB(255, 70, 70) },
+		{ id = "titan", name = "Titan Boots", price = 3600, damage = 35, color = Color3.fromRGB(40, 80, 255) },
+		{ id = "neon", name = "Neon Kicks", price = 7500, damage = 50, color = Color3.fromRGB(255, 60, 230) },
+		{ id = "golden", name = "Golden Sneakers", price = 15000, damage = 75, color = Color3.fromRGB(255, 200, 40) },
+		{ id = "crystal", name = "Crystal Kicks", price = 30000, damage = 100, color = Color3.fromRGB(150, 240, 255) },
+		{ id = "thunder", name = "Thunder Boots", price = 60000, damage = 150, color = Color3.fromRGB(170, 90, 255) },
+		{ id = "radiant", name = "Radiant Shoes", price = 120000, damage = 250, color = Color3.fromRGB(255, 255, 140) },
 	},
 
 	-- Skinler (Lobi sol duvar, ayakkabı rafının yanındaki raf): Win ile alınır, karakter o renge boyanır.
@@ -236,20 +244,20 @@ return {
 	-- Rebirth ayakkabılar gibi skinleri de sıfırlar. Sadece fantezi renkler var (gerçek ten tonları fiyat/güç sıralamasına girmesin diye).
 	Skins = {
 		{ id = "mint", name = "Mint", price = 5, mult = 1.1, color = Color3.fromRGB(150, 235, 190) },
-		{ id = "lemon", name = "Lemon", price = 20, mult = 1.2, color = Color3.fromRGB(255, 240, 110) },
-		{ id = "coral", name = "Coral", price = 60, mult = 1.3, color = Color3.fromRGB(255, 127, 110) },
-		{ id = "bubblegum", name = "Bubblegum", price = 150, mult = 1.4, color = Color3.fromRGB(255, 150, 200) },
-		{ id = "orange", name = "Orange Pop", price = 400, mult = 1.5, color = Color3.fromRGB(255, 150, 50) },
-		{ id = "lime", name = "Lime Zap", price = 1000, mult = 1.6, color = Color3.fromRGB(140, 230, 60) },
-		{ id = "teal", name = "Ocean Teal", price = 2500, mult = 1.8, color = Color3.fromRGB(40, 200, 190) },
-		{ id = "sky", name = "Sky Blue", price = 6000, mult = 2, color = Color3.fromRGB(80, 170, 255) },
-		{ id = "violet", name = "Violet", price = 14000, mult = 2.2, color = Color3.fromRGB(150, 90, 230) },
-		{ id = "ruby", name = "Ruby Red", price = 35000, mult = 2.4, color = Color3.fromRGB(225, 40, 60) },
-		{ id = "silver", name = "Silver", price = 85000, mult = 2.6, color = Color3.fromRGB(205, 210, 220) },
-		{ id = "gold", name = "Golden", price = 200000, mult = 2.9, color = Color3.fromRGB(255, 200, 40) },
-		{ id = "ice", name = "Frozen", price = 480000, mult = 3.2, color = Color3.fromRGB(150, 235, 255) },
-		{ id = "magma", name = "Magma", price = 1100000, mult = 3.6, color = Color3.fromRGB(255, 90, 20) },
-		{ id = "galaxy", name = "Galaxy", price = 2600000, mult = 4, color = Color3.fromRGB(70, 45, 150) },
+		{ id = "lemon", name = "Lemon", price = 15, mult = 1.2, color = Color3.fromRGB(255, 240, 110) },
+		{ id = "coral", name = "Coral", price = 40, mult = 1.3, color = Color3.fromRGB(255, 127, 110) },
+		{ id = "bubblegum", name = "Bubblegum", price = 90, mult = 1.4, color = Color3.fromRGB(255, 150, 200) },
+		{ id = "orange", name = "Orange Pop", price = 200, mult = 1.5, color = Color3.fromRGB(255, 150, 50) },
+		{ id = "lime", name = "Lime Zap", price = 450, mult = 1.6, color = Color3.fromRGB(140, 230, 60) },
+		{ id = "teal", name = "Ocean Teal", price = 900, mult = 1.8, color = Color3.fromRGB(40, 200, 190) },
+		{ id = "sky", name = "Sky Blue", price = 1800, mult = 2, color = Color3.fromRGB(80, 170, 255) },
+		{ id = "violet", name = "Violet", price = 3600, mult = 2.2, color = Color3.fromRGB(150, 90, 230) },
+		{ id = "ruby", name = "Ruby Red", price = 7000, mult = 2.4, color = Color3.fromRGB(225, 40, 60) },
+		{ id = "silver", name = "Silver", price = 14000, mult = 2.6, color = Color3.fromRGB(205, 210, 220) },
+		{ id = "gold", name = "Golden", price = 28000, mult = 2.9, color = Color3.fromRGB(255, 200, 40) },
+		{ id = "ice", name = "Frozen", price = 56000, mult = 3.2, color = Color3.fromRGB(150, 235, 255) },
+		{ id = "magma", name = "Magma", price = 110000, mult = 3.6, color = Color3.fromRGB(255, 90, 20) },
+		{ id = "galaxy", name = "Galaxy", price = 220000, mult = 4, color = Color3.fromRGB(70, 45, 150) },
 	},
 
 	-- Antrenman alanı (SAĞ duvar, 3 basamakta 4 + 3 + 3 = 10 büyük ped): pede girince karakter otomatik squat yapar ve kazanç o pedin
@@ -344,12 +352,12 @@ return {
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
-		{ id = "red", name = "Red Aura", mult = 1.2, winPrice = 2500, robuxPrice = 25, robuxProductId = 0, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 1.4, winPrice = 25000, robuxPrice = 65, robuxProductId = 0, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 1.6, winPrice = 150000, robuxPrice = 105, robuxProductId = 0, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 1.8, winPrice = 750000, robuxPrice = 175, robuxProductId = 0, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 2.2, winPrice = 3000000, robuxPrice = 275, robuxProductId = 0, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 10000000, robuxPrice = 450, robuxProductId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Aura", mult = 1.2, winPrice = 1500, robuxPrice = 25, robuxProductId = 0, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "green", name = "Green Aura", mult = 1.4, winPrice = 5000, robuxPrice = 65, robuxProductId = 0, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 1.6, winPrice = 15000, robuxPrice = 105, robuxProductId = 0, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 1.8, winPrice = 40000, robuxPrice = 175, robuxProductId = 0, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 2.2, winPrice = 90000, robuxPrice = 275, robuxProductId = 0, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 200000, robuxPrice = 450, robuxProductId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.

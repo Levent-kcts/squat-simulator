@@ -527,6 +527,7 @@ local toast = makeText(screenGui, {
 local toastId = 0
 
 local Sfx = loadOptional("Sfx")
+safeInit("Sfx", Sfx)
 
 
 local function showToast(ok, message)

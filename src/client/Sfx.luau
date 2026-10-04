@@ -44,4 +44,23 @@ function Sfx.play(name)
 	Debris:AddItem(sound, 5)
 end
 
+-- Arka plan müziğini başlatır (Config.Music.id doluysa). "Sounds" anahtarı kapanınca sesi 0 olur.
+function Sfx.init()
+	local music = Config.Music
+	if not music or music.id == nil or music.id == "" then
+		return
+	end
+	local sound = Instance.new("Sound")
+	sound.Name = "Music"
+	sound.SoundId = music.id
+	sound.Looped = true
+	sound.Parent = SoundService
+	local function apply()
+		sound.Volume = if player:GetAttribute("SoundsOn") == false then 0 else (music.volume or 0.25)
+	end
+	apply()
+	player:GetAttributeChangedSignal("SoundsOn"):Connect(apply)
+	sound:Play()
+end
+
 return Sfx
