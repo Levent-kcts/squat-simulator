@@ -246,7 +246,7 @@ end
 makeTeleportButton(1, "🥚", Color3.fromRGB(40, 190, 230), "Eggs")
 makeTeleportButton(2, "👟", Color3.fromRGB(240, 200, 40), "Shoes")
 makeTeleportButton(3, "🎨", Color3.fromRGB(190, 90, 255), "Skins")
-makeTeleportButton(4, "💪", Color3.fromRGB(60, 120, 255), "Train")
+makeTeleportButton(4, "🦵", Color3.fromRGB(60, 120, 255), "Train")
 makeTeleportButton(5, "🧱", Color3.fromRGB(230, 70, 70), "Walls")
 makeTeleportButton(6, "🏠", Color3.fromRGB(70, 200, 100), "Home")
 
@@ -650,7 +650,7 @@ local aurasPanel = CosmeticPanel.init(screenGui, showToast, {
 	buyAction = "BuyAura",
 	equipAction = "EquipAura",
 	bonusText = function(item)
-		return `💪 x{item.mult} Muscle`
+		return `🦵 x{item.mult} Muscle`
 	end,
 	previewKind = "aura",
 })

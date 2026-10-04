@@ -114,7 +114,7 @@ return {
 		Products = {
 			{ id = "boostMuscle30", name = "2x Muscle", detail = "30 minutes", icon = "⚡", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
 			{ id = "boostWins30", name = "2x Wins", detail = "30 minutes", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
-			{ id = "musclePack", name = "Muscle Pack", detail = "10,000 squats of muscle", icon = "💪", kind = "moves", amount = 10000, robux = 39, productId = 0, color = Color3.fromRGB(70, 150, 255) },
+			{ id = "musclePack", name = "Muscle Pack", detail = "10,000 squats of muscle", icon = "🦵", kind = "moves", amount = 10000, robux = 39, productId = 0, color = Color3.fromRGB(70, 150, 255) },
 			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 29, productId = 0, color = Color3.fromRGB(70, 210, 90) },
 			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
 		},

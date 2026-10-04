@@ -37,9 +37,9 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 - HUD: üstte hedef şeridi, sol üstte Rebirth/Win sayaçları, solda 2x3 buton (Shop [Robux ürünleri penceresi], Rebirth, Sounds [ses yok, sadece anahtar], Backpack > Trails/Auras sekmeleri, Pets, Gifts), sağ altta ışınlanma simgeleri (Eggs, Shoes, Skins, Train, Walls, Home), altta level çubuğu + Auto Click.
 
 ### Oyuncu dostu / "juice" katmanı (otomasyon turunda eklendi, hepsi korumalı yüklenir: biri hata verirse oyun çalışmaya devam eder)
-- **Efektler** (`client/Juice`): her hareketten sonra baş üstünde yükselen "+N" kazanç yazısı, Win'de altın parıltı, level atlama / rebirth büyük başlık + parçacık patlaması + kamera sarsıntısı, duvar kırılınca duvarın renginde patlama.
+- **Efektler** (`client/Juice`): her hareketten sonra EKRANIN rastgele bir yerinde beliren, yukarı süzülüp kaybolan "🦵 +N" kazanç yazısı (karakterin üstünde çıkmaz; Win'de "🏆 +N Wins" ve altın parıltı), level atlama / rebirth büyük başlık + parçacık patlaması + kamera sarsıntısı, duvar kırılınca duvarın renginde patlama.
 - **Sesler** (`client/Sfx`, `Config.Sounds`): olay başına ses (vuruş, duvar kırma, level, Win, rebirth, yumurta, satın alma, hata). Şimdilik Roblox'la gelen hazır sesler; `id` alanlarına Creator Store ses ID'leri (`rbxassetid://...`) yazılabilir, boş bırakılan olay sessizdir. Sol menüdeki "Sounds" anahtarı hepsini kapatır. Arka plan müziği için `Config.Music.id`'ye bir müzik ID'si yazılır (boşken müzik yok).
-- **Baş üstü etiket** (`client/OverheadTags`): her oyuncunun başında "💪 güç" ve "Lv.N isim" (Roblox'un kendi isim yazısı kapatılır).
+- **Baş üstü etiket** (`client/OverheadTags`): her oyuncunun başında "🦵 güç" ve "Lv.N isim" (Roblox'un kendi isim yazısı kapatılır).
 - **Yumurta açılış ekranı** (`client/Reveal`): açılan petler nadirliğe göre renkli kartlar olarak sırayla zıplar (`Config.Rarities`: Common, Rare, Epic, Legendary, Mythic; yeni pete "NEW!" rozeti, silinenler "Deleted").
 - **Yol gösterici** (`client/Guide`): hiç rebirth yapmamış oyuncuya ilk 3 aşamada duvara / Win pedine giden parlak çizgi (`Config.Guide.MaxStage`).
 - **Süreli güçlendirme sayaçları** (`client/BoostHud`): aktif 2x Muscle / 2x Wins geri sayımı, Rebirth/Win sayaçlarının sağında. Rebirth hazır olunca Rebirth butonu nabız gibi atar.

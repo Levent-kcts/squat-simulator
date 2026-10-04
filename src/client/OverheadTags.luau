@@ -1,4 +1,4 @@
--- Oyuncuların başının üstünde isim + güç etiketi (referans oyundaki gibi): "💪 92K" ve altında oyuncu adı.
+-- Oyuncuların başının üstünde isim + güç etiketi (referans oyundaki gibi): "🦵 92K" ve altında oyuncu adı.
 -- Roblox'un kendi isim yazısı kapatılır, yerine bu etiket gelir. Sadece görsel: değerler leaderstats'tan okunur.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -67,7 +67,7 @@ local function attach(targetPlayer, character)
 		-- Karakter büyüdükçe etiket de başın üstünde kalsın
 		gui.StudsOffsetWorldSpace = Vector3.new(0, head.Size.Y / 2 + 1.6, 0)
 		local text = if muscle then Format.compact(muscle.Value) else "0"
-		power.Text = `💪 {text}`
+		power.Text = `🦵 {text}`
 		if level then
 			nameLabel.Text = `Lv.{level.Value} {targetPlayer.DisplayName}`
 		end

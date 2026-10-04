@@ -35,7 +35,7 @@ end
 -- Ödül türüne göre kart rengi, simgesi ve yazısı
 local function describe(reward)
 	if reward.kind == "muscle" then
-		return Color3.fromRGB(240, 50, 140), "💪", `+{Format.compact(reward.amount)} Muscle`
+		return Color3.fromRGB(240, 50, 140), "🦵", `+{Format.compact(reward.amount)} Muscle`
 	elseif reward.kind == "wins" then
 		return Color3.fromRGB(250, 190, 40), "🏆", `+{Format.number(reward.amount)} Wins`
 	elseif reward.kind == "pet" then

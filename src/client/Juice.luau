@@ -74,6 +74,44 @@ function Juice.floatText(text, color, sizeScale)
 	Debris:AddItem(gui, 1.1)
 end
 
+-- Ekranın rastgele bir yerinde beliren, yukarı süzülüp kaybolan kazanç yazısı ("🦵 +12"): her hareketten sonra karakterin üstünde değil,
+-- ekranın ortasındaki geniş bölgede (kenar çubuklarından ve alt barlardan uzakta) farklı noktalarda çıkar. icon: emoji, scale: boyut çarpanı
+function Juice.screenPop(text, color, icon, scale)
+	if not screenGuiRef then
+		return
+	end
+	scale = scale or 1
+	local holder = Instance.new("Frame")
+	holder.AnchorPoint = Vector2.new(0.5, 0.5)
+	holder.Position = UDim2.fromScale(0.22 + math.random() * 0.56, 0.2 + math.random() * 0.45)
+	holder.Size = UDim2.fromOffset(170 * scale, 52 * scale)
+	holder.BackgroundTransparency = 1
+	holder.Rotation = math.random(-10, 10)
+	holder.Parent = screenGuiRef
+
+	local iconLabel, iconStroke = styledLabel(holder, icon or "🦵", Color3.new(1, 1, 1), 0)
+	iconLabel.Size = UDim2.fromScale(0.3, 1)
+	iconLabel.Position = UDim2.fromScale(0, 0)
+
+	local valueLabel, valueStroke = styledLabel(holder, text, color, 3)
+	valueLabel.Size = UDim2.fromScale(0.68, 1)
+	valueLabel.Position = UDim2.fromScale(0.32, 0)
+	valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	-- Küçükten büyüğe zıplayarak belirir, yukarı süzülür, solar
+	local popScale = Instance.new("UIScale")
+	popScale.Scale = 0.5
+	popScale.Parent = holder
+	TweenService:Create(popScale, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	local startPosition = holder.Position
+	TweenService:Create(holder, TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = startPosition - UDim2.fromScale(0, 0.07) }):Play()
+	local fade = TweenInfo.new(0.45, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0.45)
+	TweenService:Create(iconLabel, fade, { TextTransparency = 1 }):Play()
+	TweenService:Create(valueLabel, fade, { TextTransparency = 1 }):Play()
+	TweenService:Create(valueStroke, fade, { Transparency = 1 }):Play()
+	Debris:AddItem(holder, 1.05)
+end
+
 -- Ekranın ortasında büyüyüp kaybolan başlık ("LEVEL UP!"); subText verilirse altında küçük bir satır daha gösterilir
 function Juice.banner(text, color, subText)
 	if not screenGuiRef then
@@ -262,7 +300,7 @@ function Juice.init(screenGui)
 		last.muscle = muscle.Value
 		if delta > 0 and ready() then
 			local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
-			Juice.floatText(`+{Format.compact(delta)}`, if inArea then GREEN else GOLD)
+			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.fromRGB(90, 220, 255), "🦵")
 			sfx("Hit")
 		end
 	end)
@@ -271,7 +309,7 @@ function Juice.init(screenGui)
 		local delta = wins.Value - last.wins
 		last.wins = wins.Value
 		if delta > 0 and ready() then
-			Juice.floatText(`+{Format.compact(delta)} Wins`, Color3.fromRGB(255, 200, 60), 1.3)
+			Juice.screenPop(`+{Format.compact(delta)} Wins`, Color3.fromRGB(255, 215, 70), "🏆", 1.25)
 			Juice.celebrate(Color3.fromRGB(255, 210, 60), 25)
 			sfx("Win")
 		end
