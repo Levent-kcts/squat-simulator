@@ -41,6 +41,32 @@ ShoeShop.init(notifyEvent)
 SkinShop.init(notifyEvent)
 EggShop.init(notifyEvent)
 TrainingArea.init(notifyEvent)
+
+-- Robux satın almaları (ProcessReceipt) isteğe bağlı modüldür: hata verirse oyunun geri kalanı çalışır
+do
+	local ok, Purchases = pcall(require, script.Purchases)
+	if ok then
+		local started, err = pcall(Purchases.init, WallService, notifyEvent)
+		if not started then
+			warn(`[Server] Purchases init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load Purchases: {Purchases}`)
+	end
+end
+
+-- Sıralama tabloları isteğe bağlıdır: hata verirse oyunun geri kalanı çalışmaya devam eder
+do
+	local ok, Leaderboards = pcall(require, script.Leaderboards)
+	if ok then
+		local started, err = pcall(Leaderboards.init)
+		if not started then
+			warn(`[Server] Leaderboards init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load Leaderboards: {Leaderboards}`)
+	end
+end
 TrailService.init()
 AuraService.init()
 LegGrowth.init(notifyEvent)
@@ -109,6 +135,8 @@ local TELEPORTS = {
 	Home = Config.SpawnPosition,
 	Eggs = Vector3.new(0, 5, Config.Lobby.BackZ - 28),
 	Shoes = Vector3.new(-(Config.Lobby.HalfWidth - 39), 5, Config.Lobby.ShoeShelfZ),
+	Skins = Vector3.new(-(Config.Lobby.HalfWidth - 39), 5, Config.Lobby.SkinShelfZ),
+	Train = Vector3.new(Config.Lobby.HalfWidth - 50, 5, Config.Lobby.TrainingShelfZ), -- antrenman alanının önü
 }
 local lastTeleport = {}
 
@@ -157,6 +185,8 @@ shopFunction.OnServerInvoke = function(player, action, id)
 		return PlayerStats.unequipAllPets(player)
 	elseif action == "DeletePet" and type(id) == "string" then
 		return PlayerStats.deletePet(player, id)
+	elseif action == "RedeemCode" and type(id) == "string" then
+		return PlayerStats.redeemCode(player, id)
 	elseif action == "ClaimGift" and type(id) == "number" then
 		return PlayerStats.claimGift(player, id)
 	elseif action == "Rebirth" then

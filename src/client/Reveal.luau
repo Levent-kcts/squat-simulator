@@ -9,6 +9,13 @@ local Catalog = require(Shared:WaitForChild("Catalog"))
 
 local Reveal = {}
 
+local okSfx, Sfx = pcall(require, script.Parent.Sfx)
+local function sfx(name)
+	if okSfx then
+		pcall(Sfx.play, name)
+	end
+end
+
 local CARD_WIDTH = 104
 local CARD_HEIGHT = 132
 local CARD_GAP = 10
@@ -119,6 +126,16 @@ function Reveal.show(screenGui, results, ownedBefore)
 	end
 	if type(results) ~= "table" or #results == 0 then
 		return
+	end
+
+	-- Ses: açılış sesi; Epic ve üstü bir pet çıktıysa ek parıltı sesi
+	sfx("Hatch")
+	for _, entry in results do
+		local pet = Catalog.PetById[entry.id]
+		if entry.kept and pet and pet.mult >= 1.2 then
+			task.delay(0.3, sfx, "Rare")
+			break
+		end
 	end
 
 	local count = #results

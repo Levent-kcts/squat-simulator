@@ -1,5 +1,6 @@
 -- Rebirth onay ekranı: önce/sonra çarpanı, önce/sonra en yüksek level, uyarı, level çubuğu ve iki buton:
 -- "Rebirth" (level sınırına gelince çalışır) ve "SKIP?" (Robux ile level şartını atlama, şimdilik yer tutucu).
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -204,7 +205,8 @@ function RebirthPanel.init(screenGui, showToast)
 	skipButton.MouseButton1Click:Connect(function()
 		-- Gerçek satış için Developer Product oluşturulup Config.Rebirth.SkipProductId'ye yazılmalı
 		if Config.Rebirth.SkipProductId > 0 then
-			showToast(false, "Robux purchases are not enabled yet.")
+			-- Satın alma penceresi açılır; rebirth'i sunucu ProcessReceipt ile yapar (server/Purchases)
+			MarketplaceService:PromptProductPurchase(Players.LocalPlayer, Config.Rebirth.SkipProductId)
 		else
 			showToast(false, "Skipping with Robux is coming soon!")
 		end

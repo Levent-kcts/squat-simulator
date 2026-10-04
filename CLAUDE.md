@@ -68,6 +68,9 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 - `src/server/WallService.luau`: oyuncu başına can takibi, hasar, Win butonları, zemin/yan duvarlar.
 - `src/client/init.client.luau`: HUD ve tıklama girişi. `WallClient.luau`: oyuncuya özel duvarlar ve can göstergesi. `Shop.luau`: mağaza arayüzü. `PetFollowers.luau`: pet görselleri.
 
+- Oyuncu dostu katman (client/Juice, Sfx, OverheadTags, Reveal, Guide, BoostHud; server/Leaderboards): hepsi SADECE görseldir/geri bildirimdir, oyun mantığını etkilemez ve init.client'ta `safeInit(loadOptional(...))` ile korumalı yüklenir (bir modül hata verirse oyun çalışır). Yeni özellik eklerken aynı kalıbı kullan. Sesler Config.Sounds'tan, nadirlik Config.Rarities'ten, çevrimdışı kazanç Config.Offline'dan gelir.
+- `tools/simulate.py`: Config.luau'daki sayılarla aktif bir oyuncunun ilerleyişini (rebirth zamanları, bölgeler, çarpanlar) simüle eder; denge ayarı yaparken önce/sonra bununla kıyasla (`python tools/simulate.py 12`). `tools/search.py` parametre aratır.
+
 ## Kurallar
 - README.md proje devir dosyasıdır. Her anlamlı değişiklikten sonra (yeni özellik, değişen kural, yeni karar, bulunan hata, yapılacaklar listesi) README.md'yi GÜNCELLE: yeni şeyleri ekle, artık geçerli olmayanları çıkar. Oturum sıfırlanınca devamlılık buradan sağlanır.
 - Para/skor/hasar/satın alma gibi her şey sunucuda hesaplanır. İstemciye asla güvenme.

@@ -89,6 +89,60 @@ return {
 		AutosaveInterval = 30, -- saniye (ayrıca Win/satın alma/pet sonrası da hemen kaydedilir)
 	},
 
+	-- Günlük giriş ödülü: her yeni günde (UTC) girişte otomatik verilir; art arda gelen günler seri oluşturur, bir gün atlanırsa seri 1'e döner.
+	-- 7 günlük döngü. kind: moves (amount kadar hareketin kazancı = amount x tıklama başı kazanç), stageWins (stage. aşamanın Win ödülü),
+	-- boostMuscle / boostWins (BoostMinutes dk 2x), pet (pet id). boosts = true ise iki güçlendirme birden eklenir.
+	DailyRewards = {
+		{ kind = "moves", amount = 400 },
+		{ kind = "boostMuscle" },
+		{ kind = "stageWins", stage = 5 },
+		{ kind = "moves", amount = 1500 },
+		{ kind = "boostWins" },
+		{ kind = "pet", pet = "tiger" },
+		{ kind = "moves", amount = 5000, boosts = true },
+	},
+
+	-- Shop (sol menüdeki Shop butonu): Robux ile alınan Developer Product'lar. productId: Creator Hub > Monetization > Developer Products'ta
+	-- oluşturulan ürünün ID'si; 0 = henüz yok, kart "Coming soon" gösterir. Satın alma sunucuda ProcessReceipt ile doğrulanır
+	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostMuscle / boostWins (minutes dk 2x), wins (amount Win),
+	-- stageWins (stage. aşamanın Win ödülü kadar), moves (amount hareketlik kas). Fiyatlar (robux) geçicidir.
+	Shop = {
+		Products = {
+			{ id = "boostMuscle30", name = "2x Muscle", detail = "30 minutes", icon = "⚡", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
+			{ id = "boostWins30", name = "2x Wins", detail = "30 minutes", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
+			{ id = "musclePack", name = "Muscle Pack", detail = "10,000 squats of muscle", icon = "💪", kind = "moves", amount = 10000, robux = 39, productId = 0, color = Color3.fromRGB(70, 150, 255) },
+			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 29, productId = 0, color = Color3.fromRGB(70, 210, 90) },
+			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
+		},
+	},
+
+	-- Kodlar (sol menüdeki CODES butonu): oyuncu kodu yazınca ödül alır, her kod hesap başına bir kez kullanılır (kayıtlı). Büyük/küçük harf fark etmez.
+	-- Ödül türleri günlük ödülle aynı (moves, wins, stageWins, boostMuscle, boostWins, pet). Pazarlama için buraya kendi kodlarını ekle.
+	Codes = {
+		WELCOME = { kind = "moves", amount = 600 },
+		SQUAT = { kind = "wins", amount = 25 },
+		BOOST = { kind = "boostMuscle" },
+	},
+
+	-- Çevrimdışı kazanç: oyundan uzakta geçen süre için girişte küçük bir bacak kası ödülü ("Welcome back!"). Süre MaxHours ile sınırlanır,
+	-- MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye / squat süresi) x tıklama başı kazanç x Rate (aktif oynamanın yüzdesi).
+	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300 },
+
+	-- Sesler (client/Sfx). id: "rbxasset://sounds/..." (Roblox'la gelen hazır sesler) ya da "rbxassetid://123456" (Creator Store'dan seçtiğin ses).
+	-- id = "" ise o olay sessiz kalır. volume 0-1, speed: { en yavaş, en hızlı } çalma hızı (her çalışta rastgele; ton çeşitliliği).
+	-- Aşağıdakiler geçici: Roblox'un kendi hazır sesleri. Daha güzel sesler için Creator Store'dan ses bulup id'leri değiştir.
+	Sounds = {
+		Hit = { id = "rbxasset://sounds/action_jump_land.mp3", volume = 0.35, speed = { 0.9, 1.15 } }, -- hareket bitince (kas kazanımı)
+		WallBreak = { id = "rbxasset://sounds/impact_explosion_03.mp3", volume = 0.5, speed = { 0.95, 1.2 } },
+		LevelUp = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.6, speed = { 1.9, 2.1 } },
+		Win = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.7, speed = { 1.5, 1.6 } },
+		Rebirth = { id = "rbxasset://sounds/action_get_up.mp3", volume = 0.8, speed = { 0.7, 0.75 } },
+		Hatch = { id = "rbxasset://sounds/impact_water.mp3", volume = 0.5, speed = { 1.3, 1.5 } },
+		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.7, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca
+		Buy = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.5, speed = { 1.3, 1.4 } },
+		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 0.6, 0.65 } },
+	},
+
 	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
 	Guide = { MaxStage = 3 },
 
@@ -103,6 +157,7 @@ return {
 		-- Sol duvardaki raflar: duvar boyunca Z konumu (+ arka duvara/yumurtalara doğru). Her raf rampalarıyla ~51 stud yer kaplar.
 		ShoeShelfZ = -36.75, -- ayakkabı rafı: koridor girişi tarafına yaslı (her raf rampalarıyla 50.5 stud, giriş duvarına 3 stud boşluk)
 		SkinShelfZ = 15.75, -- skin rafı: ayakkabı rafının hemen yanında (aralarında 2 stud). Sol duvarın arka ucu (z > 41) yeni şeyler için boş
+		LeaderboardZ = 53.5, -- sol duvarın arka ucundaki sıralama panoları (skin rafından sonra boş bırakılan köşe)
 		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı: koridor tarafına doğru kaydırıldı, duvarın arka ucu (z > 23) yeni şeyler için boş
 	},
 

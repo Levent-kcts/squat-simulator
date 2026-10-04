@@ -13,6 +13,14 @@ local Format = require(Shared:WaitForChild("Format"))
 
 local Juice = {}
 
+-- Ses modülü korumalı yüklenir: hata verirse efektler sessiz çalışır
+local okSfx, Sfx = pcall(require, script.Parent.Sfx)
+local function sfx(name)
+	if okSfx then
+		pcall(Sfx.play, name)
+	end
+end
+
 local player = Players.LocalPlayer
 local screenGuiRef = nil -- ekran ortası yazılar için (init'te verilir)
 
@@ -52,7 +60,8 @@ function Juice.floatText(text, color, sizeScale)
 	gui.Adornee = head
 	gui.MaxDistance = 90
 	gui.AlwaysOnTop = true
-	local startOffset = Vector3.new((math.random() - 0.5) * 2, head.Size.Y / 2 + 2.2, 0)
+	-- Baş üstü etiketinin (OverheadTags) üstünden başlar, onunla üst üste binmez
+	local startOffset = Vector3.new((math.random() - 0.5) * 2, head.Size.Y / 2 + 4.2, 0)
 	gui.StudsOffsetWorldSpace = startOffset
 	gui.Parent = head
 
@@ -65,8 +74,8 @@ function Juice.floatText(text, color, sizeScale)
 	Debris:AddItem(gui, 1.1)
 end
 
--- Ekranın ortasında büyüyüp kaybolan başlık ("LEVEL UP!")
-function Juice.banner(text, color)
+-- Ekranın ortasında büyüyüp kaybolan başlık ("LEVEL UP!"); subText verilirse altında küçük bir satır daha gösterilir
+function Juice.banner(text, color, subText)
 	if not screenGuiRef then
 		return
 	end
@@ -79,14 +88,27 @@ function Juice.banner(text, color)
 
 	local label, stroke = styledLabel(holder, text, color, 4)
 	label.AnchorPoint = Vector2.new(0.5, 0.5)
-	label.Position = UDim2.fromScale(0.5, 0.5)
+	label.Position = UDim2.fromScale(0.5, if subText then 0.34 else 0.5)
+	if subText then
+		label.Size = UDim2.fromScale(1, 0.6)
+	end
+
+	local fadeInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, if subText then 2.2 else 1.1)
+	TweenService:Create(label, fadeInfo, { TextTransparency = 1 }):Play()
+	TweenService:Create(stroke, fadeInfo, { Transparency = 1 }):Play()
+	if subText then
+		local sub, subStroke = styledLabel(holder, subText, Color3.new(1, 1, 1), 3)
+		sub.AnchorPoint = Vector2.new(0.5, 0.5)
+		sub.Position = UDim2.fromScale(0.5, 0.82)
+		sub.Size = UDim2.fromScale(1, 0.3)
+		TweenService:Create(sub, fadeInfo, { TextTransparency = 1 }):Play()
+		TweenService:Create(subStroke, fadeInfo, { Transparency = 1 }):Play()
+	end
 
 	-- Küçükten büyüğe zıplayarak açılır, bir süre durur, solar
 	holder.Size = UDim2.fromOffset(120, 36)
-	TweenService:Create(holder, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(420, 110) }):Play()
-	TweenService:Create(label, TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 1.1), { TextTransparency = 1 }):Play()
-	TweenService:Create(stroke, TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 1.1), { Transparency = 1 }):Play()
-	Debris:AddItem(holder, 1.8)
+	TweenService:Create(holder, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(if subText then 520 else 420, if subText then 130 else 110) }):Play()
+	Debris:AddItem(holder, if subText then 2.9 else 1.8)
 end
 
 -- Verilen konumda renkli parçacık patlaması (duvar kırılması, kutlama). size: patlamanın kapladığı hacim
@@ -162,6 +184,7 @@ function Juice.wallBroken(wallPart)
 	end
 	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), wallPart.Color, 90)
 	Juice.shake(0.35, 0.3)
+	sfx("WallBreak")
 end
 
 -- Karakterin etrafında yukarı fışkıran parıltılar (level atlama, rebirth)
@@ -177,8 +200,49 @@ local GOLD = Color3.fromRGB(255, 220, 70)
 local PINK = Color3.fromRGB(255, 90, 190)
 local GREEN = Color3.fromRGB(120, 255, 160)
 
+-- 3725 -> "1h 2m"
+local function duration(seconds)
+	local hours = seconds // 3600
+	local minutes = (seconds % 3600) // 60
+	if hours > 0 then
+		return `{hours}h {minutes}m`
+	end
+	return `{math.max(1, minutes)}m`
+end
+
 function Juice.init(screenGui)
 	screenGuiRef = screenGui
+
+	-- Çevrimdışı kazanç: sunucu girişte OfflineGain / OfflineSeconds özniteliklerini ayarlar
+	local function showOffline()
+		local gained = player:GetAttribute("OfflineGain")
+		local away = player:GetAttribute("OfflineSeconds")
+		if type(gained) == "number" and type(away) == "number" and gained > 0 then
+			Juice.banner("WELCOME BACK!", GREEN)
+			Juice.floatText(`+{Format.compact(gained)} while away ({duration(away)})`, GREEN, 2)
+			player:SetAttribute("OfflineGain", nil)
+		end
+	end
+	player:GetAttributeChangedSignal("OfflineGain"):Connect(function()
+		task.delay(1.5, showOffline) -- karakter ve arayüz otursun
+	end)
+	task.delay(2.5, showOffline) -- öznitelik istemci başlamadan önce gelmiş olabilir
+
+	-- Günlük giriş ödülü: sunucu DailyText / DailyDay / DailyStreak özniteliklerini girişte ayarlar
+	local function showDaily()
+		local text = player:GetAttribute("DailyText")
+		if type(text) == "string" and text ~= "" then
+			local day = player:GetAttribute("DailyDay") or 1
+			local streak = player:GetAttribute("DailyStreak") or 1
+			Juice.banner("DAILY REWARD!", GOLD, `Day {day} - {text}` .. (if streak > 1 then `  (streak {streak})` else ""))
+			Juice.celebrate(GOLD, 60)
+			player:SetAttribute("DailyText", nil)
+		end
+	end
+	player:GetAttributeChangedSignal("DailyText"):Connect(function()
+		task.delay(1.5, showDaily)
+	end)
+	task.delay(5, showDaily) -- hoş geldin yazısından sonra
 
 	local leaderstats = player:WaitForChild("leaderstats")
 	local muscle = leaderstats:WaitForChild(Config.StatLegMuscle)
@@ -199,6 +263,7 @@ function Juice.init(screenGui)
 		if delta > 0 and ready() then
 			local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
 			Juice.floatText(`+{Format.compact(delta)}`, if inArea then GREEN else GOLD)
+			sfx("Hit")
 		end
 	end)
 
@@ -208,6 +273,7 @@ function Juice.init(screenGui)
 		if delta > 0 and ready() then
 			Juice.floatText(`+{Format.compact(delta)} Wins`, Color3.fromRGB(255, 200, 60), 1.3)
 			Juice.celebrate(Color3.fromRGB(255, 210, 60), 25)
+			sfx("Win")
 		end
 	end)
 
@@ -222,6 +288,7 @@ function Juice.init(screenGui)
 				Juice.banner("LEVEL UP!", GOLD)
 			end
 			Juice.celebrate(GOLD, 40)
+			sfx("LevelUp")
 		end
 	end)
 
@@ -232,6 +299,7 @@ function Juice.init(screenGui)
 			Juice.banner("REBIRTH!", PINK)
 			Juice.celebrate(PINK, 90)
 			Juice.shake(0.5, 0.5)
+			sfx("Rebirth")
 		end
 	end)
 end

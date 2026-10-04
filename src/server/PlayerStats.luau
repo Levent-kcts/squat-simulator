@@ -1,4 +1,5 @@
 local DataStoreService = game:GetService("DataStoreService")
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -6,6 +7,8 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Progression = require(Shared:WaitForChild("Progression"))
+local Layout = require(Shared:WaitForChild("Layout"))
+local Format = require(Shared:WaitForChild("Format"))
 
 local PlayerStats = {}
 
@@ -46,7 +49,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", EquippedPets = {} }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, LastLoginDay = 0, LoginStreak = 0, Redeemed = {}, Receipts = {}, EquippedPets = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -56,6 +59,29 @@ local function sanitize(raw)
 	end
 	if type(raw.Wins) == "number" then
 		data.Wins = math.max(0, math.floor(raw.Wins))
+	end
+	if type(raw.LastSeen) == "number" then
+		data.LastSeen = math.max(0, math.floor(raw.LastSeen))
+	end
+	if type(raw.LastLoginDay) == "number" then
+		data.LastLoginDay = math.max(0, math.floor(raw.LastLoginDay))
+	end
+	if type(raw.Redeemed) == "table" then
+		for _, code in raw.Redeemed do
+			if type(code) == "string" and Config.Codes[code] and not table.find(data.Redeemed, code) then
+				table.insert(data.Redeemed, code)
+			end
+		end
+	end
+	if type(raw.Receipts) == "table" then
+		for _, id in raw.Receipts do
+			if type(id) == "string" and #data.Receipts < 300 then
+				table.insert(data.Receipts, id)
+			end
+		end
+	end
+	if type(raw.LoginStreak) == "number" then
+		data.LoginStreak = math.max(0, math.floor(raw.LoginStreak))
 	end
 	if type(raw.Rebirths) == "number" then
 		data.Rebirths = math.max(0, math.floor(raw.Rebirths))
@@ -281,6 +307,11 @@ local function save(player)
 		EquippedItem = profile.equippedShoe,
 		Skins = profile.skins,
 		EquippedSkin = profile.equippedSkin,
+		LastSeen = os.time(),
+		LastLoginDay = profile.lastLoginDay,
+		LoginStreak = profile.loginStreak,
+		Redeemed = profile.redeemed,
+		Receipts = profile.receipts,
 		Pets = profile.pets,
 		Trails = profile.trails,
 		EquippedTrail = profile.equippedTrail,
@@ -321,6 +352,62 @@ local function requestSave(player)
 			save(player)
 		end
 	end)
+end
+
+-- 2x güçlendirmeyi başlatır (kind: "boostMuscle" / "boostWins"); süre bitince kazanç yeniden hesaplanır
+local function startBoost(player, profile, kind, minutes)
+	local seconds = (minutes or Config.BoostMinutes) * 60
+	if kind == "boostMuscle" then
+		profile.boostMuscleUntil = os.time() + seconds
+	else
+		profile.boostWinsUntil = os.time() + seconds
+	end
+	task.delay(seconds + 1, function()
+		if profiles[player] == profile then
+			refresh(player)
+		end
+	end)
+end
+
+-- Bir ödülü verir (günlük giriş ödülü ve kodlar). Dönüş: kısa açıklama ("+2.0K Leg Muscle", "2x Wins (10m)" ...)
+local function grantReward(player, profile, reward)
+	local muscle = getStat(player, Config.StatLegMuscle)
+	local wins = getStat(player, Config.StatWins)
+	local parts = {}
+	if reward.kind == "moves" then
+		local gained = reward.amount * profile.gain
+		muscle.Value += gained
+		table.insert(parts, `+{Format.compact(gained)} Leg Muscle`)
+	elseif reward.kind == "wins" then
+		wins.Value += reward.amount
+		table.insert(parts, `+{Format.compact(reward.amount)} Wins`)
+	elseif reward.kind == "stageWins" then
+		local amount = Layout.reward(reward.stage)
+		wins.Value += amount
+		table.insert(parts, `+{Format.compact(amount)} Wins`)
+	elseif reward.kind == "boostMuscle" or reward.kind == "boostWins" then
+		startBoost(player, profile, reward.kind)
+		table.insert(parts, if reward.kind == "boostMuscle" then `2x Muscle ({Config.BoostMinutes}m)` else `2x Wins ({Config.BoostMinutes}m)`)
+	elseif reward.kind == "pet" then
+		local pet = Catalog.PetById[reward.pet]
+		if pet and #profile.pets < Config.MaxOwnedPets then
+			table.insert(profile.pets, pet.id)
+			if #profile.equipped < Config.MaxEquippedPets then
+				table.insert(profile.equipped, pet.id)
+			end
+			table.insert(parts, `New pet: {pet.name}!`)
+		else
+			local amount = Layout.reward(6) -- pet envanteri doluysa yerine Win
+			wins.Value += amount
+			table.insert(parts, `+{Format.compact(amount)} Wins`)
+		end
+	end
+	if reward.boosts then
+		startBoost(player, profile, "boostMuscle")
+		startBoost(player, profile, "boostWins")
+		table.insert(parts, `2x Muscle + Wins ({Config.BoostMinutes}m)`)
+	end
+	return table.concat(parts, " + ")
 end
 
 local function setup(player)
@@ -364,6 +451,10 @@ local function setup(player)
 		boostMuscleUntil = 0, -- os.time() cinsinden süreli 2x güçlendirme bitişleri
 		boostWinsUntil = 0,
 		claimedGifts = {}, -- oyun süresi ödülleri (bu oturum)
+		lastLoginDay = 0, -- günlük giriş ödülü: son giriş günü (UTC gün numarası) ve art arda gün sayısı
+		loginStreak = 0,
+		redeemed = {}, -- kullanılmış kodlar
+		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
 		gain = 1,
 		damageMultiplier = 1,
@@ -382,6 +473,8 @@ local function setup(player)
 	profile.equippedShoe = data.EquippedItem
 	profile.skins = data.Skins
 	profile.equippedSkin = data.EquippedSkin
+	profile.redeemed = data.Redeemed
+	profile.receipts = data.Receipts
 	profile.pets = data.Pets
 	profile.trails = data.Trails
 	profile.equippedTrail = data.EquippedTrail
@@ -407,6 +500,41 @@ local function setup(player)
 
 	profile.loaded = true
 	refresh(player)
+
+	-- Çevrimdışı kazanç: uzakta geçen süre için küçük bir bacak kası ödülü (istemci "Welcome back!" gösterir)
+	local offline = Config.Offline
+	if ok and offline and offline.Enabled and data.LastSeen > 0 then
+		local away = math.clamp(os.time() - data.LastSeen, 0, offline.MaxHours * 3600)
+		if away >= offline.MinSeconds then
+			local gained = math.floor(away / Config.MoveDuration.Squat * profile.gain * offline.Rate)
+			if gained > 0 then
+				muscle.Value += gained
+				syncLevel(player)
+				refresh(player)
+				player:SetAttribute("OfflineSeconds", away)
+				player:SetAttribute("OfflineGain", gained)
+			end
+		end
+	end
+
+	-- Günlük giriş ödülü: yeni günde (UTC) otomatik verilir; art arda günler seri oluşturur (Studio'da kayıt kapalıyken de test için verilir)
+	local today = os.time() // 86400
+	if (profile.canSave or RunService:IsStudio()) and today > data.LastLoginDay and #Config.DailyRewards > 0 then
+		local streak = if data.LastLoginDay > 0 and today == data.LastLoginDay + 1 then data.LoginStreak + 1 else 1
+		local day = (streak - 1) % #Config.DailyRewards + 1
+		local text = grantReward(player, profile, Config.DailyRewards[day])
+		profile.lastLoginDay = today
+		profile.loginStreak = streak
+		syncLevel(player)
+		refresh(player)
+		requestSave(player)
+		player:SetAttribute("DailyDay", day)
+		player:SetAttribute("DailyStreak", streak)
+		player:SetAttribute("DailyText", text)
+	else
+		profile.lastLoginDay = data.LastLoginDay
+		profile.loginStreak = data.LoginStreak
+	end
 	-- Oyun süresi ödülleri için sayaç buradan başlar (istemci aynı sunucu saatiyle geri sayar)
 	profile.sessionStart = workspace:GetServerTimeNow()
 	player:SetAttribute("SessionStart", profile.sessionStart)
@@ -463,6 +591,42 @@ function PlayerStats.addMuscle(player, areaMultiplier)
 	return stat.Value, gained
 end
 
+-- Kod kullanır (Config.Codes). Her kod hesap başına bir kez; deneme-yanılmayı yavaşlatmak için 2 saniyede bir istek. Dönüş: başarılı mı, mesaj
+local lastCodeTry = {}
+function PlayerStats.redeemCode(player, text)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	local now = os.clock()
+	if now - (lastCodeTry[player] or 0) < 2 then
+		return false, "Slow down!"
+	end
+	lastCodeTry[player] = now
+
+	local code = string.upper((string.gsub(string.sub(tostring(text), 1, 32), "%s", "")))
+	local reward = Config.Codes[code]
+	if code == "" or not reward then
+		return false, "Invalid code."
+	end
+	if table.find(profile.redeemed, code) then
+		return false, "You already used this code."
+	end
+
+	table.insert(profile.redeemed, code)
+	local description = grantReward(player, profile, reward)
+	syncLevel(player)
+	refresh(player)
+	requestSave(player)
+	return true, `Code redeemed! {description}`
+end
+
+-- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
+function PlayerStats.canSave(player)
+	local profile = profiles[player]
+	return profile ~= nil and profile.canSave == true
+end
+
 -- Antrenman alanı bu oyuncu için açık mı (sunucu doğrulaması): rebirth sayısına bakar
 function PlayerStats.isAreaUnlocked(player, area)
 	local profile = profiles[player]
@@ -489,7 +653,7 @@ function PlayerStats.addTap(player)
 end
 
 -- Dönüş: başarılı mı, mesaj
-function PlayerStats.rebirth(player)
+function PlayerStats.rebirth(player, force)
 	local profile = profiles[player]
 	local levelStat = getStat(player, Config.StatLevel)
 	local rebirthStat = getStat(player, Config.StatRebirths)
@@ -500,7 +664,7 @@ function PlayerStats.rebirth(player)
 	end
 
 	local maxLevel = Progression.maxLevel(rebirthStat.Value)
-	if levelStat.Value < maxLevel then
+	if not force and levelStat.Value < maxLevel then
 		return false, `Reach level {maxLevel} to rebirth!`
 	end
 
@@ -516,6 +680,70 @@ function PlayerStats.rebirth(player)
 	refresh(player)
 	requestSave(player)
 	return true, `Rebirth {rebirthStat.Value}! Permanent x{Progression.rebirthMultiplier(rebirthStat.Value)} multiplier.`
+end
+
+-- Robux ürününün ödülünü verir (product: Config.Shop.Products satırı ya da { kind = "trail"/"aura", id } / { kind = "skip" }).
+-- Dönüş: verildi mi
+local function applyProduct(player, profile, product)
+	local muscle = getStat(player, Config.StatLegMuscle)
+	local wins = getStat(player, Config.StatWins)
+	if not muscle or not wins then
+		return false
+	end
+	if product.kind == "trail" then
+		if not Catalog.TrailById[product.id] then
+			return false
+		end
+		if not table.find(profile.trails, product.id) then
+			table.insert(profile.trails, product.id)
+		end
+		profile.equippedTrail = product.id
+	elseif product.kind == "aura" then
+		if not Catalog.AuraById[product.id] then
+			return false
+		end
+		if not table.find(profile.auras, product.id) then
+			table.insert(profile.auras, product.id)
+		end
+		profile.equippedAura = product.id
+	elseif product.kind == "skip" then
+		-- Level şartını atlayarak rebirth (sunucuda yapılır; duvarları sıfırlamayı Purchases çağırır)
+		return (PlayerStats.rebirth(player, true))
+	elseif product.kind == "boostMuscle" or product.kind == "boostWins" then
+		startBoost(player, profile, product.kind, product.minutes)
+	elseif product.kind == "wins" then
+		wins.Value += product.amount
+	elseif product.kind == "stageWins" then
+		wins.Value += Layout.reward(product.stage)
+	elseif product.kind == "moves" then
+		muscle.Value += product.amount * profile.gain
+		syncLevel(player)
+	else
+		return false
+	end
+	refresh(player)
+	return true
+end
+
+-- ProcessReceipt'ten çağrılır: satın almayı işler. Dönüş: işlendi mi (false = Roblox daha sonra tekrar dener).
+-- Aynı purchaseId ikinci kez gelirse ödül TEKRAR verilmez ama işlendi sayılır. Kaydedilemeyecek oyuncuya (veri yüklenemedi) verilmez.
+function PlayerStats.processPurchase(player, purchaseId, product)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or not profile.canSave then
+		return false
+	end
+	if table.find(profile.receipts, purchaseId) then
+		return true
+	end
+	if not applyProduct(player, profile, product) then
+		return false
+	end
+	table.insert(profile.receipts, purchaseId)
+	if #profile.receipts > 300 then
+		table.remove(profile.receipts, 1)
+	end
+	requestSave(player)
+	return true
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
@@ -945,20 +1173,10 @@ function PlayerStats.claimGift(player, index)
 		end
 		message = `New pet: {pet.name}!`
 	elseif reward.kind == "boostMuscle" or reward.kind == "boostWins" then
-		local seconds = Config.BoostMinutes * 60
-		if reward.kind == "boostMuscle" then
-			profile.boostMuscleUntil = os.time() + seconds
-			message = `2x Leg Muscle for {Config.BoostMinutes} minutes!`
-		else
-			profile.boostWinsUntil = os.time() + seconds
-			message = `2x Wins for {Config.BoostMinutes} minutes!`
-		end
-		-- Süre bitince kazanç yeniden hesaplansın
-		task.delay(seconds + 1, function()
-			if profiles[player] == profile then
-				refresh(player)
-			end
-		end)
+		startBoost(player, profile, reward.kind)
+		message = if reward.kind == "boostMuscle"
+			then `2x Leg Muscle for {Config.BoostMinutes} minutes!`
+			else `2x Wins for {Config.BoostMinutes} minutes!`
 	else
 		return false, "Unknown reward."
 	end

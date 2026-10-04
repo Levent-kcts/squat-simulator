@@ -6,6 +6,7 @@
 --   items (Config listesi), ownedAttr, equippedAttr, buyAction, equipAction,
 --   bonusText(item) -> kartta gösterilen bonus yazısı, previewKind = "trail" | "aura",
 -- }
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -213,7 +214,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 				)
 				button(62, 48, Color3.fromRGB(50, 150, 255), `R$ {item.robuxPrice}`, function()
 					if item.robuxProductId > 0 then
-						showToast(false, "Robux purchases are not enabled yet.")
+						-- Satın alma penceresi açılır; ödülü sunucu ProcessReceipt ile verir (server/Purchases)
+						MarketplaceService:PromptProductPurchase(Players.LocalPlayer, item.robuxProductId)
 					else
 						showToast(false, "Robux purchases are coming soon!")
 					end

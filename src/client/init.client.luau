@@ -166,6 +166,27 @@ local backpackButton = makeGridButton(4, "🎒", "Backpack", Color3.fromRGB(235,
 local petsButton = makeGridButton(5, "🐾", "Pets", Color3.fromRGB(215, 120, 50))
 local giftsButton = makeGridButton(6, "🎁", "Gifts", Color3.fromRGB(70, 200, 70))
 
+-- Kodlar: butonların altında küçük bir hap buton, kod giriş penceresini açar (CodesPanel)
+local codesButton = create("TextButton", {
+	Position = UDim2.fromOffset(14, 160 + 3 * 82 + 4),
+	Size = UDim2.fromOffset(156, 34),
+	Text = "",
+	AutoButtonColor = true,
+	BackgroundColor3 = Color3.fromRGB(235, 120, 40),
+}, screenGui)
+create("UICorner", { CornerRadius = UDim.new(0, 17) }, codesButton)
+create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, codesButton)
+makeText(codesButton, {
+	Position = UDim2.fromOffset(8, 3),
+	Size = UDim2.new(1, -16, 1, -6),
+	Text = "🔑 CODES",
+	TextColor3 = Color3.new(1, 1, 1),
+}, 22, 2)
+
+-- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
+local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
+local rebirthPulseTween = TweenService:Create(rebirthPulse, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
+
 -- Gifts butonundaki alınabilir ödül sayısı rozeti
 local giftsBadge = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0.5),
@@ -199,11 +220,12 @@ end
 local trailsButton = makeMenuButton(0, "✨", "Trails", Color3.fromRGB(255, 70, 170))
 local aurasButton = makeMenuButton(1, "🔮", "Auras", Color3.fromRGB(170, 70, 240))
 
--- Işınlanma butonları: sağ altta küçük yuvarlak simgeler (Eggs, Shoes, Walls, Home)
+-- Işınlanma butonları: sağ altta küçük yuvarlak simgeler (Eggs, Shoes, Skins, Train, Walls, Home)
+local TELEPORT_COUNT = 6
 local function makeTeleportButton(order, icon, color, destination, tip)
 	local button = create("TextButton", {
 		AnchorPoint = Vector2.new(1, 1),
-		Position = UDim2.new(1, -14 - (4 - order) * 58, 1, -14),
+		Position = UDim2.new(1, -14 - (TELEPORT_COUNT - order) * 58, 1, -14),
 		Size = UDim2.fromOffset(50, 50),
 		Text = "",
 		AutoButtonColor = true,
@@ -223,8 +245,10 @@ local function makeTeleportButton(order, icon, color, destination, tip)
 end
 makeTeleportButton(1, "🥚", Color3.fromRGB(40, 190, 230), "Eggs")
 makeTeleportButton(2, "👟", Color3.fromRGB(240, 200, 40), "Shoes")
-makeTeleportButton(3, "🧱", Color3.fromRGB(230, 70, 70), "Walls")
-makeTeleportButton(4, "🏠", Color3.fromRGB(70, 200, 100), "Home")
+makeTeleportButton(3, "🎨", Color3.fromRGB(190, 90, 255), "Skins")
+makeTeleportButton(4, "💪", Color3.fromRGB(60, 120, 255), "Train")
+makeTeleportButton(5, "🧱", Color3.fromRGB(230, 70, 70), "Walls")
+makeTeleportButton(6, "🏠", Color3.fromRGB(70, 200, 100), "Home")
 
 -- Rebirth butonunun üstündeki yüzde rozeti (level / üst sınır)
 local rebirthBadge = makeText(rebirthButton, {
@@ -379,26 +403,47 @@ player:GetAttributeChangedSignal("DataError"):Connect(refresh)
 refresh()
 
 -- Duvar ilerlemesi: üstteki hedef şeridi
+-- Banner iki kaynaktan beslenir: duvar ilerlemesi ve antrenman alanı (alandayken "Training..." yazar, çıkınca duvar yazısına döner)
+local progressText = bannerText.Text
+
+local function refreshBanner()
+	local areaId = player:GetAttribute("TrainingArea") or ""
+	local area = nil
+	for _, candidate in Config.Training.Areas do
+		if candidate.id == areaId then
+			area = candidate
+		end
+	end
+	if area then
+		bannerText.Text = `Training with {area.trainer}: x{string.format("%g", area.mult)} Squat!`
+	else
+		bannerText.Text = progressText
+	end
+end
+
 local function onProgress(frontier)
 	local broken = frontier - 1
 
 	if frontier > cfg.Count then
-		bannerText.Text = "Last wall broken! Step on the yellow WIN button!"
+		progressText = "Last wall broken! Step on the yellow WIN button!"
 	elseif broken == 0 then
-		bannerText.Text = "Walk into the corridor, get close to the walls and tap!"
+		progressText = "Walk into the corridor, get close to the walls and tap!"
 	elseif broken % cfg.GroupSize == 0 then
 		local done = broken // cfg.GroupSize
-		bannerText.Text = `Stage {done} complete! Step on the yellow WIN (+{Layout.reward(done)} Wins) or keep going`
+		progressText = `Stage {done} complete! Step on the yellow WIN (+{Layout.reward(done)} Wins) or keep going`
 	else
-		bannerText.Text = `Break the walls! ({broken % cfg.GroupSize}/{cfg.GroupSize})`
+		progressText = `Break the walls! ({broken % cfg.GroupSize}/{cfg.GroupSize})`
 	end
+	refreshBanner()
 end
+player:GetAttributeChangedSignal("TrainingArea"):Connect(refreshBanner)
 
 ShoeShop.init()
 SkinShop.init()
 TrainingClient.init()
 safeInit("Juice", loadOptional("Juice"), screenGui)
 safeInit("OverheadTags", loadOptional("OverheadTags"))
+safeInit("BoostHud", loadOptional("BoostHud"), screenGui)
 EggShop.init(screenGui)
 DevPanel.init(screenGui)
 PetFollowers.init()
@@ -481,9 +526,20 @@ local toast = makeText(screenGui, {
 }, 28, 3)
 local toastId = 0
 
+local Sfx = loadOptional("Sfx")
+
+
 local function showToast(ok, message)
 	toastId += 1
 	local id = toastId
+	-- Başarısız işlemde (Win yetmedi, yer yok...) hata sesi; satın alma/takma başarılıysa satın alma sesi
+	if Sfx then
+		if not ok then
+			pcall(Sfx.play, "Error")
+		elseif string.find(message, "^Bought") or string.find(message, "^Equipped") then
+			pcall(Sfx.play, "Buy")
+		end
+	end
 	toast.Text = message
 	toast.TextColor3 = if ok then Color3.fromRGB(110, 255, 140) else Color3.fromRGB(255, 120, 120)
 	toast.Visible = true
@@ -492,6 +548,19 @@ local function showToast(ok, message)
 			toast.Visible = false
 		end
 	end)
+end
+
+-- Kod giriş penceresi (korumalı yüklenir: hata verirse sadece CODES butonu çalışmaz)
+local CodesPanelModule = loadOptional("CodesPanel")
+if CodesPanelModule then
+	local okInit, toggleCodes = pcall(CodesPanelModule.init, screenGui, function(ok, message)
+		showToast(ok, message)
+	end)
+	if okInit then
+		codesButton.MouseButton1Click:Connect(toggleCodes)
+	else
+		warn(`[Client] CodesPanel init failed: {toggleCodes}`)
+	end
 end
 
 notifyEvent.OnClientEvent:Connect(showToast)
@@ -522,6 +591,12 @@ local function refreshLevel()
 	rebirthBadge.Text = `{math.floor(math.clamp(level / maxLevel, 0, 1) * 100)}%`
 	rebirthCaption.Text = if rebirthReady then "REBIRTH!" else "Rebirth"
 	rebirthButton.BackgroundColor3 = if rebirthReady then Color3.fromRGB(255, 60, 160) else Color3.fromRGB(90, 90, 105)
+	if rebirthReady then
+		rebirthPulseTween:Play()
+	else
+		rebirthPulseTween:Cancel()
+		rebirthPulse.Scale = 1
+	end
 end
 
 levelValue:GetPropertyChangedSignal("Value"):Connect(refreshLevel)
@@ -603,9 +678,23 @@ aurasButton.MouseButton1Click:Connect(function()
 	aurasPanel.show()
 end)
 
--- Shop (Robux ve özel eşyalar) daha sonra yapılacak
+-- Shop: Robux ürünleri penceresi (korumalı yüklenir: hata verirse buton "coming soon" der)
+local ShopPanelModule = loadOptional("ShopPanel")
+local toggleShop = nil
+if ShopPanelModule then
+	local okShop, result = pcall(ShopPanelModule.init, screenGui, showToast)
+	if okShop then
+		toggleShop = result
+	else
+		warn(`[Client] ShopPanel init failed: {result}`)
+	end
+end
 shopButton.MouseButton1Click:Connect(function()
-	showToast(false, "Shop is coming soon!")
+	if toggleShop then
+		toggleShop()
+	else
+		showToast(false, "Shop is coming soon!")
+	end
 end)
 
 -- Sounds: ses ayarı. Oyunda henüz ses yok; bayrak ileride eklenecek sesler için hazır tutuluyor.
