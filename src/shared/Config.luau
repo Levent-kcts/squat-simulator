@@ -177,6 +177,10 @@ return {
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
 
+	-- Pet Index (koleksiyon defteri, sağ üstteki kitap simgesi): sahip olunan her YENİ pet türü kalıcı olarak keşfedilir (pet silinse de kalır);
+	-- keşfedilen her tür bacak kası kazancına +PercentPerPet yüzdesi ekler (13 tür = en çok +%13). Küçük tutuldu, dengeyi bozmasın diye.
+	Index = { PercentPerPet = 1 },
+
 	-- Oyuncu ayarları (sol menüdeki Settings penceresi, client/SettingsPanel). key = Player özniteliği: false kapalı, yoksa/true açık.
 	-- Sunucu bu anahtarları kaydeder (PlayerStats.setSetting; listede olmayan anahtar kabul edilmez). Yeni ayar eklemek için buraya satır ekle
 	-- ve ilgili yerde özniteliğe bak.
@@ -192,6 +196,8 @@ return {
 	-- Hazır, şeffaf arka planlı görseller assets/icons/ klasöründe (shop, rebirth, settings, backpack, pets, gifts: 256x256 PNG).
 	-- Studio'da Asset Manager > Bulk Import ile yükle, çıkan ID'leri buraya yaz.
 	Icons = {
+		Index = "", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
+		Stats = "", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
 		Wins = "", -- sol üstteki Win sayacının kupa simgesi (görsel yüklenince ID yazılır; boşken 🏆 emojisi)
 		Friends = "rbxassetid://139194631320002", -- sağ üstteki arkadaş bonusu simgesi: sahibinin yüklediği 'friends' görseli (Image türü, doğrulandı). Boş bırakılırsa 👥 emojisi
 		LegMuscle = "rbxassetid://81118324194991", -- Offline Earnings penceresindeki büyük bacak kası simgesi: sahibinin yüklediği "leg-emoji-clipart-xl" görseli (Image türü, doğrulandı). Boş bırakılırsa 🦵 emojisi görünür

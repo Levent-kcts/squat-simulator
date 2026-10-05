@@ -55,7 +55,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {} }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -81,6 +81,13 @@ local function sanitize(raw)
 	end
 	if type(raw.MusicLevel) == "number" then
 		data.MusicLevel = math.clamp(math.floor(raw.MusicLevel), 0, Config.Music.maxLevel)
+	end
+	if type(raw.Discovered) == "table" then
+		for _, id in raw.Discovered do
+			if Catalog.PetById[id] and not table.find(data.Discovered, id) then
+				table.insert(data.Discovered, id)
+			end
+		end
 	end
 	if type(raw.Settings) == "table" then
 		for key, value in raw.Settings do
@@ -253,6 +260,16 @@ local function refresh(player)
 	local aura = Catalog.AuraById[profile.equippedAura]
 	local auraMultiplier = if aura then aura.mult else 1
 	local boostMultiplier = if os.time() < profile.boostMuscleUntil then 2 else 1
+	-- Pet Index: sahip olunan her tür keşfedilir (silinse de kalır); keşfedilen her tür +%X (Config.Index)
+	for _, id in profile.pets do
+		profile.discovered[id] = true
+	end
+	local discoveredIds = {}
+	for id in profile.discovered do
+		table.insert(discoveredIds, id)
+	end
+	local indexPercent = #discoveredIds * Config.Index.PercentPerPet
+
 	-- Arkadaş bonusu: sunucudaki her arkadaş için +%X (Config.Friends)
 	local friendsConfig = Config.Friends
 	local friendCount = if friendsConfig.Enabled then math.min(friendCounts[player] or 0, friendsConfig.MaxFriends) else 0
@@ -264,6 +281,7 @@ local function refresh(player)
 		* skinMultiplier
 		* boostMultiplier
 		* (1 + friendPercent / 100)
+		* (1 + indexPercent / 100)
 
 	profile.gain = math.max(1, math.floor(Config.MusclePerClick * totalMultiplier))
 
@@ -273,6 +291,8 @@ local function refresh(player)
 	player:SetAttribute("TotalMultiplier", totalMultiplier)
 	player:SetAttribute("FriendCount", friendCount)
 	player:SetAttribute("FriendBonus", friendPercent)
+	player:SetAttribute("DiscoveredPets", table.concat(discoveredIds, ","))
+	player:SetAttribute("IndexBonus", indexPercent)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
@@ -328,6 +348,13 @@ local function save(player)
 		OfflineSeconds = profile.offlineSeconds,
 		MusicLevel = profile.musicLevel,
 		Settings = profile.settings,
+		Discovered = (function()
+			local list = {}
+			for id in profile.discovered do
+				table.insert(list, id)
+			end
+			return list
+		end)(),
 		Receipts = profile.receipts,
 		Pets = profile.pets,
 		Trails = profile.trails,
@@ -451,6 +478,7 @@ local function setup(player)
 		offlineSeconds = 0,
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
+		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
 		gain = 1,
@@ -472,6 +500,9 @@ local function setup(player)
 	profile.equippedSkin = data.EquippedSkin
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
+	for _, id in data.Discovered do
+		profile.discovered[id] = true
+	end
 	profile.settings = data.Settings
 	for key, value in data.Settings do
 		player:SetAttribute(key, value)
@@ -1258,6 +1289,12 @@ function PlayerStats.dev(player, command, amount)
 		local pet = rollPet(Config.Eggs[rng:NextInteger(1, #Config.Eggs)])
 		table.insert(profile.pets, pet.id)
 		message = `Free pet: {pet.name}`
+	elseif command == "DiscoverAll" then
+		-- Pet Index'i denemek için bütün petleri keşfedilmiş sayar
+		for _, pet in Config.Pets do
+			profile.discovered[pet.id] = true
+		end
+		message = "All pets discovered in the Index"
 	elseif command == "FakeFriends" then
 		-- Studio'da arkadaş olmadan bonusu denemek için sahte arkadaş sayısı (gerçek sayım bir sonraki giriş/çıkışta üzerine yazar)
 		friendCounts[player] = math.clamp(amount, 0, 20)
@@ -1308,6 +1345,7 @@ function PlayerStats.dev(player, command, amount)
 		profile.equipped = {}
 		profile.boostMuscleUntil = 0
 		profile.boostWinsUntil = 0
+		profile.discovered = {}
 		profile.offlinePending = 0
 		profile.offlineSeconds = 0
 		publishOffline(player, profile)

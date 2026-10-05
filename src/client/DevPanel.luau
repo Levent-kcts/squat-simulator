@@ -20,6 +20,7 @@ local BUTTONS = {
 	{ "All Shoes", "AllShoes" },
 	{ "All Skins", "AllSkins" },
 	{ "Free Pet", "FreePet" },
+	{ "Discover All Pets", "DiscoverAll" },
 	{ "Break Stage", "BreakStage" },
 	{ "TP to Walls", "TeleportToWalls" },
 	{ "Gifts +10 min", "GiftTime", 10 },

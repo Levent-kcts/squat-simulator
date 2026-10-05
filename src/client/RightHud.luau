@@ -33,8 +33,8 @@ local function text(parent, props, strokeThickness)
 	return label
 end
 
--- openGifts: Gifts menüsünü açıp kapatan fonksiyon; showToast(ok, mesaj): kısa bildirim (ikisini de init.client verir)
-function RightHud.init(screenGui, openGifts, showToast)
+-- openGifts / openIndex / openStats: pencereleri açıp kapatan fonksiyonlar; showToast(ok, mesaj): kısa bildirim (hepsini init.client verir)
+function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats)
 	local player = Players.LocalPlayer
 
 	local container = create("Frame", {
@@ -135,13 +135,6 @@ function RightHud.init(screenGui, openGifts, showToast)
 	end)
 	refreshReward()
 
-	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------
-	-- Referans oyundaki gibi küçük iki yüzlü simge ve altında yüzde: arkadaş yokken "0%", her arkadaşta +%10 ("10%", "20%" ...).
-	-- Üstüne gelince küçük bir açıklama çıkar (kaç arkadaş, kaç yüzde, en çok kaç). TIKLAYINCA Roblox'un kendi "Invite Friends" penceresi açılır
-	-- (SocialService:PromptGameInvite): arkadaş listesi, arama ve link kopyalama Roblox'tan gelir; davet kabul edilince arkadaş oyuna girer ve bonus başlar.
-	if not Config.Friends.Enabled then
-		return
-	end
 	-- Roblox'un üst çubuğu (~58 px) normal ScreenGui'lerde boş bırakılır; köşede, o çubukla aynı hizada durması için AYRI bir ScreenGui kullanılır
 	-- (IgnoreGuiInset = true). Eskiden ana ScreenGui'deydi ve üst çubuğun altından başladığı için köşeden çok aşağıda duruyordu.
 	local cornerGui = create("ScreenGui", {
@@ -150,6 +143,88 @@ function RightHud.init(screenGui, openGifts, showToast)
 		IgnoreGuiInset = true,
 		DisplayOrder = 2,
 	}, player:WaitForChild("PlayerGui"))
+
+	-- Sağ üst daireler (referanstaki gibi siyah daireler, sağdan sola: Arkadaş bonusu, Stats, Index). Her biri 60 px genişliğinde sütun.
+	local function circleButton(name, slot, imageId, emoji)
+		local column = create("TextButton", {
+			Name = name,
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -10 - slot * 64, 0, 3),
+			Size = UDim2.fromOffset(60, 82),
+			Text = "",
+			AutoButtonColor = false,
+			BackgroundTransparency = 1,
+		}, cornerGui)
+		local disc = create("Frame", {
+			Position = UDim2.fromOffset(4, 0),
+			Size = UDim2.fromOffset(52, 52),
+			BackgroundColor3 = Color3.fromRGB(16, 17, 24),
+			BackgroundTransparency = 0.04,
+		}, column)
+		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
+		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(70, 74, 98) }, disc)
+		if imageId and imageId ~= "" then
+			create("ImageLabel", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				BackgroundTransparency = 1,
+				Size = UDim2.fromOffset(38, 36),
+				Image = imageId,
+				ScaleType = Enum.ScaleType.Fit,
+			}, disc)
+		else
+			text(disc, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(32, 32), Text = emoji }, 0)
+		end
+		-- Üstüne gelince hafif aydınlanır
+		column.MouseEnter:Connect(function()
+			disc.BackgroundColor3 = Color3.fromRGB(40, 43, 62)
+		end)
+		column.MouseLeave:Connect(function()
+			disc.BackgroundColor3 = Color3.fromRGB(16, 17, 24)
+		end)
+		return column
+	end
+
+	-- Stats: sayılar ve kazanç çarpanı dökümü (StatsPanel)
+	local stats = circleButton("StatsButton", 1, Config.Icons.Stats, "📊")
+	stats.MouseButton1Click:Connect(function()
+		if openStats then
+			openStats()
+		end
+	end)
+
+	-- Pet Index: koleksiyon defteri; altında "keşfedilen/toplam" sayısı (IndexPanel)
+	local index = circleButton("IndexButton", 2, Config.Icons.Index, "📖")
+	local indexCount = text(index, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 41),
+		Size = UDim2.fromOffset(62, 32),
+		Text = "0/0",
+		TextColor3 = Color3.fromRGB(255, 214, 46),
+		ZIndex = 3,
+	}, 3)
+	index.MouseButton1Click:Connect(function()
+		if openIndex then
+			openIndex()
+		end
+	end)
+	local function refreshIndex()
+		local count = 0
+		for _ in string.gmatch(player:GetAttribute("DiscoveredPets") or "", "[^,]+") do
+			count += 1
+		end
+		indexCount.Text = `{count}/{#Config.Pets}`
+	end
+	player:GetAttributeChangedSignal("DiscoveredPets"):Connect(refreshIndex)
+	refreshIndex()
+
+	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------
+	-- Referans oyundaki gibi küçük iki yüzlü simge ve altında yüzde: arkadaş yokken "0%", her arkadaşta +%10 ("10%", "20%" ...).
+	-- Üstüne gelince küçük bir açıklama çıkar (kaç arkadaş, kaç yüzde, en çok kaç). TIKLAYINCA Roblox'un kendi "Invite Friends" penceresi açılır
+	-- (SocialService:PromptGameInvite): arkadaş listesi, arama ve link kopyalama Roblox'tan gelir; davet kabul edilince arkadaş oyuna girer ve bonus başlar.
+	if not Config.Friends.Enabled then
+		return
+	end
 	local friends = create("TextButton", {
 		Name = "FriendBonus",
 		AnchorPoint = Vector2.new(1, 0),

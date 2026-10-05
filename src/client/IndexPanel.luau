@@ -1,0 +1,202 @@
+-- Pet Index (koleksiyon defteri): bütün pet türleri kart olarak listelenir; sahip olunmuş (keşfedilmiş) türler renkli ve yüzlü,
+-- henüz görülmemişler sönük ve "???" yazılıdır. Keşfedilen her tür kalıcı +%1 bacak kası verir (Config.Index, sunucuda hesaplanır).
+-- Sunucu DiscoveredPets (virgüllü tür listesi) ve IndexBonus (yüzde) özniteliklerini ayarlar; burası sadece gösterir.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
+
+local IndexPanel = {}
+
+local FONT = Enum.Font.FredokaOne
+
+local function create(className, props, parent)
+	local instance = Instance.new(className)
+	for key, value in props do
+		instance[key] = value
+	end
+	instance.Parent = parent
+	return instance
+end
+
+local function text(parent, props, strokeThickness)
+	props.BackgroundTransparency = 1
+	props.Font = FONT
+	props.TextScaled = true
+	local label = create("TextLabel", props, parent)
+	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
+	return label
+end
+
+-- Kart rengi: çarpan büyüdükçe daha nadir renk (Pets menüsüyle aynı)
+local function cardColor(mult)
+	if mult < 0.2 then
+		return Color3.fromRGB(70, 200, 70)
+	elseif mult < 0.6 then
+		return Color3.fromRGB(40, 190, 230)
+	elseif mult < 1.2 then
+		return Color3.fromRGB(170, 60, 230)
+	elseif mult < 3 then
+		return Color3.fromRGB(250, 170, 30)
+	end
+	return Color3.fromRGB(240, 50, 130)
+end
+
+-- Döner: pencereyi açıp kapatan fonksiyon
+function IndexPanel.init(screenGui)
+	local player = Players.LocalPlayer
+
+	local panel = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(640, 460),
+		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
+		Active = true, -- pencereye tıklamak hareket başlatmasın
+		Visible = false,
+	}, screenGui)
+	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
+
+	local header = create("Frame", {
+		Size = UDim2.new(1, 0, 0, 56),
+		BackgroundColor3 = Color3.fromRGB(150, 110, 255),
+	}, panel)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	text(header, {
+		Position = UDim2.fromOffset(16, 8),
+		Size = UDim2.fromOffset(210, 40),
+		Text = "📖 PET INDEX",
+		TextColor3 = Color3.new(1, 1, 1),
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, 3)
+	local counter = text(header, {
+		Position = UDim2.fromOffset(236, 8),
+		Size = UDim2.new(1, -300, 0, 40),
+		TextColor3 = Color3.fromRGB(255, 240, 150),
+		TextXAlignment = Enum.TextXAlignment.Right,
+	}, 2)
+	local close = create("TextButton", {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -10, 0.5, 0),
+		Size = UDim2.fromOffset(40, 40),
+		Text = "X",
+		Font = FONT,
+		TextSize = 26,
+		TextColor3 = Color3.new(1, 1, 1),
+		BackgroundColor3 = Color3.fromRGB(235, 40, 90),
+	}, header)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
+	close.MouseButton1Click:Connect(function()
+		PanelManager.hide(panel)
+	end)
+
+	text(panel, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 62),
+		Size = UDim2.fromOffset(520, 24),
+		Text = `Discover every pet! Each new kind gives +{Config.Index.PercentPerPet}% Leg Muscle forever.`,
+		TextColor3 = Color3.fromRGB(215, 222, 255),
+	}, 2)
+
+	local grid = create("ScrollingFrame", {
+		Position = UDim2.fromOffset(10, 94),
+		Size = UDim2.new(1, -20, 1, -104),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 8,
+		CanvasSize = UDim2.new(),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	}, panel)
+	create("UIGridLayout", {
+		CellSize = UDim2.fromOffset(112, 138),
+		CellPadding = UDim2.fromOffset(8, 8),
+		HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, grid)
+	create("UIPadding", { PaddingTop = UDim.new(0, 4) }, grid)
+
+	local function render()
+		for _, child in grid:GetChildren() do
+			if child:IsA("GuiObject") then
+				child:Destroy()
+			end
+		end
+
+		local found = {}
+		for id in string.gmatch(player:GetAttribute("DiscoveredPets") or "", "[^,]+") do
+			found[id] = true
+		end
+		local pets = {}
+		for _, pet in Config.Pets do
+			table.insert(pets, pet)
+		end
+		table.sort(pets, function(a, b)
+			return a.mult < b.mult
+		end)
+
+		local discovered = 0
+		for order, pet in pets do
+			local known = found[pet.id] == true
+			if known then
+				discovered += 1
+			end
+			local card = create("Frame", {
+				LayoutOrder = order,
+				BackgroundColor3 = if known then cardColor(pet.mult) else Color3.fromRGB(58, 62, 82),
+			}, grid)
+			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
+			UIStyle.soften(card, { radius = 10, strength = 0.3 })
+
+			text(card, {
+				Position = UDim2.fromScale(0.05, 0.03),
+				Size = UDim2.fromScale(0.9, 0.17),
+				Text = if known then `+{math.floor(pet.mult * 100 + 0.5)}%` else "+???",
+				TextColor3 = if known then Color3.new(1, 1, 1) else Color3.fromRGB(150, 156, 180),
+			}, 2)
+			UIStyle.safePetIcon(card, pet, {
+				AnchorPoint = Vector2.new(0.5, 0),
+				Position = UDim2.fromScale(0.5, 0.2),
+				Size = UDim2.fromOffset(62, 62),
+				dim = not known,
+			})
+			if not known then
+				-- Keşfedilmemiş: yüzün üstüne büyük soru işareti
+				text(card, {
+					AnchorPoint = Vector2.new(0.5, 0),
+					Position = UDim2.fromScale(0.5, 0.26),
+					Size = UDim2.fromOffset(44, 44),
+					Text = "?",
+					TextColor3 = Color3.fromRGB(235, 238, 255),
+					ZIndex = 5,
+				}, 3)
+			end
+			text(card, {
+				Position = UDim2.fromScale(0.04, 0.74),
+				Size = UDim2.fromScale(0.92, 0.2),
+				Text = if known then pet.name else "???",
+				TextColor3 = if known then Color3.new(1, 1, 1) else Color3.fromRGB(150, 156, 180),
+			}, 2)
+		end
+		counter.Text = `{discovered}/{#pets}  +{player:GetAttribute("IndexBonus") or 0}%`
+	end
+
+	for _, name in { "DiscoveredPets", "IndexBonus" } do
+		player:GetAttributeChangedSignal(name):Connect(function()
+			if PanelManager.isOpen(panel) then
+				render()
+			end
+		end)
+	end
+
+	return function()
+		PanelManager.toggle(panel)
+		if PanelManager.isOpen(panel) then
+			render()
+		end
+	end
+end
+
+return IndexPanel

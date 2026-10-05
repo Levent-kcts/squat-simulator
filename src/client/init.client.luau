@@ -689,7 +689,21 @@ end)
 giftsButton.MouseButton1Click:Connect(toggleGifts)
 
 -- Sağ taraftaki FREE REWARD / FRIEND BONUS kutuları (hata verirse oyun çalışır, sadece bu kutular görünmez)
-safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast)
+-- Pet Index ve Stats pencereleri (sağ üstteki dairelerle açılır; korumalı yüklenir)
+local function loadPanel(name, ...)
+	local module = loadOptional(name)
+	if module then
+		local ok, result = pcall(module.init, ...)
+		if ok then
+			return result
+		end
+		warn(`[Client] {name} init failed: {result}`)
+	end
+	return nil
+end
+local toggleIndex = loadPanel("IndexPanel", screenGui)
+local toggleStats = loadPanel("StatsPanel", screenGui)
+safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",

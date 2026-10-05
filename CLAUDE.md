@@ -4,7 +4,7 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 
 ## Oyun kuralları
 - Ekranın herhangi bir yerine tıklamak bacak kasını artırır (UI butonlarına tıklamak sayılmaz).
-- Tıklama başı bacak kası kazancı = Config.MusclePerClick x (1 + takılı petlerin çarpanları) x level çarpanı x rebirth çarpanı x aura x takılı skinin çarpanı x (1 + ARKADAŞ BONUSU: sunucudaki her arkadaş için +%10, en çok 5; Config.Friends, server/FriendBonus). AYAKKABI KAZANCI ETKİLEMEZ.
+- Tıklama başı bacak kası kazancı = Config.MusclePerClick x (1 + takılı petlerin çarpanları) x level çarpanı x rebirth çarpanı x aura x takılı skinin çarpanı x (1 + ARKADAŞ BONUSU: sunucudaki her arkadaş için +%10, en çok 5; Config.Friends, server/FriendBonus) x (1 + PET INDEX BONUSU: keşfedilen her pet türü +%1; Config.Index). AYAKKABI KAZANCI ETKİLEMEZ.
 - Duvara hasar = toplam bacak kası x takılı ayakkabının 'damage' çarpanı (ayakkabı yoksa x1). Ayakkabılar sadece hasar çarpanıdır.
 - LEVEL, TOPLAM BACAK KASINDAN hesaplanır (Progression.levelFromMuscle): level 1'den 2'ye 10 kas, level 10'dan 11'e 22 kas gerekir, sonrası kuvvet yasasıyla artar (Config.Level.CostPower; tools/simulate.py ile ayarlandı), toplamlar birikerek ilerler. Çubuk o level içinde kazanılan kası gösterir. Rebirth kası sıfırladığı için level de 1 olur. Level'ı doğrudan set etme; PlayerStats.syncLevel kasa göre ayarlar.
   Level, rebirth sayısına bağlı üst sınıra (20 + 10 x rebirth) kadar çıkar. Sınırda alttaki bar 'MAX' yazar; rebirth yapmadan level atlanamaz.
@@ -81,6 +81,8 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 - ÜST ÇUBUK PAYI: Roblox'un üst çubuğu (~58 px) normal ScreenGui'lerde boş bırakılır (GUI inset). Ekranın GERÇEK köşesine (üst çubukla aynı hizaya) koyulacak şey için ayrı bir ScreenGui ve IgnoreGuiInset = true kullan (arkadaş bonusu simgesi: client/RightHud > CornerGui). Ana ScreenGui'de y = 0 aslında ekranın ~58 px altıdır.
 
 - SOL HUD GÖRÜNÜMÜ: Kare butonlar KOYU iç zeminli ve RENKLİ GRADYAN çerçevelidir (dolu renkli zemin YOK: ikon kaybolur), ikonlar büyük ve `addOutlinedIcon` ile siyah dış çizgi/gölgeli, sayaçlar hapsızdır. Yeni sol buton eklerken `makeSquareButton(pos, emoji, etiket, {renk1, renk2}, imageId)` kullan. Shop '!' ve kupa '+' rozetleri Robux aşamasına bırakıldı.
+
+- SAĞ ÜST DAİRELER: arkadaş bonusu, Stats ve Pet Index siyah dairelerdir (client/RightHud > CornerGui, IgnoreGuiInset); yeni bir kısayol düğmesi eklerken `circleButton` kalıbını kullan. Çarpan hesabına yeni bir bonus eklersen client/StatsPanel'deki döküme de satır ekle.
 
 ## Proje durumu (ayrıntı README.md'de: bölüm 5 yapılacaklar, bölüm 7 yapılanlar)
 - YAPILDI (son hâl): Settings penceresi, teyp, PanelManager, UIStyle yumuşatma, arkadaş bonusu + sağ üst daire, FREE REWARD kutusu, çevrimdışı kazanç penceresi; ve: temel oyun, level/rebirth, duvarlar, Win odaları (genişleyen oda, VIP pedi), ayakkabı/skin/yumurta/pet/trail/aura, antrenman alanı (rebirth ile açılan 10 ped), sıralama panoları, oyuncu dostu katman (efekt, ses, etiket, açılış kartları, yol gösterici, çevrimdışı kazanç penceresi (client/OfflinePanel: bacak kası simgesi, Claim, Robux'lu DOUBLE IT!, X; girişte CLAIM ile alınır), günlük ödül sahibinin isteğiyle KALDIRILDI, geri ekleme), Shop + Robux makbuz işleme (ID'ler bekleniyor), simülasyonla denge ayarı. HİÇBİRİ son turdan beri Studio'da denenmedi: sahibi test edince hata/geri bildirim gelecek.
