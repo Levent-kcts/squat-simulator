@@ -143,41 +143,48 @@ function RightHud.init(screenGui, openGifts)
 	local friends = create("TextButton", {
 		Name = "FriendBonus",
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -6, 0, 6), -- en sağ üst köşeye yapışık (referans oyundaki gibi)
-		Size = UDim2.fromOffset(62, 82),
+		Position = UDim2.new(1, -10, 0, 8), -- en sağ üst köşe (referans oyundaki sağ üst yuvarlak butonlar gibi)
+		Size = UDim2.fromOffset(60, 82),
 		Text = "",
 		AutoButtonColor = false,
 		BackgroundTransparency = 1,
 	}, screenGui)
+
+	-- Siyah yuvarlak zemin (referanstaki sağ üst yuvarlak butonlar gibi: koyu daire, ince açık kenar); simge içinde ortalı
 	local iconBox = create("Frame", {
-		Position = UDim2.fromOffset(1, 0),
-		Size = UDim2.fromOffset(60, 56),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
+		Position = UDim2.fromOffset(2, 0),
+		Size = UDim2.fromOffset(56, 56),
+		BackgroundColor3 = Color3.fromRGB(16, 17, 24),
+		BackgroundTransparency = 0.04,
 	}, friends)
+	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, iconBox)
+	create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(70, 74, 98) }, iconBox)
 	if Config.Icons.Friends and Config.Icons.Friends ~= "" then
 		create("ImageLabel", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
 			BackgroundTransparency = 1,
-			Size = UDim2.fromScale(1, 1),
+			Size = UDim2.fromOffset(40, 38),
 			Image = Config.Icons.Friends,
 			ScaleType = Enum.ScaleType.Fit,
 		}, iconBox)
 	else
-		text(iconBox, { Size = UDim2.fromScale(1, 1), Text = "👥" }, 0)
+		text(iconBox, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(34, 34), Text = "👥" }, 0)
 	end
 	local percentLabel = text(friends, {
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 46),
-		Size = UDim2.fromOffset(62, 34),
+		Position = UDim2.new(0.5, 0, 0, 44),
+		Size = UDim2.fromOffset(62, 36),
 		Text = "0%",
 		TextColor3 = Color3.fromRGB(255, 214, 46),
+		ZIndex = 3,
 	}, 3)
 	local percentScale = create("UIScale", { Scale = 1 }, percentLabel)
 
 	-- Açıklama kutusu
 	local tooltip = create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -8, 0, 92),
+		Position = UDim2.new(1, -10, 0, 96),
 		Size = UDim2.fromOffset(236, 84),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,
