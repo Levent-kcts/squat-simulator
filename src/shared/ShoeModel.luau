@@ -18,9 +18,9 @@ function ShoeModel.tier(item)
 	return math.min(tierById[item.id] or 0, glowCap)
 end
 
--- Neon rengin yoğunluğu güçle artar: en zayıf ayakkabı %55 parlaklıkta, Neon Kicks ve üstü %87 (raf ve ayak aynı rengi kullanır)
+-- Neon rengin yoğunluğu güçle artar (Config.ShoeGlow: en zayıf ~%33, Neon Kicks ve üstü ~%54; raf ve ayak aynı rengi kullanır)
 function ShoeModel.neonColor(item)
-	local brightness = 0.55 + 0.45 * ShoeModel.tier(item)
+	local brightness = Config.ShoeGlow.ColorBase + Config.ShoeGlow.ColorGain * ShoeModel.tier(item)
 	local color = item.color
 	return Color3.new(color.R * brightness, color.G * brightness, color.B * brightness)
 end

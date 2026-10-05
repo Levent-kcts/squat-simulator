@@ -196,8 +196,9 @@ local function applyShoes(character, shoe)
 			local light = Instance.new("PointLight")
 			light.Name = GLOW_NAME
 			light.Color = shoe.color
-			light.Brightness = 0.4 + 2.6 * tier
-			light.Range = 5 + 11 * tier
+			local glow = Config.ShoeGlow
+			light.Brightness = glow.FootLightBrightness[1] + (glow.FootLightBrightness[2] - glow.FootLightBrightness[1]) * tier
+			light.Range = glow.FootLightRange[1] + (glow.FootLightRange[2] - glow.FootLightRange[1]) * tier
 			light.Shadows = false
 			light.Parent = foot
 		end

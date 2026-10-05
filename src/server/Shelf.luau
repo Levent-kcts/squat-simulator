@@ -67,7 +67,7 @@ end
 --   padColor(item) (isteğe bağlı): postamentin başlangıç rengi (varsayılan kırmızı; ayakkabı/skinde istemci boyar),
 --   sparkles (isteğe bağlı, varsayılan true): postamentin üstünde parıltı,
 --   buildDisplay(parent, item, frame, center, slot): postamentin üstündeki eşyayı çizer (center = yerel konum, slot.row = şerit),
---   maxGlowIndex (isteğe bağlı): bu sıradan sonra postament ışığı artmaz,
+--   maxGlowIndex (isteğe bağlı): bu sıradan sonra postament ışığı artmaz, lightScale (isteğe bağlı, varsayılan 1): postament ışığı ve parıltı oranı (ayakkabı rafı kısılır),
 --   buy(player, item) -> ok, mesaj (isteğe bağlı): postamente basınca çağrılır (satın alır ya da takar; mesaj nil ise
 --   bildirim gitmez), notifyEvent: mesajı oyuncuya yollar
 -- Dönüş: klasör, pads ([eşya id] = postament parçası)
@@ -247,7 +247,7 @@ function Shelf.build(spec)
 		local tier = (math.min(index, spec.maxGlowIndex or #spec.items) - 1) / math.max(1, #spec.items - 1)
 		local light = Instance.new("PointLight")
 		light.Range = 7 + 5 * tier
-		light.Brightness = 0.5 + 1 * tier
+		light.Brightness = (0.5 + 1 * tier) * (spec.lightScale or 1)
 		light.Color = item.color
 		light.Shadows = false
 		light.Parent = pad
@@ -256,7 +256,7 @@ function Shelf.build(spec)
 		if spec.sparkles ~= false then
 			local sparkles = Instance.new("ParticleEmitter")
 			sparkles.Color = ColorSequence.new(item.color)
-			sparkles.LightEmission = 0.8
+			sparkles.LightEmission = 0.8 * (spec.lightScale or 1)
 			sparkles.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0) })
 			sparkles.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(1, 1) })
 			sparkles.Lifetime = NumberRange.new(1, 1.8)

@@ -343,6 +343,15 @@ return {
 	-- damage = duvara verilen hasar çarpanı (hasar = bacak kası x damage). Bacak kazancını ETKİLEMEZ. Takılı ayakkabı geçerlidir, toplanmaz (sahip olduğun ucuz ayakkabılara basıp istediğini takabilirsin).
 	-- Fiyatlar (Win) GEÇİCİDİR, oyunun ekonomisi oturunca birlikte ayarlanacak.
 	MaxGlowShoeId = "neon", -- ayakkabı parlaklığı bu ayakkabıya (Neon Kicks) kadar artar, daha güçlüleri aynı parlaklıkta kalır
+	-- Ayakkabı parlaklığı (sahibi 'bütün ayakkabıların parlaklığını kıs' dedi; eskiden renk %55-%87, ayak ışığı 0.4-2.6 parlaklık / 5-16 menzildi, hepsi yaklaşık yarıya indi).
+	-- Parlaklık güce göre artar (ShoeModel.tier, MaxGlowShoeId'de durur). Daha da kısmak için değerleri küçült, açmak için büyüt.
+	ShoeGlow = {
+		ColorBase = 0.33, -- en zayıf ayakkabının neon rengi (renk x oran; 1 = tam parlak)
+		ColorGain = 0.3, -- en güçlü parlaklıktaki (Neon Kicks) ayakkabıya eklenen oran: en güçlüsü ~0.54
+		FootLightBrightness = { 0.15, 1.5 }, -- ayaktaki ışık: en zayıf, tier = 1 (Neon Kicks'te ~1.1)
+		FootLightRange = { 4, 10 },
+		ShelfLightScale = 0.5, -- raftaki ayakkabı postamentinin ışığı ve parıltı parçacıkları bu oranda kısılır
+	},
 	Items = {
 		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
 		{ id = "canvas", name = "Canvas Shoes", price = 8, damage = 2, color = Color3.fromRGB(120, 170, 255) },

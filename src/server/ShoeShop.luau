@@ -52,6 +52,7 @@ function ShoeShop.init(notifyEvent)
 
 	Shelf.build({
 		maxGlowIndex = maxGlowIndex,
+		lightScale = Config.ShoeGlow.ShelfLightScale, -- raftaki ayakkabıların ışığı kısık (sahibi parlaklığı kıstırdı)
 		name = "ShoeShop",
 		frame = Shelf.leftWallFrame(Config.Lobby.ShoeShelfZ),
 		title = "SHOE UPGRADES",
