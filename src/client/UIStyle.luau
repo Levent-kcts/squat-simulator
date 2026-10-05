@@ -193,12 +193,12 @@ function UIStyle.petIcon(parent, pet, props)
 		end
 	elseif look.ears == "floppy" then
 		for _, side in { -1, 1 } do
-			dot(holder, 0.5 + side * 0.4, 0.5, 0.22, 0.42, UIStyle.darken(color, 0.25), { rotation = side * 14, stroke = 2 })
+			dot(holder, 0.5 + side * 0.38, 0.5, 0.22, 0.42, UIStyle.darken(color, 0.25), { rotation = side * 14, stroke = 2 })
 		end
 	elseif look.ears == "tall" then
 		for _, side in { -1, 1 } do
-			dot(holder, 0.5 + side * 0.16, 0.2, 0.2, 0.5, earColor, { rotation = side * 8, stroke = 2 })
-			dot(holder, 0.5 + side * 0.16, 0.22, 0.1, 0.34, PINK, { rotation = side * 8 })
+			dot(holder, 0.5 + side * 0.16, 0.23, 0.2, 0.5, earColor, { rotation = side * 8, stroke = 2 })
+			dot(holder, 0.5 + side * 0.16, 0.25, 0.1, 0.34, PINK, { rotation = side * 8 })
 		end
 	end
 	if look.horns then
@@ -207,7 +207,7 @@ function UIStyle.petIcon(parent, pet, props)
 		end
 	end
 	if look.horn then
-		dot(holder, 0.5, 0.12, 0.12, 0.3, Color3.fromRGB(255, 240, 190), { corner = 0.5, stroke = 2, rotation = 0 })
+		dot(holder, 0.5, 0.15, 0.12, 0.3, Color3.fromRGB(255, 240, 190), { corner = 0.5, stroke = 2, rotation = 0 })
 	end
 	if look.robot then
 		dot(holder, 0.5, 0.1, 0.04, 0.16, DARK, { corner = 0.2 })
