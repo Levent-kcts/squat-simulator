@@ -205,7 +205,14 @@ return {
 	-- Sol menüdeki ve sayaçtaki ikonlar. Roblox'a yüklenmiş görsellerin "rbxassetid://..." değeri; BOŞ ikon emoji olarak görünür.
 	-- Hazır, şeffaf arka planlı görseller assets/icons/ klasöründe (shop, rebirth, settings, backpack, pets, gifts: 256x256 PNG).
 	-- Studio'da Asset Manager > Bulk Import ile yükle, çıkan ID'leri buraya yaz.
-	Icons = { Shop = "", Rebirth = "", Settings = "", Backpack = "", Pets = "", Gifts = "" },
+	Icons = {
+		Shop = "rbxassetid://88209777338839",
+		Rebirth = "rbxassetid://92894421841396",
+		Settings = "rbxassetid://82994218844234",
+		Backpack = "rbxassetid://139523703798238",
+		Pets = "rbxassetid://122036590660446",
+		Gifts = "rbxassetid://107783706209695",
+	}, -- sahibinin yüklediği görseller (hepsi Image türünde, doğrulandı)
 
 	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
 	Guide = { MaxStage = 3 },
