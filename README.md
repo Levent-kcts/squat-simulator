@@ -90,6 +90,15 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 5. **Yeni dünyalar** ve R6 avatar desteği (ayakkabı görünümü).
 6. **Blender modelleri (Robux işlerinden bir önceki, SON geliştirme adımı)** (temel oyun bitince): ayakkabı (15), pet (13), yumurta (6) için yumuşak/sevimli modeller. Blender 5.2 bilgisayarda kurulu (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`), komut satırından Python ile üretilir, önizleme görüntüsü alınır, `.fbx` dosyaları `assets/` klasörüne konur. Önce 3 örnek (Old Sneakers, ilk yumurta, ilk pet) yapılıp sahibine gösterilir. Sahibi dosyaları Studio'da Asset Manager > Bulk Import ile yükler, asset ID'lerini verir; Claude Config'e mesh ID alanı ekleyip kodla yerleştirir (ID boşsa şimdiki blok model kalır). Rafta ayakkabı modeli `shared/ShoeModel.luau` içinde; karakterin ayağında parça eklenmez, ayak parçası ayakkabının renginde ve Neon malzemeyle boyanır (`AppearanceCleaner.applyShoes`). Blender'a geçince 15 ayrı model yerine 4-5 temel kalıp (renkler kodla) önerildi, sahibi onaylamadı, karar bekliyor.
 
+**C2) Referans oyunla karşılaştırma: bizde eksik görünenler (2026-10-05, iki ekran görüntüsünden çıkarım; sahibi seçince sırayla yapılır, Robux gerektirenler D'ye gider)**
+1. Üstte oyuncu ilerleme çubuğu: 20 aşama rengiyle bölünmüş şerit, üzerinde sunucudaki oyuncuların avatar kafaları (kim hangi aşamada). Şu an sadece yazılı hedef şeridi var. (Ücretsiz, rekabet hissi.)
+2. Sağ taraf boş: ücretsiz dünya içi 'FREE REWARD' sandığı (Gifts'e bağlı 3B sandık + süre), etkinlik/süre sayacı; Robux'lu 'PERMANENT 2x' teklifi D bölümünde.
+3. Arkadaş bonusu ('0%' simgeleri): sunucudaki her arkadaş için +%X kas bonusu (+ Premium/grup bonusu). Ücretsiz, oyuncu getirir.
+4. Yerdeki etiket çakışmaları ve pedlerin hepsinin kırmızı olması: yumurta etiketleri üst üste biniyor; alınamayan pedler neon kırmızı olup sahneyi bastırıyor (sadece hedef/alınabilir ped parlamalı, diğerleri sönük).
+5. Auto Click butonu düz mor; referansta animasyonlu gökkuşağı geçişli ve 'OFF' rozetli. Alt hızlı satın alma butonları (+1K/+10K/+100K) Robux olduğu için D'de.
+6. Hub'da yaşam belirtisi: NPC'ler, pano/görev tabelası (quest), pet koleksiyon defteri (Index) ve üst sağ yuvarlak kısayol simgeleri; oyuncunun yanında dolaşan petler (şu an görünmüyor).
+7. Alt yazı düzeni: 'Leg Muscle: 1,244' debug yazısı gibi; referansta ortada büyük rakam, solda çarpan, sağda tık başı kazanç.
+
 **D) EN SON: TÜM ROBUX İŞLERİ (sahibinin kararı: Blender modellerinden de SONRA yapılacak, o zamana kadar dokunma/hatırlatma sadece sıra gelince)**
 Kodun hepsi hazır ve ID'ler 0 olduğu için inert: butonlar 'SOON' / 'COMING SOON' der, satın alma penceresi açılmaz, oyun Robux'suz da eksiksiz çalışır. Sıra gelince sahibi Creator Hub'da ürünleri oluşturur, ID'leri Claude'a (ya da Config'e) yazar:
 - VIP game pass → `Config.VipGamePassId` (Win odalarındaki pembe VIP pedi, 2x Win).
