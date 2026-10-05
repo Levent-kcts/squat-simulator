@@ -1,4 +1,4 @@
--- Yumurta raflarının oyuncuya özel görünümü: etiketler, ped renkleri ve yaklaşınca açılan yumurta paneli.
+-- Yumurta raflarının oyuncuya özel görünümü: etiketler, ped renkleri ve pede basınca (dokununca) açılan yumurta paneli.
 -- Panelde yumurtanın adı, fiyatı, petleri, çarpanları ve çıkma şansları görünür.
 -- Tuşlar: E = aç, R = otomatik aç (aç/kapa), T = bir seferde açılacak sayı (1 / 3 / 10).
 -- Burada yapılan renk/etiket değişiklikleri sadece bu oyuncunun ekranında görünür.
@@ -23,7 +23,10 @@ local GREEN = Color3.fromRGB(60, 255, 100) -- açabilirsin
 local RED = Color3.fromRGB(255, 50, 50) -- yeterli Win yok
 local GRAY = Color3.fromRGB(110, 110, 120) -- pet envanteri dolu
 
-local SHOW_RANGE = 10 -- yumurta panelinin açılması için pede yatay mesafe (stud)
+-- Panel, oyuncu yumurta pedine DOKUNUNCA açılır (eskiden 10 stud yakınlıkta açılıp önü kapatıyordu). Mesafe = pedin kenarı ile karakterin
+-- gövde kenarı arasındaki yatay boşluk (stud): ENTER'dan küçükse açılır, açıkken EXIT'ten uzaklaşınca kapanır (kenarda titremesin diye EXIT daha geniş).
+local ENTER_GAP = 0.5
+local EXIT_GAP = 3
 local AUTO_INTERVAL = 1.2 -- otomatik açma aralığı (saniye)
 
 -- Panel kartlarının renkleri: en sık çıkandan en nadire doğru
@@ -416,7 +419,14 @@ function EggShop.init(screenGui)
 		end
 	end)
 
-	-- En yakın yumurta pedinin yakınındaysak paneli göster, uzaklaşınca kapat
+	-- Karakter bir yumurta pedine dokunacak kadar yaklaşınca (üstüne basınca) paneli göster, uzaklaşınca kapat
+	local function padGap(root, pad)
+		local local_ = pad.CFrame:PointToObjectSpace(root.Position)
+		local dx = math.max(math.abs(local_.X) - pad.Size.X / 2, 0)
+		local dz = math.max(math.abs(local_.Z) - pad.Size.Z / 2, 0)
+		return math.sqrt(dx * dx + dz * dz) - root.Size.X / 2, math.abs(local_.Y)
+	end
+
 	local elapsed = 0
 	RunService.Heartbeat:Connect(function(dt)
 		elapsed += dt
@@ -427,13 +437,13 @@ function EggShop.init(screenGui)
 
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
-		local nearest, nearestDistance = nil, SHOW_RANGE
+		local nearest, nearestGap = nil, math.huge
 		if root then
 			for _, entry in entries do
-				local delta = root.Position - entry.pad.Position
-				local distance = Vector3.new(delta.X, 0, delta.Z).Magnitude
-				if distance <= nearestDistance and math.abs(delta.Y) <= 12 then
-					nearest, nearestDistance = entry.egg, distance
+				local gap, height = padGap(root, entry.pad)
+				local limit = if entry.egg == currentEgg then EXIT_GAP else ENTER_GAP
+				if gap <= limit and height <= 12 and gap < nearestGap then
+					nearest, nearestGap = entry.egg, gap
 				end
 			end
 		end
