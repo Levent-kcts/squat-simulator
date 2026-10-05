@@ -83,6 +83,7 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 
 - SOL HUD GÖRÜNÜMÜ: Kare butonlar KOYU iç zeminli ve RENKLİ GRADYAN çerçevelidir (dolu renkli zemin YOK: ikon kaybolur), ikonlar büyük ve `addOutlinedIcon` ile siyah dış çizgi/gölgeli, sayaçlar hapsızdır. Yeni sol buton eklerken `makeSquareButton(pos, emoji, etiket, {renk1, renk2}, imageId)` kullan. Shop '!' ve kupa '+' rozetleri Robux aşamasına bırakıldı.
 
+- ZINDEX: ana ekran arayüzü (init.client'taki StatsGui) ZIndexBehavior = Sibling'dir ve alt grup (bottom) ZIndex 0'dadır. Global'de yüksek ZIndex'li bir torun (Auto Click'in OFF rozeti) ebeveyninin dışına çıkıp Gifts penceresinin üstüne biniyordu; bir HUD parçasını pencerelerin üstüne çıkarmak istemiyorsan ona yüksek ZIndex verme, pencereleri kendi ZIndex'iyle üstte tut.
 - SAĞ ÜST DAİRELER: arkadaş bonusu, Stats ve Pet Index siyah dairelerdir (client/RightHud > CornerGui, IgnoreGuiInset); yeni bir kısayol düğmesi eklerken `circleButton` kalıbını kullan. Çarpan hesabına yeni bir bonus eklersen client/StatsPanel'deki döküme de satır ekle.
 
 ## Proje durumu (ayrıntı README.md'de: bölüm 5 yapılacaklar, bölüm 7 yapılanlar)

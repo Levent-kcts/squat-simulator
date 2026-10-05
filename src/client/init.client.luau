@@ -79,7 +79,9 @@ local function makeText(parent, props, maxTextSize, strokeThickness)
 	return label
 end
 
-local screenGui = create("ScreenGui", { Name = "StatsGui", ResetOnSpawn = false }, playerGui)
+-- Sibling: ZIndex sadece aynı ebeveynin çocukları arasında sıralar (Global'de yüksek ZIndex'li bir torun, ebeveyninin dışına çıkıp
+-- sonradan açılan pencerelerin ÜSTÜNE biniyordu: Auto Click'in OFF rozeti Gifts penceresinin üstünde görünüyordu)
+local screenGui = create("ScreenGui", { Name = "StatsGui", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, playerGui)
 
 -- =====================================================================
 -- ÜST ORTA: hedef şeridi (oyuncuya ne yapacağını söyler)
@@ -320,6 +322,7 @@ local bottom = create("Frame", {
 	Position = UDim2.new(0.5, 0, 1, -14),
 	Size = UDim2.new(0.5, 0, 0, 154),
 	BackgroundTransparency = 1,
+	ZIndex = 0, -- alt grup (level çubuğu, Auto Click) açılan pencerelerin hep ALTINDA kalır
 }, screenGui)
 create("UISizeConstraint", { MaxSize = Vector2.new(580, 154), MinSize = Vector2.new(320, 154) }, bottom)
 
