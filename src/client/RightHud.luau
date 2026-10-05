@@ -32,52 +32,6 @@ local function text(parent, props, strokeThickness)
 	return label
 end
 
--- İki sevimli yüz (kare sarı kafalar, mavi omuzlar): Config.Icons.Friends yüklenene kadar yedek simge. parent 72x72 ve kırpmalı olmalı.
-local function drawFriendsIcon(parent)
-	local YELLOW = Color3.fromRGB(255, 212, 36)
-	local BLUE = Color3.fromRGB(62, 152, 255)
-	local function person(x, y, size)
-		-- omuzlar (altta kırpılır)
-		local shoulders = create("Frame", {
-			Position = UDim2.fromOffset(x + size * 0.1, y + size * 0.82),
-			Size = UDim2.fromOffset(size * 0.8, size * 0.5),
-			BackgroundColor3 = BLUE,
-		}, parent)
-		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(20, 24, 50) }, shoulders)
-		UIStyle.soften(shoulders, { radius = size * 0.28, strength = 0.18, shine = false })
-		-- kafa
-		local head = create("Frame", {
-			Position = UDim2.fromOffset(x, y),
-			Size = UDim2.fromOffset(size, size),
-			BackgroundColor3 = YELLOW,
-		}, parent)
-		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(20, 24, 50) }, head)
-		UIStyle.soften(head, { radius = size * 0.2, gradient = false, shine = false })
-		-- Küçük yardımcı: yüzde konumlu yuvarlak/elips parça
-		local function dot(cx, cy, w, h, color, transparency)
-			local d = create("Frame", {
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(cx, cy),
-				Size = UDim2.fromScale(w, h),
-				BackgroundColor3 = color,
-				BackgroundTransparency = transparency or 0,
-				BorderSizePixel = 0,
-			}, head)
-			create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, d)
-			return d
-		end
-		local DARK = Color3.fromRGB(30, 24, 30)
-		dot(0.30, 0.40, 0.11, 0.22, DARK) -- gözler
-		dot(0.70, 0.40, 0.11, 0.22, DARK)
-		dot(0.13, 0.62, 0.17, 0.1, Color3.fromRGB(255, 140, 70), 0.5) -- yanaklar
-		dot(0.87, 0.62, 0.17, 0.1, Color3.fromRGB(255, 140, 70), 0.5)
-		dot(0.5, 0.70, 0.44, 0.22, DARK) -- gülümseme: koyu elipsin üstüne sarı elips = hilal
-		dot(0.5, 0.63, 0.52, 0.22, YELLOW)
-	end
-	person(38, 14, 30) -- arkadaş (arkada, küçük)
-	person(6, 8, 42) -- sen (önde, büyük)
-end
-
 -- openGifts: Gifts menüsünü açıp kapatan fonksiyon (init.client verir)
 function RightHud.init(screenGui, openGifts)
 	local player = Players.LocalPlayer
@@ -209,7 +163,7 @@ function RightHud.init(screenGui, openGifts)
 			ScaleType = Enum.ScaleType.Fit,
 		}, iconBox)
 	else
-		drawFriendsIcon(iconBox)
+		text(iconBox, { Size = UDim2.fromScale(1, 1), Text = "👥" }, 0)
 	end
 	local percentLabel = text(friends, {
 		AnchorPoint = Vector2.new(0.5, 0),
