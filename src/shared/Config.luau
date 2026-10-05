@@ -289,6 +289,9 @@ return {
 		-- yapmanın ödülünden hep fazladır. Yani oyuncu için ilerlemek, aynı aşamayı tekrarlamaktan karlıdır.
 		RewardGrowth = 2,
 
+		-- Son (100.) duvarın ön yüzüne yazılan yer tutucu yazı: yeni dünya/aşamalar gelene kadar 'COMING SOON'. nil ya da boş yapılırsa yazı kalkar.
+		FinalWallText = "COMING SOON",
+
 		-- Her aşamanın duvar TEMASI (20 aşama, ZAYIFTAN GÜÇLÜYE: ilk aşama en zayıf, sondan bir önceki Bedrock, son Blackhole). Sıra oyuncunun ilerleme sırasıdır;
 		-- isim duvarın üstünde yazar, renk duvarın, koridorun yan duvar/tavan renginin ve parçacıkların temelidir. Alanlar:
 		--   name, color (tema rengi: koridor, parçacık, lego parçaları), accent (parıltı/parçacık ikinci rengi), reflect (parlaklık, metal ve mücevher için),

@@ -255,6 +255,26 @@ local function createWall(folder, index)
 	makeText(gui, UDim2.fromScale(0.5, 0.2), UDim2.fromScale(0.2, 0.12), tostring(index))
 	makeText(gui, UDim2.fromScale(0.5, 0.36), UDim2.fromScale(0.5, 0.14), theme.name)
 
+	-- Son duvar: yeni dünya gelene kadar altın renkli büyük 'COMING SOON' yazısı (Config.Wall.FinalWallText)
+	if index == cfg.Count and cfg.FinalWallText and cfg.FinalWallText ~= "" then
+		local soonPlate = Instance.new("Frame")
+		soonPlate.AnchorPoint = Vector2.new(0.5, 0.5)
+		soonPlate.Position = UDim2.fromScale(0.5, 0.84)
+		soonPlate.Size = UDim2.fromScale(0.9, 0.24)
+		soonPlate.BackgroundColor3 = Color3.new(0, 0, 0)
+		soonPlate.BackgroundTransparency = 0.45
+		soonPlate.BorderSizePixel = 0
+		soonPlate.ZIndex = 0
+		addRound(soonPlate, UDim.new(0, 18))
+		soonPlate.Parent = gui
+		local soon = makeText(gui, UDim2.fromScale(0.5, 0.84), UDim2.fromScale(0.84, 0.18), cfg.FinalWallText)
+		soon.TextColor3 = Color3.fromRGB(255, 214, 60)
+		local soonStroke = soon:FindFirstChildOfClass("UIStroke")
+		if soonStroke then
+			soonStroke.Thickness = 5
+		end
+	end
+
 	local bar = Instance.new("Frame")
 	bar.AnchorPoint = Vector2.new(0.5, 0.5)
 	bar.Position = UDim2.fromScale(0.5, 0.56)
