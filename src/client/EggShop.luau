@@ -19,11 +19,9 @@ local EggShop = {}
 -- Açılış ekranı korumalı yüklenir: hata verirse yumurta açma yine çalışır (sadece sonuç ekranı görünmez)
 local okReveal, Reveal = pcall(require, script.Parent.Reveal)
 
--- Ped renkleri raflarla aynı mantıkta (ShelfClient): parlak yeşil = açabilirsin, parlak turuncu = sıradaki hedef (en ucuz alınamayan),
--- sönük gri-mavi = henüz uzak, gri = pet envanteri dolu
+-- Ped renkleri raflarla aynı mantıkta (ShelfClient): parlak yeşil = açabilirsin, sönük lavanta gri = Win yetmiyor, gri = pet envanteri dolu
 local GREEN = Color3.fromRGB(60, 255, 110)
-local GOAL = Color3.fromRGB(255, 170, 50)
-local DIM = Color3.fromRGB(92, 98, 126)
+local DIM = Color3.fromRGB(150, 157, 196)
 local GRAY = Color3.fromRGB(110, 110, 120)
 local DIM_TEXT = Color3.fromRGB(190, 196, 218)
 
@@ -129,13 +127,6 @@ function EggShop.init(screenGui)
 	local function refreshPads()
 		local full = petCount() >= Config.MaxOwnedPets
 		local wins = winValue.Value
-		-- Sıradaki hedef: Win'in yetmediği en ucuz yumurta
-		local goalId, goalPrice = nil, math.huge
-		for _, entry in entries do
-			if entry.egg.price > wins and entry.egg.price < goalPrice then
-				goalId, goalPrice = entry.egg.id, entry.egg.price
-			end
-		end
 		for _, entry in entries do
 			local pad, price = entry.pad, entry.price
 			if full then
@@ -146,9 +137,6 @@ function EggShop.init(screenGui)
 				if entry.egg.price <= wins then
 					pad.Color, pad.Material = GREEN, Enum.Material.Neon
 					price.TextColor3 = GREEN
-				elseif entry.egg.id == goalId then
-					pad.Color, pad.Material = GOAL, Enum.Material.Neon
-					price.TextColor3 = GOAL
 				else
 					pad.Color, pad.Material = DIM, Enum.Material.SmoothPlastic
 					price.TextColor3 = DIM_TEXT

@@ -25,17 +25,8 @@ PlayerStats.init()
 WallService.init(notifyEvent)
 EnvironmentService.init()
 
--- Lobideki FREE REWARD sandığı ve arkadaş bonusu isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
+-- Arkadaş bonusu isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
-	local okChest, RewardChest = pcall(require, script.RewardChest)
-	if okChest then
-		local started, err = pcall(RewardChest.init)
-		if not started then
-			warn(`[Server] RewardChest init failed: {err}`)
-		end
-	else
-		warn(`[Server] Could not load RewardChest: {RewardChest}`)
-	end
 	local okFriends, FriendBonus = pcall(require, script.FriendBonus)
 	if okFriends then
 		local started, err = pcall(FriendBonus.init, notifyEvent)

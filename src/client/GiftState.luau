@@ -1,5 +1,5 @@
 -- Gifts / Playtime Rewards'ın ortak durumu: hangi ödüller alındı, sıradaki ödüle ne kadar kaldı.
--- Gifts menüsü, lobideki FREE REWARD sandığı ve sağdaki FREE REWARD kutusu aynı durumu kullanır.
+-- Gifts menüsü ve sağdaki FREE REWARD kutusu aynı durumu kullanır.
 -- Ödülü ve süre kontrolünü sunucu yapar (PlayerStats.claimGift); burası sadece gösterim için sayar.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -48,16 +48,6 @@ function GiftState.nextRemaining()
 		end
 	end
 	return best
-end
-
--- Bir ödülü sunucudan ister. Dönüş: başarılı mı, mesaj. Sunucu "zaten alındı" derse yerel kayıt da güncellenir.
-function GiftState.claim(index)
-	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
-	local ok, message = shopFunction:InvokeServer("ClaimGift", index)
-	if ok or message == "You already claimed this reward." then
-		GiftState.claimed[index] = true
-	end
-	return ok, message or ""
 end
 
 -- 125 -> "02:05"

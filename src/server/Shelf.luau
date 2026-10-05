@@ -22,7 +22,7 @@ local DEFAULT_LAYOUT = {
 	laneDepths = nil, -- şerit başına derinlik { 12, 14.5, 17 } (laneDepth yerine)
 	rowLength = nil, -- verilirse her şeridin ped dizisi bu uzunluğu doldurur (aralık = rowLength / ped sayısı; padSpacing yerine)
 	padSize = 4, -- postament genişliği/derinliği (referansta karakterin gövdesinin yaklaşık 2 katı)
-	padHeight = 1.6,
+	padHeight = 0.35, -- ince basınç plakası (eskiden 1.6 idi, sahibi 'çok kalın' dedi)
 	padSpacing = 6.5, -- aynı sıradaki postamentler arası (merkezden merkeze)
 	laneDepth = 8, -- her sıranın (şeridin) derinliği, postamentin yaklaşık 2 katı
 	rimHeight = 1, -- şeritleri çevreleyen açık renkli kenar

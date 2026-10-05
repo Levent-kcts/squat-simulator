@@ -11,14 +11,12 @@ local Format = require(Shared:WaitForChild("Format"))
 
 local ShelfClient = {}
 
--- Ped renkleri (sahne bunaltmasın diye sadece işe yarayan pedler parlar, gerisi sönüktür):
---   altın parlak = şu an kullanıyorsun, yeşil parlak = alabilirsin, turuncu parlak = sıradaki hedef (en ucuz alınamayan),
---   mavi sönük = sahipsin (kullanmıyorsun), gri sönük = henüz uzak
+-- Ped renkleri (sahne bunaltmasın diye SADECE işe yarayan pedler parlar, gerisi sönüktür; Win yokken hiçbiri parlamaz):
+--   altın parlak = şu an kullanıyorsun, yeşil parlak = alabilirsin (Win yetiyor), mavi sönük = sahipsin (kullanmıyorsun), gri-mavi sönük = alamazsın
 local YELLOW = Color3.fromRGB(255, 225, 40)
 local BUY = Color3.fromRGB(60, 255, 110)
-local GOAL = Color3.fromRGB(255, 170, 50)
 local OWNED = Color3.fromRGB(105, 160, 235)
-local DIM = Color3.fromRGB(92, 98, 126)
+local DIM = Color3.fromRGB(150, 157, 196) -- floru boğmayan, yumuşak lavanta gri (eskisi çok koyuydu, delik gibi duruyordu)
 local DIM_TEXT = Color3.fromRGB(190, 196, 218)
 local NEON = Enum.Material.Neon
 local PLASTIC = Enum.Material.SmoothPlastic
@@ -115,16 +113,7 @@ function ShelfClient.init(options)
 		end
 		local equipped = player:GetAttribute(options.equippedAttr) or ""
 
-		-- Sıradaki hedef: sahip olunmayan ve Win'in yetmediği en ucuz eşya
 		local wins = winValue.Value
-		local goalId, goalPrice = nil, math.huge
-		for _, entry in entries do
-			local item = entry.item
-			if not owned[item.id] and equipped ~= item.id and item.price > wins and item.price < goalPrice then
-				goalId, goalPrice = item.id, item.price
-			end
-		end
-
 		for _, entry in entries do
 			local item = entry.item
 			local pad, price = entry.pad, entry.price
@@ -137,9 +126,6 @@ function ShelfClient.init(options)
 			elseif item.price <= wins then
 				pad.Color, pad.Material = BUY, NEON
 				price.Text, price.TextColor3 = `{Format.compact(item.price)} Wins`, BUY
-			elseif item.id == goalId then
-				pad.Color, pad.Material = GOAL, NEON
-				price.Text, price.TextColor3 = `{Format.compact(item.price)} Wins`, GOAL
 			else
 				pad.Color, pad.Material = DIM, PLASTIC
 				price.Text, price.TextColor3 = `{Format.compact(item.price)} Wins`, DIM_TEXT

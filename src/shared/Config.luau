@@ -228,7 +228,6 @@ return {
 
 	-- Başlangıç lobisi: spawn'ın bulunduğu geniş kapalı salon
 	Lobby = {
-		RewardChest = Vector2.new(0, 22), -- lobideki FREE REWARD sandığının (x, z) konumu: spawn ile yumurta rafları arasında, orta eksende
 		HalfWidth = 62, -- salonun yarı genişliği (stud; salon 124 x 130, referans fotoğraflardaki gibi derli toplu). Sol duvar ayakkabılar, sağ duvar antrenman alanı, arka duvar yumurtalar, ön duvar koridor
 		BackZ = 65, -- salonun arka duvarının Z'si (ön duvar koridor girişidir; spawn tam ortadadır)
 		Height = 36, -- salonun yüksekliği (koridordan yüksek)

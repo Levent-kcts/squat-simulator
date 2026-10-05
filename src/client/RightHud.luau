@@ -1,6 +1,5 @@
 -- Ekranın sağ tarafındaki iki kutu (referans oyunun sağ tarafı boş kalmasın diye):
 --  1) FREE REWARD: Gifts'teki sıradaki ödüle kalan süre (geri sayım) ya da "READY!"; tıklayınca Gifts menüsü açılır.
---     Ödül lobideki FREE REWARD sandığına gidilerek de alınır (client/RewardChest).
 --  2) FRIEND BONUS: sunucudaki arkadaş sayısına göre kas bonusu yüzdesi (sunucu FriendCount / FriendBonus özniteliklerini ayarlar).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
