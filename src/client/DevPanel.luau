@@ -22,7 +22,11 @@ local BUTTONS = {
 	{ "Free Pet", "FreePet" },
 	{ "Break Stage", "BreakStage" },
 	{ "TP to Walls", "TeleportToWalls" },
+	{ "Offline 1h", "SimulateOffline", 1 },
 	{ "Offline 3h", "SimulateOffline", 3 },
+	{ "Offline 8h", "SimulateOffline", 8 },
+	{ "Offline Popup", "ShowOffline" },
+	{ "Clear Offline", "ClearOffline" },
 	{ "RESET ALL", "Reset" },
 }
 

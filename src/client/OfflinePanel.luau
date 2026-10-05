@@ -273,6 +273,10 @@ function OfflinePanel.init(screenGui, showToast)
 			end
 		end
 	end)
+	-- DEV paneli her basışta OfflineNonce'u değiştirir: pencere kapatılmış olsa bile yeniden açılır
+	player:GetAttributeChangedSignal("OfflineNonce"):Connect(function()
+		task.delay(0.2, show)
+	end)
 	task.delay(2.5, show) -- öznitelik istemci başlamadan önce gelmiş olabilir
 end
 

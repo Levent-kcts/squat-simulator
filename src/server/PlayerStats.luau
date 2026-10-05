@@ -383,6 +383,14 @@ local function offlineGain(profile, seconds)
 	return math.floor(seconds / Config.MoveDuration.Squat * profile.gain * Config.Offline.Rate)
 end
 
+-- DEV: çevrimdışı penceresini yeniden açtırmak için sayaç. Öznitelik değeri aynı kalsa bile (örneğin pencere X ile kapatılmışken
+-- aynı kazanç tekrar simüle edilince) istemci OfflineNonce değişimini görüp pencereyi açar.
+local offlineNonce = 0
+local function pingOfflinePopup(player)
+	offlineNonce += 1
+	player:SetAttribute("OfflineNonce", offlineNonce)
+end
+
 -- Bekleyen çevrimdışı kazancı istemciye yansıtır (OfflinePending > 0 ise CLAIM penceresi açılır). Önce süre, sonra miktar ayarlanır.
 local function publishOffline(player, profile)
 	local pending = profile.offlinePending > 0
@@ -1233,11 +1241,27 @@ function PlayerStats.dev(player, command, amount)
 		table.insert(profile.pets, pet.id)
 		message = `Free pet: {pet.name}`
 	elseif command == "SimulateOffline" then
+		-- Seçilen saat kadar uzakta kalınmış gibi bekleyen kazanç oluşturur ve pencereyi açar
 		local hours = math.clamp(if amount > 0 then amount else 3, 1, Config.Offline.MaxHours)
 		profile.offlineSeconds = math.floor(hours * 3600)
 		profile.offlinePending = math.max(1, offlineGain(profile, profile.offlineSeconds))
 		publishOffline(player, profile)
-		message = `Offline earnings simulated ({hours}h): claim it in the popup`
+		pingOfflinePopup(player)
+		message = `Offline earnings simulated ({hours}h): use CLAIM in the popup`
+	elseif command == "ShowOffline" then
+		-- Bekleyen kazanç varsa pencereyi yeniden açar (X ile kapatılmışsa); yoksa 3 saatlik kazanç oluşturur
+		if profile.offlinePending <= 0 then
+			profile.offlineSeconds = 3 * 3600
+			profile.offlinePending = math.max(1, offlineGain(profile, profile.offlineSeconds))
+			publishOffline(player, profile)
+		end
+		pingOfflinePopup(player)
+		message = "Offline earnings popup opened"
+	elseif command == "ClearOffline" then
+		profile.offlinePending = 0
+		profile.offlineSeconds = 0
+		publishOffline(player, profile)
+		message = "Pending offline earnings cleared"
 	elseif command == "Reset" then
 		muscle.Value = 0
 		wins.Value = 0
