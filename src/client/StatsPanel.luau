@@ -55,7 +55,7 @@ function StatsPanel.init(screenGui)
 		{ "Pets", function() return mult(player:GetAttribute("PetMultiplier") or 1) end, Color3.new(1, 1, 1) },
 		{ "Level", function() return mult(Progression.levelMultiplier(leaderstats[Config.StatLevel].Value)) end, Color3.new(1, 1, 1) },
 		{ "Rebirth", function() return mult(Progression.rebirthMultiplier(leaderstats[Config.StatRebirths].Value)) end, Color3.new(1, 1, 1) },
-		{ "Skin", function() return mult(player:GetAttribute("SkinMultiplier") or 1) end, Color3.new(1, 1, 1) },
+		{ "Skin bonus", function() return `+{Format.compact(player:GetAttribute("SkinBonus") or 0)} / click` end, Color3.new(1, 1, 1) },
 		{ "Aura", function()
 			local aura = Catalog.AuraById[player:GetAttribute("EquippedAura") or ""]
 			return mult(if aura then aura.mult else 1)

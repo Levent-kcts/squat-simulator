@@ -241,10 +241,10 @@ local function refresh(player)
 	local shoeDamage = if shoe then shoe.damage else 1
 	profile.damageMultiplier = shoeDamage
 
-	-- Takılı skin geçerlidir (toplanmaz): rengi karakteri boyar, çarpanı bacak kası kazancına girer
-	profile.equippedSkin = pickEquipped(profile.skins, profile.equippedSkin, Catalog.SkinById, "mult")
+	-- Takılı skin geçerlidir (toplanmaz): rengi karakteri boyar, SABİT bonusu (+N) tıklama başı bacak kası kazancına eklenir
+	profile.equippedSkin = pickEquipped(profile.skins, profile.equippedSkin, Catalog.SkinById, "bonus")
 	local skin = Catalog.SkinById[profile.equippedSkin]
-	local skinMultiplier = if skin then skin.mult else 1
+	local skinBonus = if skin then skin.bonus else 0
 
 	-- Takılı petlerin çarpanı (oyuncu Pets menüsünden takar)
 	local equipped = profile.equipped
@@ -256,7 +256,7 @@ local function refresh(player)
 	local level = getStat(player, Config.StatLevel).Value
 	local rebirths = getStat(player, Config.StatRebirths).Value
 	local maxLevel = Progression.maxLevel(rebirths)
-	-- Toplam çarpan = petler x level x rebirth x aura x skin x süreli güçlendirme
+	-- Çarpan = petler x level x rebirth x aura; yüzde bonusları (süreli güçlendirme, arkadaş, Index) ayrıca çarpar. Skin ÇARPAN DEĞİL sabit bonustur.
 	local aura = Catalog.AuraById[profile.equippedAura]
 	local auraMultiplier = if aura then aura.mult else 1
 	local boostMultiplier = if os.time() < profile.boostMuscleUntil then 2 else 1
@@ -274,16 +274,15 @@ local function refresh(player)
 	local friendsConfig = Config.Friends
 	local friendCount = if friendsConfig.Enabled then math.min(friendCounts[player] or 0, friendsConfig.MaxFriends) else 0
 	local friendPercent = friendCount * friendsConfig.PercentPerFriend
-	local totalMultiplier = multiplier
+	local coreMultiplier = multiplier
 		* Progression.levelMultiplier(level)
 		* Progression.rebirthMultiplier(rebirths)
 		* auraMultiplier
-		* skinMultiplier
-		* boostMultiplier
-		* (1 + friendPercent / 100)
-		* (1 + indexPercent / 100)
+	local percentMultiplier = boostMultiplier * (1 + friendPercent / 100) * (1 + indexPercent / 100)
+	local totalMultiplier = coreMultiplier * percentMultiplier
 
-	profile.gain = math.max(1, math.floor(Config.MusclePerClick * totalMultiplier))
+	-- Skinin sabit bonusu çarpanlardan sonra eklenir, yüzde bonuslarıyla birlikte çarpılır
+	profile.gain = math.max(1, math.floor((Config.MusclePerClick * coreMultiplier + skinBonus) * percentMultiplier))
 
 	player:SetAttribute("Taps", profile.taps)
 	player:SetAttribute("TapsNeeded", Progression.tapsNeeded(level))
@@ -308,7 +307,7 @@ local function refresh(player)
 	player:SetAttribute("UnlockedAreas", table.concat(unlockedAreas, ","))
 	player:SetAttribute("OwnedSkins", table.concat(profile.skins, ","))
 	player:SetAttribute("EquippedSkin", profile.equippedSkin)
-	player:SetAttribute("SkinMultiplier", skinMultiplier)
+	player:SetAttribute("SkinBonus", skinBonus)
 	player:SetAttribute("OwnedPets", table.concat(profile.pets, ","))
 	player:SetAttribute("EquippedPets", table.concat(equipped, ","))
 	player:SetAttribute("OwnedTrails", table.concat(profile.trails, ","))
@@ -813,7 +812,7 @@ function PlayerStats.buySkin(player, skinId)
 		profile.equippedSkin = skinId
 		refresh(player)
 		requestSave(player)
-		return true, `Equipped {skin.name} skin (x{skin.mult} muscle)`
+		return true, `Equipped {skin.name} skin (+{Format.compact(skin.bonus)} muscle per click)`
 	end
 
 	if wins.Value < skin.price then
@@ -825,7 +824,7 @@ function PlayerStats.buySkin(player, skinId)
 	profile.equippedSkin = skinId
 	refresh(player)
 	requestSave(player)
-	return true, `Bought {skin.name} skin! (x{skin.mult} muscle)`
+	return true, `Bought {skin.name} skin! (+{Format.compact(skin.bonus)} muscle per click)`
 end
 
 -- Yumurtanın pet havuzundan ağırlıklarına göre rastgele pet seçer

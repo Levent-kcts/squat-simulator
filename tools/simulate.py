@@ -46,7 +46,7 @@ LEVEL_MULT = num(LEVEL, "MultiplierPerLevel")
 REBIRTH_MULT = num(REBIRTH, "MultiplierPerRebirth")
 
 ITEMS = [(num(l, "price"), num(l, "damage")) for l in block("Items").splitlines() if "price =" in l]
-SKINS = [(num(l, "price"), num(l, "mult")) for l in block("Skins").splitlines() if "price =" in l]
+SKINS = [(num(l, "price"), num(l, "bonus")) for l in block("Skins").splitlines() if "price =" in l]
 PETS = {m.group(1): float(m.group(2)) for m in re.finditer(r'id = "(\w+)", name = "[^"]+", mult = ([\d\.]+)', block("Pets"))}
 AURAS = [(num(l, "winPrice"), num(l, "mult")) for l in block("Auras").splitlines() if "winPrice =" in l]
 
@@ -127,7 +127,7 @@ class Player:
         self.pets = []
         self.aura = 1.0
         self.shoe = 1.0
-        self.skin = 1.0
+        self.skin = 0.0  # takılı skinin SABİT bonusu (tıklama başı eklenir)
         self.level = 1
         self.progress = 0.0
         self._pet_cache_len = -1
@@ -149,7 +149,7 @@ class Player:
     def gain(self):
         level_mult = 1 + LEVEL_MULT * (self.level - 1)
         rebirth_mult = 1 + REBIRTH_MULT * self.rebirths
-        return max(1, math.floor(self.pet_mult() * level_mult * rebirth_mult * self.aura * self.skin))
+        return max(1, math.floor(self.pet_mult() * level_mult * rebirth_mult * self.aura + self.skin))
 
     def zone(self):
         return max(m for r, m in ZONES if r <= self.rebirths)
@@ -201,9 +201,9 @@ class Player:
                 continue
             skins = [s for s in SKINS if s[1] > self.skin and s[0] <= self.wins * 0.5]
             if skins:
-                price, mult = skins[-1]
+                price, bonus = skins[-1]
                 self.wins -= price
-                self.skin = mult
+                self.skin = bonus
                 continue
             shoes = [s for s in ITEMS if s[1] > self.shoe and s[0] <= self.wins * 0.5]
             if shoes:
@@ -218,7 +218,7 @@ class Player:
         self.muscle = 0.0
         self.wins = 0.0
         self.shoe = 1.0
-        self.skin = 1.0
+        self.skin = 0.0
         self.level = 1
         self.progress = 0.0
 
@@ -294,5 +294,5 @@ if __name__ == "__main__":
     print("rebirth | zaman     | bölge | pet   | aura | skin | ayakkabı | kas (rebirth anı) | aşama | sefer Win | kalan Win | devirde kazanılan Win")
     for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won, earned in log:
         if r <= 12 or r % 5 == 0:
-            print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | x{skin:<3g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
+            print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | +{skin:<5g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")

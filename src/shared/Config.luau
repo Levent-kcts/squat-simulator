@@ -320,24 +320,26 @@ return {
 	},
 
 	-- Skinler (Lobi sol duvar, ayakkabı rafının yanındaki raf): Win ile alınır, karakter o renge boyanır.
-	-- mult = bacak kası kazancı çarpanı (ayakkabı gibi takılı olan geçerlidir, toplanmaz; aura/pet/level çarpanlarıyla çarpılır).
+	-- bonus = tıklama başı bacak kası kazancına eklenen SABİT sayı ('+100 Power'; çarpan DEĞİL, sahibi çarpan gibi yazılmasını istemedi). Takılı olan geçerlidir, toplanmaz.
+	-- Pet/level/rebirth/aura çarpanlarından SONRA eklenir, süreli 2x güçlendirmeyle, arkadaş ve Index yüzdeleriyle çarpılır (PlayerStats.refresh). Sabit sayı olduğu için
+	-- oyun ilerledikçe (çarpanlar büyüdükçe) etkisi azalır; rebirth skinleri zaten sıfırlar, her turda yeniden alınır. Değerler fiyatın ~0.7. kuvvetine göre seçildi.
 	-- Rebirth ayakkabılar gibi skinleri de sıfırlar. Sadece fantezi renkler var (gerçek ten tonları fiyat/güç sıralamasına girmesin diye).
 	Skins = {
-		{ id = "mint", name = "Mint", price = 5, mult = 1.1, color = Color3.fromRGB(150, 235, 190) },
-		{ id = "lemon", name = "Lemon", price = 15, mult = 1.2, color = Color3.fromRGB(255, 240, 110) },
-		{ id = "coral", name = "Coral", price = 40, mult = 1.3, color = Color3.fromRGB(255, 127, 110) },
-		{ id = "bubblegum", name = "Bubblegum", price = 90, mult = 1.4, color = Color3.fromRGB(255, 150, 200) },
-		{ id = "orange", name = "Orange Pop", price = 200, mult = 1.5, color = Color3.fromRGB(255, 150, 50) },
-		{ id = "lime", name = "Lime Zap", price = 450, mult = 1.6, color = Color3.fromRGB(140, 230, 60) },
-		{ id = "teal", name = "Ocean Teal", price = 900, mult = 1.8, color = Color3.fromRGB(40, 200, 190) },
-		{ id = "sky", name = "Sky Blue", price = 1800, mult = 2, color = Color3.fromRGB(80, 170, 255) },
-		{ id = "violet", name = "Violet", price = 3600, mult = 2.2, color = Color3.fromRGB(150, 90, 230) },
-		{ id = "ruby", name = "Ruby Red", price = 7000, mult = 2.4, color = Color3.fromRGB(225, 40, 60) },
-		{ id = "silver", name = "Silver", price = 14000, mult = 2.6, color = Color3.fromRGB(205, 210, 220) },
-		{ id = "gold", name = "Golden", price = 28000, mult = 2.9, color = Color3.fromRGB(255, 200, 40) },
-		{ id = "ice", name = "Frozen", price = 56000, mult = 3.2, color = Color3.fromRGB(150, 235, 255) },
-		{ id = "magma", name = "Magma", price = 110000, mult = 3.6, color = Color3.fromRGB(255, 90, 20) },
-		{ id = "galaxy", name = "Galaxy", price = 220000, mult = 4, color = Color3.fromRGB(70, 45, 150) },
+		{ id = "mint", name = "Mint", price = 5, bonus = 1, color = Color3.fromRGB(150, 235, 190) },
+		{ id = "lemon", name = "Lemon", price = 15, bonus = 3, color = Color3.fromRGB(255, 240, 110) },
+		{ id = "coral", name = "Coral", price = 40, bonus = 6, color = Color3.fromRGB(255, 127, 110) },
+		{ id = "bubblegum", name = "Bubblegum", price = 90, bonus = 10, color = Color3.fromRGB(255, 150, 200) },
+		{ id = "orange", name = "Orange Pop", price = 200, bonus = 20, color = Color3.fromRGB(255, 150, 50) },
+		{ id = "lime", name = "Lime Zap", price = 450, bonus = 35, color = Color3.fromRGB(140, 230, 60) },
+		{ id = "teal", name = "Ocean Teal", price = 900, bonus = 60, color = Color3.fromRGB(40, 200, 190) },
+		{ id = "sky", name = "Sky Blue", price = 1800, bonus = 100, color = Color3.fromRGB(80, 170, 255) },
+		{ id = "violet", name = "Violet", price = 3600, bonus = 170, color = Color3.fromRGB(150, 90, 230) },
+		{ id = "ruby", name = "Ruby Red", price = 7000, bonus = 280, color = Color3.fromRGB(225, 40, 60) },
+		{ id = "silver", name = "Silver", price = 14000, bonus = 450, color = Color3.fromRGB(205, 210, 220) },
+		{ id = "gold", name = "Golden", price = 28000, bonus = 700, color = Color3.fromRGB(255, 200, 40) },
+		{ id = "ice", name = "Frozen", price = 56000, bonus = 1100, color = Color3.fromRGB(150, 235, 255) },
+		{ id = "magma", name = "Magma", price = 110000, bonus = 1700, color = Color3.fromRGB(255, 90, 20) },
+		{ id = "galaxy", name = "Galaxy", price = 220000, bonus = 2600, color = Color3.fromRGB(70, 45, 150) },
 	},
 
 	-- Antrenman alanı (SAĞ duvar, 3 basamakta 4 + 3 + 3 = 10 büyük ped): pede girince karakter otomatik squat yapar ve kazanç o pedin
