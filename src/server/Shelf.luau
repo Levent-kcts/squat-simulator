@@ -21,8 +21,11 @@ local DEFAULT_LAYOUT = {
 	rowPadSizes = nil, -- şerit başına ped boyutu { 8.5, 11, 13.5 }: üst şeritlerde ped büyür (padSize yerine)
 	laneDepths = nil, -- şerit başına derinlik { 12, 14.5, 17 } (laneDepth yerine)
 	rowLength = nil, -- verilirse her şeridin ped dizisi bu uzunluğu doldurur (aralık = rowLength / ped sayısı; padSpacing yerine)
-	padSize = 4, -- postament genişliği/derinliği (referansta karakterin gövdesinin yaklaşık 2 katı)
-	padHeight = 0.35, -- ince basınç plakası (eskiden 1.6 idi, sahibi 'çok kalın' dedi)
+	-- Ped ölçüsü sahibinin verdiği referans ekran görüntüsünden ölçüldü (yeşil ped, yandan): karakter boyuna oranla ped ~0.94 genişlik x ~0.23 yükseklik,
+	-- yani GENİŞ ve alçak (en/boy ~4:1), altında kenarlardan taşan ince gri çerçeve. Normal boyda karakterde (~5.3 stud) bu ~4.8 x 1.2 stud eder.
+	-- (Eskiden 4 x 1.6 küp gibi duruyordu 'çok kalın'; sonra 0.35 yapıldı, o da referanstan çok ince kaldı.)
+	padSize = 4.8, -- postament genişliği/derinliği
+	padHeight = 1.2,
 	padSpacing = 6.5, -- aynı sıradaki postamentler arası (merkezden merkeze)
 	laneDepth = 8, -- her sıranın (şeridin) derinliği, postamentin yaklaşık 2 katı
 	rimHeight = 1, -- şeritleri çevreleyen açık renkli kenar
@@ -224,7 +227,7 @@ function Shelf.build(spec)
 
 		block(
 			`PadFrame_{item.id}`,
-			Vector3.new(padSize + 1.2, 0.15, padSize + 1.2),
+			Vector3.new(padSize + 0.9, 0.15, padSize + 0.9), -- pedin her kenarından 0.45 taşan ince çerçeve
 			Vector3.new(x, row.y + 0.075, row.z + L.padZOffset),
 			L.frameColor,
 			Enum.Material.Plastic

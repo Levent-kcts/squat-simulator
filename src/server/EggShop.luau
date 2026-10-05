@@ -19,8 +19,8 @@ local EGG_SCALE = 0.86 -- yumurta boyutu (referans fotoğrafta yumurta boyu kara
 -- Stand ölçüleri: yumurta pedin arkasında durur (referans fotoğraftaki gibi küçük ped önde), şeritler kısa
 local LAYOUT = {
 	rowCounts = { 3, 3 },
-	padSize = 4.5,
-	padHeight = 0.35,
+	padSize = 5,
+	padHeight = 1,
 	padSpacing = 12.5,
 	laneDepth = 11,
 	tierHeights = { 0.4, 3.4 },
