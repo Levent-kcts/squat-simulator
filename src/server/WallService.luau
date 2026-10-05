@@ -308,6 +308,44 @@ function WallService.init(notify)
 		true
 	)
 
+	-- Son odanın bitiş duvarında yer tutucu tabela: yeni dünya/aşamalar gelene kadar 'COMING SOON' (Config.Wall.FinalWallText).
+	-- Bitiş duvarının yüzü lego çıkıntılıdır (yazıyı delerdi), bu yüzden yazı çıkıntıların önüne konan ince, düz bir tabeladadır.
+	if cfg.FinalWallText and cfg.FinalWallText ~= "" then
+		local board = Build.block(
+			folder,
+			"ComingSoonSign",
+			Vector3.new(44, 11, 0.5),
+			Vector3.new(0, 13, Layout.ZEnd + 0.55), -- duvar yüzünün (ZEnd) hemen önünde, çıkıntıların (~0.2) dışında
+			Color3.fromRGB(255, 205, 40),
+			Enum.Material.SmoothPlastic
+		)
+		board.CanCollide = false
+		board.CanQuery = false
+		local boardGui = Instance.new("SurfaceGui")
+		boardGui.Face = Enum.NormalId.Back -- koridordan gelen oyuncuya bakan (+Z) yüz
+		boardGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		boardGui.PixelsPerStud = 30
+		boardGui.Parent = board
+		local function boardText(position, size, text, strokeThickness)
+			local label = Instance.new("TextLabel")
+			label.AnchorPoint = Vector2.new(0.5, 0.5)
+			label.Position = position
+			label.Size = size
+			label.BackgroundTransparency = 1
+			label.Font = Enum.Font.FredokaOne
+			label.TextScaled = true
+			label.Text = text
+			label.TextColor3 = Color3.new(1, 1, 1)
+			label.Parent = boardGui
+			local stroke = Instance.new("UIStroke")
+			stroke.Thickness = strokeThickness
+			stroke.Color = Color3.fromRGB(40, 25, 0)
+			stroke.Parent = label
+		end
+		boardText(UDim2.fromScale(0.5, 0.4), UDim2.fromScale(0.92, 0.52), cfg.FinalWallText, 6)
+		boardText(UDim2.fromScale(0.5, 0.8), UDim2.fromScale(0.8, 0.2), "More walls are on the way!", 3)
+	end
+
 	for stage = 1, Layout.StageCount do
 		for _, def in Config.WinButtons do
 			createWinButton(folder, stage, def)

@@ -289,7 +289,7 @@ return {
 		-- yapmanın ödülünden hep fazladır. Yani oyuncu için ilerlemek, aynı aşamayı tekrarlamaktan karlıdır.
 		RewardGrowth = 2,
 
-		-- Son (100.) duvarın ön yüzüne yazılan yer tutucu yazı: yeni dünya/aşamalar gelene kadar 'COMING SOON'. nil ya da boş yapılırsa yazı kalkar.
+		-- Son aşamanın (20.) sonundaki bitiş duvarına konan tabelanın yazısı (WallService, 100. duvara DEĞİL): yeni dünya/aşamalar gelene kadar 'COMING SOON'. nil ya da boş yapılırsa tabela kalkar.
 		FinalWallText = "COMING SOON",
 
 		-- Her aşamanın duvar TEMASI (20 aşama, ZAYIFTAN GÜÇLÜYE: ilk aşama en zayıf, sondan bir önceki Bedrock, son Blackhole). Sıra oyuncunun ilerleme sırasıdır;
