@@ -4,6 +4,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SocialService = game:GetService("SocialService")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -32,8 +33,8 @@ local function text(parent, props, strokeThickness)
 	return label
 end
 
--- openGifts: Gifts menüsünü açıp kapatan fonksiyon (init.client verir)
-function RightHud.init(screenGui, openGifts)
+-- openGifts: Gifts menüsünü açıp kapatan fonksiyon; showToast(ok, mesaj): kısa bildirim (ikisini de init.client verir)
+function RightHud.init(screenGui, openGifts, showToast)
 	local player = Players.LocalPlayer
 
 	local container = create("Frame", {
@@ -136,7 +137,8 @@ function RightHud.init(screenGui, openGifts)
 
 	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------
 	-- Referans oyundaki gibi küçük iki yüzlü simge ve altında yüzde: arkadaş yokken "0%", her arkadaşta +%10 ("10%", "20%" ...).
-	-- Üstüne gelince / tıklayınca küçük bir açıklama çıkar (kaç arkadaş, kaç yüzde, en çok kaç).
+	-- Üstüne gelince küçük bir açıklama çıkar (kaç arkadaş, kaç yüzde, en çok kaç). TIKLAYINCA Roblox'un kendi "Invite Friends" penceresi açılır
+	-- (SocialService:PromptGameInvite): arkadaş listesi, arama ve link kopyalama Roblox'tan gelir; davet kabul edilince arkadaş oyuna girer ve bonus başlar.
 	if not Config.Friends.Enabled then
 		return
 	end
@@ -193,7 +195,7 @@ function RightHud.init(screenGui, openGifts)
 	local tooltip = create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 84),
-		Size = UDim2.fromOffset(236, 84),
+		Size = UDim2.fromOffset(236, 106),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,
 	}, cornerGui)
@@ -216,6 +218,12 @@ function RightHud.init(screenGui, openGifts)
 		Size = UDim2.new(1, -24, 0, 20),
 		TextColor3 = Color3.fromRGB(190, 200, 235),
 	}, 1.5)
+	text(tooltip, {
+		Position = UDim2.fromOffset(12, 80),
+		Size = UDim2.new(1, -24, 0, 20),
+		Text = "Click to invite friends!",
+		TextColor3 = Color3.fromRGB(120, 255, 140),
+	}, 1.5)
 
 	local hovering, pinned = false, false
 	local function refreshTooltip()
@@ -229,9 +237,32 @@ function RightHud.init(screenGui, openGifts)
 		hovering = false
 		refreshTooltip()
 	end)
+	-- Tıklayınca Roblox'un arkadaş davet penceresi. Davet gönderilemiyorsa (yayınlanmamış oyun, yaş kısıtı, ağ hatası) açıklama kutusu 4 sn açık kalır.
+	local inviting = false
 	friends.MouseButton1Click:Connect(function()
-		pinned = not pinned -- dokunmatik ekranda üzerine gelme yok: tıklayınca açılır/kapanır
-		refreshTooltip()
+		if inviting then
+			return
+		end
+		inviting = true
+		task.spawn(function()
+			local okCheck, canInvite = pcall(SocialService.CanSendGameInviteAsync, SocialService, player)
+			local opened = false
+			if okCheck and canInvite then
+				opened = pcall(SocialService.PromptGameInvite, SocialService, player)
+			end
+			if not opened then
+				if showToast then
+					showToast(false, "Friend invites are not available right now.")
+				end
+				pinned = true
+				refreshTooltip()
+				task.delay(4, function()
+					pinned = false
+					refreshTooltip()
+				end)
+			end
+			inviting = false
+		end)
 	end)
 
 	local lastPercent = 0

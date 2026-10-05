@@ -590,7 +590,7 @@ end)
 giftsButton.MouseButton1Click:Connect(toggleGifts)
 
 -- Sağ taraftaki FREE REWARD / FRIEND BONUS kutuları (hata verirse oyun çalışır, sadece bu kutular görünmez)
-safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts)
+safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",
