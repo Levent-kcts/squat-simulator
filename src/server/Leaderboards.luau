@@ -16,8 +16,9 @@ local Leaderboards = {}
 
 local ROWS = 10
 local REFRESH_INTERVAL = 60 -- yazma ve okuma aralığı (saniye); DataStore limitlerini aşmamak için
-local BOARD_WIDTH = 10
-local BOARD_HEIGHT = 15
+local BOARD_WIDTH = 7 -- eskiden 10 x 15 idi, kamerada fazla büyük duruyordu
+local BOARD_HEIGHT = 10.5
+local BOARD_CENTER_Y = 8.5
 
 -- Panolar: statName leaderstats'taki ad, store sıralı veri deposunun adı (değişirse tablo sıfırlanır)
 local BOARDS = {
@@ -61,13 +62,13 @@ local function buildBoard(folder, frame, board, localX)
 	part.Size = Vector3.new(BOARD_WIDTH, BOARD_HEIGHT, 0.5)
 	part.Color = Color3.fromRGB(28, 30, 46)
 	part.Material = Enum.Material.SmoothPlastic
-	part.CFrame = frame * CFrame.new(localX, 11, -0.4)
+	part.CFrame = frame * CFrame.new(localX, BOARD_CENTER_Y, -0.4)
 	part.Parent = folder
 
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Front
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	gui.PixelsPerStud = 40
+	gui.PixelsPerStud = 57 -- pano küçüldüğü için yazı aynı netlikte kalsın diye artırıldı (40 x 10/7)
 	gui.Parent = part
 
 	local header = Instance.new("Frame")

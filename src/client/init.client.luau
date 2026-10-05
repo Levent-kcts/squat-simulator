@@ -589,6 +589,10 @@ local toggleGifts = GiftsPanel.init(screenGui, showToast, function(count)
 end)
 giftsButton.MouseButton1Click:Connect(toggleGifts)
 
+-- Sağ taraftaki FREE REWARD / FRIEND BONUS kutuları ve lobideki FREE REWARD sandığı (hata verirse oyun çalışır, sadece bu özellikler görünmez)
+safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts)
+safeInit("RewardChest", loadOptional("RewardChest"), screenGui, showToast)
+
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",
 	icon = "✨",

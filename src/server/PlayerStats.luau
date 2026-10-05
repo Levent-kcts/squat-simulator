@@ -16,6 +16,7 @@ local rng = Random.new()
 
 -- profiles[player] = { loaded, canSave, items = {id}, pets = {id}, gain }
 local profiles = {}
+local friendCounts = {} -- [player] = aynı sunucudaki arkadaş sayısı (server/FriendBonus bildirir; profil yüklenmeden önce de gelebilir)
 
 -- Listede id kaç kez geçiyor
 local function countOf(list, id)
@@ -252,12 +253,17 @@ local function refresh(player)
 	local aura = Catalog.AuraById[profile.equippedAura]
 	local auraMultiplier = if aura then aura.mult else 1
 	local boostMultiplier = if os.time() < profile.boostMuscleUntil then 2 else 1
+	-- Arkadaş bonusu: sunucudaki her arkadaş için +%X (Config.Friends)
+	local friendsConfig = Config.Friends
+	local friendCount = if friendsConfig.Enabled then math.min(friendCounts[player] or 0, friendsConfig.MaxFriends) else 0
+	local friendPercent = friendCount * friendsConfig.PercentPerFriend
 	local totalMultiplier = multiplier
 		* Progression.levelMultiplier(level)
 		* Progression.rebirthMultiplier(rebirths)
 		* auraMultiplier
 		* skinMultiplier
 		* boostMultiplier
+		* (1 + friendPercent / 100)
 
 	profile.gain = math.max(1, math.floor(Config.MusclePerClick * totalMultiplier))
 
@@ -265,6 +271,8 @@ local function refresh(player)
 	player:SetAttribute("TapsNeeded", Progression.tapsNeeded(level))
 	player:SetAttribute("MaxLevel", maxLevel)
 	player:SetAttribute("TotalMultiplier", totalMultiplier)
+	player:SetAttribute("FriendCount", friendCount)
+	player:SetAttribute("FriendBonus", friendPercent)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
@@ -525,6 +533,7 @@ function PlayerStats.init()
 	Players.PlayerRemoving:Connect(function(player)
 		save(player)
 		profiles[player] = nil
+		friendCounts[player] = nil
 	end)
 
 	-- Sunucu kapanırken herkesin verisini kaydet
@@ -924,6 +933,15 @@ function PlayerStats.claimOffline(player)
 	return true, `Claimed +{Format.compact(amount)} Leg Muscle!`
 end
 
+-- Sunucudaki arkadaş sayısını bildirir (server/FriendBonus); kazanç çarpanı hemen yeniden hesaplanır
+function PlayerStats.setFriendCount(player, count)
+	friendCounts[player] = count
+	local profile = profiles[player]
+	if profile and profile.loaded then
+		refresh(player)
+	end
+end
+
 -- Teypin müzik ses kademesini kaydeder (istemci değiştirdikten kısa süre sonra bildirir). Dönüş: başarılı mı
 function PlayerStats.setMusicLevel(player, level)
 	local profile = profiles[player]
@@ -1240,6 +1258,15 @@ function PlayerStats.dev(player, command, amount)
 		local pet = rollPet(Config.Eggs[rng:NextInteger(1, #Config.Eggs)])
 		table.insert(profile.pets, pet.id)
 		message = `Free pet: {pet.name}`
+	elseif command == "FakeFriends" then
+		-- Studio'da arkadaş olmadan bonusu denemek için sahte arkadaş sayısı (gerçek sayım bir sonraki giriş/çıkışta üzerine yazar)
+		friendCounts[player] = math.clamp(amount, 0, 20)
+		message = `Fake friends: {friendCounts[player]}`
+	elseif command == "GiftTime" then
+		-- Gifts / FREE REWARD sandığı için oyun süresini ileri sarar
+		profile.sessionStart -= (if amount > 0 then amount else 10) * 60
+		player:SetAttribute("SessionStart", profile.sessionStart)
+		message = `Playtime +{if amount > 0 then amount else 10} min (gift timers)`
 	elseif command == "SimulateOffline" then
 		-- Seçilen saat kadar uzakta kalınmış gibi bekleyen kazanç oluşturur ve pencereyi açar
 		local hours = math.clamp(if amount > 0 then amount else 3, 1, Config.Offline.MaxHours)

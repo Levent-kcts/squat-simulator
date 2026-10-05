@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
+local GiftState = require(script.Parent.GiftState)
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Format = require(Shared:WaitForChild("Format"))
 
@@ -59,7 +60,7 @@ end
 function GiftsPanel.init(screenGui, showToast, onClaimable)
 	local player = Players.LocalPlayer
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
-	local claimed = {} -- bu oturumda alınan ödüller (sunucu zaten kontrol eder, burada sadece gösterim)
+	local claimed = GiftState.claimed -- bu oturumda alınan ödüller (lobideki sandık ve sağdaki kutuyla ortak; sunucu zaten kontrol eder)
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),

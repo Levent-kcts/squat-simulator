@@ -19,9 +19,13 @@ local EggShop = {}
 -- Açılış ekranı korumalı yüklenir: hata verirse yumurta açma yine çalışır (sadece sonuç ekranı görünmez)
 local okReveal, Reveal = pcall(require, script.Parent.Reveal)
 
-local GREEN = Color3.fromRGB(60, 255, 100) -- açabilirsin
-local RED = Color3.fromRGB(255, 50, 50) -- yeterli Win yok
-local GRAY = Color3.fromRGB(110, 110, 120) -- pet envanteri dolu
+-- Ped renkleri raflarla aynı mantıkta (ShelfClient): parlak yeşil = açabilirsin, parlak turuncu = sıradaki hedef (en ucuz alınamayan),
+-- sönük gri-mavi = henüz uzak, gri = pet envanteri dolu
+local GREEN = Color3.fromRGB(60, 255, 110)
+local GOAL = Color3.fromRGB(255, 170, 50)
+local DIM = Color3.fromRGB(92, 98, 126)
+local GRAY = Color3.fromRGB(110, 110, 120)
+local DIM_TEXT = Color3.fromRGB(190, 196, 218)
 
 -- Panel, oyuncu yumurta pedine DOKUNUNCA açılır (eskiden 10 stud yakınlıkta açılıp önü kapatıyordu). Mesafe = pedin kenarı ile karakterin
 -- gövde kenarı arasındaki yatay boşluk (stud): ENTER'dan küçükse açılır, açıkken EXIT'ten uzaklaşınca kapanır (kenarda titremesin diye EXIT daha geniş).
@@ -84,25 +88,32 @@ function EggShop.init(screenGui)
 	for _, egg in Config.Eggs do
 		local pad = folder:WaitForChild(`Pad_{egg.id}`)
 
-		-- Boyut stud cinsinden: uzaktayken küçülür, yan yana etiketler üst üste binmez
-		local gui = create("BillboardGui", {
-			Size = UDim2.fromScale(10, 4),
-			StudsOffsetWorldSpace = Vector3.new(0, 9.2, 0),
-			MaxDistance = 60,
+		-- Etiketler iki ayrı küçük kutudur (eskiden tek büyük 2 satırlı kutu yan yana/üst üste yumurtaların yazılarını karıştırıyordu):
+		--  * isim: yumurtanın üstünde tek satır,
+		--  * fiyat: pedin hemen üstünde. Boyutlar stud cinsinden, uzaktayken küçülür; uzaktaki etiketler gizlenir (MaxDistance).
+		local nameGui = create("BillboardGui", {
+			Size = UDim2.fromScale(7.5, 1.9),
+			StudsOffsetWorldSpace = Vector3.new(0, 8.6, 0),
+			MaxDistance = 48,
 			Adornee = pad,
 		}, pad)
+		makeText(nameGui, {
+			Size = UDim2.fromScale(1, 1),
+			TextColor3 = egg.color:Lerp(Color3.new(1, 1, 1), 0.35),
+			Text = egg.name,
+		}, 2)
 
-		local function label(yScale, heightScale, color)
-			return makeText(gui, {
-				Position = UDim2.fromScale(0, yScale),
-				Size = UDim2.fromScale(1, heightScale),
-				TextColor3 = color,
-			}, 2)
-		end
-		-- İki satır (isim, fiyat): pet şansları yaklaşınca açılan panelde görünür, etiketler üst üste binmesin
-		label(0, 0.5, egg.color:Lerp(Color3.new(1, 1, 1), 0.3)).Text = egg.name
-		local price = label(0.5, 0.5, Color3.new(1, 1, 1))
-		price.Text = `{Format.number(egg.price)} Wins`
+		local priceGui = create("BillboardGui", {
+			Size = UDim2.fromScale(5, 1.35),
+			StudsOffsetWorldSpace = Vector3.new(0, 2.1, 0),
+			MaxDistance = 36,
+			Adornee = pad,
+		}, pad)
+		local price = makeText(priceGui, {
+			Size = UDim2.fromScale(1, 1),
+			TextColor3 = Color3.new(1, 1, 1),
+			Text = `{Format.number(egg.price)} Wins`,
+		}, 2)
 
 		table.insert(entries, { egg = egg, pad = pad, price = price })
 	end
@@ -118,15 +129,30 @@ function EggShop.init(screenGui)
 	local function refreshPads()
 		local full = petCount() >= Config.MaxOwnedPets
 		local wins = winValue.Value
+		-- Sıradaki hedef: Win'in yetmediği en ucuz yumurta
+		local goalId, goalPrice = nil, math.huge
 		for _, entry in entries do
+			if entry.egg.price > wins and entry.egg.price < goalPrice then
+				goalId, goalPrice = entry.egg.id, entry.egg.price
+			end
+		end
+		for _, entry in entries do
+			local pad, price = entry.pad, entry.price
 			if full then
-				entry.pad.Color = GRAY
-				entry.price.Text = "Inventory full"
+				pad.Color, pad.Material = GRAY, Enum.Material.SmoothPlastic
+				price.Text, price.TextColor3 = "Inventory full", DIM_TEXT
 			else
-				local affordable = wins >= entry.egg.price
-				entry.pad.Color = if affordable then GREEN else RED
-				entry.price.Text = `{Format.number(entry.egg.price)} Wins`
-				entry.price.TextColor3 = if affordable then GREEN else Color3.fromRGB(255, 120, 120)
+				price.Text = `{Format.number(entry.egg.price)} Wins`
+				if entry.egg.price <= wins then
+					pad.Color, pad.Material = GREEN, Enum.Material.Neon
+					price.TextColor3 = GREEN
+				elseif entry.egg.id == goalId then
+					pad.Color, pad.Material = GOAL, Enum.Material.Neon
+					price.TextColor3 = GOAL
+				else
+					pad.Color, pad.Material = DIM, Enum.Material.SmoothPlastic
+					price.TextColor3 = DIM_TEXT
+				end
 			end
 		end
 	end

@@ -11,9 +11,17 @@ local Format = require(Shared:WaitForChild("Format"))
 
 local ShelfClient = {}
 
-local GREEN = Color3.fromRGB(60, 255, 100) -- sahipsin (şu an kullanmıyorsun)
-local RED = Color3.fromRGB(255, 50, 50) -- sahip değilsin
-local YELLOW = Color3.fromRGB(255, 225, 40) -- şu an kullanıyorsun
+-- Ped renkleri (sahne bunaltmasın diye sadece işe yarayan pedler parlar, gerisi sönüktür):
+--   altın parlak = şu an kullanıyorsun, yeşil parlak = alabilirsin, turuncu parlak = sıradaki hedef (en ucuz alınamayan),
+--   mavi sönük = sahipsin (kullanmıyorsun), gri sönük = henüz uzak
+local YELLOW = Color3.fromRGB(255, 225, 40)
+local BUY = Color3.fromRGB(60, 255, 110)
+local GOAL = Color3.fromRGB(255, 170, 50)
+local OWNED = Color3.fromRGB(105, 160, 235)
+local DIM = Color3.fromRGB(92, 98, 126)
+local DIM_TEXT = Color3.fromRGB(190, 196, 218)
+local NEON = Enum.Material.Neon
+local PLASTIC = Enum.Material.SmoothPlastic
 
 -- 1.5 -> "1.5", 100 -> "100", 1500 -> "1.5K"
 function ShelfClient.fmtMultiplier(value)
@@ -107,21 +115,34 @@ function ShelfClient.init(options)
 		end
 		local equipped = player:GetAttribute(options.equippedAttr) or ""
 
-		-- Ped rengi: şu an kullanılan sarı, sahip olunan (kullanılmayan) yeşil, sahip olunmayan kırmızı
+		-- Sıradaki hedef: sahip olunmayan ve Win'in yetmediği en ucuz eşya
+		local wins = winValue.Value
+		local goalId, goalPrice = nil, math.huge
 		for _, entry in entries do
 			local item = entry.item
+			if not owned[item.id] and equipped ~= item.id and item.price > wins and item.price < goalPrice then
+				goalId, goalPrice = item.id, item.price
+			end
+		end
+
+		for _, entry in entries do
+			local item = entry.item
+			local pad, price = entry.pad, entry.price
 			if equipped == item.id then
-				entry.pad.Color = YELLOW
-				entry.price.Text = "Equipped"
-				entry.price.TextColor3 = YELLOW
+				pad.Color, pad.Material = YELLOW, NEON
+				price.Text, price.TextColor3 = "Equipped", YELLOW
 			elseif owned[item.id] then
-				entry.pad.Color = GREEN
-				entry.price.Text = "Owned"
-				entry.price.TextColor3 = GREEN
+				pad.Color, pad.Material = OWNED, PLASTIC
+				price.Text, price.TextColor3 = "Owned", Color3.fromRGB(160, 200, 255)
+			elseif item.price <= wins then
+				pad.Color, pad.Material = BUY, NEON
+				price.Text, price.TextColor3 = `{Format.compact(item.price)} Wins`, BUY
+			elseif item.id == goalId then
+				pad.Color, pad.Material = GOAL, NEON
+				price.Text, price.TextColor3 = `{Format.compact(item.price)} Wins`, GOAL
 			else
-				entry.pad.Color = RED
-				entry.price.Text = `{Format.compact(item.price)} Wins`
-				entry.price.TextColor3 = Color3.fromRGB(255, 235, 40)
+				pad.Color, pad.Material = DIM, PLASTIC
+				price.Text, price.TextColor3 = `{Format.compact(item.price)} Wins`, DIM_TEXT
 			end
 		end
 	end

@@ -173,6 +173,10 @@ return {
 		},
 	},
 
+	-- Arkadaş bonusu: aynı sunucudaki her arkadaş için bacak kası kazancına +PercentPerFriend yüzdesi eklenir (en çok MaxFriends arkadaş sayılır).
+	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
+	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
+
 	-- Oyuncu ayarları (sol menüdeki Settings penceresi, client/SettingsPanel). key = Player özniteliği: false kapalı, yoksa/true açık.
 	-- Sunucu bu anahtarları kaydeder (PlayerStats.setSetting; listede olmayan anahtar kabul edilmez). Yeni ayar eklemek için buraya satır ekle
 	-- ve ilgili yerde özniteliğe bak.
@@ -224,6 +228,7 @@ return {
 
 	-- Başlangıç lobisi: spawn'ın bulunduğu geniş kapalı salon
 	Lobby = {
+		RewardChest = Vector2.new(0, 22), -- lobideki FREE REWARD sandığının (x, z) konumu: spawn ile yumurta rafları arasında, orta eksende
 		HalfWidth = 62, -- salonun yarı genişliği (stud; salon 124 x 130, referans fotoğraflardaki gibi derli toplu). Sol duvar ayakkabılar, sağ duvar antrenman alanı, arka duvar yumurtalar, ön duvar koridor
 		BackZ = 65, -- salonun arka duvarının Z'si (ön duvar koridor girişidir; spawn tam ortadadır)
 		Height = 36, -- salonun yüksekliği (koridordan yüksek)
