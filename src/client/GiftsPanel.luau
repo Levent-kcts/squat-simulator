@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Format = require(Shared:WaitForChild("Format"))
 
@@ -68,12 +69,13 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		Visible = false,
 	}, screenGui)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 56),
 		BackgroundColor3 = Color3.fromRGB(255, 170, 30),
 	}, panel)
-	create("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(255, 215, 50), Color3.fromRGB(255, 110, 30)), Rotation = 90 }, header)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	makeText(header, {
 		Position = UDim2.fromOffset(16, 8),
 		Size = UDim2.new(0.7, 0, 1, -16),
@@ -92,6 +94,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		BackgroundColor3 = Color3.fromRGB(235, 35, 90),
 	}, header)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 
 	close.MouseButton1Click:Connect(function()
 		panel.Visible = false
@@ -116,6 +119,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		local cell = create("Frame", { LayoutOrder = index, BackgroundTransparency = 1 }, area)
 		local card = create("Frame", { Size = UDim2.new(1, 0, 0, 108), BackgroundColor3 = color }, cell)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
+		UIStyle.soften(card, { radius = 12, strength = 0.28 })
 		makeText(card, { Position = UDim2.fromScale(0.15, 0.08), Size = UDim2.fromScale(0.7, 0.55), Text = icon }, 0)
 		makeText(card, {
 			Position = UDim2.fromScale(0.04, 0.68),
@@ -131,6 +135,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			BackgroundColor3 = Color3.fromRGB(110, 110, 120),
 		}, cell)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, status)
+		UIStyle.soften(status, { radius = 10, strength = 0.28 })
 		local statusLabel = makeText(status, {
 			Position = UDim2.fromScale(0.05, 0.1),
 			Size = UDim2.fromScale(0.9, 0.8),
@@ -163,6 +168,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			BackgroundColor3 = color,
 		}, panel)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 10, strength = 0.28 })
 		makeText(button, {
 			Position = UDim2.fromScale(0.05, 0.06),
 			Size = UDim2.fromScale(0.9, 0.5),

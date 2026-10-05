@@ -12,6 +12,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Format = require(Shared:WaitForChild("Format"))
+local UIStyle = require(script.Parent.UIStyle)
 
 local EggShop = {}
 
@@ -136,15 +137,18 @@ function EggShop.init(screenGui)
 		Position = UDim2.new(0.5, 0, 0, 68),
 		Size = UDim2.fromOffset(500, 310),
 		BackgroundColor3 = Color3.fromRGB(45, 48, 62),
+		BackgroundTransparency = 0.05,
 		Active = true, -- panele tıklamak hareket başlatmasın
 		Visible = false,
 	}, screenGui)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 14, strength = 0.18, shine = false })
 
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 50),
 		BackgroundColor3 = Color3.fromRGB(30, 190, 220),
 	}, panel)
+	UIStyle.soften(header, { radius = 12, strength = 0.25 })
 	local eggName = makeText(header, {
 		Position = UDim2.fromOffset(14, 6),
 		Size = UDim2.new(0.55, 0, 1, -12),
@@ -194,6 +198,7 @@ function EggShop.init(screenGui)
 			AutoButtonColor = true,
 		}, keys)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 10, strength = 0.28 })
 		makeText(button, {
 			Position = UDim2.fromScale(0.1, 0.06),
 			Size = UDim2.fromScale(0.8, 0.5),
@@ -274,21 +279,19 @@ function EggShop.init(screenGui)
 				BackgroundColor3 = CARD_COLORS[math.min(index, #CARD_COLORS)],
 			}, cards)
 			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
+			UIStyle.soften(card, { radius = 10, strength = 0.3 })
 			makeText(card, {
 				Position = UDim2.fromScale(0.05, 0.02),
 				Size = UDim2.fromScale(0.9, 0.2),
 				Text = `+{math.floor(pet.mult * 100 + 0.5)}%`,
 				TextColor3 = Color3.new(1, 1, 1),
 			}, 2)
-			-- Pet simgesi: pet renginde yuvarlak
-			local icon = create("Frame", {
+			-- Pet simgesi: pet renginde sevimli yüz (UIStyle.petIcon)
+			UIStyle.safePetIcon(card, pet, {
 				AnchorPoint = Vector2.new(0.5, 0),
-				Position = UDim2.fromScale(0.5, 0.25),
-				Size = UDim2.fromOffset(56, 56),
-				BackgroundColor3 = pet.color,
-			}, card)
-			create("UICorner", { CornerRadius = UDim.new(1, 0) }, icon)
-			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, icon)
+				Position = UDim2.fromScale(0.5, 0.235),
+				Size = UDim2.fromOffset(58, 58),
+			})
 			makeText(card, {
 				Position = UDim2.fromScale(0.04, 0.62),
 				Size = UDim2.fromScale(0.92, 0.14),
@@ -309,6 +312,7 @@ function EggShop.init(screenGui)
 				BackgroundTransparency = 1,
 				ZIndex = 5,
 			}, card)
+			UIStyle.round(shade, 10)
 
 			-- Çarpı: iki çapraz kırmızı çubuk
 			local cross = create("Frame", {

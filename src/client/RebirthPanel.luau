@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
 local Progression = require(Shared:WaitForChild("Progression"))
 
 local RebirthPanel = {}
@@ -48,16 +49,14 @@ function RebirthPanel.init(screenGui, showToast)
 		Visible = false,
 	}, screenGui)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
 	-- Başlık
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 58),
 		BackgroundColor3 = Color3.fromRGB(235, 40, 190),
 	}, panel)
-	create("UIGradient", {
-		Color = ColorSequence.new(Color3.fromRGB(255, 80, 200), Color3.fromRGB(200, 20, 150)),
-		Rotation = 90,
-	}, header)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	makeText(header, { Position = UDim2.fromOffset(14, 8), Size = UDim2.fromOffset(42, 42), Text = "🔄" }, 0)
 	makeText(header, {
 		Position = UDim2.fromOffset(64, 8),
@@ -77,6 +76,7 @@ function RebirthPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(215, 30, 60),
 	}, header)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 
 	-- Önce / Sonra tablosu
 	makeText(panel, {
@@ -101,6 +101,7 @@ function RebirthPanel.init(screenGui, showToast)
 			BackgroundColor3 = color,
 		}, panel)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, box)
+		UIStyle.soften(box, { radius = 10, strength = 0.28 })
 		return makeText(box, {
 			Position = UDim2.fromScale(0.05, 0.12),
 			Size = UDim2.fromScale(0.9, 0.76),
@@ -131,15 +132,13 @@ function RebirthPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(90, 60, 10),
 	}, panel)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, bar)
+	UIStyle.soften(bar, { radius = 12, strength = 0.35, shine = false })
 	local barFill = create("Frame", {
 		Size = UDim2.fromScale(0, 1),
 		BackgroundColor3 = Color3.fromRGB(255, 190, 20),
 		BorderSizePixel = 0,
 	}, bar)
-	create("UIGradient", {
-		Color = ColorSequence.new(Color3.fromRGB(255, 215, 50), Color3.fromRGB(255, 140, 10)),
-		Rotation = 90,
-	}, barFill)
+	UIStyle.soften(barFill, { radius = 12, strength = 0.3 })
 	local barText = makeText(bar, {
 		Position = UDim2.fromScale(0.05, 0.08),
 		Size = UDim2.fromScale(0.9, 0.84),
@@ -156,6 +155,7 @@ function RebirthPanel.init(screenGui, showToast)
 			BackgroundColor3 = color,
 		}, panel)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 14, strength = 0.28 })
 		local label = makeText(button, {
 			Position = UDim2.fromScale(0.05, 0.1),
 			Size = UDim2.fromScale(0.9, 0.8),

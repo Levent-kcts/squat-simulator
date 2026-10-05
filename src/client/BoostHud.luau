@@ -1,6 +1,7 @@
 -- Aktif süreli güçlendirmelerin (2x Muscle, 2x Wins) geri sayımı: sol üstte, Win sayacının altında küçük çipler. Süre bitince kaybolur.
 -- Bitiş zamanını sunucu verir (MuscleBoostUntil / WinBoostUntil, sunucu saati); sadece görsel.
 local Players = game:GetService("Players")
+local UIStyle = require(script.Parent.UIStyle)
 local Workspace = game:GetService("Workspace")
 
 local BoostHud = {}
@@ -50,6 +51,7 @@ function BoostHud.init(screenGui)
 		}, screenGui)
 		create("UICorner", { CornerRadius = UDim.new(0, 19) }, chip)
 		create("UIStroke", { Thickness = 2, Color = boost.color }, chip)
+		UIStyle.soften(chip, { radius = 19, strength = 0.15, shine = false })
 		text(chip, { Position = UDim2.fromOffset(8, 2), Size = UDim2.fromOffset(30, 34), Text = boost.icon }, 0)
 		local label = text(chip, {
 			Position = UDim2.fromOffset(42, 3),

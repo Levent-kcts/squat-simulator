@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
 local Format = require(Shared:WaitForChild("Format"))
 
 local CosmeticPanel = {}
@@ -61,12 +62,13 @@ function CosmeticPanel.init(screenGui, showToast, options)
 		Visible = false,
 	}, screenGui)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 56),
 		BackgroundColor3 = options.headerTop,
 	}, panel)
-	create("UIGradient", { Color = ColorSequence.new(options.headerTop, options.headerBottom), Rotation = 90 }, header)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	makeText(header, { Position = UDim2.fromOffset(14, 8), Size = UDim2.fromOffset(40, 40), Text = options.icon }, 0)
 	makeText(header, {
 		Position = UDim2.fromOffset(60, 8),
@@ -87,6 +89,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 		BackgroundColor3 = Color3.fromRGB(215, 40, 75),
 	}, header)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 
 	local list = create("ScrollingFrame", {
 		Position = UDim2.fromOffset(8, 64),
@@ -127,6 +130,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 				BackgroundColor3 = item.color:Lerp(Color3.new(0, 0, 0), 0.55),
 			}, list)
 			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
+			UIStyle.soften(card, { radius = 12, strength = 0.3 })
 
 			makeText(card, {
 				Position = UDim2.fromOffset(14, 6),
@@ -180,6 +184,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 				}, card)
 				create("UICorner", { CornerRadius = UDim.new(0, 6) }, b)
 				create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, b)
+				UIStyle.soften(b, { radius = 10, strength = 0.28 })
 				makeText(b, {
 					Position = UDim2.fromScale(0.05, 0.1),
 					Size = UDim2.fromScale(0.9, 0.8),

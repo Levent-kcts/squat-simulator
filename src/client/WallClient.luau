@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Layout = require(Shared:WaitForChild("Layout"))
+local UIStyle = require(script.Parent.UIStyle)
 local Format = require(Shared:WaitForChild("Format"))
 
 local cfg = Config.Wall
@@ -89,6 +90,7 @@ local function createWall(folder, index)
 	barStroke.Thickness = 3
 	barStroke.Color = Color3.new(0, 0, 0)
 	barStroke.Parent = bar
+	UIStyle.soften(bar, { radius = UDim.new(0.5, 0), strength = 0.3, shine = false })
 
 	local fill = Instance.new("Frame")
 	fill.Size = UDim2.fromScale(1, 1)
@@ -98,6 +100,7 @@ local function createWall(folder, index)
 	local fillCorner = Instance.new("UICorner")
 	fillCorner.CornerRadius = UDim.new(0.5, 0)
 	fillCorner.Parent = fill
+	UIStyle.soften(fill, { radius = UDim.new(0.5, 0), strength = 0.3 })
 
 	-- Can yazısı çubuğun içinde
 	local label = makeText(bar, UDim2.fromScale(0.5, 0.5), UDim2.fromScale(0.9, 0.8), "")

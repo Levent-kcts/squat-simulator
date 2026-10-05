@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Catalog = require(Shared:WaitForChild("Catalog"))
+local UIStyle = require(script.Parent.UIStyle)
 
 local Reveal = {}
 
@@ -60,6 +61,7 @@ local function buildCard(parent, entry, isNew, order)
 	stroke.Thickness = if rarity.name == "Common" or not kept then 3 else 5
 	stroke.Color = if kept and rarity.name ~= "Common" then rarity.color:Lerp(Color3.new(1, 1, 1), 0.55) else Color3.new(0, 0, 0)
 	stroke.Parent = card
+	UIStyle.soften(card, { radius = 12, strength = 0.3 })
 
 	-- Üst: çarpan
 	label(card, {
@@ -69,20 +71,13 @@ local function buildCard(parent, entry, isNew, order)
 		TextColor3 = Color3.new(1, 1, 1),
 	}, 2)
 
-	-- Pet simgesi: pet renginde yuvarlak
-	local icon = Instance.new("Frame")
-	icon.AnchorPoint = Vector2.new(0.5, 0)
-	icon.Position = UDim2.fromScale(0.5, 0.22)
-	icon.Size = UDim2.fromOffset(52, 52)
-	icon.BackgroundColor3 = if kept then pet.color else pet.color:Lerp(Color3.fromRGB(80, 82, 92), 0.7)
-	icon.Parent = card
-	local iconCorner = Instance.new("UICorner")
-	iconCorner.CornerRadius = UDim.new(1, 0)
-	iconCorner.Parent = icon
-	local iconStroke = Instance.new("UIStroke")
-	iconStroke.Thickness = 3
-	iconStroke.Color = Color3.new(0, 0, 0)
-	iconStroke.Parent = icon
+	-- Pet simgesi: sevimli yüz (silinen petin rengi solgun)
+	UIStyle.safePetIcon(card, pet, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromScale(0.5, 0.2),
+		Size = UDim2.fromOffset(56, 56),
+		dim = not kept,
+	})
 
 	label(card, {
 		Position = UDim2.fromScale(0.04, 0.63),

@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Sfx = require(script.Parent.Sfx)
 local PlayerSettings = require(script.Parent.PlayerSettings)
+local UIStyle = require(script.Parent.UIStyle)
 
 local MusicPlayer = {}
 
@@ -88,6 +89,7 @@ function MusicPlayer.init(screenGui)
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 12) }, body)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, body)
+	UIStyle.soften(body, { radius = 14, strength = 0.22 })
 
 	-- Kaset penceresi: şarkı adı sağdan sola kayar
 	local window = create("Frame", {
@@ -98,6 +100,7 @@ function MusicPlayer.init(screenGui)
 	}, body)
 	create("UICorner", { CornerRadius = UDim.new(0, 7) }, window)
 	create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(120, 130, 165) }, window)
+	UIStyle.soften(window, { radius = 8, gradient = false, shine = false })
 	local marquee = create("TextLabel", {
 		BackgroundTransparency = 1,
 		Font = FONT,
@@ -216,6 +219,7 @@ function MusicPlayer.init(screenGui)
 	}, body)
 	create("UICorner", { CornerRadius = UDim.new(1, 0) }, playButton)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, playButton)
+	UIStyle.soften(playButton, { radius = UDim.new(1, 0), strength = 0.15, shine = false })
 	local playScale = create("UIScale", { Scale = 1 }, playButton)
 	playButton.MouseButton1Down:Connect(function()
 		playScale.Scale = 0.92
@@ -289,6 +293,7 @@ function MusicPlayer.init(screenGui)
 		}, body)
 		create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 8, strength = 0.28 })
 		local label = text(button, {
 			Position = UDim2.fromScale(0.1, 0.1),
 			Size = UDim2.fromScale(0.8, 0.8),

@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
 
 local ShopPanel = {}
 
@@ -43,12 +44,14 @@ function ShopPanel.init(screenGui, showToast)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
 	create("UISizeConstraint", { MaxSize = Vector2.new(560, 420), MinSize = Vector2.new(300, 260) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 56),
 		BackgroundColor3 = Color3.fromRGB(235, 50, 120),
 	}, panel)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, header)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	text(header, {
 		Position = UDim2.fromOffset(16, 6),
 		Size = UDim2.new(1, -90, 1, -12),
@@ -66,6 +69,7 @@ function ShopPanel.init(screenGui, showToast)
 	}, header)
 	create("UICorner", { CornerRadius = UDim.new(0, 6) }, close)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 	text(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1) }, 2)
 
 	local list = create("ScrollingFrame", {
@@ -89,6 +93,7 @@ function ShopPanel.init(screenGui, showToast)
 		local card = create("Frame", { LayoutOrder = order, BackgroundColor3 = color }, list)
 		create("UICorner", { CornerRadius = UDim.new(0, 10) }, card)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
+		UIStyle.soften(card, { radius = 12, strength = 0.28 })
 		text(card, { Position = UDim2.fromScale(0.1, 0.03), Size = UDim2.fromScale(0.8, 0.3), Text = icon }, 0)
 		text(card, { Position = UDim2.fromScale(0.04, 0.34), Size = UDim2.fromScale(0.92, 0.17), Text = name, TextColor3 = Color3.new(1, 1, 1) }, 2)
 		text(card, { Position = UDim2.fromScale(0.04, 0.52), Size = UDim2.fromScale(0.92, 0.12), Text = detail, TextColor3 = Color3.fromRGB(255, 245, 200) }, 1.5)
@@ -101,6 +106,7 @@ function ShopPanel.init(screenGui, showToast)
 		}, card)
 		create("UICorner", { CornerRadius = UDim.new(0, 8) }, buy)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, buy)
+		UIStyle.soften(buy, { radius = 10, strength = 0.28 })
 		text(buy, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = priceText, TextColor3 = Color3.new(1, 1, 1) }, 2)
 		buy.MouseButton1Click:Connect(onBuy)
 	end

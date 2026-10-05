@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
 
 local PetsPanel = {}
 
@@ -68,13 +69,14 @@ function PetsPanel.init(screenGui, showToast)
 		Visible = false,
 	}, screenGui)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.18, shine = false })
 
 	-- Başlık: Pets | Equip Best | çarpan | X
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 56),
 		BackgroundColor3 = Color3.fromRGB(30, 190, 230),
 	}, panel)
-	create("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(60, 215, 245), Color3.fromRGB(20, 140, 215)), Rotation = 90 }, header)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	makeText(header, {
 		Position = UDim2.fromOffset(14, 8),
 		Size = UDim2.fromOffset(110, 40),
@@ -91,6 +93,7 @@ function PetsPanel.init(screenGui, showToast)
 			BackgroundColor3 = color,
 		}, header)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 10, strength = 0.28 })
 		makeText(button, {
 			Position = UDim2.fromScale(0.05, 0.1),
 			Size = UDim2.fromScale(0.9, 0.8),
@@ -117,6 +120,7 @@ function PetsPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(235, 40, 130),
 	}, header)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 
 	local subTitle = makeText(panel, {
 		AnchorPoint = Vector2.new(0.5, 0),
@@ -149,7 +153,7 @@ function PetsPanel.init(screenGui, showToast)
 		Size = UDim2.new(1, 0, 0, 62),
 		BackgroundColor3 = Color3.fromRGB(30, 190, 230),
 	}, panel)
-	create("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(60, 215, 245), Color3.fromRGB(20, 140, 215)), Rotation = 90 }, footer)
+	UIStyle.soften(footer, { radius = 14, strength = 0.25 })
 
 	local function counterBox(positionX, icon)
 		local box = create("Frame", {
@@ -158,6 +162,7 @@ function PetsPanel.init(screenGui, showToast)
 			BackgroundColor3 = Color3.fromRGB(235, 245, 255),
 		}, footer)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, box)
+		UIStyle.soften(box, { radius = 10, strength = 0.12 })
 		makeText(box, { Position = UDim2.fromOffset(8, 4), Size = UDim2.fromOffset(32, 36), Text = icon }, 0)
 		return makeText(box, {
 			Position = UDim2.fromOffset(46, 5),
@@ -175,6 +180,7 @@ function PetsPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(255, 180, 30),
 	}, footer)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, unequipAll)
+	UIStyle.soften(unequipAll, { radius = 10, strength = 0.28 })
 	makeText(unequipAll, {
 		Position = UDim2.fromScale(0.05, 0.1),
 		Size = UDim2.fromScale(0.9, 0.8),
@@ -192,6 +198,7 @@ function PetsPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(235, 75, 85),
 	}, footer)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, trash)
+	UIStyle.soften(trash, { radius = 10, strength = 0.28 })
 
 	local function invoke(action, id, quiet)
 		task.spawn(function()
@@ -264,6 +271,7 @@ function PetsPanel.init(screenGui, showToast)
 					Thickness = 3,
 					Color = if isEquipped then Color3.fromRGB(255, 255, 255) else Color3.new(0, 0, 0),
 				}, card)
+				UIStyle.soften(card, { radius = 10, strength = 0.3 })
 
 				makeText(card, {
 					Position = UDim2.fromScale(0.05, 0.03),
@@ -271,14 +279,11 @@ function PetsPanel.init(screenGui, showToast)
 					Text = `+{math.floor(pet.mult * 100 + 0.5)}%`,
 					TextColor3 = Color3.new(1, 1, 1),
 				}, 2)
-				local icon = create("Frame", {
+				UIStyle.safePetIcon(card, pet, {
 					AnchorPoint = Vector2.new(0.5, 0),
-					Position = UDim2.fromScale(0.5, 0.25),
-					Size = UDim2.fromOffset(58, 58),
-					BackgroundColor3 = pet.color,
-				}, card)
-				create("UICorner", { CornerRadius = UDim.new(1, 0) }, icon)
-				create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, icon)
+					Position = UDim2.fromScale(0.5, 0.22),
+					Size = UDim2.fromOffset(62, 62),
+				})
 				makeText(card, {
 					Position = UDim2.fromScale(0.04, 0.72),
 					Size = UDim2.fromScale(0.92, 0.2),
@@ -314,6 +319,7 @@ function PetsPanel.init(screenGui, showToast)
 						BackgroundTransparency = 0.45,
 						ZIndex = 7,
 					}, card)
+					UIStyle.round(shade, 10)
 					for _, angle in { 45, -45 } do
 						local bar = create("Frame", {
 							AnchorPoint = Vector2.new(0.5, 0.5),

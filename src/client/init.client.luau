@@ -20,6 +20,7 @@ local DevPanel = require(script.DevPanel)
 local RebirthPanel = require(script.RebirthPanel)
 local WallClient = require(script.WallClient)
 local Moves = require(script.Moves)
+local UIStyle = require(script.UIStyle)
 
 local clickEvent = ReplicatedStorage:WaitForChild("Click")
 local moveEvent = ReplicatedStorage:WaitForChild("MoveEvent")
@@ -92,6 +93,7 @@ local banner = create("Frame", {
 create("UISizeConstraint", { MaxSize = Vector2.new(560, 46), MinSize = Vector2.new(260, 46) }, banner)
 create("UICorner", { CornerRadius = UDim.new(0, 6) }, banner)
 create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(190, 190, 205) }, banner)
+UIStyle.soften(banner, { radius = 10, strength = 0.25, shine = false })
 local bannerText = makeText(banner, {
 	Position = UDim2.fromOffset(12, 4),
 	Size = UDim2.new(1, -24, 1, -8),
@@ -149,6 +151,7 @@ local function makeSquareButton(position, icon, label, color, imageId)
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+	UIStyle.soften(button, { radius = 10, strength = 0.3 })
 	if imageId and imageId ~= "" then
 		create("ImageLabel", {
 			BackgroundTransparency = 1,
@@ -197,6 +200,7 @@ local codesButton = create("TextButton", {
 }, screenGui)
 create("UICorner", { CornerRadius = UDim.new(0, 17) }, codesButton)
 create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, codesButton)
+UIStyle.soften(codesButton, { radius = 17, strength = 0.28 })
 makeText(codesButton, {
 	Position = UDim2.fromOffset(8, 3),
 	Size = UDim2.new(1, -16, 1, -6),
@@ -301,13 +305,14 @@ local bar = create("Frame", {
 }, bottom)
 create("UICorner", { CornerRadius = UDim.new(0, 6) }, bar)
 create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, bar)
+UIStyle.soften(bar, { radius = 12, strength = 0.35, shine = false })
 
 local barFill = create("Frame", {
 	Size = UDim2.fromScale(0, 1),
 	BackgroundColor3 = Color3.fromRGB(255, 20, 130),
 	BorderSizePixel = 0,
 }, bar)
-create("UICorner", { CornerRadius = UDim.new(0, 6) }, barFill)
+UIStyle.soften(barFill, { radius = 12, strength = 0.3 })
 
 local stageLabel = makeText(bar, {
 	Position = UDim2.fromOffset(14, 4),
@@ -334,6 +339,7 @@ local autoButton = create("TextButton", {
 }, bottom)
 create("UICorner", { CornerRadius = UDim.new(0, 6) }, autoButton)
 create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, autoButton)
+UIStyle.soften(autoButton, { radius = 12, strength = 0.28 })
 local autoLabel = makeText(autoButton, {
 	Position = UDim2.fromOffset(8, 3),
 	Size = UDim2.new(1, -16, 1, -6),

@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local UIStyle = require(script.Parent.UIStyle)
 local PlayerSettings = require(script.Parent.PlayerSettings)
 
 local SettingsPanel = {}
@@ -48,12 +49,14 @@ function SettingsPanel.init(screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
 	create("UISizeConstraint", { MaxSize = Vector2.new(440, height), MinSize = Vector2.new(300, height) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
 	local header = create("Frame", {
 		Size = UDim2.new(1, 0, 0, 56),
 		BackgroundColor3 = Color3.fromRGB(110, 130, 165),
 	}, panel)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, header)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	text(header, {
 		Position = UDim2.fromOffset(16, 6),
 		Size = UDim2.new(1, -90, 1, -12),
@@ -71,6 +74,7 @@ function SettingsPanel.init(screenGui)
 	}, header)
 	create("UICorner", { CornerRadius = UDim.new(0, 6) }, close)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 	text(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1) }, 2)
 	close.MouseButton1Click:Connect(function()
 		panel.Visible = false
@@ -83,6 +87,7 @@ function SettingsPanel.init(screenGui)
 			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
 		}, panel)
 		create("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
+		UIStyle.soften(row, { radius = 10, strength = 0.12, shine = false })
 
 		text(row, {
 			Position = UDim2.fromOffset(12, 6),
@@ -109,6 +114,7 @@ function SettingsPanel.init(screenGui)
 		}, row)
 		create("UICorner", { CornerRadius = UDim.new(0, 18) }, toggle)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, toggle)
+		UIStyle.soften(toggle, { radius = 18, strength = 0.28 })
 		local toggleText = text(toggle, {
 			Position = UDim2.fromScale(0.1, 0.1),
 			Size = UDim2.fromScale(0.8, 0.8),
