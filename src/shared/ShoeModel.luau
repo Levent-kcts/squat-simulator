@@ -18,9 +18,29 @@ function ShoeModel.tier(item)
 	return math.min(tierById[item.id] or 0, glowCap)
 end
 
+-- En güçlü ayakkabı mı (listenin sonu)? Biraz daha parlak olur (Config.ShoeGlow.TopBonus)
+function ShoeModel.isTop(item)
+	return item.id == Config.Items[#Config.Items].id
+end
+
+-- Yürürken iz bırakan ayakkabılar (Config.ShoeTrail.Count adet, listenin sonundan): 1 = bunların en zayıfı ... Count = en güçlüsü; iz bırakmıyorsa nil
+function ShoeModel.trailLevel(item)
+	local total = #Config.Items
+	for index, other in Config.Items do
+		if other.id == item.id then
+			local level = index - (total - Config.ShoeTrail.Count)
+			return if level >= 1 then level else nil
+		end
+	end
+	return nil
+end
+
 -- Neon rengin yoğunluğu güçle artar (Config.ShoeGlow: en zayıf ~%33, Neon Kicks ve üstü ~%54; raf ve ayak aynı rengi kullanır)
 function ShoeModel.neonColor(item)
 	local brightness = Config.ShoeGlow.ColorBase + Config.ShoeGlow.ColorGain * ShoeModel.tier(item)
+	if ShoeModel.isTop(item) then
+		brightness += Config.ShoeGlow.TopBonus.Color
+	end
 	local color = item.color
 	return Color3.new(color.R * brightness, color.G * brightness, color.B * brightness)
 end

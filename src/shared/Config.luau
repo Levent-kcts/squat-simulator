@@ -351,6 +351,16 @@ return {
 		FootLightBrightness = { 0.15, 1.5 }, -- ayaktaki ışık: en zayıf, tier = 1 (Neon Kicks'te ~1.1)
 		FootLightRange = { 4, 10 },
 		ShelfLightScale = 0.5, -- raftaki ayakkabı postamentinin ışığı ve parıltı parçacıkları bu oranda kısılır
+		-- EN GÜÇLÜ ayakkabı (listenin sonu) kendini belli etsin diye biraz daha parlaktır; kör edecek kadar değil (rengi ~0.64, ayak ışığı ~1.7 parlaklık)
+		TopBonus = { Color = 0.1, LightBrightness = 0.6, LightRange = 2 },
+	},
+
+	-- En güçlü ayakkabılar yürürken arkalarında parçacık izi bırakır (Golden Sneakers, Crystal Kicks, Thunder Boots, Radiant Shoes). Parçacıklar ayakkabının renginde,
+	-- ayaklardan geriye doğru çıkar ve sadece yürürken/koşarken akar. Count: kaç ayakkabı (listenin sonundan), Rate/Size: zayıftan güçlüye bu ayakkabılar için sn başına parçacık ve boyut.
+	ShoeTrail = {
+		Count = 4,
+		Rate = { 8, 12, 17, 24 },
+		Size = { 0.55, 0.65, 0.8, 1.0 },
 	},
 	Items = {
 		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },

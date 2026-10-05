@@ -170,14 +170,67 @@ end
 -- Sadece R15'te ayak parçası var; R6'da bacak tek parça olduğu için ayakkabı görünmez.
 -- Neon malzeme şart: mat malzemede bu avatarın ayak/bacak rengi ekranda değişmedi (parça rengi doğru yazılsa bile, nedeni bulunamadı).
 local GLOW_NAME = "ShoeGlow"
+local TRAIL_NAME = "ShoeTrail"
+local trailConnections = setmetatable({}, { __mode = "k" }) -- [karakter] = Humanoid.Running bağlantısı (izi yürüyüşe göre açıp kapatır)
 
 local function clearShoeGlow(character)
+	local connection = trailConnections[character]
+	if connection then
+		connection:Disconnect()
+		trailConnections[character] = nil
+	end
 	for _, name in { "LeftFoot", "RightFoot" } do
 		local foot = character:FindFirstChild(name)
-		local glow = foot and foot:FindFirstChild(GLOW_NAME)
-		if glow then
-			glow:Destroy()
+		if foot then
+			for _, childName in { GLOW_NAME, TRAIL_NAME } do
+				local old = foot:FindFirstChild(childName)
+				if old then
+					old:Destroy()
+				end
+			end
 		end
+	end
+end
+
+-- En güçlü ayakkabılar (Config.ShoeTrail): yürürken ayaklardan geriye doğru ayakkabının renginde parçacık akar. Emitter'lar hep vardır ama
+-- sadece koşarken açıktır (Humanoid.Running); parçacıkları istemciler kendi ekranında oynatır.
+local function addShoeTrail(character, shoe)
+	local level = ShoeModel.trailLevel(shoe)
+	if not level then
+		return
+	end
+	local trail = Config.ShoeTrail
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.1
+	local emitters = {}
+	for _, name in { "LeftFoot", "RightFoot" } do
+		local foot = character:FindFirstChild(name)
+		if foot and foot:IsA("BasePart") then
+			local emitter = Instance.new("ParticleEmitter")
+			emitter.Name = TRAIL_NAME
+			emitter.Color = ColorSequence.new(shoe.color, shoe.color:Lerp(Color3.new(1, 1, 1), 0.5))
+			emitter.LightEmission = 0.9
+			emitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, trail.Size[level]), NumberSequenceKeypoint.new(1, 0) })
+			emitter.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.15), NumberSequenceKeypoint.new(1, 1) })
+			emitter.Lifetime = NumberRange.new(0.5, 0.9)
+			emitter.Speed = NumberRange.new(1, 3)
+			emitter.SpreadAngle = Vector2.new(25, 25)
+			emitter.EmissionDirection = Enum.NormalId.Back -- ayağın arkasına doğru
+			emitter.Acceleration = Vector3.new(0, 1.5, 0)
+			emitter.RotSpeed = NumberRange.new(-120, 120)
+			emitter.Rate = trail.Rate[level]
+			emitter.Enabled = moving
+			emitter.Parent = foot
+			table.insert(emitters, emitter)
+		end
+	end
+	if humanoid and #emitters > 0 then
+		trailConnections[character] = humanoid.Running:Connect(function(speed)
+			local isMoving = speed > 2
+			for _, emitter in emitters do
+				emitter.Enabled = isMoving
+			end
+		end)
 	end
 end
 
@@ -199,10 +252,16 @@ local function applyShoes(character, shoe)
 			local glow = Config.ShoeGlow
 			light.Brightness = glow.FootLightBrightness[1] + (glow.FootLightBrightness[2] - glow.FootLightBrightness[1]) * tier
 			light.Range = glow.FootLightRange[1] + (glow.FootLightRange[2] - glow.FootLightRange[1]) * tier
+			if ShoeModel.isTop(shoe) then
+				-- En güçlü ayakkabı biraz daha parlak ve geniş ışık verir (kör edecek kadar değil)
+				light.Brightness += glow.TopBonus.LightBrightness
+				light.Range += glow.TopBonus.LightRange
+			end
 			light.Shadows = false
 			light.Parent = foot
 		end
 	end
+	addShoeTrail(character, shoe)
 end
 
 -- Renkleri uygular: skin varsa tüm vücut skin rengi, yoksa asıl renkler (UnifySkinColor açıksa düz ten); sonra pantolon,
