@@ -16,6 +16,7 @@ local FONT = Enum.Font.FredokaOne
 local MARQUEE_SPEED = 55 -- kayan yazının hızı (piksel/sn)
 local BODY_WIDTH = 296
 local BODY_HEIGHT = 100
+local BODY_SCALE = 0.85 -- teyp ana ölçeğin biraz küçüğüdür (referans oyunda teyp yok, ekranı kaplamasın)
 
 local ICON_COLOR = Color3.fromRGB(245, 245, 250) -- önceki/sonraki simgeleri ve orta düğmenin dolgusu
 local DARK = Color3.fromRGB(34, 36, 46) -- orta düğmedeki duraklat/oynat simgesi
@@ -87,6 +88,7 @@ function MusicPlayer.init(screenGui)
 		BackgroundColor3 = Color3.fromRGB(52, 56, 74),
 		Active = true, -- teybe tıklamak hareket başlatmasın
 	}, screenGui)
+	create("UIScale", { Scale = BODY_SCALE }, body)
 	create("UICorner", { CornerRadius = UDim.new(0, 12) }, body)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, body)
 	UIStyle.soften(body, { radius = 14, strength = 0.22 })
@@ -115,8 +117,13 @@ function MusicPlayer.init(screenGui)
 
 	local scrolling = false
 	local marqueeX = 0
+	-- AbsoluteSize ekran pikselidir; yazının konumu ise ölçeksiz arayüz birimindedir (ana ölçek x teyp ölçeği), bu yüzden bölünür
+	local rootScale = screenGui:FindFirstChildOfClass("UIScale")
+	local function unscaled(pixels)
+		return pixels / ((if rootScale then rootScale.Scale else 1) * BODY_SCALE)
+	end
 	local function resetMarquee()
-		marqueeX = window.AbsoluteSize.X
+		marqueeX = unscaled(window.AbsoluteSize.X)
 	end
 
 	RunService.Heartbeat:Connect(function(dt)
@@ -124,8 +131,8 @@ function MusicPlayer.init(screenGui)
 			return
 		end
 		marqueeX -= MARQUEE_SPEED * dt
-		if marqueeX < -marquee.AbsoluteSize.X then
-			marqueeX = window.AbsoluteSize.X
+		if marqueeX < -unscaled(marquee.AbsoluteSize.X) then
+			marqueeX = unscaled(window.AbsoluteSize.X)
 		end
 		marquee.Position = UDim2.fromOffset(marqueeX, 0)
 	end)

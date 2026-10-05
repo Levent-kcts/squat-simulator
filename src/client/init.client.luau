@@ -81,7 +81,27 @@ end
 
 -- Sibling: ZIndex sadece aynı ebeveynin çocukları arasında sıralar (Global'de yüksek ZIndex'li bir torun, ebeveyninin dışına çıkıp
 -- sonradan açılan pencerelerin ÜSTÜNE biniyordu: Auto Click'in OFF rozeti Gifts penceresinin üstünde görünüyordu)
-local screenGui = create("ScreenGui", { Name = "StatsGui", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, playerGui)
+local hudGui = create("ScreenGui", { Name = "StatsGui", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, playerGui)
+
+-- ÖLÇEK KÖKÜ: bütün HUD ve pencereler (screenGui) bu çerçevenin içine kurulur; çerçevenin UIScale'i ekran yüksekliğine göre ayarlanır (Config.UI),
+-- böylece arayüz her ekranda referans oyundaki oranda büyük görünür. Çerçeve 1/scale boyutundadır, ölçeklenince ekranı tam kaplar
+-- (sağ/alt kenara yaslı parçalar yerinde kalır). Modüllere bu çerçeve verilir; onlar için ScreenGui gibi davranır.
+local screenGui = create("Frame", { Name = "Root", BackgroundTransparency = 1, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1) }, hudGui)
+local rootScale = create("UIScale", { Name = "RootScale" }, screenGui)
+local function updateRootScale()
+	local camera = workspace.CurrentCamera
+	local height = if camera then camera.ViewportSize.Y else Config.UI.ReferenceHeight
+	local scale = math.clamp(height / Config.UI.ReferenceHeight, Config.UI.MinScale, Config.UI.MaxScale)
+	rootScale.Scale = scale
+	screenGui.Size = UDim2.fromScale(1 / scale, 1 / scale)
+end
+updateRootScale()
+do
+	local camera = workspace.CurrentCamera
+	if camera then
+		camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateRootScale)
+	end
+end
 
 -- =====================================================================
 -- ÜST ORTA: hedef şeridi (oyuncuya ne yapacağını söyler)

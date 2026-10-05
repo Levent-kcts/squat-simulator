@@ -208,6 +208,12 @@ return {
 	-- Sol menüdeki ve sayaçtaki ikonlar. Roblox'a yüklenmiş görsellerin "rbxassetid://..." değeri; BOŞ ikon emoji olarak görünür.
 	-- Hazır, şeffaf arka planlı görseller assets/icons/ klasöründe (shop, rebirth, settings, backpack, pets, gifts: 256x256 PNG).
 	-- Studio'da Asset Manager > Bulk Import ile yükle, çıkan ID'leri buraya yaz.
+	-- Arayüz ölçeği: ana ekran arayüzü (HUD ve pencereler) ekran YÜKSEKLİĞİYLE orantılı büyür/küçülür (client/init.client, UIScale).
+	-- scale = ekran yüksekliği / ReferenceHeight, MinScale ile MaxScale arasına sıkıştırılır. Sahibi 'arayüz referans oyuna göre küçük' dedi: referans oyunun
+	-- sol butonları, level çubuğu ve sayaçları bu oranda büyük ölçüldü (bu bilgisayarda ekran yüksekliği ~862 iken 1.3). Daha büyük istersen ReferenceHeight'i küçült.
+	-- Sağ üst daireler ayrı ScreenGui'dedir (RightHud.CornerGui), bu ölçekten ETKİLENMEZ (referanstakilerden zaten büyüktü).
+	UI = { ReferenceHeight = 663, MinScale = 0.75, MaxScale = 1.75 },
+
 	Icons = {
 		Index = "", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
