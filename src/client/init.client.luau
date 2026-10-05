@@ -104,92 +104,134 @@ local bannerText = makeText(banner, {
 -- =====================================================================
 -- SOL ÜST: sayaçlar (Rebirth sayısı ve Win)
 -- =====================================================================
-local function makeStatChip(order, icon, color, imageId)
-	local chip = create("Frame", {
-		Position = UDim2.fromOffset(14, 64 + (order - 1) * 46),
-		Size = UDim2.fromOffset(160, 40),
-		BackgroundColor3 = Color3.fromRGB(25, 25, 32),
-		BackgroundTransparency = 0.25,
-	}, screenGui)
-	create("UICorner", { CornerRadius = UDim.new(0, 20) }, chip)
-	create("UIStroke", { Thickness = 2, Color = color }, chip)
-	if imageId and imageId ~= "" then
-		create("ImageLabel", {
+-- Görselin (ikonun) etrafına siyah dış çizgi ve gölge katmanları ekler: ImageLabel'in kendi çizgisi olmadığı için aynı görselin siyaha boyanmış
+-- kopyaları 8 yöne 1.6 px kaydırılır (dış çizgi) ve biri aşağıya kaydırılıp yarı saydam bırakılır (gölge). Referanstaki parlak, çizgili ikon görünümü.
+local OUTLINE_OFFSETS = { { -1.6, 0 }, { 1.6, 0 }, { 0, -1.6 }, { 0, 1.6 }, { -1.2, -1.2 }, { 1.2, -1.2 }, { -1.2, 1.2 }, { 1.2, 1.2 } }
+local function addOutlinedIcon(parent, imageId, size, position, anchor)
+	local holder = create("Frame", {
+		AnchorPoint = anchor,
+		Position = position,
+		Size = UDim2.fromOffset(size, size),
+		BackgroundTransparency = 1,
+		ZIndex = 2,
+	}, parent)
+	local function layer(dx, dy, color, transparency, zIndex)
+		return create("ImageLabel", {
 			BackgroundTransparency = 1,
-			Position = UDim2.fromOffset(6, 2),
-			Size = UDim2.fromOffset(36, 36),
+			Position = UDim2.fromOffset(dx, dy),
+			Size = UDim2.fromScale(1, 1),
 			Image = imageId,
+			ImageColor3 = color,
+			ImageTransparency = transparency,
 			ScaleType = Enum.ScaleType.Fit,
-		}, chip)
-	else
-		makeText(chip, {
-			Position = UDim2.fromOffset(8, 2),
-			Size = UDim2.fromOffset(34, 36),
-			Text = icon,
-		}, 28, 0)
+			ZIndex = zIndex,
+		}, holder)
 	end
-	return makeText(chip, {
-		Position = UDim2.fromOffset(46, 3),
-		Size = UDim2.new(1, -56, 1, -6),
+	layer(0, 3.5, Color3.new(0, 0, 0), 0.55, 2) -- gölge
+	for _, offset in OUTLINE_OFFSETS do
+		layer(offset[1], offset[2], Color3.new(0, 0, 0), 0, 2)
+	end
+	layer(0, 0, Color3.new(1, 1, 1), 0, 3) -- asıl görsel en üstte
+	return holder
+end
+
+local function makeStatChip(order, icon, imageId)
+	-- Referanstaki gibi hapsız: büyük ikon ve yanında büyük, kalın siyah kenarlı rakam (dünyanın üstünde yüzer)
+	local row = create("Frame", {
+		Position = UDim2.fromOffset(14, 60 + (order - 1) * 50),
+		Size = UDim2.fromOffset(150, 48),
+		BackgroundTransparency = 1,
+	}, screenGui)
+	if imageId and imageId ~= "" then
+		addOutlinedIcon(row, imageId, 44, UDim2.fromOffset(0, 2), Vector2.new(0, 0))
+	else
+		makeText(row, { Position = UDim2.fromOffset(0, 2), Size = UDim2.fromOffset(44, 44), Text = icon }, 38, 0)
+	end
+	return makeText(row, {
+		Position = UDim2.fromOffset(54, 4),
+		Size = UDim2.new(1, -54, 1, -8),
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 26, 2)
+	}, 36, 3)
 end
-local rebirthLabel = makeStatChip(1, "🔄", Color3.fromRGB(255, 80, 170), Config.Icons.Rebirth)
-local winLabel = makeStatChip(2, "🏆", Color3.fromRGB(255, 200, 60))
+local rebirthLabel = makeStatChip(1, "🔄", Config.Icons.Rebirth)
+local winLabel = makeStatChip(2, "🏆", Config.Icons.Wins)
 
 -- =====================================================================
--- SOL: 2 sütun x 3 satır kare butonlar (Pets, Rebirth, Eggs, Shoes, Walls, Home)
+-- SOL: 2 sütun x 3 satır kare butonlar (Shop, Rebirth, Settings, Backpack, Pets, Gifts)
 -- =====================================================================
--- imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji
-local function makeSquareButton(position, icon, label, color, imageId)
+-- Buton referanstaki gibi: kalın siyah dış çizgi, İÇİNDE ince RENKLİ GRADYAN ÇERÇEVE (buton arka planı = gradyan, üstüne koyu iç panel biner),
+-- koyu zeminde büyük ikon (siyah çizgili + gölgeli) ve butonun en altında, ikonun altına binen kalın kenarlı küçük yazı.
+-- accent = { üst-sol renk, alt-sağ renk } çerçevenin gradyanı; imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji.
+local BORDER = 4
+local function makeSquareButton(position, icon, label, accent, imageId)
 	local button = create("TextButton", {
 		Position = position,
 		Size = UDim2.fromOffset(74, 74),
 		Text = "",
-		AutoButtonColor = true,
-		BackgroundColor3 = color,
+		AutoButtonColor = false,
+		BackgroundColor3 = Color3.new(1, 1, 1),
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-	UIStyle.soften(button, { radius = 10, strength = 0.3 })
+	local borderGradient = create("UIGradient", { Color = ColorSequence.new(accent[1], accent[2]), Rotation = 45 }, button)
+
+	local inner = create("Frame", {
+		Position = UDim2.fromOffset(BORDER, BORDER),
+		Size = UDim2.new(1, -BORDER * 2, 1, -BORDER * 2),
+		BackgroundColor3 = Color3.fromRGB(24, 27, 46),
+		BackgroundTransparency = 0.1,
+	}, button)
+	UIStyle.soften(inner, { radius = 5, strength = 0.35, shine = false })
+	-- Üstüne gelince iç zemin hafif aydınlanır
+	button.MouseEnter:Connect(function()
+		inner.BackgroundColor3 = Color3.fromRGB(44, 48, 78)
+	end)
+	button.MouseLeave:Connect(function()
+		inner.BackgroundColor3 = Color3.fromRGB(24, 27, 46)
+	end)
+
 	if imageId and imageId ~= "" then
-		create("ImageLabel", {
-			BackgroundTransparency = 1,
-			Position = UDim2.fromScale(0.07, 0.03),
-			Size = UDim2.fromScale(0.86, 0.6),
-			Image = imageId,
-			ScaleType = Enum.ScaleType.Fit,
-		}, button)
+		addOutlinedIcon(button, imageId, 56, UDim2.new(0.5, 0, 0, 2), Vector2.new(0.5, 0))
 	else
 		makeText(button, {
-			Position = UDim2.fromScale(0.1, 0.04),
-			Size = UDim2.fromScale(0.8, 0.56),
+			Position = UDim2.fromScale(0.1, 0.03),
+			Size = UDim2.fromScale(0.8, 0.62),
 			Text = icon,
-		}, 40, 0)
+			ZIndex = 3,
+		}, 44, 0)
 	end
 	local caption = makeText(button, {
-		Position = UDim2.fromScale(0.04, 0.64),
-		Size = UDim2.fromScale(0.92, 0.3),
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -1),
+		Size = UDim2.fromScale(0.94, 0.26),
 		Text = label,
 		TextColor3 = Color3.new(1, 1, 1),
-	}, 18, 2)
-	return button, caption
+		ZIndex = 5,
+	}, 16, 3)
+
+	-- Çerçeve renklerini sonradan değiştirmek için (Rebirth hazır olunca parlar)
+	local function setAccent(top, bottom)
+		borderGradient.Color = ColorSequence.new(top, bottom)
+	end
+	return button, caption, setAccent
 end
 
-local function makeGridButton(index, icon, label, color, imageId)
+local function makeGridButton(index, icon, label, accent, imageId)
 	local column = (index - 1) % 2
 	local row = (index - 1) // 2
-	return makeSquareButton(UDim2.fromOffset(14 + column * 82, 160 + row * 82), icon, label, color, imageId)
+	return makeSquareButton(UDim2.fromOffset(14 + column * 82, 166 + row * 82), icon, label, accent, imageId)
 end
 
 local icons = Config.Icons
-local shopButton = makeGridButton(1, "🛒", "Shop", Color3.fromRGB(235, 50, 120), icons.Shop)
-local rebirthButton, rebirthCaption = makeGridButton(2, "🔄", "Rebirth", Color3.fromRGB(90, 90, 105), icons.Rebirth)
-local settingsButton = makeGridButton(3, "⚙️", "Settings", Color3.fromRGB(110, 130, 165), icons.Settings)
-local backpackButton = makeGridButton(4, "🎒", "Backpack", Color3.fromRGB(235, 130, 40), icons.Backpack)
-local petsButton = makeGridButton(5, "🐾", "Pets", Color3.fromRGB(215, 120, 50), icons.Pets)
-local giftsButton = makeGridButton(6, "🎁", "Gifts", Color3.fromRGB(70, 200, 70), icons.Gifts)
+local shopButton = makeGridButton(1, "🛒", "Shop", { Color3.fromRGB(255, 160, 60), Color3.fromRGB(180, 70, 235) }, icons.Shop)
+local REBIRTH_DIM = { Color3.fromRGB(120, 120, 150), Color3.fromRGB(70, 70, 100) }
+local REBIRTH_READY = { Color3.fromRGB(255, 70, 175), Color3.fromRGB(255, 205, 60) }
+local rebirthButton, rebirthCaption, setRebirthAccent = makeGridButton(2, "🔄", "Rebirth", REBIRTH_DIM, icons.Rebirth)
+local settingsButton = makeGridButton(3, "⚙️", "Settings", { Color3.fromRGB(165, 190, 225), Color3.fromRGB(85, 105, 150) }, icons.Settings)
+local backpackButton = makeGridButton(4, "🎒", "Backpack", { Color3.fromRGB(70, 230, 235), Color3.fromRGB(60, 110, 255) }, icons.Backpack)
+local petsButton = makeGridButton(5, "🐾", "Pets", { Color3.fromRGB(255, 215, 70), Color3.fromRGB(190, 120, 30) }, icons.Pets)
+local giftsButton = makeGridButton(6, "🎁", "Gifts", { Color3.fromRGB(110, 235, 100), Color3.fromRGB(40, 150, 75) }, icons.Gifts)
 
 -- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
 local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
@@ -198,11 +240,11 @@ local rebirthPulseTween = TweenService:Create(rebirthPulse, TweenInfo.new(0.6, E
 -- Gifts butonundaki alınabilir ödül sayısı rozeti
 local giftsBadge = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.fromScale(0.9, 0.1),
-	Size = UDim2.fromOffset(26, 26),
+	Position = UDim2.new(1, -4, 0, 4),
+	Size = UDim2.fromOffset(28, 28),
 	BackgroundColor3 = Color3.fromRGB(235, 40, 50),
 	Visible = false,
-	ZIndex = 5,
+	ZIndex = 8,
 }, giftsButton)
 create("UICorner", { CornerRadius = UDim.new(1, 0) }, giftsBadge)
 create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, giftsBadge)
@@ -210,7 +252,7 @@ local giftsBadgeText = makeText(giftsBadge, {
 	Position = UDim2.fromScale(0.1, 0.1),
 	Size = UDim2.fromScale(0.8, 0.8),
 	TextColor3 = Color3.new(1, 1, 1),
-	ZIndex = 6,
+	ZIndex = 9,
 }, 16, 1)
 
 -- Backpack: Trails/Auras sekmeleri, açık olan panelin SOL tarafında dikey iki buton olarak durur.
@@ -220,13 +262,13 @@ local backpackMenu = create("Frame", {
 	BackgroundTransparency = 1,
 	Visible = false,
 }, screenGui)
-local function makeMenuButton(row, icon, label, color)
-	local button = makeSquareButton(UDim2.fromOffset(0, row * 82), icon, label, color)
+local function makeMenuButton(row, icon, label, accent)
+	local button = makeSquareButton(UDim2.fromOffset(0, row * 82), icon, label, accent)
 	button.Parent = backpackMenu
 	return button
 end
-local trailsButton = makeMenuButton(0, "✨", "Trails", Color3.fromRGB(255, 70, 170))
-local aurasButton = makeMenuButton(1, "🔮", "Auras", Color3.fromRGB(170, 70, 240))
+local trailsButton = makeMenuButton(0, "✨", "Trails", { Color3.fromRGB(255, 120, 190), Color3.fromRGB(235, 60, 130) })
+local aurasButton = makeMenuButton(1, "🔮", "Auras", { Color3.fromRGB(200, 120, 255), Color3.fromRGB(110, 70, 235) })
 
 -- Rebirth butonunun üstündeki yüzde rozeti (level / üst sınır)
 local rebirthBadge = makeText(rebirthButton, {
@@ -558,7 +600,8 @@ local function refreshLevel()
 	rebirthHint.Visible = rebirthReady
 	rebirthBadge.Text = `{math.floor(math.clamp(level / maxLevel, 0, 1) * 100)}%`
 	rebirthCaption.Text = if rebirthReady then "REBIRTH!" else "Rebirth"
-	rebirthButton.BackgroundColor3 = if rebirthReady then Color3.fromRGB(255, 60, 160) else Color3.fromRGB(90, 90, 105)
+	local accent = if rebirthReady then REBIRTH_READY else REBIRTH_DIM
+	setRebirthAccent(accent[1], accent[2])
 	if rebirthReady then
 		rebirthPulseTween:Play()
 	else
