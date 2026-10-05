@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Layout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Layout"))
 local PlayerStats = require(script.PlayerStats)
 local WallService = require(script.WallService)
 local EnvironmentService = require(script.EnvironmentService)
@@ -38,16 +39,25 @@ do
 	end
 end
 
--- Oyunun başlangıç alanı (spawn ve Win sonrası ışınlanma noktası)
+-- Oyunun başlangıç alanı (spawn ve Win sonrası ışınlanma noktası): klasik Roblox doğma yeri.
+-- Studio'dan eklenen SpawnLocation'daki gibi üst yüzünde 'SpawnLocation.png' deseni (beyaz zemin, siyah patlama) vardır;
+-- koddan yaratılan SpawnLocation bu deseni kendiliğinden almaz, o yüzden Decal elle eklenir (rbxasset:// Roblox'un kendi içeriğidir).
 local spawnPad = Instance.new("SpawnLocation")
 spawnPad.Name = "SpawnPad"
 spawnPad.Anchored = true
 spawnPad.Neutral = true
 spawnPad.Duration = 0
-spawnPad.Size = Vector3.new(16, 1, 16)
-spawnPad.Position = Vector3.new(Config.SpawnPosition.X, 0.5, Config.SpawnPosition.Z)
-spawnPad.Color = Color3.fromRGB(80, 200, 120)
-spawnPad.Material = Enum.Material.SmoothPlastic
+spawnPad.Size = Vector3.new(Config.Lobby.SpawnPadSize, 1, Config.Lobby.SpawnPadSize)
+spawnPad.Position = Vector3.new(Config.SpawnPosition.X, Layout.FloorTop + 0.5, Config.SpawnPosition.Z)
+spawnPad.Color = Color3.fromRGB(163, 162, 165)
+spawnPad.Material = Enum.Material.Plastic
+spawnPad.TopSurface = Enum.SurfaceType.Smooth
+spawnPad.BottomSurface = Enum.SurfaceType.Smooth
+local spawnDecal = Instance.new("Decal")
+spawnDecal.Name = "Decal"
+spawnDecal.Face = Enum.NormalId.Top
+spawnDecal.Texture = "rbxasset://textures/SpawnLocation.png"
+spawnDecal.Parent = spawnPad
 spawnPad.Parent = Workspace
 
 ShoeShop.init(notifyEvent)

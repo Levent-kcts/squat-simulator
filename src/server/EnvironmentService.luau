@@ -11,8 +11,17 @@ local Build = require(script.Parent.Build)
 local cfg = Config.Wall
 
 local WALL_COLOR = Color3.fromRGB(150, 160, 215)
-local FLOOR_COLOR = Color3.fromRGB(170, 178, 225)
-local TILE_COLOR = Color3.fromRGB(140, 150, 205)
+local SEAM_COLOR = Color3.fromRGB(104, 112, 168) -- lego plakaların arasındaki koyu derz
+local PLATE_LIGHT = Color3.fromRGB(176, 184, 228)
+local PLATE_DARK = Color3.fromRGB(148, 157, 211)
+local BRICK_COLORS = {
+	Color3.fromRGB(240, 92, 102), -- kırmızı
+	Color3.fromRGB(92, 146, 242), -- mavi
+	Color3.fromRGB(252, 206, 72), -- sarı
+	Color3.fromRGB(102, 208, 132), -- yeşil
+	Color3.fromRGB(252, 152, 72), -- turuncu
+	Color3.fromRGB(172, 114, 236), -- mor
+}
 
 local EnvironmentService = {}
 
@@ -63,36 +72,36 @@ function EnvironmentService.init()
 	local corridorCeiling = cfg.CeilingHeight
 	local floorTop = Layout.FloorTop
 
-	-- Zemin ve dama tahtası deseni
+	-- Zemin: referanstaki gibi LEGO PLAKALAR. Altta koyu bir levha (derz rengi), üstünde 12 x 13 plaka; her plakanın üst yüzünde lego çıkıntıları
+	-- (Plastic + Studs) vardır, plakalar dama gibi iki tonda ve her biri hafif farklı parlaklıktadır, aralarında ince koyu derz kalır.
+	-- Plakaların üstü zemin seviyesindedir (floorTop), levha 0.1 altta durur; üstündeki raf/ped taşları 0.4+ kalın olduğu için çıkıntılar onları delmez.
 	Build.block(
 		folder,
 		"LobbyFloor",
 		Vector3.new(halfWidth * 2, 1, length),
-		Vector3.new(0, floorTop - 0.5, centerZ),
-		FLOOR_COLOR,
+		Vector3.new(0, floorTop - 0.6, centerZ),
+		SEAM_COLOR,
 		Enum.Material.SmoothPlastic
 	)
 
-	local tile = 10
-	local columns = (halfWidth * 2) // tile
-	local rows = math.ceil(length / tile)
+	local columns = 12
+	local rows = 13
+	local cellWidth = (halfWidth * 2) / columns
+	local cellLength = length / rows
+	local shadeRandom = Random.new(11)
 	for row = 0, rows - 1 do
-		local rowTop = back - row * tile
-		local rowLength = math.min(tile, rowTop - zFront)
 		for column = 0, columns - 1 do
-			if (row + column) % 2 == 0 then
-				local part = Build.block(
-					folder,
-					"Tile",
-					Vector3.new(tile, 0.1, rowLength),
-					Vector3.new(-halfWidth + tile * (column + 0.5), floorTop + 0.05, rowTop - rowLength / 2),
-					TILE_COLOR,
-					Enum.Material.SmoothPlastic
-				)
-				part.CanCollide = false
-				part.CanQuery = false
-				part.CastShadow = false
-			end
+			local base = if (row + column) % 2 == 0 then PLATE_DARK else PLATE_LIGHT
+			local shade = 1 + (shadeRandom:NextNumber() - 0.5) * 0.07
+			local plate = Build.block(
+				folder,
+				"Plate",
+				Vector3.new(cellWidth - 0.3, 0.6, cellLength - 0.3),
+				Vector3.new(-halfWidth + cellWidth * (column + 0.5), floorTop - 0.3, back - cellLength * (row + 0.5)),
+				Color3.new(math.clamp(base.R * shade, 0, 1), math.clamp(base.G * shade, 0, 1), math.clamp(base.B * shade, 0, 1)),
+				Enum.Material.Plastic
+			)
+			plate.TopSurface = Enum.SurfaceType.Studs
 		end
 	end
 
@@ -173,6 +182,31 @@ function EnvironmentService.init()
 			end
 		end
 		z -= 32
+	end
+
+	-- LEGO BLOK KULELERİ: koridor girişinin iki yanında, ön duvara yakın. Raflar (sol duvarda x < -38) ve antrenman alanı
+	-- (sağ duvarda x > 18, z > -39) bu köşelere uzanmaz; spawn'dan koridora giden yol (|x| < 17) da açık kalır.
+	-- Sol/sağ yansıma değil, hafif farklı renk ve yükseklik: oyuncu 'elle dizilmiş' gibi görsün.
+	local function brick(cx, baseY, cz, sx, sy, sz, color, yaw)
+		local part = Build.block(folder, "LegoBrick", Vector3.new(sx, sy, sz), Vector3.new(cx, baseY + sy / 2, cz), color, Enum.Material.Plastic)
+		part.TopSurface = Enum.SurfaceType.Studs
+		part.CFrame = CFrame.new(cx, baseY + sy / 2, cz) * CFrame.Angles(0, yaw, 0)
+		return part
+	end
+	-- Kule: her kat bir öncekine göre 90 derece döner (lego gibi üst üste kenetlenir), kule hafif kayık durur
+	local function tower(cx, cz, layers, colorOffset, wobble)
+		for layer = 1, layers do
+			local yaw = if layer % 2 == 0 then math.pi / 2 else 0
+			local color = BRICK_COLORS[(colorOffset + layer - 2) % #BRICK_COLORS + 1]
+			brick(cx + wobble * (layer % 2), floorTop + (layer - 1) * 3, cz, 8, 3, 4, color, yaw)
+		end
+	end
+	for side = -1, 1, 2 do
+		local colorShift = if side < 0 then 0 else 3
+		tower(side * 23.5, -58, 4, colorShift + 1, 0.4 * side)
+		tower(side * 33, -59, 2, colorShift + 3, -0.3 * side)
+		-- yerdeki tek parça
+		brick(side * 29, floorTop, -51.5, 4, 3, 4, BRICK_COLORS[(colorShift + 4) % #BRICK_COLORS + 1], 0.45 * side)
 	end
 
 	-- Koridor girişinin üstünde yönlendirme tabelası (lobi içinden okunur)
