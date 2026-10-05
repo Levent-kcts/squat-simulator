@@ -525,7 +525,7 @@ safeInit("MusicPlayer", loadOptional("MusicPlayer"), screenGui) -- sağ alttaki 
 -- =====================================================================
 -- HAREKET (tıklama / Auto Click)
 -- =====================================================================
--- Bir hareket sürerken yeni tıklamalar yok sayılır. Puan hareket bitince sunucudan gelir.
+-- Bir hareket sürerken yeni tıklamalar yok sayılır. Puan squat'ta hareket bitince, tekmede ayak değince sunucudan gelir.
 local busyUntil = 0
 
 local function tryAction()
@@ -553,6 +553,12 @@ local function tryAction()
 	busyUntil = os.clock() + Config.MoveDuration[move]
 	Moves.play(character, move)
 	clickEvent:FireServer()
+	-- Tekme sesi ayak duvara değdiği anda çalar; ses istemcide çalındığı için ağ gecikmesi yoktur
+	if move == "Kick" and Sfx then
+		task.delay(Config.MoveDuration.Kick * Config.MoveContact.Kick, function()
+			pcall(Sfx.play, "Kick")
+		end)
+	end
 end
 
 -- Arayüz butonlarına basmak sayılmaz

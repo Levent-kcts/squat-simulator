@@ -283,10 +283,11 @@ function Juice.wallBroken(wallPart)
 	if (root.Position - wallPart.Position).Magnitude > 90 then
 		return
 	end
+	-- Ses ilk iş: parçacık ve lego parçası kurmak birkaç kare sürebilir, ses onları beklemesin
+	sfx("WallBreak")
 	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), wallPart.Color, 90)
 	Juice.brickChunks(wallPart)
 	Juice.shake(0.35, 0.3)
-	sfx("WallBreak")
 end
 
 -- Karakterin etrafında yukarı fışkıran parıltılar (level atlama, rebirth)

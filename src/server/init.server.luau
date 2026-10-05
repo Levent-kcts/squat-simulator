@@ -114,7 +114,8 @@ local function broadcastMove(player, move)
 	end
 end
 
--- Bir hareket (animasyon) süresince yeni tıklamalar yok sayılır. Puan ve hasar hareketin SONUNDA bir kez verilir.
+-- Bir hareket (animasyon) süresince yeni tıklamalar yok sayılır. Puan ve hasar bir kez verilir: squat'ta hareketin SONUNDA,
+-- tekmede ayağın duvara değdiği anda (Config.MoveContact; hareket yine bitmeden yeni tıklama kabul edilmez).
 -- Gecikme dalgalanması yüzünden geçerli tıklamalar reddedilmesin diye küçük bir pay bırakılır.
 local MOVE_TOLERANCE = 0.1
 local busyUntil = {}
@@ -132,7 +133,7 @@ clickEvent.OnServerEvent:Connect(function(player)
 	busyUntil[player] = now + duration - MOVE_TOLERANCE
 	broadcastMove(player, move)
 
-	task.delay(duration, function()
+	task.delay(duration * (Config.MoveContact[move] or 1), function()
 		if player.Parent == nil then
 			return -- oyundan çıktı
 		end

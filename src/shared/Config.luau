@@ -84,8 +84,11 @@ return {
 	-- Tıklama
 	MusclePerClick = 1, -- eşya/pet yokken her tıklamada kaç bacak kası artar (hasar = toplam bacak kası)
 	-- Her tıklama bir hareket (animasyon) başlatır; hareket sürerken yeni tıklamalar yok sayılır.
-	-- Puan ve hasar hareket BİTTİĞİNDE bir kez verilir. Süreler saniye cinsindendir.
+	-- Puan ve hasar bir kez verilir: squat'ta hareket BİTTİĞİNDE, tekmede ayağın duvara DEĞDİĞİ anda (hareket süresinin MoveContact oranı).
+	-- Eskiden tekmede de hareket bitince verilirdi: ayak 0.2 sn'de değiyor, duvar 0.4 sn + ping sonra kırılıyor, ses ve görüntü tekmeden geç kalıyordu.
+	-- Hareket süresi bitmeden yeni tıklama yine kabul edilmez, yani hızlı tıklamanın faydası yoktur. Süreler saniye cinsindendir.
 	MoveDuration = { Kick = 0.4, Squat = 0.5 },
+	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
 	-- Kayıt sistemi
 	Save = {
@@ -119,7 +122,9 @@ return {
 	-- Aşağıdakiler geçici: Roblox'un kendi hazır sesleri. Daha güzel sesler için Creator Store'dan ses bulup id'leri değiştir.
 	Sounds = {
 		-- Vücut büyümesi (her level atlayışında karakter büyür): Grow kısa bir güçlenme sesi, GrowBig yeni kas çıkınca/irileşince çalan daha güçlü ses.
-		-- Squat/tekme sesi YOK (gecikiyordu, sahibi kaldırttı). pick = "first": yüklenebilen ilk ses çalar (ses her seferinde aynı kalsın).
+		-- Squat sesi YOK (gecikiyordu, sahibi kaldırttı). Tekme sesi VAR ama sunucudan gelmez: istemci ayak duvara değdiği anda (Config.MoveContact) kendisi çalar,
+		-- yani ağ gecikmesi yok. pick = "first": yüklenebilen ilk ses çalar (ses her seferinde aynı kalsın).
+		-- startAt (isteğe bağlı): sesin başındaki sessizliği atlamak için saniye; ses dosyasının başında boşluk varsa (gecikmeli duyuluyorsa) artır.
 		Grow = {
 			ids = { "rbxassetid://18613451236", "rbxassetid://96518360714287", "rbxassetid://114672007947933" },
 			pick = "first",
@@ -133,6 +138,14 @@ return {
 			volume = 0.5,
 			speed = { 0.97, 1.03 },
 			gap = 1,
+		},
+		Kick = {
+			ids = { "rbxassetid://138488212707530", "rbxassetid://140119737822165", "rbxassetid://119801699610817" }, -- 'Kick Impact', 'Kick Hit', 'hit_kick2' (Creator Store, kısa)
+			fallback = "rbxasset://sounds/action_footsteps_plastic.mp3",
+			pick = "first",
+			volume = 0.4,
+			speed = { 0.95, 1.08 },
+			gap = 0.15,
 		},
 		-- Duvar kırılma: lego kırılma sesi (Creator Store'daki ücretsiz sesler; her seferinde biri rastgele seçilir, yüklenemeyen elenir).
 		-- ids bozulursa fallback çalar. gap: aynı sesin en sık çalma aralığı (bir vuruşta üst üste duvar kırılınca gürültü olmasın)

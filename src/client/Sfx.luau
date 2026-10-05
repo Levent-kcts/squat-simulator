@@ -16,6 +16,7 @@ local rng = Random.new()
 local lastPlayed = {} -- [olay] = zaman: aynı ses saniyede çok sık çalıp kulağı yormasın
 local failed = {} -- [ses id'si] = true: yüklenemeyen sesler bir daha denenmez
 local pools = {} -- [ses id'si] = { Sound, ... }: önceden kurulmuş, yüklenmiş sesler
+local warming = {} -- [Sound] = true: ısınma çalması sürerken gerçek çalmada kullanılmaz
 local MIN_GAP = 0.06
 local POOL_SIZE = 3 -- aynı ses üst üste bindiğinde en fazla bu kadar kopya
 
@@ -27,6 +28,17 @@ local function pickId(def)
 		if id ~= nil and id ~= "" and not failed[id] then
 			table.insert(usable, id)
 		end
+	end
+	-- Henüz yüklenmemiş sese basmak çalmayı geciktirir: yüklü olan varsa sadece onlar arasından seç
+	local ready = {}
+	for _, id in usable do
+		local first = pools[id] and pools[id][1]
+		if first and first.IsLoaded then
+			table.insert(ready, id)
+		end
+	end
+	if #ready > 0 then
+		usable = ready
 	end
 	if #usable > 0 then
 		if def.pick == "first" then
@@ -52,7 +64,7 @@ local function acquire(id)
 		pools[id] = pool
 	end
 	for _, sound in pool do
-		if not sound.IsPlaying then
+		if not sound.IsPlaying and not warming[sound] then
 			return sound
 		end
 	end
@@ -86,7 +98,7 @@ function Sfx.play(name)
 	sound.Volume = def.volume or 0.5
 	local speed = def.speed
 	sound.PlaybackSpeed = if speed then rng:NextNumber(speed[1], speed[2]) else 1
-	sound.TimePosition = 0
+	sound.TimePosition = def.startAt or 0
 	sound:Play()
 end
 
@@ -116,6 +128,25 @@ local function preload()
 			pools[contentId] = nil
 		end
 	end)
+
+	-- Isınma: yüklenen her sesi sessizce bir an çalıp durdururuz. Ses motoru çözme işini ilk çalmada yaparsa o ilk efekt (özellikle duvar kırılma sesi)
+	-- gecikmeli duyulur; böylece çözme önceden yapılmış olur.
+	local toWarm = {}
+	for _, pool in pools do
+		table.insert(toWarm, pool[1])
+	end
+	for _, sound in toWarm do
+		if sound.Parent and sound.IsLoaded then
+			local volume = sound.Volume
+			warming[sound] = true
+			sound.Volume = 0
+			sound:Play()
+			task.wait(0.03)
+			sound:Stop()
+			sound.Volume = volume
+			warming[sound] = nil
+		end
+	end
 end
 
 -- =====================================================================
