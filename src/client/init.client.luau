@@ -142,6 +142,39 @@ local function makeStatChip(order, icon, imageId)
 		Size = UDim2.fromOffset(150, 48),
 		BackgroundTransparency = 1,
 	}, screenGui)
+	-- Hale: ekranın sol kenarından başlayıp sağa doğru silinen yarı saydam gri şerit (referanstaki gibi); üst ve alt kenarında ince açık çizgi.
+	-- Satırların arkasında durur (ZIndex 0), ikon ve rakam üstte kalır.
+	local band = create("Frame", {
+		Position = UDim2.fromOffset(-14, 0),
+		Size = UDim2.fromOffset(300, 48),
+		BackgroundColor3 = Color3.fromRGB(46, 48, 64),
+		BorderSizePixel = 0,
+		ZIndex = 0,
+	}, row)
+	create("UIGradient", {
+		Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.3),
+			NumberSequenceKeypoint.new(0.55, 0.62),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+	}, band)
+	for _, edge in { 0, 1 } do
+		local line = create("Frame", {
+			AnchorPoint = Vector2.new(0, edge),
+			Position = UDim2.new(0, 0, edge, 0),
+			Size = UDim2.new(1, 0, 0, 1.5),
+			BackgroundColor3 = Color3.fromRGB(235, 238, 255),
+			BorderSizePixel = 0,
+			ZIndex = 0,
+		}, band)
+		create("UIGradient", {
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.35),
+				NumberSequenceKeypoint.new(0.6, 0.75),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+		}, line)
+	end
 	if imageId and imageId ~= "" then
 		addOutlinedIcon(row, imageId, 44, UDim2.fromOffset(0, 2), Vector2.new(0, 0))
 	else
