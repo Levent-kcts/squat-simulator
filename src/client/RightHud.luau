@@ -143,15 +143,15 @@ function RightHud.init(screenGui, openGifts)
 	local friends = create("TextButton", {
 		Name = "FriendBonus",
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -16, 0, 10),
-		Size = UDim2.fromOffset(80, 92),
+		Position = UDim2.new(1, -6, 0, 6), -- en sağ üst köşeye yapışık (referans oyundaki gibi)
+		Size = UDim2.fromOffset(62, 82),
 		Text = "",
 		AutoButtonColor = false,
 		BackgroundTransparency = 1,
 	}, screenGui)
 	local iconBox = create("Frame", {
-		Position = UDim2.fromOffset(4, 0),
-		Size = UDim2.fromOffset(72, 72),
+		Position = UDim2.fromOffset(1, 0),
+		Size = UDim2.fromOffset(60, 56),
 		BackgroundTransparency = 1,
 		ClipsDescendants = true,
 	}, friends)
@@ -167,17 +167,17 @@ function RightHud.init(screenGui, openGifts)
 	end
 	local percentLabel = text(friends, {
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 52),
-		Size = UDim2.fromOffset(76, 38),
+		Position = UDim2.new(0.5, 0, 0, 46),
+		Size = UDim2.fromOffset(62, 34),
 		Text = "0%",
 		TextColor3 = Color3.fromRGB(255, 214, 46),
-	}, 4)
+	}, 3)
 	local percentScale = create("UIScale", { Scale = 1 }, percentLabel)
 
 	-- Açıklama kutusu
 	local tooltip = create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -16, 0, 106),
+		Position = UDim2.new(1, -8, 0, 92),
 		Size = UDim2.fromOffset(236, 84),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,

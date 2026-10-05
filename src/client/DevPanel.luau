@@ -48,7 +48,7 @@ function DevPanel.init(screenGui)
 
 	local toggle = create("TextButton", {
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -14, 0, 196),
+		Position = UDim2.new(1, -8, 0, 96),
 		Size = UDim2.fromOffset(70, 30),
 		Text = "DEV",
 		Font = Enum.Font.GothamBold,
@@ -61,7 +61,7 @@ function DevPanel.init(screenGui)
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -14, 0, 232),
+		Position = UDim2.new(1, -8, 0, 132),
 		Size = UDim2.fromOffset(320, 340),
 		BackgroundColor3 = Color3.fromRGB(28, 28, 38),
 		Active = true, -- panele tıklamak hareket başlatmasın
