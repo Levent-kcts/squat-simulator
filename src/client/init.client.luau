@@ -353,23 +353,34 @@ local countLabel = makeText(bar, {
 	TextXAlignment = Enum.TextXAlignment.Right,
 }, 38, 3)
 
--- Auto Click: açıkken hareketler kendiliğinden tekrarlanır (ileride VIP'ye özel yapılabilir)
+-- Auto Click: açıkken hareketler kendiliğinden tekrarlanır (ileride VIP'ye özel yapılabilir).
+-- Referanstaki gibi: GÖKKUŞAĞI renkli, kayan zemin (açıkken daha hızlı ve parlak) ve üst kenarda "OFF" / "ON" rozeti.
 local autoButton = create("TextButton", {
 	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.new(0.5, 0, 0, 108),
+	Position = UDim2.new(0.5, 0, 0, 110),
 	Size = UDim2.fromOffset(220, 40),
 	Text = "",
-	AutoButtonColor = true,
-	BackgroundColor3 = Color3.fromRGB(110, 70, 220),
+	AutoButtonColor = false,
+	BackgroundColor3 = Color3.new(1, 1, 1), -- renk gökkuşağı gradyanından gelir
 }, bottom)
 create("UICorner", { CornerRadius = UDim.new(0, 6) }, autoButton)
 create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, autoButton)
-UIStyle.soften(autoButton, { radius = 12, strength = 0.28 })
+UIStyle.soften(autoButton, { radius = 12, gradient = false }) -- sadece köşe ve üst parlak şerit; gradyanı gökkuşağı verir
+local autoRainbow = create("UIGradient", {}, autoButton)
 local autoLabel = makeText(autoButton, {
-	Position = UDim2.fromOffset(8, 3),
-	Size = UDim2.new(1, -16, 1, -6),
+	Position = UDim2.fromOffset(8, 8),
+	Size = UDim2.new(1, -16, 1, -12),
+	Text = "Auto Click",
 	TextColor3 = Color3.new(1, 1, 1),
-}, 26, 2)
+}, 26, 3)
+local autoBadge = makeText(autoButton, {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.new(0.5, 0, 0, 1),
+	Size = UDim2.fromOffset(64, 26),
+	Text = "OFF",
+	TextColor3 = Color3.fromRGB(255, 92, 70),
+	ZIndex = 5,
+}, 22, 3)
 
 -- Kayıt uyarısı sadece Studio'da ve küçük görünür (canlı oyunda oyuncular görmez, hata Output'a yazılır)
 local warning = create("TextLabel", {
@@ -405,8 +416,8 @@ local function refresh()
 	local perClick = math.floor((player:GetAttribute("PerClick") or 1) * areaMultiplier)
 	gainLabel.Text = `+{Format.number(perClick)}/click  x{string.format("%g", player:GetAttribute("DamageMultiplier") or 1)} dmg`
 	multiplierLabel.Text = `x{string.format("%.2f", (player:GetAttribute("TotalMultiplier") or 1) * areaMultiplier)} Multiplier`
-	autoLabel.Text = if autoClick then "Auto Click: ON" else "Auto Click: OFF"
-	autoButton.BackgroundColor3 = if autoClick then Color3.fromRGB(60, 200, 90) else Color3.fromRGB(110, 70, 220)
+	autoBadge.Text = if autoClick then "ON" else "OFF"
+	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
 	warning.Visible = RunService:IsStudio() and player:GetAttribute("DataError") == true
 end
 
@@ -530,6 +541,18 @@ end)
 autoButton.MouseButton1Click:Connect(function()
 	autoClick = not autoClick
 	refresh()
+end)
+
+-- Auto Click gökkuşağı: renk tonu zamanla kayar (kapalıyken yavaş ve biraz sönük, açıkken hızlı ve parlak)
+local rainbowShift = 0
+RunService.Heartbeat:Connect(function(dt)
+	rainbowShift = (rainbowShift + dt * (if autoClick then 0.3 else 0.05)) % 1
+	local brightness = if autoClick then 1 else 0.82
+	local points = {}
+	for index = 0, 6 do
+		table.insert(points, ColorSequenceKeypoint.new(index / 6, Color3.fromHSV((rainbowShift + index / 6) % 1, 0.8, brightness)))
+	end
+	autoRainbow.Color = ColorSequence.new(points)
 end)
 
 -- Diğer oyuncuların tekme/squat hareketleri
