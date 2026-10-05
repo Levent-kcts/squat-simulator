@@ -49,6 +49,42 @@ local function makeText(parent, position, size, text)
 	return label
 end
 
+-- Duvarın ön yüzündeki LEGO TUĞLA DESENİ: koyu harç zemini üstünde kayık sıralı yuvarlak köşeli tuğlalar (her sıra bir öncekine göre yarım tuğla kayık).
+-- GUI olarak çizilir (ön yüze 3B çıkıntı koymak yazıları deler). 7 sıra, sıra başına 4-5 tuğla = 31 tuğla; her aşamanın deseni bir kez kurulup
+-- aynı aşamadaki duvarlara kopyalanır (100 duvar için binlerce nesneyi tek tek kurmamak için).
+local BRICK_ROWS = 7
+local patternTemplates = {}
+local function brickPattern(stage, wallColor)
+	local template = patternTemplates[stage]
+	if not template then
+		local hue = wallColor:ToHSV()
+		template = Instance.new("Frame")
+		template.Name = "Bricks"
+		template.Size = UDim2.fromScale(1, 1)
+		template.BackgroundColor3 = Color3.fromHSV(hue, 0.75, 0.5) -- harç (tuğlaların arası)
+		template.BorderSizePixel = 0
+		template.ZIndex = 0 -- yazıların ve can çubuğunun altında kalsın
+		local random = Random.new(stage)
+		for row = 0, BRICK_ROWS - 1 do
+			local edges = if row % 2 == 0 then { 0, 0.25, 0.5, 0.75, 1 } else { 0, 0.125, 0.375, 0.625, 0.875, 1 }
+			for i = 1, #edges - 1 do
+				local brick = Instance.new("Frame")
+				brick.Position = UDim2.new(edges[i], 2, row / BRICK_ROWS, 2)
+				brick.Size = UDim2.new(edges[i + 1] - edges[i], -4, 1 / BRICK_ROWS, -4)
+				brick.BackgroundColor3 = Color3.fromHSV(hue, 0.62, math.clamp(0.9 + (random:NextNumber() - 0.5) * 0.12, 0, 1))
+				brick.BorderSizePixel = 0
+				brick.ZIndex = 0
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 6)
+				corner.Parent = brick
+				brick.Parent = template
+			end
+		end
+		patternTemplates[stage] = template
+	end
+	return template:Clone()
+end
+
 local function createWall(folder, index)
 	local part = Instance.new("Part")
 	part.Name = `Wall_{index}`
@@ -69,6 +105,8 @@ local function createWall(folder, index)
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = 30
 	gui.LightInfluence = 0
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	brickPattern(Layout.stageOf(index), part.Color).Parent = gui -- yazılardan ÖNCE kurulur, altta kalır
 	gui.Parent = part
 
 	makeText(gui, UDim2.fromScale(0.5, 0.2), UDim2.fromScale(0.2, 0.12), tostring(index))

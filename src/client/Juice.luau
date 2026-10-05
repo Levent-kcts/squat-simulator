@@ -11,6 +11,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Format = require(Shared:WaitForChild("Format"))
 local Progression = require(Shared:WaitForChild("Progression"))
+local Layout = require(Shared:WaitForChild("Layout"))
 
 local Juice = {}
 
@@ -181,6 +182,64 @@ function Juice.burst(position, size, color, amount)
 	Debris:AddItem(anchor, 2)
 end
 
+-- Kırılan duvardan uçan lego parçaları: duvar renginde küçük, çıkıntılı bloklar fırlar, zeminde sekip kaybolur.
+-- Sadece görseldir (çarpışmaz, sadece bu oyuncunun ekranında); parçaları kare kare elle hareket ettirir, fizik motoru kullanmaz.
+local CHUNK_COUNT = 16
+local CHUNK_LIFETIME = 1.6
+function Juice.brickChunks(wallPart)
+	local folder = Instance.new("Folder")
+	folder.Name = "BrickChunks"
+	folder.Parent = Workspace
+	local chunks = {}
+	for _ = 1, CHUNK_COUNT do
+		local part = Instance.new("Part")
+		part.Anchored = true
+		part.CanCollide = false
+		part.CanQuery = false
+		part.CanTouch = false
+		part.CastShadow = false
+		part.Material = Enum.Material.Plastic
+		part.Size = Vector3.new(2, 1, 1) * (0.8 + math.random() * 0.9)
+		part.Color = wallPart.Color:Lerp(Color3.new(1, 1, 1), math.random() * 0.25)
+		part.TopSurface = Enum.SurfaceType.Studs
+		local position = wallPart.Position + Vector3.new((math.random() - 0.5) * wallPart.Size.X * 0.8, (math.random() - 0.5) * wallPart.Size.Y * 0.8, 0)
+		part.CFrame = CFrame.new(position)
+		part.Parent = folder
+		table.insert(chunks, {
+			part = part,
+			position = position,
+			velocity = Vector3.new((math.random() - 0.5) * 36, 12 + math.random() * 22, (math.random() - 0.3) * 40),
+			angle = Vector3.zero,
+			spin = Vector3.new((math.random() - 0.5) * 12, (math.random() - 0.5) * 12, (math.random() - 0.5) * 12),
+		})
+	end
+
+	local floorY = Layout.FloorTop + 0.5
+	local startTime = os.clock()
+	local connection
+	connection = RunService.Heartbeat:Connect(function(dt)
+		local elapsed = os.clock() - startTime
+		if elapsed >= CHUNK_LIFETIME then
+			connection:Disconnect()
+			folder:Destroy()
+			return
+		end
+		local fade = math.clamp((elapsed - (CHUNK_LIFETIME - 0.4)) / 0.4, 0, 1)
+		for _, chunk in chunks do
+			chunk.velocity += Vector3.new(0, -70 * dt, 0)
+			chunk.position += chunk.velocity * dt
+			if chunk.position.Y < floorY then
+				chunk.position = Vector3.new(chunk.position.X, floorY, chunk.position.Z)
+				chunk.velocity = Vector3.new(chunk.velocity.X * 0.6, math.abs(chunk.velocity.Y) * 0.35, chunk.velocity.Z * 0.6)
+				chunk.spin *= 0.5
+			end
+			chunk.angle += chunk.spin * dt
+			chunk.part.CFrame = CFrame.new(chunk.position) * CFrame.Angles(chunk.angle.X, chunk.angle.Y, chunk.angle.Z)
+			chunk.part.Transparency = fade
+		end
+	end)
+end
+
 -- Kamera sarsıntısı: şiddet stud, süre saniye. Humanoid.CameraOffset kullanılır, süre bitince sıfırlanır.
 local shakeToken = 0
 function Juice.shake(strength, duration)
@@ -225,6 +284,7 @@ function Juice.wallBroken(wallPart)
 		return
 	end
 	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), wallPart.Color, 90)
+	Juice.brickChunks(wallPart)
 	Juice.shake(0.35, 0.3)
 	sfx("WallBreak")
 end

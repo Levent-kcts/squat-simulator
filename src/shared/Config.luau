@@ -276,10 +276,12 @@ return {
 		-- yapmanın ödülünden hep fazladır. Yani oyuncu için ilerlemek, aynı aşamayı tekrarlamaktan karlıdır.
 		RewardGrowth = 2,
 
-		-- Her aşamanın duvarlarında yazan isim (20 aşama)
+		-- Her aşamanın duvarlarında yazan isim (20 aşama). Duvar rengi aşama aşama gökkuşağında ilerler (Layout.wallColor: ton = (aşama-1)/20),
+		-- isimler de bu renk sırasını izleyen lego tuğla isimleridir; renk sırasını değiştirirsen isimleri de ona göre değiştir.
+		-- ('Lego' markası bilerek yazılmadı: oyunda marka adı kullanmak Roblox'ta sorun çıkarabilir; 'Brick' lego tuğlasının genel adıdır.)
 		StageNames = {
-			"Paper", "Wood", "Clay", "Brick", "Stone", "Copper", "Iron", "Silver", "Gold", "Candy",
-			"Ice", "Lava", "Jade", "Ruby", "Sapphire", "Emerald", "Amethyst", "Obsidian", "Crystal", "Diamond",
+			"Red Brick", "Coral Brick", "Orange Brick", "Gold Brick", "Lemon Brick", "Lime Brick", "Green Brick", "Grass Brick", "Mint Brick", "Jade Brick",
+			"Cyan Brick", "Sky Brick", "Blue Brick", "Royal Brick", "Indigo Brick", "Violet Brick", "Purple Brick", "Magenta Brick", "Pink Brick", "Rose Brick",
 		},
 	},
 
