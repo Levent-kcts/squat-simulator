@@ -37,15 +37,19 @@ function Layout.maxHp(index)
 	return math.floor(list[#list] * cfg.HealthGrowthAfter ^ (stage - #list) + 0.5)
 end
 
--- Kırılan duvarlar: canlı "şeker" renkler. Aynı aşamadaki 5 duvar aynı renkte.
-function Layout.wallColor(index)
-	local hue = (Layout.stageOf(index) - 1) / Layout.StageCount
-	return Color3.fromHSV(hue, 0.7, 0.95)
+-- Aşamanın teması (Config.Wall.Themes: isim, renk, parçacık, desen). Aynı aşamadaki 5 duvar aynı temayı taşır.
+function Layout.theme(stage)
+	return cfg.Themes[math.clamp(stage, 1, #cfg.Themes)]
 end
 
--- Aşamanın yan duvar/tavan rengi: aynı tonun soluk (pastel) hali, lobi duvarlarıyla uyumlu
+-- Kırılan duvarlar: aşamanın tema rengi (Paper krem, Wood kahve, Gold altın ... Blackhole siyah)
+function Layout.wallColor(index)
+	return Layout.theme(Layout.stageOf(index)).color
+end
+
+-- Aşamanın yan duvar/tavan rengi: tema renginin soluk (pastel) hali (siyah gibi koyu temalarda koridor kararmasın diye açık griye çekilir), lobi duvarlarıyla uyumlu
 function Layout.stageColor(stage)
-	return Color3.fromHSV((stage - 1) / Layout.StageCount, 0.4, 0.78)
+	return Layout.theme(stage).color:Lerp(Color3.fromRGB(205, 210, 230), 0.45)
 end
 
 -- Aşamanın koridor bölümünün bittiği Z: Win pedlerinin hemen arkası, sonraki aşamanın ilk duvarının önü
@@ -73,7 +77,7 @@ function Layout.withinReach(index, position)
 end
 
 function Layout.stageName(stage)
-	return cfg.StageNames[stage] or `Stage {stage}`
+	return Layout.theme(stage).name
 end
 
 function Layout.sectionStartZ(stage)

@@ -151,8 +151,21 @@ function Juice.banner(text, color, subText)
 	Debris:AddItem(holder, if subText then 2.9 else 1.8)
 end
 
--- Verilen konumda renkli parçacık patlaması (duvar kırılması, kutlama). size: patlamanın kapladığı hacim
-function Juice.burst(position, size, color, amount)
+-- Parçacık aileleri (Config.Wall.Themes[].fx): hız/ömür aralığı, yerçekimi (eksi = yükselir), boyut, parlaklık, isteğe bağlı doku ve içe çekilme.
+-- Dokular Roblox'un kendi parçacık dokularıdır; yüklenemezse parçacık görünmez ama oyun etkilenmez.
+local FX = {
+	chips = { speed = { 14, 30 }, gravity = 35, size = 1.4, life = { 0.6, 1.2 }, light = 0.4 }, -- kırıntı (ahşap, taş, ana ayar)
+	puff = { texture = "rbxasset://textures/particles/smoke_main.dds", speed = { 6, 16 }, gravity = 10, size = 2.6, life = { 0.9, 1.7 }, light = 0, startTransparency = 0.3 }, -- toz / kağıt
+	sparks = { speed = { 26, 46 }, gravity = 30, size = 0.9, life = { 0.4, 0.9 }, light = 1 }, -- metal kıvılcımı
+	gems = { speed = { 8, 22 }, gravity = -4, size = 1.7, life = { 1, 1.9 }, light = 0.9 }, -- mücevher parıltısı (yavaş yükselir)
+	embers = { texture = "rbxasset://textures/particles/fire_main.dds", speed = { 10, 26 }, gravity = -12, size = 2.1, life = { 0.8, 1.5 }, light = 1 }, -- kor
+	implode = { speed = { 16, 28 }, gravity = 0, size = 1.9, life = { 0.7, 1.2 }, light = 0.3, inward = true }, -- içeri çekilme (Blackhole)
+}
+
+-- Verilen konumda renkli parçacık patlaması (duvar kırılması, kutlama). size: patlamanın kapladığı hacim.
+-- fxName: parçacık ailesi (FX; yoksa chips), accent: ikinci renk (yoksa rengin açığı)
+function Juice.burst(position, size, color, amount, fxName, accent)
+	local fx = FX[fxName or "chips"] or FX.chips
 	local anchor = Instance.new("Part")
 	anchor.Anchored = true
 	anchor.CanCollide = false
@@ -163,30 +176,80 @@ function Juice.burst(position, size, color, amount)
 	anchor.Position = position
 	anchor.Parent = Workspace
 
+	-- Koyu temalarda (Blackhole, Obsidian) duvar rengi parçacık olarak görünmez: parıltı rengiyle başlanır
+	local start = color
+	if accent and (color.R * 0.3 + color.G * 0.59 + color.B * 0.11) < 0.2 then
+		start = accent
+	end
+
 	local emitter = Instance.new("ParticleEmitter")
 	emitter.Rate = 0
 	emitter.Shape = Enum.ParticleEmitterShape.Box
 	emitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
-	emitter.Color = ColorSequence.new(color, color:Lerp(Color3.new(1, 1, 1), 0.5))
-	emitter.LightEmission = 0.4
-	emitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.4), NumberSequenceKeypoint.new(1, 0) })
-	emitter.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) })
-	emitter.Lifetime = NumberRange.new(0.6, 1.2)
-	emitter.Speed = NumberRange.new(14, 30)
+	emitter.Color = ColorSequence.new(start, accent or color:Lerp(Color3.new(1, 1, 1), 0.5))
+	emitter.LightEmission = fx.light
+	emitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, fx.size), NumberSequenceKeypoint.new(1, 0) })
+	emitter.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, fx.startTransparency or 0), NumberSequenceKeypoint.new(1, 1) })
+	emitter.Lifetime = NumberRange.new(fx.life[1], fx.life[2])
+	emitter.Speed = NumberRange.new(fx.speed[1], fx.speed[2])
 	emitter.SpreadAngle = Vector2.new(180, 180)
-	emitter.Acceleration = Vector3.new(0, -35, 0)
+	emitter.Acceleration = Vector3.new(0, -fx.gravity, 0)
 	emitter.RotSpeed = NumberRange.new(-200, 200)
+	if fx.texture then
+		emitter.Texture = fx.texture
+	end
+	if fx.inward then
+		emitter.ShapeInOut = Enum.ParticleEmitterShapeInOut.Inward
+	end
 	emitter.Parent = anchor
 	emitter:Emit(amount or 60)
 
 	Debris:AddItem(anchor, 2)
 end
 
+-- Sağlam duvarın etrafında dolaşan sürekli parçacık (Config.Wall.Themes[].ambient: sparkle, embers, implode). Yoksa nil döner.
+-- Duvar kırılınca WallClient emitter.Enabled = false yapar, geri gelince true.
+function Juice.addWallAmbient(part, theme)
+	local kind = theme and theme.ambient
+	if not kind then
+		return nil
+	end
+	local accent = theme.accent or Color3.new(1, 1, 1)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	emitter.Rate = 5
+	emitter.Lifetime = NumberRange.new(1.3, 2.4)
+	emitter.Speed = NumberRange.new(0.5, 2)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.LightEmission = 0.9
+	emitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.3, 0.9), NumberSequenceKeypoint.new(1, 0) })
+	emitter.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.25, 0.1), NumberSequenceKeypoint.new(1, 1) })
+	emitter.Acceleration = Vector3.new(0, 1.5, 0)
+	emitter.Color = ColorSequence.new(accent, Color3.new(1, 1, 1))
+	if kind == "embers" then
+		emitter.Texture = FX.embers.texture
+		emitter.Rate = 7
+		emitter.Acceleration = Vector3.new(0, 6, 0)
+		emitter.Speed = NumberRange.new(1, 3)
+		emitter.Color = ColorSequence.new(accent, Color3.fromRGB(255, 80, 20))
+	elseif kind == "implode" then
+		emitter.Rate = 10
+		emitter.ShapeInOut = Enum.ParticleEmitterShapeInOut.Inward
+		emitter.Speed = NumberRange.new(3, 6)
+		emitter.Acceleration = Vector3.zero
+		emitter.Color = ColorSequence.new(accent, Color3.fromRGB(30, 10, 60))
+		emitter.LightEmission = 0.5
+	end
+	emitter.Parent = part
+	return emitter
+end
+
 -- Kırılan duvardan uçan lego parçaları: duvar renginde küçük, çıkıntılı bloklar fırlar, zeminde sekip kaybolur.
 -- Sadece görseldir (çarpışmaz, sadece bu oyuncunun ekranında); parçaları kare kare elle hareket ettirir, fizik motoru kullanmaz.
 local CHUNK_COUNT = 16
 local CHUNK_LIFETIME = 1.6
-function Juice.brickChunks(wallPart)
+function Juice.brickChunks(wallPart, theme)
 	local folder = Instance.new("Folder")
 	folder.Name = "BrickChunks"
 	folder.Parent = Workspace
@@ -201,6 +264,12 @@ function Juice.brickChunks(wallPart)
 		part.Material = Enum.Material.Plastic
 		part.Size = Vector3.new(2, 1, 1) * (0.8 + math.random() * 0.9)
 		part.Color = wallPart.Color:Lerp(Color3.new(1, 1, 1), math.random() * 0.25)
+		part.Reflectance = if theme then theme.reflect or 0 else 0
+		if theme and theme.fx == "implode" then
+			-- Blackhole parçaları simsiyah olurdu, görünmezdi: parlak mor Neon
+			part.Material = Enum.Material.Neon
+			part.Color = theme.accent:Lerp(Color3.new(0, 0, 0), math.random() * 0.6)
+		end
 		part.TopSurface = Enum.SurfaceType.Studs
 		local position = wallPart.Position + Vector3.new((math.random() - 0.5) * wallPart.Size.X * 0.8, (math.random() - 0.5) * wallPart.Size.Y * 0.8, 0)
 		part.CFrame = CFrame.new(position)
@@ -275,7 +344,7 @@ function Juice.shake(strength, duration)
 end
 
 -- Duvar kırıldı: duvarın rengiyle patlama + hafif sarsıntı (sadece yakındaysak)
-function Juice.wallBroken(wallPart)
+function Juice.wallBroken(wallPart, theme)
 	local root = rootPart()
 	if not root or not wallPart then
 		return
@@ -285,8 +354,9 @@ function Juice.wallBroken(wallPart)
 	end
 	-- Ses ilk iş: parçacık ve lego parçası kurmak birkaç kare sürebilir, ses onları beklemesin
 	sfx("WallBreak")
-	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), wallPart.Color, 90)
-	Juice.brickChunks(wallPart)
+	local fx = theme and theme.fx
+	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), wallPart.Color, if fx == "gems" or fx == "implode" then 120 else 90, fx, theme and theme.accent)
+	Juice.brickChunks(wallPart, theme)
 	Juice.shake(0.35, 0.3)
 end
 

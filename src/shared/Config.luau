@@ -289,12 +289,35 @@ return {
 		-- yapmanın ödülünden hep fazladır. Yani oyuncu için ilerlemek, aynı aşamayı tekrarlamaktan karlıdır.
 		RewardGrowth = 2,
 
-		-- Her aşamanın duvarlarında yazan isim (20 aşama). Duvar rengi aşama aşama gökkuşağında ilerler (Layout.wallColor: ton = (aşama-1)/20),
-		-- isimler de bu renk sırasını izleyen lego tuğla isimleridir; renk sırasını değiştirirsen isimleri de ona göre değiştir.
+		-- Her aşamanın duvar TEMASI (20 aşama, ZAYIFTAN GÜÇLÜYE: ilk aşama en zayıf, sondan bir önceki Bedrock, son Blackhole). Sıra oyuncunun ilerleme sırasıdır;
+		-- isim duvarın üstünde yazar, renk duvarın, koridorun yan duvar/tavan renginin ve parçacıkların temelidir. Alanlar:
+		--   name, color (duvar), accent (parıltı/parçacık ikinci rengi), reflect (parlaklık, metal ve mücevher için),
+		--   fx (kırılma parçacık ailesi: puff toz/kağıt, chips kırıntı, sparks kıvılcım, gems parıltı, embers kor, implode içeri çekilme; client/Juice),
+		--   decor (tuğla yüzü deseni: lines defter çizgisi, grain damar, specks benek, shine metal parıltısı, facet mücevher yüzü, crack çatlak/kor, swirl girdap; client/WallClient),
+		--   ambient (duvar sağlamken etrafında dolaşan parçacık: sparkle, embers, implode; yoksa yok).
 		-- ('Lego' markası bilerek yazılmadı: oyunda marka adı kullanmak Roblox'ta sorun çıkarabilir; 'Brick' lego tuğlasının genel adıdır.)
-		StageNames = {
-			"Red Brick", "Coral Brick", "Orange Brick", "Gold Brick", "Lemon Brick", "Lime Brick", "Green Brick", "Grass Brick", "Mint Brick", "Jade Brick",
-			"Cyan Brick", "Sky Brick", "Blue Brick", "Royal Brick", "Indigo Brick", "Violet Brick", "Purple Brick", "Magenta Brick", "Pink Brick", "Rose Brick",
+		-- Aşama sayısı (Count / GroupSize = 20) ile aynı olmalı.
+		Themes = {
+			{ name = "Paper Brick", color = Color3.fromRGB(238, 232, 214), accent = Color3.fromRGB(255, 255, 255), fx = "puff", decor = "lines" },
+			{ name = "Cardboard Brick", color = Color3.fromRGB(190, 142, 92), accent = Color3.fromRGB(228, 188, 134), fx = "puff", decor = "grain" },
+			{ name = "Wood Brick", color = Color3.fromRGB(142, 92, 50), accent = Color3.fromRGB(204, 150, 88), fx = "chips", decor = "grain" },
+			{ name = "Clay Brick", color = Color3.fromRGB(200, 98, 62), accent = Color3.fromRGB(240, 150, 110), fx = "puff", decor = "specks" },
+			{ name = "Stone Brick", color = Color3.fromRGB(136, 140, 150), accent = Color3.fromRGB(204, 208, 218), fx = "chips", decor = "specks" },
+			{ name = "Copper Brick", color = Color3.fromRGB(196, 112, 66), accent = Color3.fromRGB(255, 190, 130), fx = "sparks", decor = "shine", reflect = 0.12 },
+			{ name = "Iron Brick", color = Color3.fromRGB(104, 110, 124), accent = Color3.fromRGB(190, 200, 222), fx = "sparks", decor = "shine", reflect = 0.1 },
+			{ name = "Steel Brick", color = Color3.fromRGB(158, 172, 192), accent = Color3.fromRGB(235, 245, 255), fx = "sparks", decor = "shine", reflect = 0.2 },
+			{ name = "Silver Brick", color = Color3.fromRGB(204, 210, 222), accent = Color3.fromRGB(255, 255, 255), fx = "sparks", decor = "shine", reflect = 0.25 },
+			{ name = "Gold Brick", color = Color3.fromRGB(246, 196, 44), accent = Color3.fromRGB(255, 240, 150), fx = "sparks", decor = "shine", ambient = "sparkle", reflect = 0.25 },
+			{ name = "Ruby Brick", color = Color3.fromRGB(214, 36, 64), accent = Color3.fromRGB(255, 130, 150), fx = "gems", decor = "facet", ambient = "sparkle", reflect = 0.1 },
+			{ name = "Sapphire Brick", color = Color3.fromRGB(40, 92, 228), accent = Color3.fromRGB(140, 190, 255), fx = "gems", decor = "facet", ambient = "sparkle", reflect = 0.1 },
+			{ name = "Emerald Brick", color = Color3.fromRGB(30, 184, 96), accent = Color3.fromRGB(140, 255, 190), fx = "gems", decor = "facet", ambient = "sparkle", reflect = 0.1 },
+			{ name = "Amethyst Brick", color = Color3.fromRGB(156, 84, 222), accent = Color3.fromRGB(225, 170, 255), fx = "gems", decor = "facet", ambient = "sparkle", reflect = 0.1 },
+			{ name = "Diamond Brick", color = Color3.fromRGB(144, 228, 250), accent = Color3.fromRGB(255, 255, 255), fx = "gems", decor = "facet", ambient = "sparkle", reflect = 0.3 },
+			{ name = "Titanium Brick", color = Color3.fromRGB(74, 96, 122), accent = Color3.fromRGB(150, 185, 225), fx = "sparks", decor = "shine", reflect = 0.2 },
+			{ name = "Obsidian Brick", color = Color3.fromRGB(34, 26, 50), accent = Color3.fromRGB(150, 90, 255), fx = "gems", decor = "shine", ambient = "sparkle", reflect = 0.15 },
+			{ name = "Meteor Brick", color = Color3.fromRGB(112, 66, 48), accent = Color3.fromRGB(255, 150, 40), fx = "embers", decor = "crack", ambient = "embers" },
+			{ name = "Bedrock Brick", color = Color3.fromRGB(66, 66, 74), accent = Color3.fromRGB(150, 150, 172), fx = "chips", decor = "specks" },
+			{ name = "Blackhole Brick", color = Color3.fromRGB(14, 10, 26), accent = Color3.fromRGB(170, 80, 255), fx = "implode", decor = "swirl", ambient = "implode" },
 		},
 	},
 
