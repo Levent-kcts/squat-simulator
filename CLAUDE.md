@@ -76,7 +76,7 @@ Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Robl
 
 ## Proje durumu (ayrıntı README.md'de: bölüm 5 yapılacaklar, bölüm 7 yapılanlar)
 - YAPILDI: temel oyun, level/rebirth, duvarlar, Win odaları (genişleyen oda, VIP pedi), ayakkabı/skin/yumurta/pet/trail/aura, antrenman alanı (rebirth ile açılan 10 ped), sıralama panoları, oyuncu dostu katman (efekt, ses, etiket, açılış kartları, yol gösterici, çevrimdışı kazanç penceresi (client/OfflinePanel: bacak kası simgesi, Claim, Robux'lu DOUBLE IT!, X; girişte CLAIM ile alınır), günlük ödül sahibinin isteğiyle KALDIRILDI, geri ekleme), Shop + Robux makbuz işleme (ID'ler bekleniyor), simülasyonla denge ayarı. HİÇBİRİ son turdan beri Studio'da denenmedi: sahibi test edince hata/geri bildirim gelecek.
-- YAPILACAK (sırayla): sahibinin Roblox işleri (yayın + API, Robux ürün/game pass ID'leri, ses/müzik ID'leri) > Studio test geri bildirimi ve denge ince ayarı > günlük görevler, pet birleştirme makinesi, sağ duvarın boş köşesi, özel antrenörler, kaslı bacak ikonu, yeni dünyalar > EN SON Blender modelleri.
+- YAPILACAK (sırayla): sahibinin Roblox işleri (yayın + API, ses/müzik ID'leri) > Studio test geri bildirimi ve denge ince ayarı > günlük görevler, pet birleştirme makinesi, sağ duvarın boş köşesi, özel antrenörler, yeni dünyalar > Blender modelleri > EN SON TÜM ROBUX İŞLERİ (sahibi bilerek Blender'dan da sonraya sakladı: game pass/Developer Product ID'leri, Shop, VIP, trail/aura, Rebirth SKIP, DOUBLE IT!; kod hazır ve ID 0 iken inert, o zamana kadar Robux işi önerme).
 - Yedek: ayrı yedek yok (silindi); geri dönüş için yerel git geçmişi (`git log`).
 
 ## Kurallar

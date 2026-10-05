@@ -73,9 +73,9 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 **A) Sahibinin yapacakları (Roblox tarafı, kodla yapılamaz)**
 1. **Studio'da dene, en önce:** oyun açılıyor mu, Output'ta `[Client]` / `[Server]` uyarısı var mı? Yeni modüller korumalı yüklenir: hata verirse uyarı yazar, oyun çalışmaya devam eder. Hata olursa Output satırını ya da ekran görüntüsünü Claude'a ilet (Claude Studio log dosyasından da okuyabilir).
 2. **Oyunu yayınla ve API erişimini aç** (File > Publish to Roblox; Game Settings > Security > "Enable Studio Access to API Services"). Kayıt, sıralama panoları, çevrimdışı kazançın kalıcılığı buna bağlı.
-3. **Robux ürünleri:** Creator Hub'da VIP game pass ve Developer Product'lar (Shop kartları, trail/aura Robux butonları, Rebirth SKIP) oluşturup ID'leri Config'e yaz (`VipGamePassId`, `Shop.Products[].productId`, `robuxProductId`, `Rebirth.SkipProductId`). Kod hazır (ProcessReceipt dahil); ID'ler 0 iken kartlar "SOON" der. Yayından önce küçük bir test satın alması dene.
+3. ~~Robux ürünleri~~ **ERTELENDİ:** sahibi tüm Robux işlerini en sona sakladı, aşağıdaki D) bölümüne bak.
 3b. ~~Sol menü ikonları~~ **YAPILDI:** 6 görsel yüklendi ve ID'leri `Config.Icons`'ta (Shop, Rebirth, Settings, Backpack, Pets, Gifts). Yeni/ değişen ikon için PNG yüklenip ID burada güncellenir; telif durumu sahibinin sorumluluğunda.
-3c. **Offline Earnings penceresi:** bacak simgesi YÜKLENDİ: sahibi kendi 'leg-emoji-clipart-xl' görselini yükledi, ID'si `Config.Icons.LegMuscle`'da (Claude'un çizdiği `assets/icons/leg_muscle.png` kullanılmıyor, istenirse yedek olarak duruyor). KALAN: 'DOUBLE IT!' için Creator Hub > Monetization > Developer Products'ta bir ürün (örnek fiyat 19 Robux) oluşturulup ID'si `Config.Offline.DoubleProductId`'ye yazılır; kod ve makbuz işleme hazır, ID 0 iken buton 'COMING SOON' der.
+3c. ~~Offline Earnings bacak simgesi~~ **YAPILDI:** sahibinin yüklediği 'leg-emoji-clipart-xl' görseli `Config.Icons.LegMuscle`'da (Claude'un çizdiği `assets/icons/leg_muscle.png` kullanılmıyor, yedek olarak duruyor). 'DOUBLE IT!' Robux ürünü D) bölümünde.
 4. **Ses ve müzik:** Büyüme (Grow/GrowBig) ve lego kırılma sesleri hazır (Creator Store, dinlenmeden isme göre seçildi: beğenmezsen `Config.Sounds.Grow.ids` / `GrowBig.ids` listesinin başındaki ID'yi değiştir); Win/rebirth/yumurta sesleri hâlâ geçici hazır sesler. Beğendiğin ses/müzik ID'lerini `Config.Sounds`'a, beğendiğin müzikleri `Config.Music.tracks` listesine yaz (listeyi uzatıp kısaltabilirsin, sıra korunur). Studio'da duvar kırılma sesi gelmezse Output'ta `[Sfx]` uyarısına bak.
 5. **Yayın öncesi:** `Config.DevTools.Enabled = false`; avatar tipini R15 yap (ayakkabılar R6'da görünmez); oyun adı "Squat Simulator", simge/küçük resim/açıklama; yaş sınıflandırma anketi (çocuklara yönelik, dikkatli doldur).
 
@@ -86,9 +86,17 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 2. **Günlük görevler (quest)** ve **pet birleştirme/geliştirme makinesi**.
 3. **Sağ duvarın arka ucundaki boş köşe:** sahibi ne konacağını söyleyecek (örnek: pet makinesi, görev panosu, fotoğraf noktası).
 4. **Özel antrenörler:** antrenman pedlerindeki renkli mankenler yer tutucu; sahibi model/isim isteklerini söyleyecek (isimler zaten var: Coach Sprout ... Coach Shadow).
-5. **Kaslı bacak ikonu:** sahibi görseli yükleyip ID verirse emoji (🦵) yerine kullanılır.
-6. **Yeni dünyalar** ve R6 avatar desteği (ayakkabı görünümü).
-7. **EN SON: Blender modelleri** (temel oyun bitince): ayakkabı (15), pet (13), yumurta (6) için yumuşak/sevimli modeller. Blender 5.2 bilgisayarda kurulu (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`), komut satırından Python ile üretilir, önizleme görüntüsü alınır, `.fbx` dosyaları `assets/` klasörüne konur. Önce 3 örnek (Old Sneakers, ilk yumurta, ilk pet) yapılıp sahibine gösterilir. Sahibi dosyaları Studio'da Asset Manager > Bulk Import ile yükler, asset ID'lerini verir; Claude Config'e mesh ID alanı ekleyip kodla yerleştirir (ID boşsa şimdiki blok model kalır). Rafta ayakkabı modeli `shared/ShoeModel.luau` içinde; karakterin ayağında parça eklenmez, ayak parçası ayakkabının renginde ve Neon malzemeyle boyanır (`AppearanceCleaner.applyShoes`). Blender'a geçince 15 ayrı model yerine 4-5 temel kalıp (renkler kodla) önerildi, sahibi onaylamadı, karar bekliyor.
+5. **Yeni dünyalar** ve R6 avatar desteği (ayakkabı görünümü).
+6. **Blender modelleri (Robux işlerinden bir önceki, SON geliştirme adımı)** (temel oyun bitince): ayakkabı (15), pet (13), yumurta (6) için yumuşak/sevimli modeller. Blender 5.2 bilgisayarda kurulu (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`), komut satırından Python ile üretilir, önizleme görüntüsü alınır, `.fbx` dosyaları `assets/` klasörüne konur. Önce 3 örnek (Old Sneakers, ilk yumurta, ilk pet) yapılıp sahibine gösterilir. Sahibi dosyaları Studio'da Asset Manager > Bulk Import ile yükler, asset ID'lerini verir; Claude Config'e mesh ID alanı ekleyip kodla yerleştirir (ID boşsa şimdiki blok model kalır). Rafta ayakkabı modeli `shared/ShoeModel.luau` içinde; karakterin ayağında parça eklenmez, ayak parçası ayakkabının renginde ve Neon malzemeyle boyanır (`AppearanceCleaner.applyShoes`). Blender'a geçince 15 ayrı model yerine 4-5 temel kalıp (renkler kodla) önerildi, sahibi onaylamadı, karar bekliyor.
+
+**D) EN SON: TÜM ROBUX İŞLERİ (sahibinin kararı: Blender modellerinden de SONRA yapılacak, o zamana kadar dokunma/hatırlatma sadece sıra gelince)**
+Kodun hepsi hazır ve ID'ler 0 olduğu için inert: butonlar 'SOON' / 'COMING SOON' der, satın alma penceresi açılmaz, oyun Robux'suz da eksiksiz çalışır. Sıra gelince sahibi Creator Hub'da ürünleri oluşturur, ID'leri Claude'a (ya da Config'e) yazar:
+- VIP game pass → `Config.VipGamePassId` (Win odalarındaki pembe VIP pedi, 2x Win).
+- Shop pencere ürünleri (2x Muscle, 2x Wins, Muscle Pack, Win Pack, Mega Win Pack) → `Config.Shop.Products[].productId`; fiyatlar (`robux`) geçicidir.
+- Trail ve Aura Robux butonları → `Config.Trails[].robuxProductId`, `Config.Auras[].robuxProductId`.
+- Rebirth 'SKIP?' → `Config.Rebirth.SkipProductId`.
+- Offline Earnings 'DOUBLE IT!' (örnek 19 Robux) → `Config.Offline.DoubleProductId` (+ `DoubleRobux` buton yazısı).
+Makbuz işleme (`server/Purchases`, ProcessReceipt, tekrar ödül vermeyen makbuz kaydı) hazır; hepsi bittikten sonra yayından önce küçük bir test satın alması dene.
 
 ## 6. Sahibinin tercihleri
 
