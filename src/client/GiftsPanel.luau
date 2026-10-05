@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Format = require(Shared:WaitForChild("Format"))
 
@@ -97,7 +98,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 
 	close.MouseButton1Click:Connect(function()
-		panel.Visible = false
+		PanelManager.hide(panel)
 	end)
 
 	-- 5 sütun x 2 satır kart + her kartın altında durum butonu
@@ -222,8 +223,8 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	end)
 
 	return function()
-		panel.Visible = not panel.Visible
-		if panel.Visible then
+		PanelManager.toggle(panel)
+		if PanelManager.isOpen(panel) then
 			update()
 		end
 	end

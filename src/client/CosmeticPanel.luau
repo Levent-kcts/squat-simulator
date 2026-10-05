@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
 local Format = require(Shared:WaitForChild("Format"))
 
 local CosmeticPanel = {}
@@ -230,25 +231,25 @@ function CosmeticPanel.init(screenGui, showToast, options)
 	end
 
 	local function show()
-		panel.Visible = true
+		PanelManager.show(panel)
 		render()
 	end
 	local function hide()
-		panel.Visible = false
+		PanelManager.hide(panel)
 	end
 	local function toggle()
-		if panel.Visible then
+		if PanelManager.isOpen(panel) then
 			hide()
 		else
 			show()
 		end
 	end
 	close.MouseButton1Click:Connect(function()
-		panel.Visible = false
+		PanelManager.hide(panel)
 	end)
 
 	local function onChange()
-		if panel.Visible then
+		if PanelManager.isOpen(panel) then
 			render()
 		end
 	end

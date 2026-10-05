@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
 
 local ShopPanel = {}
 
@@ -135,11 +136,11 @@ function ShopPanel.init(screenGui, showToast)
 	end
 
 	close.MouseButton1Click:Connect(function()
-		panel.Visible = false
+		PanelManager.hide(panel)
 	end)
 
 	return function()
-		panel.Visible = not panel.Visible
+		PanelManager.toggle(panel)
 	end
 end
 

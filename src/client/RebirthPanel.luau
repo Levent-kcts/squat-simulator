@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
 local Progression = require(Shared:WaitForChild("Progression"))
 
 local RebirthPanel = {}
@@ -196,7 +197,7 @@ function RebirthPanel.init(screenGui, showToast)
 			local ok, message = shopFunction:InvokeServer("Rebirth")
 			showToast(ok, message or "")
 			if ok then
-				panel.Visible = false
+				PanelManager.hide(panel)
 			end
 			render()
 		end)
@@ -213,11 +214,11 @@ function RebirthPanel.init(screenGui, showToast)
 	end)
 
 	close.MouseButton1Click:Connect(function()
-		panel.Visible = false
+		PanelManager.hide(panel)
 	end)
 
 	local function onChange()
-		if panel.Visible then
+		if PanelManager.isOpen(panel) then
 			render()
 		end
 	end
@@ -226,8 +227,8 @@ function RebirthPanel.init(screenGui, showToast)
 
 	-- Paneli açar (kapalıysa), açıksa kapatır
 	return function()
-		panel.Visible = not panel.Visible
-		if panel.Visible then
+		PanelManager.toggle(panel)
+		if PanelManager.isOpen(panel) then
 			render()
 		end
 	end

@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
 
 local PetsPanel = {}
 
@@ -385,13 +386,13 @@ function PetsPanel.init(screenGui, showToast)
 		end)
 	end)
 	close.MouseButton1Click:Connect(function()
-		panel.Visible = false
+		PanelManager.hide(panel)
 		deleteMode = false
 		table.clear(marked)
 	end)
 
 	local function onChange()
-		if panel.Visible then
+		if PanelManager.isOpen(panel) then
 			render()
 		end
 	end
@@ -400,8 +401,8 @@ function PetsPanel.init(screenGui, showToast)
 	end
 
 	return function()
-		panel.Visible = not panel.Visible
-		if panel.Visible then
+		PanelManager.toggle(panel)
+		if PanelManager.isOpen(panel) then
 			render()
 		else
 			deleteMode = false

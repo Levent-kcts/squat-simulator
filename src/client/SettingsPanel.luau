@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local PanelManager = require(script.Parent.PanelManager)
 local PlayerSettings = require(script.Parent.PlayerSettings)
 
 local SettingsPanel = {}
@@ -77,7 +78,7 @@ function SettingsPanel.init(screenGui)
 	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 	text(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1) }, 2)
 	close.MouseButton1Click:Connect(function()
-		panel.Visible = false
+		PanelManager.hide(panel)
 	end)
 
 	for index, setting in settings do
@@ -136,7 +137,7 @@ function SettingsPanel.init(screenGui)
 	end
 
 	return function()
-		panel.Visible = not panel.Visible
+		PanelManager.toggle(panel)
 	end
 end
 

@@ -21,6 +21,7 @@ local RebirthPanel = require(script.RebirthPanel)
 local WallClient = require(script.WallClient)
 local Moves = require(script.Moves)
 local UIStyle = require(script.UIStyle)
+local PanelManager = require(script.PanelManager)
 
 local clickEvent = ReplicatedStorage:WaitForChild("Click")
 local moveEvent = ReplicatedStorage:WaitForChild("MoveEvent")
@@ -621,15 +622,21 @@ local aurasPanel = CosmeticPanel.init(screenGui, showToast, {
 	previewKind = "aura",
 })
 
--- Backpack: önce Trails açılır; soldaki sekmelerle Auras'a geçilir. Sekmeler panel açıkken görünür.
+-- Backpack: önce Trails açılır; soldaki sekmelerle Auras'a geçilir. Sekmeler (backpackMenu) bir paneli açıkken görünür ve panelle birlikte soldan kayar.
+-- Menü kendi başına pencere sayılmaz (exclusive = false): hangi panel açıksa o belirler.
+PanelManager.register(backpackMenu, false)
 local function refreshTabs()
-	backpackMenu.Visible = trailsPanel.panel.Visible or aurasPanel.panel.Visible
+	if PanelManager.isOpen(trailsPanel.panel) or PanelManager.isOpen(aurasPanel.panel) then
+		PanelManager.show(backpackMenu)
+	else
+		PanelManager.hide(backpackMenu)
+	end
 end
-trailsPanel.panel:GetPropertyChangedSignal("Visible"):Connect(refreshTabs)
-aurasPanel.panel:GetPropertyChangedSignal("Visible"):Connect(refreshTabs)
+trailsPanel.panel:GetAttributeChangedSignal("PanelOpen"):Connect(refreshTabs)
+aurasPanel.panel:GetAttributeChangedSignal("PanelOpen"):Connect(refreshTabs)
 
 backpackButton.MouseButton1Click:Connect(function()
-	if trailsPanel.panel.Visible or aurasPanel.panel.Visible then
+	if PanelManager.isOpen(trailsPanel.panel) or PanelManager.isOpen(aurasPanel.panel) then
 		trailsPanel.hide()
 		aurasPanel.hide()
 	else
@@ -637,11 +644,9 @@ backpackButton.MouseButton1Click:Connect(function()
 	end
 end)
 trailsButton.MouseButton1Click:Connect(function()
-	aurasPanel.hide()
-	trailsPanel.show()
+	trailsPanel.show() -- açık olan Auras kendiliğinden kapanır
 end)
 aurasButton.MouseButton1Click:Connect(function()
-	trailsPanel.hide()
 	aurasPanel.show()
 end)
 
