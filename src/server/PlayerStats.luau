@@ -55,7 +55,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, LastLoginDay = 0, LoginStreak = 0, Redeemed = {}, Receipts = {}, EquippedPets = {}, Settings = {} }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, LastLoginDay = 0, LoginStreak = 0, Receipts = {}, EquippedPets = {}, Settings = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -71,13 +71,6 @@ local function sanitize(raw)
 	end
 	if type(raw.LastLoginDay) == "number" then
 		data.LastLoginDay = math.max(0, math.floor(raw.LastLoginDay))
-	end
-	if type(raw.Redeemed) == "table" then
-		for _, code in raw.Redeemed do
-			if type(code) == "string" and Config.Codes[code] and not table.find(data.Redeemed, code) then
-				table.insert(data.Redeemed, code)
-			end
-		end
 	end
 	if type(raw.Receipts) == "table" then
 		for _, id in raw.Receipts do
@@ -328,7 +321,6 @@ local function save(player)
 		LoginStreak = profile.loginStreak,
 		MusicLevel = profile.musicLevel,
 		Settings = profile.settings,
-		Redeemed = profile.redeemed,
 		Receipts = profile.receipts,
 		Pets = profile.pets,
 		Trails = profile.trails,
@@ -473,7 +465,6 @@ local function setup(player)
 		loginStreak = 0,
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
-		redeemed = {}, -- kullanılmış kodlar
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
 		gain = 1,
@@ -493,7 +484,6 @@ local function setup(player)
 	profile.equippedShoe = data.EquippedItem
 	profile.skins = data.Skins
 	profile.equippedSkin = data.EquippedSkin
-	profile.redeemed = data.Redeemed
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	profile.settings = data.Settings
@@ -615,36 +605,6 @@ function PlayerStats.addMuscle(player, areaMultiplier)
 	local gained = math.max(1, math.floor(profile.gain * (areaMultiplier or 1)))
 	stat.Value += gained
 	return stat.Value, gained
-end
-
--- Kod kullanır (Config.Codes). Her kod hesap başına bir kez; deneme-yanılmayı yavaşlatmak için 2 saniyede bir istek. Dönüş: başarılı mı, mesaj
-local lastCodeTry = {}
-function PlayerStats.redeemCode(player, text)
-	local profile = profiles[player]
-	if not profile or not profile.loaded then
-		return false, "Loading your data, please wait."
-	end
-	local now = os.clock()
-	if now - (lastCodeTry[player] or 0) < 2 then
-		return false, "Slow down!"
-	end
-	lastCodeTry[player] = now
-
-	local code = string.upper((string.gsub(string.sub(tostring(text), 1, 32), "%s", "")))
-	local reward = Config.Codes[code]
-	if code == "" or not reward then
-		return false, "Invalid code."
-	end
-	if table.find(profile.redeemed, code) then
-		return false, "You already used this code."
-	end
-
-	table.insert(profile.redeemed, code)
-	local description = grantReward(player, profile, reward)
-	syncLevel(player)
-	refresh(player)
-	requestSave(player)
-	return true, `Code redeemed! {description}`
 end
 
 -- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)

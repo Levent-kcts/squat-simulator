@@ -190,24 +190,6 @@ local backpackButton = makeGridButton(4, "🎒", "Backpack", Color3.fromRGB(235,
 local petsButton = makeGridButton(5, "🐾", "Pets", Color3.fromRGB(215, 120, 50), icons.Pets)
 local giftsButton = makeGridButton(6, "🎁", "Gifts", Color3.fromRGB(70, 200, 70), icons.Gifts)
 
--- Kodlar: butonların altında küçük bir hap buton, kod giriş penceresini açar (CodesPanel)
-local codesButton = create("TextButton", {
-	Position = UDim2.fromOffset(14, 160 + 3 * 82 + 4),
-	Size = UDim2.fromOffset(156, 34),
-	Text = "",
-	AutoButtonColor = true,
-	BackgroundColor3 = Color3.fromRGB(235, 120, 40),
-}, screenGui)
-create("UICorner", { CornerRadius = UDim.new(0, 17) }, codesButton)
-create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, codesButton)
-UIStyle.soften(codesButton, { radius = 17, strength = 0.28 })
-makeText(codesButton, {
-	Position = UDim2.fromOffset(8, 3),
-	Size = UDim2.new(1, -16, 1, -6),
-	Text = "🔑 CODES",
-	TextColor3 = Color3.new(1, 1, 1),
-}, 22, 2)
-
 -- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
 local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
 local rebirthPulseTween = TweenService:Create(rebirthPulse, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
@@ -546,19 +528,6 @@ local function showToast(ok, message)
 			toast.Visible = false
 		end
 	end)
-end
-
--- Kod giriş penceresi (korumalı yüklenir: hata verirse sadece CODES butonu çalışmaz)
-local CodesPanelModule = loadOptional("CodesPanel")
-if CodesPanelModule then
-	local okInit, toggleCodes = pcall(CodesPanelModule.init, screenGui, function(ok, message)
-		showToast(ok, message)
-	end)
-	if okInit then
-		codesButton.MouseButton1Click:Connect(toggleCodes)
-	else
-		warn(`[Client] CodesPanel init failed: {toggleCodes}`)
-	end
 end
 
 notifyEvent.OnClientEvent:Connect(showToast)

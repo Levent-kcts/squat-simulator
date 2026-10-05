@@ -120,14 +120,6 @@ return {
 		},
 	},
 
-	-- Kodlar (sol menüdeki CODES butonu): oyuncu kodu yazınca ödül alır, her kod hesap başına bir kez kullanılır (kayıtlı). Büyük/küçük harf fark etmez.
-	-- Ödül türleri günlük ödülle aynı (moves, wins, stageWins, boostMuscle, boostWins, pet). Pazarlama için buraya kendi kodlarını ekle.
-	Codes = {
-		WELCOME = { kind = "moves", amount = 600 },
-		SQUAT = { kind = "wins", amount = 25 },
-		BOOST = { kind = "boostMuscle" },
-	},
-
 	-- Çevrimdışı kazanç: oyundan uzakta geçen süre için girişte küçük bir bacak kası ödülü ("Welcome back!"). Süre MaxHours ile sınırlanır,
 	-- MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye / squat süresi) x tıklama başı kazanç x Rate (aktif oynamanın yüzdesi).
 	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300 },

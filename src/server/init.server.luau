@@ -158,8 +158,6 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return PlayerStats.unequipAllPets(player)
 	elseif action == "DeletePet" and type(id) == "string" then
 		return PlayerStats.deletePet(player, id)
-	elseif action == "RedeemCode" and type(id) == "string" then
-		return PlayerStats.redeemCode(player, id)
 	elseif action == "ClaimGift" and type(id) == "number" then
 		return PlayerStats.claimGift(player, id)
 	elseif action == "Rebirth" then
