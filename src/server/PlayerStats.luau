@@ -655,6 +655,15 @@ local function applyProduct(player, profile, product)
 	elseif product.kind == "moves" then
 		muscle.Value += product.amount * profile.gain
 		syncLevel(player)
+	elseif product.kind == "offlineDouble" then
+		-- 'DOUBLE IT!': bekleyen çevrimdışı kazancın 2 katını verir (bekleyen yoksa, örneğin başka yoldan alınmışsa, 4 saatlik kazanç)
+		local pending = profile.offlinePending
+		local amount = if pending > 0 then pending * 2 else offlineGain(profile, 4 * 3600)
+		profile.offlinePending = 0
+		profile.offlineSeconds = 0
+		muscle.Value += amount
+		publishOffline(player, profile)
+		syncLevel(player)
 	else
 		return false
 	end

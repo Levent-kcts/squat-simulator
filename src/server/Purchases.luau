@@ -2,6 +2,7 @@
 --   * Config.Shop.Products[].productId (boost, Win/kas paketleri)
 --   * Config.Trails[].robuxProductId, Config.Auras[].robuxProductId (Backpack > Trails/Auras'taki R$ butonları)
 --   * Config.Rebirth.SkipProductId (Rebirth penceresindeki SKIP? butonu)
+--   * Config.Offline.DoubleProductId (Offline Earnings penceresindeki DOUBLE IT! butonu)
 -- Ödülü PlayerStats.processPurchase verir: aynı satın alma iki kez ödül vermez, verisi kaydedilemeyen oyuncuya verilmez (Roblox daha sonra tekrar dener).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
@@ -32,6 +33,7 @@ function Purchases.init(wallService, notifyEvent)
 		add(aura.robuxProductId, aura.name, { kind = "aura", id = aura.id })
 	end
 	add(Config.Rebirth.SkipProductId, "Rebirth Skip", { kind = "skip" })
+	add(Config.Offline.DoubleProductId, "Double Offline Earnings", { kind = "offlineDouble" })
 	for _, product in Config.Shop.Products do
 		add(product.productId, product.name, product)
 	end
@@ -58,7 +60,11 @@ function Purchases.init(wallService, notifyEvent)
 		if entry.product.kind == "skip" then
 			wallService.resetPlayer(player)
 		end
-		notifyEvent:FireClient(player, true, `Thank you! {entry.name} unlocked.`)
+		if entry.product.kind == "offlineDouble" then
+			notifyEvent:FireClient(player, true, "Doubled! Your offline earnings were multiplied by 2.")
+		else
+			notifyEvent:FireClient(player, true, `Thank you! {entry.name} unlocked.`)
+		end
 		return Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 end

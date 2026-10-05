@@ -110,7 +110,9 @@ return {
 	-- Çevrimdışı kazanç (Offline Earnings): oyundan uzakta geçen süre için bacak kası birikir; girişte açılan pencerede CLAIM'e basınca verilir.
 	-- Süre MaxHours ile sınırlanır, MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye / squat süresi) x tıklama başı kazanç x Rate
 	-- (Rate = aktif oynamanın yüzdesi: 0.02 = %2). Alınmayan kazanç kayıtlı kalır. Kayıt gerektirir (yayınlanmış oyun + API); Studio'da DEV > Offline 3h ile denenir.
-	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300 },
+	-- DoubleProductId: pencerenin 'DOUBLE IT!' butonu (Robux ile bekleyen kazancın 2 katı). Creator Hub'da Developer Product oluşturup ID'sini yaz;
+	-- 0 iken buton 'COMING SOON' der. DoubleRobux sadece butonda gösterilen fiyattır (gerçek fiyatı Developer Product belirler).
+	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300, DoubleProductId = 0, DoubleRobux = 19 },
 
 	-- Sesler (client/Sfx). id: "rbxasset://sounds/..." (Roblox'la gelen hazır sesler) ya da "rbxassetid://123456" (Creator Store'dan seçtiğin ses).
 	-- id = "" ise o olay sessiz kalır. volume 0-1, speed: { en yavaş, en hızlı } çalma hızı (her çalışta rastgele; ton çeşitliliği).
@@ -186,6 +188,7 @@ return {
 	-- Hazır, şeffaf arka planlı görseller assets/icons/ klasöründe (shop, rebirth, settings, backpack, pets, gifts: 256x256 PNG).
 	-- Studio'da Asset Manager > Bulk Import ile yükle, çıkan ID'leri buraya yaz.
 	Icons = {
+		LegMuscle = "", -- Offline Earnings penceresindeki büyük bacak kası simgesi (assets/icons/leg_muscle.png yüklenince ID yazılır; boşken 🦵 emojisi)
 		Shop = "rbxassetid://88209777338839",
 		Rebirth = "rbxassetid://92894421841396",
 		Settings = "rbxassetid://82994218844234",
