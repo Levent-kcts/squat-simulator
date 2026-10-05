@@ -140,20 +140,28 @@ function RightHud.init(screenGui, openGifts)
 	if not Config.Friends.Enabled then
 		return
 	end
+	-- Roblox'un üst çubuğu (~58 px) normal ScreenGui'lerde boş bırakılır; köşede, o çubukla aynı hizada durması için AYRI bir ScreenGui kullanılır
+	-- (IgnoreGuiInset = true). Eskiden ana ScreenGui'deydi ve üst çubuğun altından başladığı için köşeden çok aşağıda duruyordu.
+	local cornerGui = create("ScreenGui", {
+		Name = "CornerGui",
+		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
+		DisplayOrder = 2,
+	}, player:WaitForChild("PlayerGui"))
 	local friends = create("TextButton", {
 		Name = "FriendBonus",
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -10, 0, 8), -- en sağ üst köşe (referans oyundaki sağ üst yuvarlak butonlar gibi)
+		Position = UDim2.new(1, -10, 0, 3), -- en sağ üst köşe, Roblox üst çubuğuyla aynı hizada
 		Size = UDim2.fromOffset(60, 82),
 		Text = "",
 		AutoButtonColor = false,
 		BackgroundTransparency = 1,
-	}, screenGui)
+	}, cornerGui)
 
 	-- Siyah yuvarlak zemin (referanstaki sağ üst yuvarlak butonlar gibi: koyu daire, ince açık kenar); simge içinde ortalı
 	local iconBox = create("Frame", {
-		Position = UDim2.fromOffset(2, 0),
-		Size = UDim2.fromOffset(56, 56),
+		Position = UDim2.fromOffset(4, 0),
+		Size = UDim2.fromOffset(52, 52),
 		BackgroundColor3 = Color3.fromRGB(16, 17, 24),
 		BackgroundTransparency = 0.04,
 	}, friends)
@@ -164,7 +172,7 @@ function RightHud.init(screenGui, openGifts)
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
 			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(40, 38),
+			Size = UDim2.fromOffset(38, 36),
 			Image = Config.Icons.Friends,
 			ScaleType = Enum.ScaleType.Fit,
 		}, iconBox)
@@ -173,7 +181,7 @@ function RightHud.init(screenGui, openGifts)
 	end
 	local percentLabel = text(friends, {
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 44),
+		Position = UDim2.new(0.5, 0, 0, 41),
 		Size = UDim2.fromOffset(62, 36),
 		Text = "0%",
 		TextColor3 = Color3.fromRGB(255, 214, 46),
@@ -184,11 +192,11 @@ function RightHud.init(screenGui, openGifts)
 	-- Açıklama kutusu
 	local tooltip = create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -10, 0, 96),
+		Position = UDim2.new(1, -10, 0, 84),
 		Size = UDim2.fromOffset(236, 84),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,
-	}, screenGui)
+	}, cornerGui)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tooltip)
 	UIStyle.soften(tooltip, { radius = 12, strength = 0.2, shine = false })
 	text(tooltip, {
