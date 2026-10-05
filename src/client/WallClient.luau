@@ -168,34 +168,36 @@ local function brickPattern(stage, theme)
 	local template = patternTemplates[stage]
 	if not template then
 		local color = theme.color
-		-- Harç: tuğlanın koyusu; çok koyu temalarda (Blackhole, Obsidian) tuğla ile ayrışsın diye parıltı rengine doğru açılır
 		local luminance = color.R * 0.3 + color.G * 0.59 + color.B * 0.11
-		local mortar = if luminance < 0.25 then color:Lerp(theme.accent, 0.22) else darker(color, 0.55)
+		-- Tuğla çizgisi: açık/orta temalarda koyu, çok koyu temalarda (Blackhole, Obsidian) parıltı rengi
+		local seamColor = if luminance < 0.25 then theme.accent else darker(color, 0.3)
+		local seamTransparency = if luminance < 0.25 then 0.5 else 0.3
+		-- Zemin SAYDAM: duvarın gerçek malzemesi (ahşap, taş, metal, lav...) görünsün, desen sadece tuğla çizgileri ve hafif ton farkı olarak üstüne biner
 		template = Instance.new("Frame")
 		template.Name = "Bricks"
 		template.Size = UDim2.fromScale(1, 1)
-		template.BackgroundColor3 = mortar
+		template.BackgroundTransparency = 1
 		template.BorderSizePixel = 0
 		template.ZIndex = 0 -- yazıların ve can çubuğunun altında kalsın
 		local random = Random.new(stage)
 		for row = 0, BRICK_ROWS - 1 do
 			local edges = if row % 2 == 0 then { 0, 0.25, 0.5, 0.75, 1 } else { 0, 0.125, 0.375, 0.625, 0.875, 1 }
 			for i = 1, #edges - 1 do
-				local jitter = 0.95 + random:NextNumber() * 0.1
-				local brickColor = Color3.new(math.clamp(color.R * jitter, 0, 1), math.clamp(color.G * jitter, 0, 1), math.clamp(color.B * jitter, 0, 1))
 				local brick = Instance.new("Frame")
 				brick.Position = UDim2.new(edges[i], 2, row / BRICK_ROWS, 2)
 				brick.Size = UDim2.new(edges[i + 1] - edges[i], -4, 1 / BRICK_ROWS, -4)
-				brick.BackgroundColor3 = brickColor
+				-- Her tuğlanın üstüne çok hafif açık ya da koyu bir ton: tuğlalar tek tek ayrışsın
+				brick.BackgroundColor3 = if random:NextNumber() > 0.5 then Color3.new(1, 1, 1) else Color3.new(0, 0, 0)
+				brick.BackgroundTransparency = 0.86 + random:NextNumber() * 0.08
 				brick.BorderSizePixel = 0
 				brick.ZIndex = 0
 				addRound(brick, UDim.new(0, 6))
-				-- Hafif kabartma: tuğlanın üstü açık, altı biraz koyu
-				local bevel = Instance.new("UIGradient")
-				bevel.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.84, 0.84, 0.84))
-				bevel.Rotation = 90
-				bevel.Parent = brick
-				decorateBrick(brick, theme, random, brickColor)
+				local seam = Instance.new("UIStroke")
+				seam.Thickness = 2.5
+				seam.Color = seamColor
+				seam.Transparency = seamTransparency
+				seam.Parent = brick
+				decorateBrick(brick, theme, random, color)
 				brick.Parent = template
 			end
 		end
@@ -210,15 +212,23 @@ local function createWall(folder, index)
 	part.Anchored = true
 	part.Size = Vector3.new(cfg.Width, cfg.Height, cfg.Thickness)
 	part.Position = Layout.wallPosition(index)
-	part.Material = Enum.Material.Plastic
 	local stage = Layout.stageOf(index)
 	local theme = Layout.theme(stage)
-	part.Color = theme.color
+	-- Duvarın gerçek 3B malzemesi temadan gelir (ahşap, tuğla, taş, metal, cam, lav...). Geçersiz ad yazılırsa Plastic'e düşer.
+	local okMaterial, material = pcall(function()
+		return Enum.Material[theme.material or "Plastic"]
+	end)
+	part.Material = if okMaterial and material then material else Enum.Material.Plastic
+	part.Color = theme.materialColor or theme.color
 	part.Reflectance = theme.reflect or 0
-	-- Lego çıkıntıları (ön yüz yazılar için düz kalır)
-	part.TopSurface = Enum.SurfaceType.Studs
-	part.LeftSurface = Enum.SurfaceType.Studs
-	part.RightSurface = Enum.SurfaceType.Studs
+	local baseTransparency = theme.transparency or 0
+	part.Transparency = baseTransparency
+	-- Lego çıkıntıları yalnız Plastic malzemede görünür (ön yüz yazılar için düz kalır)
+	if part.Material == Enum.Material.Plastic then
+		part.TopSurface = Enum.SurfaceType.Studs
+		part.LeftSurface = Enum.SurfaceType.Studs
+		part.RightSurface = Enum.SurfaceType.Studs
+	end
 	part.Parent = folder
 
 	-- Duvarın ön yüzü (oyuncu +Z tarafından yaklaşır): üstte duvar numarası, altında isim, sonra can çubuğu
@@ -229,6 +239,17 @@ local function createWall(folder, index)
 	gui.LightInfluence = 0
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	brickPattern(stage, theme).Parent = gui -- yazılardan ÖNCE kurulur, altta kalır
+	-- Okunaklılık plakası: desenli/dokulu malzemenin üstünde numara, isim ve can çubuğu net okunsun diye yarı saydam koyu zemin
+	local plate = Instance.new("Frame")
+	plate.AnchorPoint = Vector2.new(0.5, 0.5)
+	plate.Position = UDim2.fromScale(0.5, 0.39)
+	plate.Size = UDim2.fromScale(0.6, 0.56)
+	plate.BackgroundColor3 = Color3.new(0, 0, 0)
+	plate.BackgroundTransparency = 0.6
+	plate.BorderSizePixel = 0
+	plate.ZIndex = 0
+	addRound(plate, UDim.new(0, 18))
+	plate.Parent = gui
 	gui.Parent = part
 
 	makeText(gui, UDim2.fromScale(0.5, 0.2), UDim2.fromScale(0.2, 0.12), tostring(index))
@@ -276,7 +297,7 @@ local function createWall(folder, index)
 	end
 
 	local maxHp = Layout.maxHp(index)
-	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient }
+	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient, baseTransparency = baseTransparency }
 end
 
 local function setHp(wall, hp)
@@ -297,7 +318,7 @@ local function setHp(wall, hp)
 
 	local ratio = math.clamp(hp / wall.maxHp, 0, 1)
 	wall.part.CanCollide = true
-	wall.part.Transparency = 0
+	wall.part.Transparency = wall.baseTransparency
 	wall.gui.Enabled = true
 	if wall.ambient then
 		wall.ambient.Enabled = true

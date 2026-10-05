@@ -263,7 +263,7 @@ function Juice.brickChunks(wallPart, theme)
 		part.CastShadow = false
 		part.Material = Enum.Material.Plastic
 		part.Size = Vector3.new(2, 1, 1) * (0.8 + math.random() * 0.9)
-		part.Color = wallPart.Color:Lerp(Color3.new(1, 1, 1), math.random() * 0.25)
+		part.Color = (if theme then theme.color else wallPart.Color):Lerp(Color3.new(1, 1, 1), math.random() * 0.25)
 		part.Reflectance = if theme then theme.reflect or 0 else 0
 		if theme and theme.fx == "implode" then
 			-- Blackhole parçaları simsiyah olurdu, görünmezdi: parlak mor Neon
@@ -355,7 +355,7 @@ function Juice.wallBroken(wallPart, theme)
 	-- Ses ilk iş: parçacık ve lego parçası kurmak birkaç kare sürebilir, ses onları beklemesin
 	sfx("WallBreak")
 	local fx = theme and theme.fx
-	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), wallPart.Color, if fx == "gems" or fx == "implode" then 120 else 90, fx, theme and theme.accent)
+	Juice.burst(wallPart.Position, Vector3.new(wallPart.Size.X * 0.8, wallPart.Size.Y * 0.6, 2), if theme then theme.color else wallPart.Color, if fx == "gems" or fx == "implode" then 120 else 90, fx, theme and theme.accent)
 	Juice.brickChunks(wallPart, theme)
 	Juice.shake(0.35, 0.3)
 end
