@@ -192,6 +192,7 @@ return {
 	-- Hazır, şeffaf arka planlı görseller assets/icons/ klasöründe (shop, rebirth, settings, backpack, pets, gifts: 256x256 PNG).
 	-- Studio'da Asset Manager > Bulk Import ile yükle, çıkan ID'leri buraya yaz.
 	Icons = {
+		Friends = "", -- sağ üstteki arkadaş bonusu simgesi (assets/icons/friends.png yüklenince ID yazılır; boşken koddan çizilmiş yedek simge)
 		LegMuscle = "rbxassetid://81118324194991", -- Offline Earnings penceresindeki büyük bacak kası simgesi: sahibinin yüklediği "leg-emoji-clipart-xl" görseli (Image türü, doğrulandı). Boş bırakılırsa 🦵 emojisi görünür
 		Shop = "rbxassetid://88209777338839",
 		Rebirth = "rbxassetid://92894421841396",

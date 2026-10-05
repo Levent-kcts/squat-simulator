@@ -32,6 +32,52 @@ local function text(parent, props, strokeThickness)
 	return label
 end
 
+-- İki sevimli yüz (kare sarı kafalar, mavi omuzlar): Config.Icons.Friends yüklenene kadar yedek simge. parent 72x72 ve kırpmalı olmalı.
+local function drawFriendsIcon(parent)
+	local YELLOW = Color3.fromRGB(255, 212, 36)
+	local BLUE = Color3.fromRGB(62, 152, 255)
+	local function person(x, y, size)
+		-- omuzlar (altta kırpılır)
+		local shoulders = create("Frame", {
+			Position = UDim2.fromOffset(x + size * 0.1, y + size * 0.82),
+			Size = UDim2.fromOffset(size * 0.8, size * 0.5),
+			BackgroundColor3 = BLUE,
+		}, parent)
+		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(20, 24, 50) }, shoulders)
+		UIStyle.soften(shoulders, { radius = size * 0.28, strength = 0.18, shine = false })
+		-- kafa
+		local head = create("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(size, size),
+			BackgroundColor3 = YELLOW,
+		}, parent)
+		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(20, 24, 50) }, head)
+		UIStyle.soften(head, { radius = size * 0.2, gradient = false, shine = false })
+		-- Küçük yardımcı: yüzde konumlu yuvarlak/elips parça
+		local function dot(cx, cy, w, h, color, transparency)
+			local d = create("Frame", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(cx, cy),
+				Size = UDim2.fromScale(w, h),
+				BackgroundColor3 = color,
+				BackgroundTransparency = transparency or 0,
+				BorderSizePixel = 0,
+			}, head)
+			create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, d)
+			return d
+		end
+		local DARK = Color3.fromRGB(30, 24, 30)
+		dot(0.30, 0.40, 0.11, 0.22, DARK) -- gözler
+		dot(0.70, 0.40, 0.11, 0.22, DARK)
+		dot(0.13, 0.62, 0.17, 0.1, Color3.fromRGB(255, 140, 70), 0.5) -- yanaklar
+		dot(0.87, 0.62, 0.17, 0.1, Color3.fromRGB(255, 140, 70), 0.5)
+		dot(0.5, 0.70, 0.44, 0.22, DARK) -- gülümseme: koyu elipsin üstüne sarı elips = hilal
+		dot(0.5, 0.63, 0.52, 0.22, YELLOW)
+	end
+	person(38, 14, 30) -- arkadaş (arkada, küçük)
+	person(6, 8, 42) -- sen (önde, büyük)
+end
+
 -- openGifts: Gifts menüsünü açıp kapatan fonksiyon (init.client verir)
 function RightHud.init(screenGui, openGifts)
 	local player = Players.LocalPlayer
@@ -134,53 +180,103 @@ function RightHud.init(screenGui, openGifts)
 	end)
 	refreshReward()
 
-	-- ---------------- 2) FRIEND BONUS ----------------
+	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------
+	-- Referans oyundaki gibi küçük iki yüzlü simge ve altında yüzde: arkadaş yokken "0%", her arkadaşta +%10 ("10%", "20%" ...).
+	-- Üstüne gelince / tıklayınca küçük bir açıklama çıkar (kaç arkadaş, kaç yüzde, en çok kaç).
 	if not Config.Friends.Enabled then
 		return
 	end
-	local friends = create("Frame", {
-		LayoutOrder = 2,
-		Size = UDim2.fromOffset(200, 78),
-		BackgroundColor3 = Color3.fromRGB(96, 112, 255),
-	}, container)
-	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, friends)
-	UIStyle.soften(friends, { radius = 16, strength = 0.3 })
+	local friends = create("TextButton", {
+		Name = "FriendBonus",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -16, 0, 10),
+		Size = UDim2.fromOffset(80, 92),
+		Text = "",
+		AutoButtonColor = false,
+		BackgroundTransparency = 1,
+	}, screenGui)
+	local iconBox = create("Frame", {
+		Position = UDim2.fromOffset(4, 0),
+		Size = UDim2.fromOffset(72, 72),
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+	}, friends)
+	if Config.Icons.Friends and Config.Icons.Friends ~= "" then
+		create("ImageLabel", {
+			BackgroundTransparency = 1,
+			Size = UDim2.fromScale(1, 1),
+			Image = Config.Icons.Friends,
+			ScaleType = Enum.ScaleType.Fit,
+		}, iconBox)
+	else
+		drawFriendsIcon(iconBox)
+	end
+	local percentLabel = text(friends, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 52),
+		Size = UDim2.fromOffset(76, 38),
+		Text = "0%",
+		TextColor3 = Color3.fromRGB(255, 214, 46),
+	}, 4)
+	local percentScale = create("UIScale", { Scale = 1 }, percentLabel)
 
-	text(friends, { Position = UDim2.fromOffset(8, 10), Size = UDim2.fromOffset(48, 48), Text = "👥" }, 0)
-	text(friends, {
-		Position = UDim2.fromOffset(60, 6),
-		Size = UDim2.fromOffset(132, 20),
+	-- Açıklama kutusu
+	local tooltip = create("Frame", {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -16, 0, 106),
+		Size = UDim2.fromOffset(236, 84),
+		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
+		Visible = false,
+	}, screenGui)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tooltip)
+	UIStyle.soften(tooltip, { radius = 12, strength = 0.2, shine = false })
+	text(tooltip, {
+		Position = UDim2.fromOffset(12, 6),
+		Size = UDim2.new(1, -24, 0, 24),
 		Text = "FRIEND BONUS",
+		TextColor3 = Color3.fromRGB(255, 214, 46),
+	}, 2)
+	local tooltipLine = text(tooltip, {
+		Position = UDim2.fromOffset(12, 32),
+		Size = UDim2.new(1, -24, 0, 20),
 		TextColor3 = Color3.new(1, 1, 1),
-		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 2)
-	local bonus = text(friends, {
-		Position = UDim2.fromOffset(60, 26),
-		Size = UDim2.fromOffset(78, 30),
-		Text = "+0%",
-		TextColor3 = Color3.fromRGB(120, 255, 140),
-		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 3)
-	local count = text(friends, {
-		Position = UDim2.fromOffset(138, 30),
-		Size = UDim2.fromOffset(54, 22),
-		Text = "0/5",
-		TextColor3 = Color3.fromRGB(225, 230, 255),
-		TextXAlignment = Enum.TextXAlignment.Right,
-	}, 2)
-	local hint = text(friends, {
-		Position = UDim2.fromOffset(10, 57),
-		Size = UDim2.fromOffset(182, 15),
-		TextColor3 = Color3.fromRGB(215, 222, 255),
-	}, 1)
-	hint.Text = `+{Config.Friends.PercentPerFriend}% per friend in this server`
+	}, 1.5)
+	tooltipLine.Text = `+{Config.Friends.PercentPerFriend}% Leg Muscle per friend in your server`
+	local tooltipCount = text(tooltip, {
+		Position = UDim2.fromOffset(12, 56),
+		Size = UDim2.new(1, -24, 0, 20),
+		TextColor3 = Color3.fromRGB(190, 200, 235),
+	}, 1.5)
 
+	local hovering, pinned = false, false
+	local function refreshTooltip()
+		tooltip.Visible = hovering or pinned
+	end
+	friends.MouseEnter:Connect(function()
+		hovering = true
+		refreshTooltip()
+	end)
+	friends.MouseLeave:Connect(function()
+		hovering = false
+		refreshTooltip()
+	end)
+	friends.MouseButton1Click:Connect(function()
+		pinned = not pinned -- dokunmatik ekranda üzerine gelme yok: tıklayınca açılır/kapanır
+		refreshTooltip()
+	end)
+
+	local lastPercent = 0
 	local function refreshFriends()
 		local percent = player:GetAttribute("FriendBonus") or 0
 		local friendCount = player:GetAttribute("FriendCount") or 0
-		bonus.Text = `+{percent}%`
-		count.Text = `{friendCount}/{Config.Friends.MaxFriends}`
-		bonus.TextColor3 = if percent > 0 then Color3.fromRGB(120, 255, 140) else Color3.fromRGB(205, 210, 235)
+		percentLabel.Text = `{percent}%`
+		tooltipCount.Text = `{friendCount} / {Config.Friends.MaxFriends} friends here (max +{Config.Friends.MaxFriends * Config.Friends.PercentPerFriend}%)`
+		if percent > lastPercent then
+			-- Yeni arkadaş geldi: yüzde büyüyüp yerine oturur
+			percentScale.Scale = 1.5
+			TweenService:Create(percentScale, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		end
+		lastPercent = percent
 	end
 	player:GetAttributeChangedSignal("FriendBonus"):Connect(refreshFriends)
 	player:GetAttributeChangedSignal("FriendCount"):Connect(refreshFriends)
