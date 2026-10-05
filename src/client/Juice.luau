@@ -242,49 +242,8 @@ local GOLD = Color3.fromRGB(255, 220, 70)
 local PINK = Color3.fromRGB(255, 90, 190)
 local GREEN = Color3.fromRGB(120, 255, 160)
 
--- 3725 -> "1h 2m"
-local function duration(seconds)
-	local hours = seconds // 3600
-	local minutes = (seconds % 3600) // 60
-	if hours > 0 then
-		return `{hours}h {minutes}m`
-	end
-	return `{math.max(1, minutes)}m`
-end
-
 function Juice.init(screenGui)
 	screenGuiRef = screenGui
-
-	-- Çevrimdışı kazanç: sunucu girişte OfflineGain / OfflineSeconds özniteliklerini ayarlar
-	local function showOffline()
-		local gained = player:GetAttribute("OfflineGain")
-		local away = player:GetAttribute("OfflineSeconds")
-		if type(gained) == "number" and type(away) == "number" and gained > 0 then
-			Juice.banner("WELCOME BACK!", GREEN)
-			Juice.floatText(`+{Format.compact(gained)} while away ({duration(away)})`, GREEN, 2)
-			player:SetAttribute("OfflineGain", nil)
-		end
-	end
-	player:GetAttributeChangedSignal("OfflineGain"):Connect(function()
-		task.delay(1.5, showOffline) -- karakter ve arayüz otursun
-	end)
-	task.delay(2.5, showOffline) -- öznitelik istemci başlamadan önce gelmiş olabilir
-
-	-- Günlük giriş ödülü: sunucu DailyText / DailyDay / DailyStreak özniteliklerini girişte ayarlar
-	local function showDaily()
-		local text = player:GetAttribute("DailyText")
-		if type(text) == "string" and text ~= "" then
-			local day = player:GetAttribute("DailyDay") or 1
-			local streak = player:GetAttribute("DailyStreak") or 1
-			Juice.banner("DAILY REWARD!", GOLD, `Day {day} - {text}` .. (if streak > 1 then `  (streak {streak})` else ""))
-			Juice.celebrate(GOLD, 60)
-			player:SetAttribute("DailyText", nil)
-		end
-	end
-	player:GetAttributeChangedSignal("DailyText"):Connect(function()
-		task.delay(1.5, showDaily)
-	end)
-	task.delay(5, showDaily) -- hoş geldin yazısından sonra
 
 	local leaderstats = player:WaitForChild("leaderstats")
 	local muscle = leaderstats:WaitForChild(Config.StatLegMuscle)

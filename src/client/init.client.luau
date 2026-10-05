@@ -682,3 +682,6 @@ settingsButton.MouseButton1Click:Connect(function()
 		showToast(false, "Settings are not available right now.")
 	end
 end)
+
+-- Çevrimdışı kazanç penceresi (girişte bekleyen kazanç varsa CLAIM ile alınır; korumalı yüklenir)
+safeInit("OfflinePanel", loadOptional("OfflinePanel"), screenGui, showToast)

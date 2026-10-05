@@ -93,19 +93,6 @@ return {
 		AutosaveInterval = 30, -- saniye (ayrıca Win/satın alma/pet sonrası da hemen kaydedilir)
 	},
 
-	-- Günlük giriş ödülü: her yeni günde (UTC) girişte otomatik verilir; art arda gelen günler seri oluşturur, bir gün atlanırsa seri 1'e döner.
-	-- 7 günlük döngü. kind: moves (amount kadar hareketin kazancı = amount x tıklama başı kazanç), stageWins (stage. aşamanın Win ödülü),
-	-- boostMuscle / boostWins (BoostMinutes dk 2x), pet (pet id). boosts = true ise iki güçlendirme birden eklenir.
-	DailyRewards = {
-		{ kind = "moves", amount = 400 },
-		{ kind = "boostMuscle" },
-		{ kind = "stageWins", stage = 5 },
-		{ kind = "moves", amount = 1500 },
-		{ kind = "boostWins" },
-		{ kind = "pet", pet = "tiger" },
-		{ kind = "moves", amount = 5000, boosts = true },
-	},
-
 	-- Shop (sol menüdeki Shop butonu): Robux ile alınan Developer Product'lar. productId: Creator Hub > Monetization > Developer Products'ta
 	-- oluşturulan ürünün ID'si; 0 = henüz yok, kart "Coming soon" gösterir. Satın alma sunucuda ProcessReceipt ile doğrulanır
 	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostMuscle / boostWins (minutes dk 2x), wins (amount Win),
@@ -120,8 +107,9 @@ return {
 		},
 	},
 
-	-- Çevrimdışı kazanç: oyundan uzakta geçen süre için girişte küçük bir bacak kası ödülü ("Welcome back!"). Süre MaxHours ile sınırlanır,
-	-- MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye / squat süresi) x tıklama başı kazanç x Rate (aktif oynamanın yüzdesi).
+	-- Çevrimdışı kazanç (Offline Earnings): oyundan uzakta geçen süre için bacak kası birikir; girişte açılan pencerede CLAIM'e basınca verilir.
+	-- Süre MaxHours ile sınırlanır, MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye / squat süresi) x tıklama başı kazanç x Rate
+	-- (Rate = aktif oynamanın yüzdesi: 0.02 = %2). Alınmayan kazanç kayıtlı kalır. Kayıt gerektirir (yayınlanmış oyun + API); Studio'da DEV > Offline 3h ile denenir.
 	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300 },
 
 	-- Sesler (client/Sfx). id: "rbxasset://sounds/..." (Roblox'la gelen hazır sesler) ya da "rbxassetid://123456" (Creator Store'dan seçtiğin ses).

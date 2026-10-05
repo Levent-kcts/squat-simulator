@@ -1,5 +1,4 @@
 local DataStoreService = game:GetService("DataStoreService")
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -55,7 +54,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, LastLoginDay = 0, LoginStreak = 0, Receipts = {}, EquippedPets = {}, Settings = {} }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -69,8 +68,8 @@ local function sanitize(raw)
 	if type(raw.LastSeen) == "number" then
 		data.LastSeen = math.max(0, math.floor(raw.LastSeen))
 	end
-	if type(raw.LastLoginDay) == "number" then
-		data.LastLoginDay = math.max(0, math.floor(raw.LastLoginDay))
+	if type(raw.OfflinePending) == "number" then
+		data.OfflinePending = math.max(0, math.floor(raw.OfflinePending))
 	end
 	if type(raw.Receipts) == "table" then
 		for _, id in raw.Receipts do
@@ -89,8 +88,8 @@ local function sanitize(raw)
 			end
 		end
 	end
-	if type(raw.LoginStreak) == "number" then
-		data.LoginStreak = math.max(0, math.floor(raw.LoginStreak))
+	if type(raw.OfflineSeconds) == "number" then
+		data.OfflineSeconds = math.max(0, math.floor(raw.OfflineSeconds))
 	end
 	if type(raw.Rebirths) == "number" then
 		data.Rebirths = math.max(0, math.floor(raw.Rebirths))
@@ -317,8 +316,8 @@ local function save(player)
 		Skins = profile.skins,
 		EquippedSkin = profile.equippedSkin,
 		LastSeen = os.time(),
-		LastLoginDay = profile.lastLoginDay,
-		LoginStreak = profile.loginStreak,
+		OfflinePending = profile.offlinePending,
+		OfflineSeconds = profile.offlineSeconds,
 		MusicLevel = profile.musicLevel,
 		Settings = profile.settings,
 		Receipts = profile.receipts,
@@ -379,45 +378,16 @@ local function startBoost(player, profile, kind, minutes)
 	end)
 end
 
--- Bir ödülü verir (günlük giriş ödülü ve kodlar). Dönüş: kısa açıklama ("+2.0K Leg Muscle", "2x Wins (10m)" ...)
-local function grantReward(player, profile, reward)
-	local muscle = getStat(player, Config.StatLegMuscle)
-	local wins = getStat(player, Config.StatWins)
-	local parts = {}
-	if reward.kind == "moves" then
-		local gained = reward.amount * profile.gain
-		muscle.Value += gained
-		table.insert(parts, `+{Format.compact(gained)} Leg Muscle`)
-	elseif reward.kind == "wins" then
-		wins.Value += reward.amount
-		table.insert(parts, `+{Format.compact(reward.amount)} Wins`)
-	elseif reward.kind == "stageWins" then
-		local amount = Layout.reward(reward.stage)
-		wins.Value += amount
-		table.insert(parts, `+{Format.compact(amount)} Wins`)
-	elseif reward.kind == "boostMuscle" or reward.kind == "boostWins" then
-		startBoost(player, profile, reward.kind)
-		table.insert(parts, if reward.kind == "boostMuscle" then `2x Muscle ({Config.BoostMinutes}m)` else `2x Wins ({Config.BoostMinutes}m)`)
-	elseif reward.kind == "pet" then
-		local pet = Catalog.PetById[reward.pet]
-		if pet and #profile.pets < Config.MaxOwnedPets then
-			table.insert(profile.pets, pet.id)
-			if #profile.equipped < Config.MaxEquippedPets then
-				table.insert(profile.equipped, pet.id)
-			end
-			table.insert(parts, `New pet: {pet.name}!`)
-		else
-			local amount = Layout.reward(6) -- pet envanteri doluysa yerine Win
-			wins.Value += amount
-			table.insert(parts, `+{Format.compact(amount)} Wins`)
-		end
-	end
-	if reward.boosts then
-		startBoost(player, profile, "boostMuscle")
-		startBoost(player, profile, "boostWins")
-		table.insert(parts, `2x Muscle + Wins ({Config.BoostMinutes}m)`)
-	end
-	return table.concat(parts, " + ")
+-- Çevrimdışı kazanç: verilen süre (saniye) için bacak kası miktarı = (süre / squat süresi) x tıklama başı kazanç x Rate
+local function offlineGain(profile, seconds)
+	return math.floor(seconds / Config.MoveDuration.Squat * profile.gain * Config.Offline.Rate)
+end
+
+-- Bekleyen çevrimdışı kazancı istemciye yansıtır (OfflinePending > 0 ise CLAIM penceresi açılır). Önce süre, sonra miktar ayarlanır.
+local function publishOffline(player, profile)
+	local pending = profile.offlinePending > 0
+	player:SetAttribute("OfflineSeconds", if pending then profile.offlineSeconds else nil)
+	player:SetAttribute("OfflinePending", if pending then profile.offlinePending else nil)
 end
 
 local function setup(player)
@@ -461,8 +431,8 @@ local function setup(player)
 		boostMuscleUntil = 0, -- os.time() cinsinden süreli 2x güçlendirme bitişleri
 		boostWinsUntil = 0,
 		claimedGifts = {}, -- oyun süresi ödülleri (bu oturum)
-		lastLoginDay = 0, -- günlük giriş ödülü: son giriş günü (UTC gün numarası) ve art arda gün sayısı
-		loginStreak = 0,
+		offlinePending = 0, -- alınmayı bekleyen çevrimdışı kazanç (bacak kası) ve uzakta geçen süre (saniye)
+		offlineSeconds = 0,
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
@@ -517,40 +487,21 @@ local function setup(player)
 	profile.loaded = true
 	refresh(player)
 
-	-- Çevrimdışı kazanç: uzakta geçen süre için küçük bir bacak kası ödülü (istemci "Welcome back!" gösterir)
+	-- Çevrimdışı kazanç: uzakta geçen süre için bacak kası birikir ve oyuncu açılan pencerede CLAIM'e basınca verilir (claimOffline).
+	-- Alınmadan çıkarsa kayıtlı kalır (OfflinePending), sonraki girişte yeni süreyle birleşir; toplam MaxHours'luk kazancı geçmez.
+	profile.offlinePending = data.OfflinePending
+	profile.offlineSeconds = data.OfflineSeconds
 	local offline = Config.Offline
 	if ok and offline and offline.Enabled and data.LastSeen > 0 then
-		local away = math.clamp(os.time() - data.LastSeen, 0, offline.MaxHours * 3600)
+		local maxSeconds = offline.MaxHours * 3600
+		local away = math.clamp(os.time() - data.LastSeen, 0, maxSeconds)
 		if away >= offline.MinSeconds then
-			local gained = math.floor(away / Config.MoveDuration.Squat * profile.gain * offline.Rate)
-			if gained > 0 then
-				muscle.Value += gained
-				syncLevel(player)
-				refresh(player)
-				player:SetAttribute("OfflineSeconds", away)
-				player:SetAttribute("OfflineGain", gained)
-			end
+			profile.offlinePending = math.min(profile.offlinePending + offlineGain(profile, away), offlineGain(profile, maxSeconds))
+			profile.offlineSeconds = math.min(profile.offlineSeconds + away, maxSeconds)
+			requestSave(player)
 		end
 	end
-
-	-- Günlük giriş ödülü: yeni günde (UTC) otomatik verilir; art arda günler seri oluşturur (Studio'da kayıt kapalıyken de test için verilir)
-	local today = os.time() // 86400
-	if (profile.canSave or RunService:IsStudio()) and today > data.LastLoginDay and #Config.DailyRewards > 0 then
-		local streak = if data.LastLoginDay > 0 and today == data.LastLoginDay + 1 then data.LoginStreak + 1 else 1
-		local day = (streak - 1) % #Config.DailyRewards + 1
-		local text = grantReward(player, profile, Config.DailyRewards[day])
-		profile.lastLoginDay = today
-		profile.loginStreak = streak
-		syncLevel(player)
-		refresh(player)
-		requestSave(player)
-		player:SetAttribute("DailyDay", day)
-		player:SetAttribute("DailyStreak", streak)
-		player:SetAttribute("DailyText", text)
-	else
-		profile.lastLoginDay = data.LastLoginDay
-		profile.loginStreak = data.LoginStreak
-	end
+	publishOffline(player, profile)
 	-- Oyun süresi ödülleri için sayaç buradan başlar (istemci aynı sunucu saatiyle geri sayar)
 	profile.sessionStart = workspace:GetServerTimeNow()
 	player:SetAttribute("SessionStart", profile.sessionStart)
@@ -935,6 +886,27 @@ function PlayerStats.setSetting(player, key, value)
 	return true
 end
 
+-- Çevrimdışı kazancı verir (CLAIM butonu). Miktarı sunucu tutar, istemci miktar yollamaz. Dönüş: başarılı mı, mesaj
+function PlayerStats.claimOffline(player)
+	local profile = profiles[player]
+	local muscle = getStat(player, Config.StatLegMuscle)
+	if not profile or not profile.loaded or not muscle then
+		return false, "Loading your data, please wait."
+	end
+	local amount = profile.offlinePending
+	if amount <= 0 then
+		return false, "Nothing to claim."
+	end
+	profile.offlinePending = 0
+	profile.offlineSeconds = 0
+	muscle.Value += amount
+	publishOffline(player, profile)
+	syncLevel(player)
+	refresh(player)
+	requestSave(player)
+	return true, `Claimed +{Format.compact(amount)} Leg Muscle!`
+end
+
 -- Teypin müzik ses kademesini kaydeder (istemci değiştirdikten kısa süre sonra bildirir). Dönüş: başarılı mı
 function PlayerStats.setMusicLevel(player, level)
 	local profile = profiles[player]
@@ -1251,6 +1223,12 @@ function PlayerStats.dev(player, command, amount)
 		local pet = rollPet(Config.Eggs[rng:NextInteger(1, #Config.Eggs)])
 		table.insert(profile.pets, pet.id)
 		message = `Free pet: {pet.name}`
+	elseif command == "SimulateOffline" then
+		local hours = math.clamp(if amount > 0 then amount else 3, 1, Config.Offline.MaxHours)
+		profile.offlineSeconds = math.floor(hours * 3600)
+		profile.offlinePending = math.max(1, offlineGain(profile, profile.offlineSeconds))
+		publishOffline(player, profile)
+		message = `Offline earnings simulated ({hours}h): claim it in the popup`
 	elseif command == "Reset" then
 		muscle.Value = 0
 		wins.Value = 0
@@ -1270,6 +1248,9 @@ function PlayerStats.dev(player, command, amount)
 		profile.equipped = {}
 		profile.boostMuscleUntil = 0
 		profile.boostWinsUntil = 0
+		profile.offlinePending = 0
+		profile.offlineSeconds = 0
+		publishOffline(player, profile)
 		message = "Everything reset to zero"
 	else
 		return false, "Unknown command."

@@ -134,6 +134,8 @@ shopFunction.Parent = ReplicatedStorage
 shopFunction.OnServerInvoke = function(player, action, id, value)
 	if action == "BuyItem" and type(id) == "string" then
 		return PlayerStats.buyItem(player, id)
+	elseif action == "ClaimOffline" then
+		return PlayerStats.claimOffline(player)
 	elseif action == "SetSetting" and type(id) == "string" and type(value) == "boolean" then
 		return PlayerStats.setSetting(player, id, value)
 	elseif action == "SetMusicLevel" and type(id) == "number" then
