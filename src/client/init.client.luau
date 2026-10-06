@@ -720,7 +720,7 @@ do
 	local function checkTutorialEnd()
 		local active = tutorialActive()
 		if wasActive and not active and player:GetAttribute("TutorialDone") == true then
-			showToast(true, "Great! Now keep breaking walls and get stronger!")
+			showToast(true, "Great! Keep breaking walls, and open Daily Quests (📜 top right) for free rewards!")
 		end
 		wasActive = active
 	end

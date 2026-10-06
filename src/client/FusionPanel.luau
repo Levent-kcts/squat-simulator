@@ -260,9 +260,20 @@ function FusionPanel.init(screenGui, showToast)
 		invoke("FuseAllPets", "")
 	end)
 
+	-- Keşif ipucu: ilk kez 3 aynı pet toplandığında (oturum başına bir kez) makineyi hatırlat
+	local hinted = false
 	player:GetAttributeChangedSignal("OwnedPets"):Connect(function()
 		if PanelManager.isOpen(panel) then
 			render()
+		elseif not hinted then
+			for id, count in toCounts(player:GetAttribute("OwnedPets")) do
+				local pet = Catalog.PetById[id]
+				if pet and fusable(pet, count) then
+					hinted = true
+					showToast(true, `You have {fusion.Cost} matching pets! Fuse them at the Pet Fusion machine in the lobby.`)
+					break
+				end
+			end
 		end
 	end)
 
