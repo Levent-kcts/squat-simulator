@@ -9,6 +9,8 @@ tools/mocktest/stubs.luau ve cstubs.luau'daki taklitlerle değiştirilir) ve too
   shoetest         ayakkabı parlaklık/iz kademeleri
   ctest            QuestPanel, FusionPanel, WallClient (20 tema deseni, yakınlık döngüsü) ve Juice efektleri (pcall'sız)
   boottest         init.server tüm sunucu modülleriyle açılıyor mu + oyuncu girişi
+  flowtest         gerçek init.server işleyicileri: tıklama -> eğitim sayacı, kas, duvar hasarı; Shop: pet birleştirme, görev ödülü (sunucu doğrulamaları)
+  walltest         duvar canları (25/30/40/50/60), taşan hasarın aşama sonunu geçmemesi, kırılan duvar sayısı, menzil
   clienttest       init.client (tüm HUD, paneller, sağ üst daireler, eğitim yazısı) tüm istemci modülleriyle açılıyor mu
 YAKALAR: Luau mantık hataları (nil indeksleme, yanlış değişken/alan, çökme). YAKALAMAZ: Roblox özellik/enum adı yanlışları ve görünüm; onlar Studio'da görülür.
 luau.exe: %USERPROFILE%/.luau/luau.exe (luau-analyze ile aynı zip, https://github.com/luau-lang/luau/releases).

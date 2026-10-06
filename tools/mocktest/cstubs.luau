@@ -148,6 +148,19 @@ InstMT.__index = function(self, key)
 			end
 			return list
 		end
+	elseif key == "OnServerEvent" or key == "OnClientEvent" then
+		-- Olay dinleyicisini kaydeder (testler tetikleyebilsin): rawget(olay, "_handlers")[anahtar]
+		return {
+			Connect = function(_, f)
+				local handlers = rawget(self, "_handlers")
+				if not handlers then
+					handlers = {}
+					rawset(self, "_handlers", handlers)
+				end
+				handlers[key] = f
+				return proxy()
+			end,
+		}
 	elseif key == "Destroy" or key == "ClearAllChildren" then
 		return function() end
 	elseif key == "IsA" then
@@ -224,7 +237,6 @@ remoteFunction.InvokeServer = function(_, action, id)
 	return true, "ok:" .. tostring(action)
 end
 M.remoteFunction = remoteFunction
-rawget(ReplicatedStorage, "_children")["Shop"] = remoteFunction
 M.playerAdded = {}
 M.playerRemoving = {}
 local services = {
