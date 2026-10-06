@@ -25,7 +25,7 @@ function PetFollowers.init()
 				local part = Instance.new("Part")
 				part.Name = pet.name
 				part.Shape = Enum.PartType.Ball
-				part.Size = Vector3.new(1.8, 1.8, 1.8)
+				part.Size = Vector3.new(1.8, 1.8, 1.8) * pet.scale -- birleştirilmiş petler büyüktür (Config.PetFusion.Scale)
 				part.Material = Enum.Material.Neon
 				part.Color = pet.color
 				part.Anchored = true
@@ -50,7 +50,7 @@ function PetFollowers.init()
 
 		local count = #parts
 		for i, part in parts do
-			local side = (i - (count + 1) / 2) * 3.5
+			local side = (i - (count + 1) / 2) * 4.6
 			local bob = math.sin(os.clock() * 3 + i) * 0.4
 			local target = root.CFrame * CFrame.new(side, 0.5 + bob, 4)
 			part.CFrame = part.CFrame:Lerp(target, 0.15)

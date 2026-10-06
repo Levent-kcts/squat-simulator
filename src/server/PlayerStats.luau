@@ -1,4 +1,5 @@
 local DataStoreService = game:GetService("DataStoreService")
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -53,9 +54,107 @@ for _, setting in Config.Settings do
 	SETTING_KEYS[setting.key] = true
 end
 
+-- ---------- Günlük görevler (Config.Quests) ----------
+-- Gün sayısı UTC'dir (os.time() / 86400); aynı gün herkes aynı görevleri görür. Durum: { day, progress = {n,n,n}, claimed = {b,b,b}, bonus = b }
+
+local function currentQuestDay()
+	return math.floor(os.time() / 86400)
+end
+
+local function newQuestState(day)
+	local progress, claimed = {}, {}
+	for slot = 1, Config.Quests.PerDay do
+		progress[slot] = 0
+		claimed[slot] = false
+	end
+	return { day = day, progress = progress, claimed = claimed, bonus = false }
+end
+
+-- Günün görevleri (slot sırasıyla kolay, orta, zor): gün sayısıyla tohumlanır, hardOnly görevler sadece son slota girer
+local questCache = {}
+local function questsForDay(day)
+	local cached = questCache[day]
+	if cached then
+		return cached
+	end
+	local random = Random.new(day * 7919 + 13)
+	local pool = Config.Quests.Pool
+	local used = {}
+	local list = {}
+	for slot = 1, Config.Quests.PerDay do
+		local candidates = {}
+		for index, definition in pool do
+			if not used[index] and (not definition.hardOnly or slot == Config.Quests.PerDay) then
+				table.insert(candidates, index)
+			end
+		end
+		local index = candidates[random:NextInteger(1, #candidates)]
+		used[index] = true
+		local definition = pool[index]
+		local goal = definition.goals[math.min(slot, #definition.goals)]
+		table.insert(list, { id = definition.id, text = (string.gsub(definition.text, "{goal}", tostring(goal))), goal = goal })
+	end
+	questCache[day] = list
+	return list
+end
+
+-- Gün değiştiyse görev durumunu sıfırlar
+local function ensureQuestDay(profile)
+	if profile.quests.day ~= currentQuestDay() then
+		profile.quests = newQuestState(currentQuestDay())
+	end
+end
+
+-- Slotun ödülü: kind ('muscle' / 'wins') ve miktar. Miktar oyuncunun gücüne göre ölçeklenir (kas: tıklama başı kazanç, Win: tahmini aşama ödülü)
+local function questReward(profile, player, slot)
+	local definition = Config.Quests.Rewards[slot]
+	if definition.kind == "muscle" then
+		return "muscle", math.max(100, math.floor(profile.gain * definition.clicks))
+	end
+	local rebirthStat = getStat(player, Config.StatRebirths)
+	local rebirths = if rebirthStat then rebirthStat.Value else 0
+	local stage = math.clamp(math.floor(2 + 2.6 * math.log(1 + rebirths) + 0.5), 1, Layout.StageCount)
+	return "wins", Layout.reward(stage) * definition.mult
+end
+
+local function rewardText(kind, amount)
+	return if kind == "muscle" then `+{Format.compact(amount)} Leg Muscle` else `+{Format.compact(amount)} Wins`
+end
+
+-- Görev durumunu istemciye JSON öznitelik olarak yazar ('QuestData'; client/QuestPanel okur)
+local function publishQuests(player)
+	local profile = profiles[player]
+	if not profile then
+		return
+	end
+	ensureQuestDay(profile)
+	local state = profile.quests
+	local entries = {}
+	for slot, quest in questsForDay(state.day) do
+		local kind, amount = questReward(profile, player, slot)
+		table.insert(entries, {
+			id = quest.id,
+			text = quest.text,
+			goal = quest.goal,
+			progress = state.progress[slot],
+			claimed = state.claimed[slot],
+			reward = rewardText(kind, amount),
+		})
+	end
+	player:SetAttribute(
+		"QuestData",
+		HttpService:JSONEncode({
+			resetAt = (state.day + 1) * 86400,
+			quests = entries,
+			bonusClaimed = state.bonus,
+			bonusText = `2x Leg Muscle for {Config.Quests.BonusBoostMinutes} minutes`,
+		})
+	)
+end
+
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, TutorialDone = false, TutorialClicks = 0 }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -176,6 +275,19 @@ local function sanitize(raw)
 	else
 		data.EquippedPets = bestEquipped(data.Pets)
 	end
+	if type(raw.Quests) == "table" and type(raw.Quests.day) == "number" then
+		local quests = raw.Quests
+		data.Quests.day = math.floor(quests.day)
+		for slot = 1, Config.Quests.PerDay do
+			local value = 0
+			if type(quests.progress) == "table" and type(quests.progress[slot]) == "number" then
+				value = math.max(0, math.floor(quests.progress[slot]))
+			end
+			data.Quests.progress[slot] = value
+			data.Quests.claimed[slot] = type(quests.claimed) == "table" and quests.claimed[slot] == true
+		end
+		data.Quests.bonus = quests.bonus == true
+	end
 	if type(raw.TutorialClicks) == "number" then
 		data.TutorialClicks = math.clamp(math.floor(raw.TutorialClicks), 0, Config.Tutorial.ClickGoal)
 	end
@@ -273,7 +385,7 @@ local function refresh(player)
 	local boostMultiplier = if os.time() < profile.boostMuscleUntil then 2 else 1
 	-- Pet Index: sahip olunan her tür keşfedilir (silinse de kalır); keşfedilen her tür +%X (Config.Index)
 	for _, id in profile.pets do
-		profile.discovered[id] = true
+		profile.discovered[Catalog.PetById[id].baseId] = true -- birleşmiş boylar da türü keşfetmiş sayılır
 	end
 	local discoveredIds = {}
 	for id in profile.discovered do
@@ -309,6 +421,7 @@ local function refresh(player)
 	end
 	player:SetAttribute("TutorialDone", profile.tutorialDone)
 	player:SetAttribute("TutorialClicks", profile.tutorialClicks)
+	publishQuests(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
@@ -366,6 +479,7 @@ local function save(player)
 		Settings = profile.settings,
 		TutorialDone = profile.tutorialDone,
 		TutorialClicks = profile.tutorialClicks,
+		Quests = profile.quests,
 		Discovered = (function()
 			local list = {}
 			for id in profile.discovered do
@@ -497,6 +611,7 @@ local function setup(player)
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
 		tutorialDone = false, -- eğitim bitti mi (ilk skin alınınca true olur; kayıtlı)
+		quests = newQuestState(0), -- günlük görevler (gün, ilerleme, alınanlar, bonus); kayıttan yüklenir
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
@@ -520,6 +635,7 @@ local function setup(player)
 	profile.equippedSkin = data.EquippedSkin
 	profile.tutorialDone = data.TutorialDone
 	profile.tutorialClicks = data.TutorialClicks
+	profile.quests = data.Quests
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	for _, id in data.Discovered do
@@ -579,6 +695,16 @@ end
 
 function PlayerStats.init()
 	Players.PlayerAdded:Connect(setup)
+	task.spawn(function()
+		while true do
+			task.wait(60)
+			for player, profile in profiles do
+				if profile.loaded and profile.quests.day ~= currentQuestDay() then
+					publishQuests(player)
+				end
+			end
+		end
+	end)
 	for _, player in Players:GetPlayers() do
 		task.spawn(setup, player)
 	end
@@ -684,6 +810,7 @@ function PlayerStats.rebirth(player, force)
 	profile.equippedShoe = ""
 	profile.skins = {}
 	profile.equippedSkin = ""
+	PlayerStats.questEvent(player, "rebirth", 1)
 	refresh(player)
 	requestSave(player)
 	return true, `Rebirth {rebirthStat.Value}! Permanent x{Progression.rebirthMultiplier(rebirthStat.Value)} multiplier.`
@@ -775,6 +902,79 @@ function PlayerStats.tutorialClick(player)
 	end
 end
 
+-- Günlük görev ilerlemesi: kind = 'walls' / 'clicks' / 'hatch' / 'winpads' / 'fuse' / 'rebirth' (Config.Quests.Pool id'leri). Sunucudaki ilgili işlem çağırır.
+function PlayerStats.questEvent(player, kind, amount)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return
+	end
+	ensureQuestDay(profile)
+	local changed = false
+	for slot, quest in questsForDay(profile.quests.day) do
+		if quest.id == kind and not profile.quests.claimed[slot] and profile.quests.progress[slot] < quest.goal then
+			profile.quests.progress[slot] = math.min(quest.goal, profile.quests.progress[slot] + (amount or 1))
+			changed = true
+		end
+	end
+	if changed then
+		publishQuests(player)
+	end
+end
+
+-- Biten görevin ödülünü alır. Dönüş: başarılı mı, mesaj
+function PlayerStats.claimQuest(player, slot)
+	local profile = profiles[player]
+	local muscle = getStat(player, Config.StatLegMuscle)
+	local wins = getStat(player, Config.StatWins)
+	if not profile or not profile.loaded or not muscle or not wins then
+		return false, "Loading your data, please wait."
+	end
+	ensureQuestDay(profile)
+	local quest = if type(slot) == "number" then questsForDay(profile.quests.day)[slot] else nil
+	if not quest then
+		return false, "That quest does not exist."
+	end
+	if profile.quests.claimed[slot] then
+		return false, "You already claimed this reward."
+	end
+	if profile.quests.progress[slot] < quest.goal then
+		return false, "This quest is not finished yet."
+	end
+	local kind, amount = questReward(profile, player, slot)
+	profile.quests.claimed[slot] = true
+	if kind == "muscle" then
+		muscle.Value += amount
+		syncLevel(player)
+	else
+		wins.Value += amount
+	end
+	refresh(player)
+	requestSave(player)
+	return true, `Quest reward: {rewardText(kind, amount)}`
+end
+
+-- Üç görev de alındıysa bonus: süreli 2x bacak kası. Dönüş: başarılı mı, mesaj
+function PlayerStats.claimQuestBonus(player)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	ensureQuestDay(profile)
+	if profile.quests.bonus then
+		return false, "You already claimed the bonus."
+	end
+	for slot = 1, Config.Quests.PerDay do
+		if not profile.quests.claimed[slot] then
+			return false, "Claim all 3 quests first."
+		end
+	end
+	profile.quests.bonus = true
+	startBoost(player, profile, "boostMuscle", Config.Quests.BonusBoostMinutes)
+	refresh(player)
+	requestSave(player)
+	return true, `Bonus! 2x Leg Muscle for {Config.Quests.BonusBoostMinutes} minutes!`
+end
+
 function PlayerStats.getDamageMultiplier(player)
 	local profile = profiles[player]
 	return profile and profile.damageMultiplier or 1
@@ -787,6 +987,7 @@ function PlayerStats.addWin(player, amount)
 		local boost = if os.time() < profile.boostWinsUntil then 2 else 1
 		stat.Value += (amount or 1) * boost
 		requestSave(player)
+		PlayerStats.questEvent(player, "winpads", 1)
 	end
 end
 
@@ -944,6 +1145,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 		return false, "Your pet inventory is full. Mark unwanted pets with an X to auto-delete them."
 	end
 
+	PlayerStats.questEvent(player, "hatch", #kept + #deleted)
 	refresh(player)
 	requestSave(player)
 
@@ -1216,6 +1418,88 @@ function PlayerStats.deletePet(player, petId)
 	return true, `Deleted {pet.name}`
 end
 
+-- ---------- Pet birleştirme (lobideki Pet Fusion makinesi) ----------
+
+-- Birleştirme: aynı id'den Cost kopya silinir, bir üst boydan 1 pet gelir (envanter dolmaz: Cost - 1 yer açılır). Takılı kopya silindiyse takılıdan da düşer,
+-- yeni pet boş yuva varsa takılır. İç fonksiyon, mesaj ve ödül metni dışarıda: fusePet tek, fuseAllPets hepsi için kullanır.
+local function fuseOnce(player, profile, petId)
+	local pet = Catalog.PetById[petId]
+	local fusion = Config.PetFusion
+	local nextPet = pet and Catalog.nextTier(pet)
+	if not pet or not nextPet or countOf(profile.pets, petId) < fusion.Cost then
+		return nil
+	end
+	for _ = 1, fusion.Cost do
+		table.remove(profile.pets, table.find(profile.pets, petId))
+	end
+	while countOf(profile.equipped, petId) > countOf(profile.pets, petId) do
+		table.remove(profile.equipped, table.find(profile.equipped, petId))
+	end
+	table.insert(profile.pets, nextPet.id)
+	if #profile.equipped < Config.MaxEquippedPets then
+		table.insert(profile.equipped, nextPet.id)
+	end
+	PlayerStats.questEvent(player, "fuse", 1)
+	return nextPet
+end
+
+function PlayerStats.fusePet(player, petId)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	local pet = Catalog.PetById[petId]
+	if not pet then
+		return false, "That pet does not exist."
+	end
+	local fusion = Config.PetFusion
+	if not Catalog.nextTier(pet) then
+		return false, `{pet.name} is already at the maximum size!`
+	end
+	local have = countOf(profile.pets, petId)
+	if have < fusion.Cost then
+		return false, `You need {fusion.Cost} {pet.name} to fuse (you have {have}).`
+	end
+	local nextPet = fuseOnce(player, profile, petId)
+	refresh(player)
+	requestSave(player)
+	return true, `Fused! You got {nextPet.name} (+{math.floor(nextPet.mult * 100 + 0.5)}% muscle)`, nextPet.id
+end
+
+-- Elde fuse edilebilecek ne varsa birleştirir (yeni oluşan boylar da kendi içinde birleşebilir). Dönüş: başarılı mı, mesaj
+function PlayerStats.fuseAllPets(player)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	local fusions, best = 0, nil
+	for _ = 1, 200 do
+		local didAny = false
+		-- Küçük boyutlardan başla ki yeni oluşanlar aynı turda ilerleyebilsin
+		for _, pet in Catalog.AllPets do
+			if Catalog.nextTier(pet) and countOf(profile.pets, pet.id) >= Config.PetFusion.Cost then
+				local made = fuseOnce(player, profile, pet.id)
+				if made then
+					fusions += 1
+					didAny = true
+					if not best or made.mult > best.mult then
+						best = made
+					end
+				end
+			end
+		end
+		if not didAny then
+			break
+		end
+	end
+	if fusions == 0 then
+		return false, `You need {Config.PetFusion.Cost} of the same pet to fuse.`
+	end
+	refresh(player)
+	requestSave(player)
+	return true, `Fused {fusions} time{if fusions == 1 then "" else "s"}! Best: {best.name} (+{math.floor(best.mult * 100 + 0.5)}% muscle)`
+end
+
 -- ---------- Oyun süresi ödülleri ----------
 
 -- index. ödülü alır: süresi dolmuş ve bu oturumda alınmamış olmalı. Dönüş: başarılı mı, mesaj
@@ -1323,6 +1607,28 @@ function PlayerStats.dev(player, command, amount)
 		local pet = rollPet(Config.Eggs[rng:NextInteger(1, #Config.Eggs)])
 		table.insert(profile.pets, pet.id)
 		message = `Free pet: {pet.name}`
+	elseif command == "QuestsComplete" then
+		-- Günlük görevleri denemek için bugünün üç görevini de bitmiş yapar
+		ensureQuestDay(profile)
+		for slot, quest in questsForDay(profile.quests.day) do
+			profile.quests.progress[slot] = quest.goal
+		end
+		publishQuests(player)
+		message = "All of today's quests are complete: claim them!"
+	elseif command == "QuestsReset" then
+		profile.quests = newQuestState(currentQuestDay())
+		publishQuests(player)
+		message = "Today's quests were reset"
+	elseif command == "FreeCats" then
+		-- Pet birleştirmeyi denemek için aynı petten 3 tane (envanter yeterse)
+		if #profile.pets + 3 > Config.MaxOwnedPets then
+			return false, "Your pet inventory is too full for 3 more pets."
+		end
+		local pet = Config.Pets[rng:NextInteger(1, #Config.Pets)]
+		for _ = 1, 3 do
+			table.insert(profile.pets, pet.id)
+		end
+		message = `3 free {pet.name}: try the Pet Fusion machine!`
 	elseif command == "DiscoverAll" then
 		-- Pet Index'i denemek için bütün petleri keşfedilmiş sayar
 		for _, pet in Config.Pets do
@@ -1383,6 +1689,8 @@ function PlayerStats.dev(player, command, amount)
 		profile.tutorialDone = false -- eğitim yeniden başlar
 		profile.tutorialClicks = 0
 		player:SetAttribute("TutorialClicks", 0)
+		profile.quests = newQuestState(currentQuestDay())
+		publishQuests(player)
 		profile.offlinePending = 0
 		profile.offlineSeconds = 0
 		publishOffline(player, profile)

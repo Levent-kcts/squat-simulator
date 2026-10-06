@@ -428,6 +428,7 @@ function WallService.hit(player, damage)
 	local groupEnd = math.min(math.ceil(run.frontier / cfg.GroupSize) * cfg.GroupSize, cfg.Count)
 	local remaining = damage
 	local changes = {}
+	local broken = 0 -- bu vuruşta kırılan duvar sayısı (günlük görevler için)
 	for i = run.frontier, groupEnd do
 		if remaining <= 0 then
 			break
@@ -437,6 +438,7 @@ function WallService.hit(player, damage)
 			if remaining >= hp then
 				remaining -= hp
 				run.hp[i] = 0
+				broken += 1
 			else
 				run.hp[i] = hp - remaining
 				remaining = 0
@@ -461,7 +463,7 @@ function WallService.hit(player, damage)
 		end)
 	end
 
-	return true
+	return true, broken
 end
 
 return WallService

@@ -802,7 +802,22 @@ local function loadPanel(name, ...)
 end
 local toggleIndex = loadPanel("IndexPanel", screenGui)
 local toggleStats = loadPanel("StatsPanel", screenGui)
-safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats)
+local toggleFusion = loadPanel("FusionPanel", screenGui, showToast)
+local toggleQuests = loadPanel("QuestPanel", screenGui, showToast)
+safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests)
+
+-- Lobideki etkileşim noktaları (server/Hub): E'ye basınca ilgili pencere açılır ('Panel' özniteliği Fusion / Quests)
+game:GetService("ProximityPromptService").PromptTriggered:Connect(function(prompt, who)
+	if who ~= player then
+		return
+	end
+	local kind = prompt:GetAttribute("Panel")
+	if kind == "Fusion" and toggleFusion then
+		toggleFusion()
+	elseif kind == "Quests" and toggleQuests then
+		toggleQuests()
+	end
+end)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",

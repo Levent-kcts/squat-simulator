@@ -34,7 +34,7 @@ local function text(parent, props, strokeThickness)
 end
 
 -- openGifts / openIndex / openStats: pencereleri açıp kapatan fonksiyonlar; showToast(ok, mesaj): kısa bildirim (hepsini init.client verir)
-function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats)
+function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, openQuests)
 	local player = Players.LocalPlayer
 
 	local container = create("Frame", {
@@ -217,6 +217,36 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats)
 	end
 	player:GetAttributeChangedSignal("DiscoveredPets"):Connect(refreshIndex)
 	refreshIndex()
+
+	-- Günlük görevler: en soldaki daire; üstünde alınmayı bekleyen ödül sayısı (kırmızı rozet)
+	local quests = circleButton("QuestsButton", 3, Config.Icons.Quests, "📜")
+	local questBadge = create("Frame", {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.fromOffset(58, 0),
+		Size = UDim2.fromOffset(26, 26),
+		BackgroundColor3 = Color3.fromRGB(235, 40, 50),
+		Visible = false,
+		ZIndex = 4,
+	}, quests)
+	create("UICorner", { CornerRadius = UDim.new(1, 0) }, questBadge)
+	create("UIStroke", { Thickness = 2.5, Color = Color3.new(0, 0, 0) }, questBadge)
+	local questBadgeText = text(questBadge, { Position = UDim2.fromScale(0.1, 0.1), Size = UDim2.fromScale(0.8, 0.8), Text = "0", ZIndex = 5 }, 1.5)
+	quests.MouseButton1Click:Connect(function()
+		if openQuests then
+			openQuests()
+		end
+	end)
+	local okQuestPanel, QuestPanel = pcall(require, script.Parent.QuestPanel) -- hata verirse sadece rozet çalışmaz
+	local function refreshQuestBadge()
+		if not okQuestPanel then
+			return
+		end
+		local count = QuestPanel.claimable(player)
+		questBadge.Visible = count > 0
+		questBadgeText.Text = tostring(count)
+	end
+	player:GetAttributeChangedSignal("QuestData"):Connect(refreshQuestBadge)
+	refreshQuestBadge()
 
 	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------
 	-- Referans oyundaki gibi küçük iki yüzlü simge ve altında yüzde: arkadaş yokken "0%", her arkadaşta +%10 ("10%", "20%" ...).

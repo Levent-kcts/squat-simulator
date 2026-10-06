@@ -26,6 +26,19 @@ PlayerStats.init()
 WallService.init(notifyEvent)
 EnvironmentService.init()
 
+-- Lobi canlılığı (görev panosu, Pet Fusion makinesi, aşama tabelaları) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
+do
+	local okHub, Hub = pcall(require, script.Hub)
+	if okHub then
+		local started, err = pcall(Hub.init)
+		if not started then
+			warn(`[Server] Hub init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load Hub: {Hub}`)
+	end
+end
+
 -- Arkadaş bonusu isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFriends, FriendBonus = pcall(require, script.FriendBonus)
@@ -133,6 +146,7 @@ clickEvent.OnServerEvent:Connect(function(player)
 	busyUntil[player] = now + duration - MOVE_TOLERANCE
 	broadcastMove(player, move)
 	PlayerStats.tutorialClick(player) -- eğitimin ilk adımı için tıklama sayısı
+	PlayerStats.questEvent(player, "clicks", 1) -- günlük görev ilerlemesi
 
 	task.delay(duration * (Config.MoveContact[move] or 1), function()
 		if player.Parent == nil then
@@ -141,7 +155,10 @@ clickEvent.OnServerEvent:Connect(function(player)
 		local muscle, gained = PlayerStats.addMuscle(player, if area then area.mult else 1)
 		if muscle then
 			-- Hasar = toplam bacak kası x ayakkabı hasar çarpanı
-			WallService.hit(player, math.floor(muscle * PlayerStats.getDamageMultiplier(player)))
+			local _, brokenWalls = WallService.hit(player, math.floor(muscle * PlayerStats.getDamageMultiplier(player)))
+			if brokenWalls and brokenWalls > 0 then
+				PlayerStats.questEvent(player, "walls", brokenWalls) -- günlük görev ilerlemesi
+			end
 			-- Kazanılan bacak kası level çubuğunu doldurur; dolunca level atlanır
 			local leveledUp, newLevel = PlayerStats.addTap(player, gained)
 			if leveledUp then
@@ -187,6 +204,14 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return PlayerStats.deletePet(player, id)
 	elseif action == "ClaimGift" and type(id) == "number" then
 		return PlayerStats.claimGift(player, id)
+	elseif action == "ClaimQuest" and type(id) == "number" then
+		return PlayerStats.claimQuest(player, id)
+	elseif action == "ClaimQuestBonus" then
+		return PlayerStats.claimQuestBonus(player)
+	elseif action == "FusePet" and type(id) == "string" then
+		return PlayerStats.fusePet(player, id)
+	elseif action == "FuseAllPets" then
+		return PlayerStats.fuseAllPets(player)
 	elseif action == "Rebirth" then
 		local ok, message = PlayerStats.rebirth(player)
 		if ok then

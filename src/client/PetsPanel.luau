@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local Catalog = require(Shared:WaitForChild("Catalog"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 
@@ -247,7 +248,7 @@ function PetsPanel.init(screenGui, showToast)
 
 		-- En güçlüden başlayarak sırala
 		local pets = {}
-		for _, pet in Config.Pets do
+		for _, pet in Catalog.AllPets do -- ilk boylar ve birleşmiş (büyümüş) boylar
 			if owned[pet.id] then
 				table.insert(pets, pet)
 			end

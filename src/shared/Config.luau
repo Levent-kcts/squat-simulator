@@ -215,6 +215,7 @@ return {
 	UI = { ReferenceHeight = 663, MinScale = 0.75, MaxScale = 1.75 },
 
 	Icons = {
+		Quests = "", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
 		Index = "", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
 		Wins = "", -- sol üstteki Win sayacının kupa simgesi (görsel yüklenince ID yazılır; boşken 🏆 emojisi)
@@ -450,6 +451,39 @@ return {
 	},
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)
 	MaxOwnedPets = 50,
+
+	-- GÜNLÜK GÖREVLER (sağ üstteki 📜 dairesi ve lobideki görev panosu, client/QuestPanel): her gün PerDay görev (sırayla kolay, orta, zor), gece yarısı (UTC) yenilenir;
+	-- aynı gün herkes aynı görevleri görür (gün sayısıyla seçilir). İlerlemeyi, ödülü ve günü SUNUCU tutar (PlayerStats), kayıtlıdır. Pool: id (olay adı), text ({goal} yerine hedef yazılır),
+	-- goals (kolay/orta/zor slot hedefi), hardOnly (sadece zor slotta çıkar). Rewards: slot başına ödül: muscle = tıklama başı kazanç x clicks, wins = tahmini Win turu ödülü x mult
+	-- (Layout.reward(tahmini aşama), tahmin rebirth sayısından). Üçü de bitince BonusBoostMinutes dakikalık 2x bacak kası güçlendirmesi.
+	Quests = {
+		PerDay = 3,
+		BonusBoostMinutes = 15,
+		Pool = {
+			{ id = "walls", text = "Break {goal} walls", goals = { 12, 25, 50 } },
+			{ id = "clicks", text = "Squat or kick {goal} times", goals = { 120, 250, 500 } },
+			{ id = "hatch", text = "Hatch {goal} eggs", goals = { 2, 4, 8 } },
+			{ id = "winpads", text = "Step on the Win button {goal} times", goals = { 2, 3, 5 } },
+			{ id = "fuse", text = "Fuse pets {goal}x", goals = { 1, 1, 2 }, hardOnly = true },
+			{ id = "rebirth", text = "Rebirth {goal}x", goals = { 1 }, hardOnly = true },
+		},
+		Rewards = {
+			{ kind = "muscle", clicks = 300 },
+			{ kind = "wins", mult = 2 },
+			{ kind = "muscle", clicks = 1500 },
+		},
+	},
+
+	-- PET BİRLEŞTİRME (lobideki Pet Fusion makinesi, client/FusionPanel): Cost tane AYNI pet (aynı tür ve aynı boy) tek bir BİR ÜST BOYLU pete dönüşür.
+	-- Boy arttıkça petin çarpanı PowerFactor katına çıkar (3 pet x 1.1 bonus: birleştirmek takılı pet yuvasından tasarruf ettirir ve biraz kazandırır; 4. boy 27 pet ister, çarpan 3.3^3 = 36 kat), kürenin boyu Scale kadar büyür,
+	-- adı öne ek alır. Birleşmiş petin id'si 'cat@2' gibidir (Catalog.PetById bunları da üretir); Pet Index türe (ilk boy) bakar.
+	PetFusion = {
+		Cost = 3,
+		MaxTier = 4,
+		PowerFactor = 3.3,
+		Scale = { 1, 1.35, 1.75, 2.3 },
+		NamePrefix = { "", "Big ", "Giant ", "Titan " },
+	},
 	Pets = {
 		{ id = "cat", name = "Cat", mult = 0.1, color = Color3.fromRGB(255, 190, 120) },
 		{ id = "dog", name = "Dog", mult = 0.15, color = Color3.fromRGB(170, 120, 80) },
