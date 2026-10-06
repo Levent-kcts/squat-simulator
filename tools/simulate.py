@@ -45,7 +45,7 @@ MAX_LEVEL_PER_REBIRTH = num(LEVEL, "MaxLevelPerRebirth")
 LEVEL_MULT = num(LEVEL, "MultiplierPerLevel")
 REBIRTH_MULT = num(REBIRTH, "MultiplierPerRebirth")
 
-ITEMS = [(num(l, "price"), num(l, "damage")) for l in block("Items").splitlines() if "price =" in l]
+ITEMS = [(num(l, "price"), num(l, "bonus")) for l in block("Items").splitlines() if "price =" in l]
 SKINS = [(num(l, "price"), num(l, "bonus")) for l in block("Skins").splitlines() if "price =" in l]
 PETS = {m.group(1): float(m.group(2)) for m in re.finditer(r'id = "(\w+)", name = "[^"]+", mult = ([\d\.]+)', block("Pets"))}
 AURAS = [(num(l, "winPrice"), num(l, "mult")) for l in block("Auras").splitlines() if "winPrice =" in l]
@@ -126,7 +126,7 @@ class Player:
         self.rebirths = 0
         self.pets = []
         self.aura = 1.0
-        self.shoe = 1.0
+        self.shoe = 0.0  # takılı ayakkabının SABİT hasar bonusu (kasın üstüne eklenir)
         self.skin = 0.0  # takılı skinin SABİT bonusu (tıklama başı eklenir)
         self.level = 1
         self.progress = 0.0
@@ -207,9 +207,9 @@ class Player:
                 continue
             shoes = [s for s in ITEMS if s[1] > self.shoe and s[0] <= self.wins * 0.5]
             if shoes:
-                price, damage = shoes[-1]
+                price, bonus = shoes[-1]
                 self.wins -= price
-                self.shoe = damage
+                self.shoe = bonus
                 continue
             break
 
@@ -217,14 +217,14 @@ class Player:
         self.rebirths += 1
         self.muscle = 0.0
         self.wins = 0.0
-        self.shoe = 1.0
+        self.shoe = 0.0
         self.skin = 0.0
         self.level = 1
         self.progress = 0.0
 
     def wall_trip(self):
         """Duvarlara bir sefer: spawn'dan koşar, gücün yettiği en yüksek aşamaya kadar vurur, Win pedine basar. Süre ve kazancı uygular."""
-        damage = self.muscle * self.shoe
+        damage = self.muscle + self.shoe
         stage = 0
         trip_time = 4.0  # lobiden ilk duvara yürüme
         hits_total = 0
@@ -294,5 +294,5 @@ if __name__ == "__main__":
     print("rebirth | zaman     | bölge | pet   | aura | skin | ayakkabı | kas (rebirth anı) | aşama | sefer Win | kalan Win | devirde kazanılan Win")
     for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won, earned in log:
         if r <= 12 or r % 5 == 0:
-            print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | +{skin:<5g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
+            print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | +{skin:<5g} | +{shoe:<9g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")

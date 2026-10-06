@@ -470,7 +470,7 @@ local function refresh()
 	-- Antrenman alanındayken kazanç pedin çarpanıyla çarpılır (sunucu AreaMultiplier'ı pede girince ayarlar)
 	local areaMultiplier = player:GetAttribute("AreaMultiplier") or 1
 	local perClick = math.floor((player:GetAttribute("PerClick") or 1) * areaMultiplier)
-	gainLabel.Text = `+{Format.number(perClick)}/click  x{string.format("%g", player:GetAttribute("DamageMultiplier") or 1)} dmg`
+	gainLabel.Text = `+{Format.number(perClick)}/click  +{Format.compact(player:GetAttribute("ShoeBonus") or 0)} dmg`
 	multiplierLabel.Text = `x{string.format("%.2f", (player:GetAttribute("TotalMultiplier") or 1) * areaMultiplier)} Multiplier`
 	autoBadge.Text = if autoClick then "ON" else "OFF"
 	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
@@ -487,7 +487,7 @@ rebirthValue:GetPropertyChangedSignal("Value"):Connect(refresh)
 player:GetAttributeChangedSignal("PerClick"):Connect(refresh)
 player:GetAttributeChangedSignal("TotalMultiplier"):Connect(refresh)
 player:GetAttributeChangedSignal("AreaMultiplier"):Connect(refresh)
-player:GetAttributeChangedSignal("DamageMultiplier"):Connect(refresh)
+player:GetAttributeChangedSignal("ShoeBonus"):Connect(refresh)
 player:GetAttributeChangedSignal("DataError"):Connect(refresh)
 refresh()
 
