@@ -89,4 +89,48 @@ for _, hb in S.heartbeat do
 	hb(0.05)
 end
 print("Juice all themes ok")
+-- Pets penceresi birleşmiş (büyümüş) petleri de listelemeli
+local function textsUnder(instance, found)
+	for _, child in rawget(instance, "_children") do
+		local text = rawget(child, "Text")
+		if type(text) == "string" then
+			found[text] = true
+		end
+		textsUnder(child, found)
+	end
+	return found
+end
+S.localPlayer:SetAttribute("OwnedPets", "cat,cat@2,dragon@4,phoenix@3")
+S.localPlayer:SetAttribute("EquippedPets", "cat@2,dragon@4")
+local PetsPanel = require("./PetsPanel")
+local petsRoot = S.newInstance("Frame")
+local togglePets = PetsPanel.init(petsRoot, toast)
+togglePets()
+local petTexts = textsUnder(petsRoot, {})
+assert(petTexts["Big Cat"], "Pets penceresinde Big Cat yok")
+assert(petTexts["Titan Dragon"], "Pets penceresinde Titan Dragon yok")
+assert(petTexts["Giant Phoenix"], "Pets penceresinde Giant Phoenix yok")
+print("PetsPanel tiers ok")
+
+-- Fusion penceresi: 3 aynı pet birleştirilebilir görünmeli
+S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat,dog@4")
+local fusionRoot = S.newInstance("Frame")
+local toggleFusion2 = FusionPanel.init(fusionRoot, toast)
+toggleFusion2()
+local fusionTexts = textsUnder(fusionRoot, {})
+assert(fusionTexts["FUSE 3 > 1"], "birleştirilebilir pet için FUSE düğmesi yok")
+assert(fusionTexts["MAX SIZE"], "en büyük boy için MAX SIZE yok")
+print("FusionPanel states ok")
+
+-- Index ve Stats pencereleri
+S.localPlayer:SetAttribute("DiscoveredPets", "cat,dog")
+S.localPlayer:SetAttribute("IndexBonus", 2)
+local IndexPanel = require("./IndexPanel")
+local indexRoot = S.newInstance("Frame")
+IndexPanel.init(indexRoot)()
+assert(textsUnder(indexRoot, {})["Cat"], "Index'te keşfedilen pet adı yok")
+local StatsPanel = require("./StatsPanel")
+local statsRoot = S.newInstance("Frame")
+StatsPanel.init(statsRoot)()
+print("Index and Stats ok")
 print("DONE")

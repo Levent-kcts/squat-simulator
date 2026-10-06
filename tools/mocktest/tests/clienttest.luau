@@ -41,7 +41,63 @@ for _ = 1, 3 do
 		end
 	end
 end
--- Eğitim yazısı mantığı: öznitelikleri değiştir
-S.localPlayer:SetAttribute("TutorialClicks", 30)
+-- Eğitim yazısı: ekrandaki TextLabel'ları gezip duruma göre doğru yönergenin çıktığını denetle
+local function allTexts()
+	local found = {}
+	local function walk(instance)
+		for _, child in rawget(instance, "_children") do
+			local text = rawget(child, "Text")
+			if type(text) == "string" and text ~= "" then
+				found[text] = true
+			end
+			walk(child)
+		end
+	end
+	walk(S.localPlayer)
+	return found
+end
+local function hasText(prefix)
+	for text in allTexts() do
+		if string.sub(text, 1, #prefix) == prefix then
+			return true
+		end
+	end
+	return false
+end
+local wins = leaderstats:FindFirstChild(Config.StatWins)
+local nonce = 100
+local function refreshBanner()
+	nonce += 1
+	S.localPlayer:SetAttribute("TutorialClicks", nonce) -- yazıyı yeniden hesaplatmak için değişen bir değer (sayaç hedefin üstündeyse davranış aynı)
+end
+-- 1. adım: sayaç hedefin altında
+S.localPlayer:SetAttribute("TutorialClicks", 7)
+assert(hasText("Click anywhere to squat and get stronger!  (7/" .. Config.Tutorial.ClickGoal .. ")"), "1. adım yazısı yok")
+-- 2. adım: sayaç doldu, Win yok: duvar yönergesi (Win yetmedi)
+S.localPlayer:SetAttribute("TutorialClicks", Config.Tutorial.ClickGoal)
+assert(not hasText("Click anywhere"), "sayaç dolunca ilk adım yazısı kalkmalı")
+-- 3. adım: ilk skinin fiyatına yetecek Win: skin rafına yönlendirme
+wins.Value = Config.Skins[1].price
+refreshBanner()
+assert(hasText("You have " .. Config.Skins[1].price .. " Wins! Go to the SKIN shelf"), "3. adım yazısı yok")
+-- Eğitim bitti: yönerge yazıları kalkar
 S.localPlayer:SetAttribute("TutorialDone", true)
+-- (yazı metni silinmez, yönerge çerçevesi gizlenir: etiketin ebeveyni Visible = false olmalı)
+local function labelWith(prefix)
+	local found = nil
+	local function walk(instance)
+		for _, child in rawget(instance, "_children") do
+			local text = rawget(child, "Text")
+			if type(text) == "string" and string.sub(text, 1, #prefix) == prefix then
+				found = child
+			end
+			walk(child)
+		end
+	end
+	walk(S.localPlayer)
+	return found
+end
+local label = labelWith("You have")
+assert(label and rawget(rawget(label, "Parent"), "Visible") == false, "eğitim bitince yönerge çerçevesi gizlenmeli")
+print("tutorial banner states ok")
 print("DONE")

@@ -61,7 +61,7 @@ end
 -- GÖREV PANOSU: sağ duvara yaslı tahta pano, üstünde kağıt notlar; E ile günlük görevler açılır
 -- ---------------------------------------------------------------------------------------------
 local function buildQuestBoard(folder)
-	local z = 30
+	local z = 35 -- antrenman rafının rampası z = 21'e kadar uzanır; pano 24'ten başlasın
 	local boardX = HALF - 0.9 -- duvarın iç yüzüne yaslı
 	local centerY = FLOOR + 10.5
 	local board = Build.block(folder, "QuestBoard", Vector3.new(1.2, 14, 20), Vector3.new(boardX, centerY, z), Color3.fromRGB(160, 108, 60), Enum.Material.WoodPlanks)
@@ -123,7 +123,7 @@ end
 -- PET FUSION MAKİNESİ: altın direkli, camlı kubbe ve içinde parıldayan çekirdek; E ile birleştirme penceresi açılır
 -- ---------------------------------------------------------------------------------------------
 local function buildFusionMachine(folder)
-	local cx, cz = HALF - 14, 49
+	local cx, cz = HALF - 14, 52
 	local gold = Color3.fromRGB(235, 185, 60)
 
 	-- Yatay disk: silindirin ekseni yerel X'tedir, Z çevresinde 90 derece döndürülünce dikey olur
