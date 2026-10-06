@@ -418,7 +418,7 @@ return {
 
 	-- Antrenman alanı (SAĞ duvar, 3 basamakta 4 + 3 + 3 = 10 büyük ped): pede girince karakter otomatik squat yapar ve kazanç o pedin
 	-- çarpanıyla çarpılır. Pedler SADECE REBIRTH ile açılır: rebirths = N ise oyuncunun N rebirth'i olunca açılır (0 = ücretsiz).
-	-- Her pedde bir antrenör yer tutucusu durur, her antrenörün bir ismi var (trainer; etiketlerde görünür). Özel antrenör modelleri sonra gelecek. Sıra: önce 1. basamak (4), sonra 2. (3), sonra 3. (3).
+	-- Her pedde bir antrenör yer tutucusu durur, her antrenörün bir ismi var (trainer; etiketlerde görünür). Her antrenörün kendine özgü bir kıyafeti/parçacığı vardır (outfit: leaf, wave, flame, ember, pixel, frost, volt, nova, prism, shadow; server/Mannequin), gerçek modeller sonra gelecek. Sıra: önce 1. basamak (4), sonra 2. (3), sonra 3. (3).
 	Training = {
 		RowCounts = { 4, 3, 3 }, -- basamaklardaki ped sayıları (alttan üste)
 		-- Üst basamaklara çıktıkça ped, antrenör ve şerit büyür (referans fotoğraftaki gibi); her şeridin ped dizisi RowLength'i doldurur
@@ -427,16 +427,16 @@ return {
 		RowLength = 48, -- her şeridin ped dizisinin uzunluğu
 		TrainerScales = { 1, 1.25, 1.5 }, -- antrenör boyutu (1 = ~5.3 stud boy)
 		Areas = {
-			{ id = "green", name = "Green Zone", trainer = "Coach Sprout", mult = 1, rebirths = 0, color = Color3.fromRGB(60, 220, 90) },
-			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", mult = 1.5, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
-			{ id = "red", name = "Red Zone", trainer = "Coach Blaze", mult = 3, rebirths = 3, color = Color3.fromRGB(255, 50, 50) },
-			{ id = "orange", name = "Orange Zone", trainer = "Coach Ember", mult = 5, rebirths = 5, color = Color3.fromRGB(255, 150, 30) },
-			{ id = "magenta", name = "Magenta Zone", trainer = "Coach Pixel", mult = 9, rebirths = 8, color = Color3.fromRGB(255, 50, 230) },
-			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", mult = 18, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
-			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", mult = 36, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
-			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", mult = 100, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
-			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", mult = 250, rebirths = 32, color = Color3.fromRGB(255, 255, 255), rainbow = true },
-			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", mult = 999, rebirths = 45, color = Color3.fromRGB(35, 35, 48) },
+			{ id = "green", name = "Green Zone", trainer = "Coach Sprout", outfit = "leaf", mult = 1, rebirths = 0, color = Color3.fromRGB(60, 220, 90) },
+			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 1.5, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
+			{ id = "red", name = "Red Zone", trainer = "Coach Blaze", outfit = "flame", mult = 3, rebirths = 3, color = Color3.fromRGB(255, 50, 50) },
+			{ id = "orange", name = "Orange Zone", trainer = "Coach Ember", outfit = "ember", mult = 5, rebirths = 5, color = Color3.fromRGB(255, 150, 30) },
+			{ id = "magenta", name = "Magenta Zone", trainer = "Coach Pixel", outfit = "pixel", mult = 9, rebirths = 8, color = Color3.fromRGB(255, 50, 230) },
+			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", outfit = "frost", mult = 18, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
+			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", outfit = "volt", mult = 36, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
+			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", outfit = "nova", mult = 100, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
+			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, rebirths = 45, color = Color3.fromRGB(35, 35, 48) },
 		},
 	},
 
@@ -477,11 +477,11 @@ return {
 	-- PET BİRLEŞTİRME (lobideki Pet Fusion makinesi, client/FusionPanel): Cost tane AYNI pet (aynı tür ve aynı boy) tek bir BİR ÜST BOYLU pete dönüşür.
 	-- Boy arttıkça petin çarpanı PowerFactor katına çıkar ve kürenin boyu Scale kadar büyür, adı öne ek alır. Birleşmiş petin id'si 'cat@2' gibidir (Catalog.PetById bunları da üretir);
 	-- Pet Index türe (ilk boy) bakar. PowerFactor DÜŞÜK tutuldu: fazlalık petler hiç boşa gitmediği için birleştirme zaten güç şişirir; tools/simulate.py (oyuncu hemen birleştirir diye en iyimser):
-	-- 3.3 -> 12. rebirth 2.3 saatte (eskiden 12 saat), 2.0 -> 5.3 saat, 1.6 -> 7.6 saat, 1.5 -> ~9 saat. Çarpanı yükseltmeden önce simulate.py ile (fusion=0/1, fusion_factor=...) dene.
+	-- 3.3 -> 12. rebirth 2.3 saatte (eskiden 11.8 saat), 2.0 -> 5.3, 1.6 -> 7.6, 1.5 -> 8.2, 1.3 -> 9.8, 1.2 -> 10.7 saat (240 saatte 125 rebirth yerine 179 / 216 / 159). 1.3 seçildi. Çarpanı yükseltmeden önce simulate.py ile (fusion=0/1, fusion_factor=...) dene.
 	PetFusion = {
 		Cost = 3,
 		MaxTier = 4,
-		PowerFactor = 1.5,
+		PowerFactor = 1.3,
 		Scale = { 1, 1.35, 1.75, 2.3 },
 		NamePrefix = { "", "Big ", "Giant ", "Titan " },
 	},

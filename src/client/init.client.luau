@@ -480,7 +480,7 @@ local rebirthValue = leaderstats:WaitForChild(Config.StatRebirths)
 local autoClick = false
 
 local function refresh()
-	muscleLabel.Text = `{Config.StatLegMuscle}: {Format.number(muscleValue.Value)}`
+	muscleLabel.Text = `{Format.compact(muscleValue.Value)} {Config.StatLegMuscle}` -- referanstaki '2M Punch' gibi: önce sayı (büyük sayılar K/M/B ile kısalır)
 	winLabel.Text = Format.number(winValue.Value)
 	rebirthLabel.Text = Format.number(rebirthValue.Value)
 	-- Antrenman alanındayken kazanç pedin çarpanıyla çarpılır (sunucu AreaMultiplier'ı pede girince ayarlar)

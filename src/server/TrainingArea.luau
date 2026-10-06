@@ -55,7 +55,7 @@ function TrainingArea.init(notifyEvent)
 			return area.color
 		end,
 		buildDisplay = function(parent, area, frame, center, slot)
-			Mannequin.build(parent, `Trainer_{area.id}`, frame, center, Config.Training.TrainerScales[slot.row], area.color)
+			Mannequin.build(parent, `Trainer_{area.id}`, frame, center, Config.Training.TrainerScales[slot.row], area.color, nil, area.outfit)
 		end,
 	})
 

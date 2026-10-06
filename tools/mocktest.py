@@ -32,7 +32,7 @@ SERVER_PRELUDE = (
 CLIENT_PRELUDE = SERVER_PRELUDE.replace('require("./stubs")', 'require("../cstubs")')
 
 SHARED = ["Config", "Layout", "Catalog", "Format", "Progression", "ShoeModel"]
-SERVER = ["PlayerStats", "Build", "Hub", "EnvironmentService", "WallService"]
+SERVER = ["PlayerStats", "Build", "Hub", "EnvironmentService", "WallService", "Mannequin"]
 CLIENT = ["UIStyle", "PanelManager", "WallClient", "QuestPanel", "FusionPanel", "Juice"]
 
 
