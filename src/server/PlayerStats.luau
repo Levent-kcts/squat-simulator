@@ -236,10 +236,10 @@ local function refresh(player)
 	local profile = profiles[player]
 
 	-- Takılı ayakkabı geçerlidir (toplanmaz): oyuncu satın alınca ya da raftaki sahip olduğu ayakkabıya basınca değiştirir
-	profile.equippedShoe = pickEquipped(profile.items, profile.equippedShoe, Catalog.ItemById, "bonus")
+	profile.equippedShoe = pickEquipped(profile.items, profile.equippedShoe, Catalog.ItemById, "damage")
 	local shoe = Catalog.ItemById[profile.equippedShoe]
-	local shoeBonus = if shoe then shoe.bonus else 0
-	profile.shoeBonus = shoeBonus
+	local shoeDamage = if shoe then shoe.damage else 1
+	profile.damageMultiplier = shoeDamage
 
 	-- Takılı skin geçerlidir (toplanmaz): rengi karakteri boyar, SABİT bonusu (+N) tıklama başı bacak kası kazancına eklenir
 	profile.equippedSkin = pickEquipped(profile.skins, profile.equippedSkin, Catalog.SkinById, "bonus")
@@ -292,7 +292,7 @@ local function refresh(player)
 	player:SetAttribute("FriendBonus", friendPercent)
 	player:SetAttribute("DiscoveredPets", table.concat(discoveredIds, ","))
 	player:SetAttribute("IndexBonus", indexPercent)
-	player:SetAttribute("ShoeBonus", shoeBonus)
+	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
 	player:SetAttribute("PetMultiplier", multiplier)
@@ -481,7 +481,7 @@ local function setup(player)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
 		gain = 1,
-		shoeBonus = 0, -- takılı ayakkabının duvara eklediği sabit hasar
+		damageMultiplier = 1,
 		lastSave = 0,
 		savePending = false,
 	}
@@ -740,9 +740,9 @@ function PlayerStats.processPurchase(player, purchaseId, product)
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
-function PlayerStats.getShoeBonus(player)
+function PlayerStats.getDamageMultiplier(player)
 	local profile = profiles[player]
-	return profile and profile.shoeBonus or 0
+	return profile and profile.damageMultiplier or 1
 end
 
 function PlayerStats.addWin(player, amount)

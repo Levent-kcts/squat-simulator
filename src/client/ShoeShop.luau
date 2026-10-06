@@ -2,7 +2,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
-local Format = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Format"))
 local ShelfClient = require(script.Parent.ShelfClient)
 
 local ShoeShop = {}
@@ -15,7 +14,7 @@ function ShoeShop.init()
 		ownedAttr = "OwnedItems",
 		equippedAttr = "EquippedShoe",
 		powerText = function(item)
-			return `+{Format.compact(item.bonus)} Damage`
+			return `x{ShelfClient.fmtMultiplier(item.damage)} Damage`
 		end,
 		labelHeight = 4.3,
 	})

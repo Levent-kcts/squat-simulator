@@ -50,7 +50,7 @@ function StatsPanel.init(screenGui)
 		{ "Rebirths", function() return Format.number(leaderstats[Config.StatRebirths].Value) end, Color3.new(1, 1, 1) },
 		{ "Wins", function() return Format.number(leaderstats[Config.StatWins].Value) end, Color3.fromRGB(255, 215, 70) },
 		{ "Muscle per click", function() return `+{Format.number(player:GetAttribute("PerClick") or 1)}` end, Color3.fromRGB(110, 255, 140) },
-		{ "Shoe bonus", function() return `+{Format.compact(player:GetAttribute("ShoeBonus") or 0)} damage` end, Color3.fromRGB(255, 160, 120) },
+		{ "Damage multiplier", function() return mult(player:GetAttribute("DamageMultiplier") or 1) end, Color3.fromRGB(255, 160, 120) },
 		{ "-- MULTIPLIER BREAKDOWN --" },
 		{ "Pets", function() return mult(player:GetAttribute("PetMultiplier") or 1) end, Color3.new(1, 1, 1) },
 		{ "Level", function() return mult(Progression.levelMultiplier(leaderstats[Config.StatLevel].Value)) end, Color3.new(1, 1, 1) },

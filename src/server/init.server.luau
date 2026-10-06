@@ -139,8 +139,8 @@ clickEvent.OnServerEvent:Connect(function(player)
 		end
 		local muscle, gained = PlayerStats.addMuscle(player, if area then area.mult else 1)
 		if muscle then
-			-- Hasar = toplam bacak kası + ayakkabının sabit hasar bonusu
-			WallService.hit(player, math.floor(muscle + PlayerStats.getShoeBonus(player)))
+			-- Hasar = toplam bacak kası x ayakkabı hasar çarpanı
+			WallService.hit(player, math.floor(muscle * PlayerStats.getDamageMultiplier(player)))
 			-- Kazanılan bacak kası level çubuğunu doldurur; dolunca level atlanır
 			local leveledUp, newLevel = PlayerStats.addTap(player, gained)
 			if leveledUp then
