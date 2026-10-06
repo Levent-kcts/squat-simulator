@@ -228,8 +228,9 @@ return {
 		Gifts = "rbxassetid://107783706209695",
 	}, -- sahibinin yüklediği görseller (hepsi Image türünde, doğrulandı)
 
-	-- Yeni oyuncu yol göstericisi (client/Guide): hiç rebirth yapmamış oyuncuya, ilk MaxStage aşamada duvara/Win pedine giden parlak çizgi.
-	Guide = { MaxStage = 3 },
+	-- Eğitim (tutorial): SADECE yeni oyuncuya gösterilir (üstteki yönerge yazısı ve yol gösterici çizgi), oyuncu İLK SKİNİNİ alana kadar sürer. Kayıtta 'TutorialDone' tutulur;
+	-- eski kayıtlarda ilerleme varsa (kas, Win, rebirth, eşya, pet, skin) eğitim bitmiş sayılır. Adımlar: duvarları kır, Win pedine bas, ilk skin fiyatına (Config.Skins[1]) yetince skin rafına git ve al.
+	-- Çizgi ve yazı client/Guide ve init.client'tadır.
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
 	CameraMaxZoom = 40,
@@ -347,7 +348,7 @@ return {
 
 	-- Ayakkabılar: lobideki raflardan, üstlerine basarak satın alınır (alt sıra ucuz, üst sıra pahalı).
 	-- damage = duvara verilen hasar çarpanı (hasar = bacak kası x damage). Bacak kazancını ETKİLEMEZ. Takılı ayakkabı geçerlidir, toplanmaz (sahip olduğun ucuz ayakkabılara basıp istediğini takabilirsin).
-	-- Fiyatlar (Win) GEÇİCİDİR, oyunun ekonomisi oturunca birlikte ayarlanacak.
+	-- Fiyatlar (Win) skin fiyatlarıyla AYNIDIR (sahibi istedi: i. ayakkabı = i. skin fiyatı: 5, 15, 40, 90, 200, 450, 900, 1.8K, 3.6K, 7K, 14K, 28K, 56K, 110K, 220K); biri değişirse ötekini de değiştir. GEÇİCİDİR, ekonomi oturunca birlikte ayarlanacak.
 	MaxGlowShoeId = "neon", -- ayakkabı parlaklığı bu ayakkabıya (Neon Kicks) kadar artar, daha güçlüleri aynı parlaklıkta kalır
 	-- Ayakkabı parlaklığı (sahibi 'bütün ayakkabıların parlaklığını kıs' dedi; eskiden renk %55-%87, ayak ışığı 0.4-2.6 parlaklık / 5-16 menzildi, hepsi yaklaşık yarıya indi).
 	-- Parlaklık güce göre artar (ShoeModel.tier, MaxGlowShoeId'de durur). Daha da kısmak için değerleri küçült, açmak için büyüt.
@@ -369,21 +370,21 @@ return {
 		Size = { 0.55, 0.65, 0.8, 1.0 },
 	},
 	Items = {
-		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
-		{ id = "canvas", name = "Canvas Shoes", price = 8, damage = 2, color = Color3.fromRGB(120, 170, 255) },
-		{ id = "running", name = "Running Shoes", price = 20, damage = 3, color = Color3.fromRGB(255, 140, 60) },
-		{ id = "trail", name = "Trail Boots", price = 45, damage = 4, color = Color3.fromRGB(0, 230, 170) },
-		{ id = "hightops", name = "High-Tops", price = 100, damage = 6, color = Color3.fromRGB(255, 70, 160) },
-		{ id = "cleats", name = "Cleats", price = 220, damage = 8, color = Color3.fromRGB(60, 220, 90) },
-		{ id = "jump", name = "Jump Shoes", price = 450, damage = 12, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "speed", name = "Speed Sneakers", price = 900, damage = 16, color = Color3.fromRGB(60, 200, 255) },
-		{ id = "power", name = "Power Boots", price = 1800, damage = 25, color = Color3.fromRGB(255, 70, 70) },
-		{ id = "titan", name = "Titan Boots", price = 3600, damage = 35, color = Color3.fromRGB(40, 80, 255) },
-		{ id = "neon", name = "Neon Kicks", price = 7500, damage = 50, color = Color3.fromRGB(255, 60, 230) },
-		{ id = "golden", name = "Golden Sneakers", price = 15000, damage = 75, color = Color3.fromRGB(255, 200, 40) },
-		{ id = "crystal", name = "Crystal Kicks", price = 30000, damage = 100, color = Color3.fromRGB(150, 240, 255) },
-		{ id = "thunder", name = "Thunder Boots", price = 60000, damage = 150, color = Color3.fromRGB(170, 90, 255) },
-		{ id = "radiant", name = "Radiant Shoes", price = 120000, damage = 250, color = Color3.fromRGB(255, 255, 140) },
+		{ id = "oldsneakers", name = "Old Sneakers", price = 5, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
+		{ id = "canvas", name = "Canvas Shoes", price = 15, damage = 2, color = Color3.fromRGB(120, 170, 255) },
+		{ id = "running", name = "Running Shoes", price = 40, damage = 3, color = Color3.fromRGB(255, 140, 60) },
+		{ id = "trail", name = "Trail Boots", price = 90, damage = 4, color = Color3.fromRGB(0, 230, 170) },
+		{ id = "hightops", name = "High-Tops", price = 200, damage = 6, color = Color3.fromRGB(255, 70, 160) },
+		{ id = "cleats", name = "Cleats", price = 450, damage = 8, color = Color3.fromRGB(60, 220, 90) },
+		{ id = "jump", name = "Jump Shoes", price = 900, damage = 12, color = Color3.fromRGB(255, 230, 60) },
+		{ id = "speed", name = "Speed Sneakers", price = 1800, damage = 16, color = Color3.fromRGB(60, 200, 255) },
+		{ id = "power", name = "Power Boots", price = 3600, damage = 25, color = Color3.fromRGB(255, 70, 70) },
+		{ id = "titan", name = "Titan Boots", price = 7000, damage = 35, color = Color3.fromRGB(40, 80, 255) },
+		{ id = "neon", name = "Neon Kicks", price = 14000, damage = 50, color = Color3.fromRGB(255, 60, 230) },
+		{ id = "golden", name = "Golden Sneakers", price = 28000, damage = 75, color = Color3.fromRGB(255, 200, 40) },
+		{ id = "crystal", name = "Crystal Kicks", price = 56000, damage = 100, color = Color3.fromRGB(150, 240, 255) },
+		{ id = "thunder", name = "Thunder Boots", price = 110000, damage = 150, color = Color3.fromRGB(170, 90, 255) },
+		{ id = "radiant", name = "Radiant Shoes", price = 220000, damage = 250, color = Color3.fromRGB(255, 255, 140) },
 	},
 
 	-- Skinler (Lobi sol duvar, ayakkabı rafının yanındaki raf): Win ile alınır, karakter o renge boyanır.

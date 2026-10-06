@@ -495,6 +495,22 @@ refresh()
 -- Banner iki kaynaktan beslenir: duvar ilerlemesi ve antrenman alanı (alandayken "Training..." yazar, çıkınca duvar yazısına döner)
 local progressText = bannerText.Text
 
+-- EĞİTİM: üstteki yönerge yazısı SADECE yeni oyuncuya görünür ve oyuncu ilk skinini alana kadar sürer (sunucu 'TutorialDone' bayrağı, Config.Guide notuna bak).
+-- Deneyimli oyuncuda yazı gizlidir; sadece antrenman alanındayken 'Training with...' bilgisi için görünür.
+local firstSkin = Config.Skins[1]
+
+local function tutorialActive()
+	return player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false
+end
+
+local function tutorialText()
+	local wins = winValue.Value
+	if wins >= firstSkin.price then
+		return `You have {Format.number(wins)} Wins! Go to the SKIN shelf on the left wall and step on the {firstSkin.name} pad!`
+	end
+	return progressText
+end
+
 local function refreshBanner()
 	local areaId = player:GetAttribute("TrainingArea") or ""
 	local area = nil
@@ -504,9 +520,13 @@ local function refreshBanner()
 		end
 	end
 	if area then
+		banner.Visible = true
 		bannerText.Text = `Training with {area.trainer}: x{string.format("%g", area.mult)} Squat!`
+	elseif tutorialActive() then
+		banner.Visible = true
+		bannerText.Text = tutorialText()
 	else
-		bannerText.Text = progressText
+		banner.Visible = false
 	end
 end
 
@@ -526,6 +546,10 @@ local function onProgress(frontier)
 	refreshBanner()
 end
 player:GetAttributeChangedSignal("TrainingArea"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("TutorialDone"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshBanner)
+winValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)
+refreshBanner()
 
 ShoeShop.init()
 SkinShop.init()
@@ -659,6 +683,21 @@ local function showToast(ok, message)
 end
 
 notifyEvent.OnClientEvent:Connect(showToast)
+
+-- Eğitim bitince (ilk skin alınınca) kısa tebrik
+do
+	local wasActive = false
+	local function checkTutorialEnd()
+		local active = tutorialActive()
+		if wasActive and not active and player:GetAttribute("TutorialDone") == true then
+			showToast(true, "Great! Now keep breaking walls and get stronger!")
+		end
+		wasActive = active
+	end
+	player:GetAttributeChangedSignal("TutorialDone"):Connect(checkTutorialEnd)
+	player:GetAttributeChangedSignal("DataLoaded"):Connect(checkTutorialEnd)
+	checkTutorialEnd()
+end
 
 -- =====================================================================
 -- LEVEL ÇUBUĞU VE REBIRTH

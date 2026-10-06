@@ -1,7 +1,7 @@
--- Yeni oyuncular için yol gösterici çizgi: karakterden hedefe giden parlak bir şerit.
---   * İlk duvarlar sağlamken: sıradaki duvarın önündeki noktaya (duvara yaklaşınca kaybolur)
---   * Aşama bitince: o aşamanın sarı Win pedine (pedi geçince ya da sonraki duvara yaklaşınca kaybolur)
--- Sadece ilk aşamalarda (Config.Guide.MaxStage) ve hiç rebirth yapmamış oyuncuya gösterilir. Tamamen görsel.
+-- Yeni oyuncular için yol gösterici çizgi (EĞİTİM): karakterden hedefe giden parlak bir şerit.
+--   * İlk skinin fiyatına yetecek Win yokken: sıradaki duvarın önündeki noktaya (duvara yaklaşınca kaybolur); aşama bitince o aşamanın sarı Win pedine
+--   * Yetecek Win olunca: skin rafındaki İLK skinin (Config.Skins[1]) pedine (pedin yanına gelince kaybolur)
+-- Sadece oyuncunun 'TutorialDone' = false olduğu sürece (yani ilk skinini alana kadar) gösterilir; sunucu bayrağı ilk skin alınınca true yapar. Tamamen görsel.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -19,8 +19,26 @@ local LINE_COLOR = Color3.fromRGB(255, 235, 90)
 -- wallClient: WallClient modülü (getFrontier ve isNearWall için)
 function Guide.init(wallClient)
 	local player = Players.LocalPlayer
-	local rebirths = player:WaitForChild("leaderstats"):WaitForChild(Config.StatRebirths)
-	local maxStage = (Config.Guide and Config.Guide.MaxStage) or 3
+	local wins = player:WaitForChild("leaderstats"):WaitForChild(Config.StatWins)
+	local firstSkin = Config.Skins[1]
+
+	-- İlk skinin rafındaki ped (sunucu pedi SkinShop klasöründe, 'ItemId' özniteliğiyle kurar); bulunana kadar nil
+	local skinPad = nil
+	local function findSkinPad()
+		if skinPad and skinPad.Parent then
+			return skinPad
+		end
+		local folder = Workspace:FindFirstChild("SkinShop")
+		if folder then
+			for _, descendant in folder:GetDescendants() do
+				if descendant:IsA("BasePart") and descendant:GetAttribute("ItemId") == firstSkin.id then
+					skinPad = descendant
+					return skinPad
+				end
+			end
+		end
+		return nil
+	end
 
 	-- Hedef noktası: görünmez, sabit bir parça; çizginin ucu buna bağlanır
 	local target = Instance.new("Part")
@@ -72,11 +90,16 @@ function Guide.init(wallClient)
 
 	-- Hedefi belirle: dönüş (konum) ya da nil (çizgi gizli)
 	local function pickTarget(position)
-		local frontier = wallClient.getFrontier()
-		if frontier > cfg.Count then
+		-- İlk skine yetecek Win varsa: skin rafındaki ilk pede
+		if wins.Value >= firstSkin.price then
+			local pad = findSkinPad()
+			if pad and (pad.Position - position).Magnitude > 7 then
+				return pad.Position + Vector3.new(0, 1.2, 0)
+			end
 			return nil
 		end
-		if Layout.stageOf(frontier) > maxStage then
+		local frontier = wallClient.getFrontier()
+		if frontier > cfg.Count then
 			return nil
 		end
 		-- Duvara zaten yakınsa çizgiye gerek yok (tıklama zamanı)
@@ -107,7 +130,8 @@ function Guide.init(wallClient)
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local training = (player:GetAttribute("TrainingArea") or "") ~= ""
-		if not root or not startAttachment or rebirths.Value > 0 or training then
+		local inTutorial = player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false
+		if not root or not startAttachment or not inTutorial or training then
 			beam.Enabled = false
 			return
 		end

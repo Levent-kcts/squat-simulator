@@ -55,7 +55,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {} }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, TutorialDone = false }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -176,6 +176,14 @@ local function sanitize(raw)
 	else
 		data.EquippedPets = bestEquipped(data.Pets)
 	end
+	-- Eğitim: kayıtlı true ise bitmiştir; eski kayıtta alan yoksa ilerlemesi olan oyuncu eski oyuncudur (eğitim görmez), tamamen yeni oyuncu görür
+	if raw.TutorialDone == true then
+		data.TutorialDone = true
+	elseif raw.TutorialDone == nil
+		and (data.Muscle > 0 or data.Wins > 0 or data.Rebirths > 0 or #data.Items > 0 or #data.Skins > 0 or #data.Pets > 0) then
+		data.TutorialDone = true
+	end
+
 	return data
 end
 
@@ -292,6 +300,11 @@ local function refresh(player)
 	player:SetAttribute("FriendBonus", friendPercent)
 	player:SetAttribute("DiscoveredPets", table.concat(discoveredIds, ","))
 	player:SetAttribute("IndexBonus", indexPercent)
+	-- Eğitim: ilk skin alınınca biter (eski/yeni fark etmez), bir daha dönmez
+	if #profile.skins > 0 and not profile.tutorialDone then
+		profile.tutorialDone = true -- kayıt, skini alan işlemdeki requestSave (buySkin) ya da sonraki otomatik kayıtla yapılır
+	end
+	player:SetAttribute("TutorialDone", profile.tutorialDone)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
@@ -347,6 +360,7 @@ local function save(player)
 		OfflineSeconds = profile.offlineSeconds,
 		MusicLevel = profile.musicLevel,
 		Settings = profile.settings,
+		TutorialDone = profile.tutorialDone,
 		Discovered = (function()
 			local list = {}
 			for id in profile.discovered do
@@ -477,6 +491,7 @@ local function setup(player)
 		offlineSeconds = 0,
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
+		tutorialDone = false, -- eğitim bitti mi (ilk skin alınınca true olur; kayıtlı)
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
@@ -497,6 +512,7 @@ local function setup(player)
 	profile.equippedShoe = data.EquippedItem
 	profile.skins = data.Skins
 	profile.equippedSkin = data.EquippedSkin
+	profile.tutorialDone = data.TutorialDone
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	for _, id in data.Discovered do
@@ -1345,10 +1361,11 @@ function PlayerStats.dev(player, command, amount)
 		profile.boostMuscleUntil = 0
 		profile.boostWinsUntil = 0
 		profile.discovered = {}
+		profile.tutorialDone = false -- eğitim yeniden başlar
 		profile.offlinePending = 0
 		profile.offlineSeconds = 0
 		publishOffline(player, profile)
-		message = "Everything reset to zero"
+		message = "Everything reset to zero (tutorial restarts)"
 	else
 		return false, "Unknown command."
 	end
