@@ -70,6 +70,7 @@ M.NumberSequenceKeypoint = generic
 M.ColorSequence = generic
 M.NumberRange = generic
 M.TweenInfo = generic
+M.G = generic
 -- ---- Instance
 local InstanceMT = {}
 local function newInstance(className)

@@ -86,9 +86,20 @@ end
 InstMT.__index = function(self, key)
 	local attrs = rawget(self, "_attrs")
 	local children = rawget(self, "_children")
-	if key == "FindFirstChild" or key == "WaitForChild" then
+	if key == "FindFirstChild" then
 		return function(s, name)
-			return children[name] or proxy()
+			return children[name]
+		end
+	elseif key == "WaitForChild" then
+		-- Roblox'ta gelene kadar bekler; taklitte eksikse boş bir örnek oluşturulur ve ebeveyne eklenir
+		return function(s, name)
+			local found = children[name]
+			if not found then
+				found = newInstance("Folder")
+				found.Name = name
+				found.Parent = s
+			end
+			return found
 		end
 	elseif key == "FindFirstChildOfClass" then
 		return function(s, className)
@@ -145,8 +156,11 @@ InstMT.__index = function(self, key)
 		end
 	elseif key == "AbsoluteSize" or key == "AbsolutePosition" then
 		return { X = 600, Y = 400 }
+	elseif key == "Character" or key == "Parent" then
+		return nil -- ayarlanmadıysa yok (Roblox'ta da karakter henüz yokken nil)
 	end
-	local defaults = { BackgroundTransparency = 0, Transparency = 0, ZIndex = 1, TextTransparency = 0, Visible = true, Active = true, Rotation = 0, Thickness = 1 }
+	local gray = M.Color3.new(0.5, 0.5, 0.5)
+	local defaults = { BackgroundTransparency = 0, Transparency = 0, ZIndex = 1, TextTransparency = 0, Visible = true, Active = true, Rotation = 0, Thickness = 1, BackgroundColor3 = gray, TextColor3 = gray, ImageColor3 = gray, Color = gray }
 	if defaults[key] ~= nil then
 		return defaults[key]
 	end
@@ -175,6 +189,7 @@ M.NumberSequenceKeypoint = generic2
 M.ColorSequence = generic2
 M.NumberRange = generic2
 M.TweenInfo = generic2
+M.G = generic2
 M.Instance = { new = newInstance }
 M.newInstance = newInstance
 
@@ -210,17 +225,49 @@ remoteFunction.InvokeServer = function(_, action, id)
 end
 M.remoteFunction = remoteFunction
 rawget(ReplicatedStorage, "_children")["Shop"] = remoteFunction
+M.playerAdded = {}
+M.playerRemoving = {}
 local services = {
 	RunService = RunService,
-	Players = { LocalPlayer = localPlayer, PlayerAdded = { Connect = function() return proxy() end }, PlayerRemoving = { Connect = function() return proxy() end }, GetPlayers = function() return {} end, GetPlayerFromCharacter = function() return nil end },
+	Players = { LocalPlayer = localPlayer, PlayerAdded = { Connect = function(_, f) table.insert(M.playerAdded, f) return proxy() end }, PlayerRemoving = { Connect = function(_, f) table.insert(M.playerRemoving, f) return proxy() end }, GetPlayers = function() return {} end, GetPlayerFromCharacter = function() return nil end },
+	DataStoreService = { GetDataStore = function() return {
+		GetAsync = function(_, key) return M.datastore[key] end,
+		UpdateAsync = function(_, key, fn) M.datastore[key] = fn(M.datastore[key]) return M.datastore[key] end,
+	} end },
 	ReplicatedStorage = ReplicatedStorage,
-	Workspace = newInstance("Workspace"),
+	Workspace = (function()
+		local ws = newInstance("Workspace")
+		for _, name in { "ShoeShop", "SkinShop", "TrainingArea", "EggShop", "Hub", "Course", "Lobby" } do
+			local folder = newInstance("Folder")
+			folder.Name = name
+			folder.Parent = ws
+		end
+		return ws
+	end)(),
 	HttpService = {
 		JSONDecode = function()
 			return M.jsonData
 		end,
-		JSONEncode = function()
-			return "{}"
+		JSONEncode = function(_, v)
+			local function encode(x)
+				if type(x) == "table" then
+					local parts = {}
+					if #x > 0 then
+						for _, y in x do
+							table.insert(parts, encode(y))
+						end
+						return "[" .. table.concat(parts, ",") .. "]"
+					end
+					for k, y in x do
+						table.insert(parts, '"' .. tostring(k) .. '":' .. encode(y))
+					end
+					return "{" .. table.concat(parts, ",") .. "}"
+				elseif type(x) == "string" then
+					return '"' .. x .. '"'
+				end
+				return tostring(x)
+			end
+			return encode(v)
 		end,
 	},
 }
@@ -228,6 +275,7 @@ M.game = {
 	GetService = function(_, name)
 		return services[name] or proxy()
 	end,
+	BindToClose = function() end,
 }
 M.workspace = {
 	CurrentCamera = { ViewportSize = { X = 1534, Y = 862 }, GetPropertyChangedSignal = function() return { Connect = function() return proxy() end } end },

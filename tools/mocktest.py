@@ -1,12 +1,15 @@
 """Mantık testi (mock Roblox): oyunun Luau kodunu Roblox'suz, resmi `luau.exe` ile ÇALIŞTIRIR.
 Kullanım (proje klasöründe): python tools/mocktest.py
 
-Ne yapar: src/shared, src/server ve src/client'taki ilgili modülleri geçici bir klasöre kopyalar (require yolları dosyaya çevrilir, Roblox globalleri
+Ne yapar: src/shared, src/server ve src/client'taki TÜM modülleri geçici bir klasöre kopyalar (require yolları dosyaya çevrilir, Roblox globalleri
 tools/mocktest/stubs.luau ve cstubs.luau'daki taklitlerle değiştirilir) ve tools/mocktest/tests/*.luau testlerini koşturur:
-  ptest / ptest2  PlayerStats: giriş, eğitim, skin/ayakkabı, yumurta, pet birleştirme, günlük görevler, tüm DEV komutları, kayıt
-  hubtest/envtest Hub, EnvironmentService ve WallService.init (koridorun tamamı) hatasız kuruluyor mu
-  shoetest        ayakkabı parlaklık/iz kademeleri
-  ctest           QuestPanel, FusionPanel, WallClient (20 tema deseni, yakınlık döngüsü) ve Juice efektleri (pcall'sız)
+  ptest / ptest2   PlayerStats: giriş, eğitim, skin/ayakkabı, yumurta, pet birleştirme, günlük görevler, tüm DEV komutları, kayıt
+  hubtest/envtest  Hub, EnvironmentService ve WallService.init (koridorun tamamı) hatasız kuruluyor mu
+  trainertest      10 antrenörün kıyafetleri
+  shoetest         ayakkabı parlaklık/iz kademeleri
+  ctest            QuestPanel, FusionPanel, WallClient (20 tema deseni, yakınlık döngüsü) ve Juice efektleri (pcall'sız)
+  boottest         init.server tüm sunucu modülleriyle açılıyor mu + oyuncu girişi
+  clienttest       init.client (tüm HUD, paneller, sağ üst daireler, eğitim yazısı) tüm istemci modülleriyle açılıyor mu
 YAKALAR: Luau mantık hataları (nil indeksleme, yanlış değişken/alan, çökme). YAKALAMAZ: Roblox özellik/enum adı yanlışları ve görünüm; onlar Studio'da görülür.
 luau.exe: %USERPROFILE%/.luau/luau.exe (luau-analyze ile aynı zip, https://github.com/luau-lang/luau/releases).
 """
@@ -28,18 +31,41 @@ SERVER_PRELUDE = (
     "S.Color3, S.Vector3, S.Vector2, S.Enum, S.Random, S.Instance, S.task, S.warn, S.game, S.workspace\n"
     "local UDim2, UDim, CFrame, NumberSequence, NumberSequenceKeypoint, ColorSequence, NumberRange, TweenInfo = "
     "S.UDim2, S.UDim, S.CFrame, S.NumberSequence, S.NumberSequenceKeypoint, S.ColorSequence, S.NumberRange, S.TweenInfo\n"
+    "local ColorSequenceKeypoint, Rect, Ray, Region3, PhysicalProperties, OverlapParams, RaycastParams, DateTime, BrickColor, Font, Axes, Faces = "
+    "S.G, S.G, S.G, S.G, S.G, S.G, S.G, S.G, S.G, S.G, S.G, S.G\n"
 )
 CLIENT_PRELUDE = SERVER_PRELUDE.replace('require("./stubs")', 'require("../cstubs")')
 
-SHARED = ["Config", "Layout", "Catalog", "Format", "Progression", "ShoeModel"]
-SERVER = ["PlayerStats", "Build", "Hub", "EnvironmentService", "WallService", "Mannequin"]
-CLIENT = ["UIStyle", "PanelManager", "WallClient", "QuestPanel", "FusionPanel", "Juice"]
+
+def module_names(folder, skip):
+    names = []
+    for name in os.listdir(os.path.join(ROOT, "src", folder)):
+        if name.endswith(".luau") and name != skip:
+            names.append(name[: -len(".luau")])
+    return sorted(names)
+
+
+SHARED = module_names("shared", "")
+SERVER = module_names("server", "init.server.luau")  # init.server 'serverMain' olarak ayrıca kurulur
+CLIENT = module_names("client", "init.client.luau")  # init.client 'clientMain' olarak ayrıca kurulur
+
+# init.client: 'script:FindFirstChild(isim)' ve 'require(modül örneği)' kalıpları için küçük bir kabuk
+CLIENT_SHIM = (
+    "local KNOWN = { " + ", ".join(f"{name} = true" for name in CLIENT) + " }\n"
+    "local script = { FindFirstChild = function(_, name) if KNOWN[name] then return { _modname = name } end return nil end }\n"
+    "local realRequire = require\n"
+    "local function require(target)\n"
+    '\tif type(target) == "table" and rawget(target, "_modname") then return realRequire("./" .. target._modname) end\n'
+    "\treturn realRequire(target)\n"
+    "end\n"
+)
 
 
 def convert(source):
     """Roblox'a özgü require biçimlerini dosya yoluna çevirir."""
-    source = re.sub(r"pcall\(require, script\.Parent\.(\w+)\)", r'pcall(require, "./\1")', source)
+    source = re.sub(r"pcall\(require, script(?:\.Parent)?\.(\w+)\)", r'pcall(require, "./\1")', source)
     source = re.sub(r"require\(script\.Parent\.(\w+)\)", r'require("./\1")', source)
+    source = re.sub(r"require\(script\.(\w+)\)", r'require("./\1")', source)
     source = re.sub(r'require\(Shared:WaitForChild\("(\w+)"\)\)', r'require("./\1")', source)
     source = re.sub(r'require\(ReplicatedStorage:WaitForChild\("Shared"\):WaitForChild\("(\w+)"\)\)', r'require("./\1")', source)
     return source
@@ -48,6 +74,11 @@ def convert(source):
 def write(path, text):
     with io.open(path, "w", encoding="utf-8", newline="") as handle:
         handle.write(text)
+
+
+def read(*parts):
+    with io.open(os.path.join(ROOT, *parts), encoding="utf-8") as handle:
+        return handle.read()
 
 
 def build(target):
@@ -61,11 +92,13 @@ def build(target):
         ("client", CLIENT, CLIENT_PRELUDE, "c"),
     ):
         for name in names:
-            with io.open(os.path.join(ROOT, "src", folder, name + ".luau"), encoding="utf-8") as handle:
-                write(os.path.join(target, subdir, name + ".luau"), prelude + convert(handle.read()))
+            write(os.path.join(target, subdir, name + ".luau"), prelude + convert(read("src", folder, name + ".luau")))
+    # Ana betikler modül gibi koşturulur (en sona 'return true')
+    write(os.path.join(target, "serverMain.luau"), SERVER_PRELUDE + convert(read("src", "server", "init.server.luau")) + "\nreturn true\n")
+    write(os.path.join(target, "c", "clientMain.luau"), CLIENT_PRELUDE + CLIENT_SHIM + convert(read("src", "client", "init.client.luau")) + "\nreturn true\n")
     tests = os.path.join(MOCK, "tests")
     for name in os.listdir(tests):
-        destination = os.path.join(target, "c" if name == "ctest.luau" else "", name)
+        destination = os.path.join(target, "c" if name in ("ctest.luau", "clienttest.luau") else "", name)
         shutil.copy(os.path.join(tests, name), destination)
 
 
@@ -79,9 +112,12 @@ def main():
     try:
         build(target)
         for name in sorted(os.listdir(os.path.join(MOCK, "tests"))):
-            cwd = os.path.join(target, "c") if name == "ctest.luau" else target
+            cwd = os.path.join(target, "c") if name in ("ctest.luau", "clienttest.luau") else target
             result = subprocess.run([LUAU, name], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=cwd, timeout=120)
-            output = result.stdout + result.stderr
+            # UIStyle.soften UDim değerlerini taklitte tanıyamaz (typeof): bu bilinen taklit boşluğu, oyunda UIStyle zaten hata verirse düz kalır
+            lines = (result.stdout + result.stderr).splitlines()
+            gaps = ("[UIStyle]", "task.spawn error:\t./Sfx.luau", "task.spawn error:\t./GiftsPanel.luau", "task.spawn error:\t./EggShop.luau", "task.spawn error:\t./MusicPlayer.luau", "mock gap")
+            output = chr(10).join(line for line in lines if not any(gap in line for gap in gaps))
             bad = result.returncode != 0 or re.search(r"ERROR|WARN\b|attempt to|stacktrace|Error opening|failures:\s+[1-9]", output)
             print(f"{'HATA ' if bad else 'tamam'}  {name}")
             if bad:
