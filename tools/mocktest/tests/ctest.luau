@@ -22,14 +22,6 @@ local toggleQuests = QuestPanel.init(root, toast)
 toggleQuests()
 print("QuestPanel ok")
 
--- FusionPanel
-S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat,dog,dog@2")
-local FusionPanel = require("./FusionPanel")
-local toggleFusion = FusionPanel.init(root, toast)
-toggleFusion()
-S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat,cat@2,cat@2,cat@2")
-print("FusionPanel ok")
-
 -- WallClient
 local wallsHandler
 local wallsEvent = S.newInstance("RemoteEvent")
@@ -89,7 +81,7 @@ for _, hb in S.heartbeat do
 	hb(0.05)
 end
 print("Juice all themes ok")
--- Pets penceresi birleşmiş (büyümüş) petleri de listelemeli
+-- Pets menüsü (referans stilinde): boy adları (Small/Normal/Big/Boss), Merge ilerlemesi, Pet Team, tıklamalar (sunucuya giden istekler)
 local function textsUnder(instance, found)
 	for _, child in rawget(instance, "_children") do
 		local text = rawget(child, "Text")
@@ -100,27 +92,114 @@ local function textsUnder(instance, found)
 	end
 	return found
 end
-S.localPlayer:SetAttribute("OwnedPets", "cat,cat@2,dragon@4,phoenix@3")
-S.localPlayer:SetAttribute("EquippedPets", "cat@2,dragon@4")
+-- Torunlarında verilen yazı bulunan ilk TextButton
+local function buttonWith(instance, text)
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "ClassName") == "TextButton" and textsUnder(child, {})[text] then
+			return child
+		end
+		local deeper = buttonWith(child, text)
+		if deeper then
+			return deeper
+		end
+	end
+	return nil
+end
+local function click(button)
+	assert(button, "tıklanacak düğme bulunamadı")
+	local handlers = rawget(button, "_handlers")
+	assert(handlers and handlers.MouseButton1Click, "düğmeye tıklama işleyicisi bağlı değil")
+	handlers.MouseButton1Click()
+end
+rawget(S.replicated, "_children")["Shop"] = S.remoteFunction
 local PetsPanel = require("./PetsPanel")
-local petsRoot = S.newInstance("Frame")
-local togglePets = PetsPanel.init(petsRoot, toast)
-togglePets()
-local petTexts = textsUnder(petsRoot, {})
-assert(petTexts["Big Cat"], "Pets penceresinde Big Cat yok")
-assert(petTexts["Titan Dragon"], "Pets penceresinde Titan Dragon yok")
-assert(petTexts["Giant Phoenix"], "Pets penceresinde Giant Phoenix yok")
+local function openPets(owned, equipped)
+	S.localPlayer:SetAttribute("OwnedPets", owned)
+	S.localPlayer:SetAttribute("EquippedPets", equipped)
+	local toasts = {}
+	local root = S.newInstance("Frame")
+	local toggle = PetsPanel.init(root, function(_, message)
+		table.insert(toasts, message)
+	end)
+	toggle()
+	return root, toasts
+end
+
+-- 1) Birleşmiş boylar kartlarda boy adıyla listelenir, Pet Team sayısı doğrudur
+local root1 = openPets("cat,cat@2,dragon@4,phoenix@3", "cat@2,dragon@4")
+local t1 = textsUnder(root1, {})
+for _, label in { "Small Cat", "Normal Cat", "Boss Dragon", "Big Phoenix", "Pet Team (2/3 Pets)", "Small", "Normal", "Big", "Boss" } do
+	assert(t1[label], "Pets penceresinde yazı yok: " .. label)
+end
 print("PetsPanel tiers ok")
 
--- Fusion penceresi: 3 aynı pet birleştirilebilir görünmeli
-S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat,dog@4")
-local fusionRoot = S.newInstance("Frame")
-local toggleFusion2 = FusionPanel.init(fusionRoot, toast)
-toggleFusion2()
-local fusionTexts = textsUnder(fusionRoot, {})
-assert(fusionTexts["FUSE 3 > 1"], "birleştirilebilir pet için FUSE düğmesi yok")
-assert(fusionTexts["MAX SIZE"], "en büyük boy için MAX SIZE yok")
-print("FusionPanel states ok")
+-- 2) Aynı petten 3 tane: Merge 'Normal (3/3)' der ve tıklanınca FusePet gider; Equip, Merge All, Delete (iki basış)
+local root2 = openPets("cat,cat,cat", "")
+local t2 = textsUnder(root2, {})
+for _, label in { "Normal (3/3)", "Equip", "Merge All", "Pet Team (0/3 Pets)", "Small Cat", "x3" } do
+	assert(t2[label], "3'lü pet ekranında yazı yok: " .. label)
+end
+S.lastInvoke = nil
+click(buttonWith(root2, "Equip"))
+assert(S.lastInvoke and S.lastInvoke[1] == "EquipPet" and S.lastInvoke[2] == "cat", "Equip düğmesi EquipPet göndermeli")
+click(buttonWith(root2, "Normal (3/3)"))
+assert(S.lastInvoke[1] == "FusePet" and S.lastInvoke[2] == "cat", "Merge düğmesi FusePet göndermeli")
+click(buttonWith(root2, "Merge All"))
+assert(S.lastInvoke[1] == "FuseAllPets", "Merge All FuseAllPets göndermeli")
+S.lastInvoke = nil
+click(buttonWith(root2, "🗑"))
+assert(S.lastInvoke == nil, "Delete ilk basışta silmemeli")
+assert(textsUnder(root2, {})["Sure?"], "Delete ilk basışta 'Sure?' demeli")
+click(buttonWith(root2, "Sure?"))
+assert(S.lastInvoke and S.lastInvoke[1] == "DeletePet" and S.lastInvoke[2] == "cat", "ikinci basış DeletePet göndermeli")
+print("PetsPanel merge/equip/delete ok")
+
+-- 3) 3'ten az: ilerleme gösterilir, tıklayınca bilgi mesajı (sunucuya gitmez)
+local root3, toasts3 = openPets("cat,cat", "")
+local t3 = textsUnder(root3, {})
+assert(t3["Normal (2/3)"] and t3["Nothing to merge"], "2'li pet için ilerleme / Nothing to merge yok")
+S.lastInvoke = nil
+click(buttonWith(root3, "Normal (2/3)"))
+assert(S.lastInvoke == nil and toasts3[#toasts3] and string.find(toasts3[#toasts3], "You need 3 Small Cat"), "yetersiz pette bilgi mesajı gelmeli")
+
+-- 4) En büyük boy (Boss): MAX SIZE
+local root4, toasts4 = openPets("dog@4", "dog@4")
+local t4 = textsUnder(root4, {})
+assert(t4["MAX SIZE"] and t4["Boss Dog"] and t4["Unequip"], "Boss pet ekranı hatalı")
+click(buttonWith(root4, "MAX SIZE"))
+assert(string.find(toasts4[#toasts4], "maximum size"), "Boss için 'maximum size' mesajı gelmeli")
+
+-- 5) Takım dolu: takılı olmayan pette 'Team Full' uyarısı
+local root5, toasts5 = openPets("cat,dog,bunny,fox", "dog,bunny,fox")
+click(buttonWith(root5, "Small Cat")) -- kartı seç
+assert(textsUnder(root5, {})["Team Full"], "takım doluyken Team Full yazmalı")
+click(buttonWith(root5, "Team Full"))
+assert(string.find(toasts5[#toasts5], "team is full"), "Team Full tıklanınca uyarı gelmeli")
+
+-- 6) Keşif ipucu: kapalı pencerede ilk kez 3 aynı pet toplanınca bir kez hatırlatılır
+S.localPlayer:SetAttribute("OwnedPets", "cat,cat")
+local hintToasts = {}
+PetsPanel.init(S.newInstance("Frame"), function(_, message)
+	table.insert(hintToasts, message)
+end)
+S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat")
+assert(#hintToasts == 1 and string.find(hintToasts[1], "matching pets"), "3 aynı pet toplanınca ipucu gelmeli")
+S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat,dog")
+assert(#hintToasts == 1, "ipucu oturumda bir kez gelmeli")
+print("PetsPanel hint ok")
+
+-- 7) Takipçi petler: Boss pet efektli (saydam kabuk + parçacık), diğer boylar düz küre ve boyları büyür
+S.localPlayer:SetAttribute("EquippedPets", "cat@4,dog,bunny@3")
+local PetFollowers = require("./PetFollowers")
+PetFollowers.init()
+local worldChildren = rawget(S.game:GetService("Workspace"), "_children")
+for _, name in { "Boss Cat", "BossShell", "Small Dog", "Big Bunny" } do
+	assert(worldChildren[name], "takipçi parçası yok: " .. name)
+end
+for _, hb in S.heartbeat do
+	hb(0.05)
+end
+print("PetFollowers boss effect ok")
 
 -- Index ve Stats pencereleri
 S.localPlayer:SetAttribute("DiscoveredPets", "cat,dog")

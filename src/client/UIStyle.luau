@@ -153,7 +153,7 @@ local DARK = Color3.fromRGB(60, 34, 42)
 
 function UIStyle.petIcon(parent, pet, props)
 	props = props or {}
-	local look = LOOKS[pet.id] or { ears = "round" }
+	local look = LOOKS[pet.baseId or pet.id] or { ears = "round" } -- birleşmiş boylar ('cat@2') ilk boyun görünümünü taşır
 	local color = pet.color
 	if props.dim then
 		color = color:Lerp(Color3.fromRGB(80, 82, 92), 0.7)

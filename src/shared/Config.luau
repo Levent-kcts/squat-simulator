@@ -452,7 +452,7 @@ return {
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)
 	MaxOwnedPets = 50,
 
-	-- GÜNLÜK GÖREVLER (sağ üstteki 📜 dairesi ve lobideki görev panosu, client/QuestPanel): her gün PerDay görev (sırayla kolay, orta, zor), gece yarısı (UTC) yenilenir;
+	-- GÜNLÜK GÖREVLER (SADECE sağ üstteki 📜 dairesi açar, client/QuestPanel; lobideki görev panosu sahibinin isteğiyle KALDIRILDI): her gün PerDay görev (sırayla kolay, orta, zor), gece yarısı (UTC) yenilenir;
 	-- aynı gün herkes aynı görevleri görür (gün sayısıyla seçilir). İlerlemeyi, ödülü ve günü SUNUCU tutar (PlayerStats), kayıtlıdır. Pool: id (olay adı), text ({goal} yerine hedef yazılır),
 	-- goals (kolay/orta/zor slot hedefi), hardOnly (sadece zor slotta çıkar). Rewards: slot başına ödül: muscle = tıklama başı kazanç x clicks, wins = tahmini Win turu ödülü x mult
 	-- (Layout.reward(tahmini aşama), tahmin rebirth sayısından). Üçü de bitince BonusBoostMinutes dakikalık 2x bacak kası güçlendirmesi.
@@ -464,7 +464,7 @@ return {
 			{ id = "clicks", text = "Squat or kick {goal} times", goals = { 120, 250, 500 } },
 			{ id = "hatch", text = "Hatch {goal} eggs", goals = { 2, 4, 8 } },
 			{ id = "winpads", text = "Step on the Win button {goal} times", goals = { 2, 3, 5 } },
-			{ id = "fuse", text = "Fuse pets {goal}x", goals = { 1, 1, 2 }, hardOnly = true },
+			{ id = "fuse", text = "Merge pets {goal}x", goals = { 1, 1, 2 }, hardOnly = true },
 			{ id = "rebirth", text = "Rebirth {goal}x", goals = { 1 }, hardOnly = true },
 		},
 		Rewards = {
@@ -474,7 +474,7 @@ return {
 		},
 	},
 
-	-- PET BİRLEŞTİRME (lobideki Pet Fusion makinesi, client/FusionPanel): Cost tane AYNI pet (aynı tür ve aynı boy) tek bir BİR ÜST BOYLU pete dönüşür.
+	-- PET BİRLEŞTİRME (Pets menüsündeki Merge düğmesi, client/PetsPanel; lobideki makine KALDIRILDI): Cost tane AYNI pet (aynı tür ve aynı boy) tek bir BİR ÜST BOYLU pete dönüşür.
 	-- Boy arttıkça petin çarpanı PowerFactor katına çıkar ve kürenin boyu Scale kadar büyür, adı öne ek alır. Birleşmiş petin id'si 'cat@2' gibidir (Catalog.PetById bunları da üretir);
 	-- Pet Index türe (ilk boy) bakar. PowerFactor DÜŞÜK tutuldu: fazlalık petler hiç boşa gitmediği için birleştirme zaten güç şişirir; tools/simulate.py (oyuncu hemen birleştirir diye en iyimser):
 	-- 3.3 -> 12. rebirth 2.3 saatte (eskiden 11.8 saat), 2.0 -> 5.3, 1.6 -> 7.6, 1.5 -> 8.2, 1.3 -> 9.8, 1.2 -> 10.7 saat (240 saatte 125 rebirth yerine 179 / 216 / 159). 1.3 seçildi. Çarpanı yükseltmeden önce simulate.py ile (fusion=0/1, fusion_factor=...) dene.
@@ -482,8 +482,10 @@ return {
 		Cost = 3,
 		MaxTier = 4,
 		PowerFactor = 1.3,
-		Scale = { 1, 1.35, 1.75, 2.3 },
-		NamePrefix = { "", "Big ", "Giant ", "Titan " },
+		-- Boylar: Small (yumurtadan çıkan), Normal, Big (en büyük boy) ve Boss (Big ile aynı boy, üstüne parlayan efekt: PetFollowers, Pets menüsü). Sahibi 'en büyük hali big, boss da üzerine efekt' dedi.
+		TierNames = { "Small", "Normal", "Big", "Boss" },
+		TierColors = { Color3.fromRGB(140, 200, 255), Color3.fromRGB(110, 230, 140), Color3.fromRGB(255, 190, 60), Color3.fromRGB(255, 70, 130) },
+		Scale = { 1, 1.4, 1.9, 1.9 },
 	},
 	Pets = {
 		{ id = "cat", name = "Cat", mult = 0.1, color = Color3.fromRGB(255, 190, 120) },

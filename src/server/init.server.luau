@@ -26,7 +26,7 @@ PlayerStats.init()
 WallService.init(notifyEvent)
 EnvironmentService.init()
 
--- Lobi canlılığı (görev panosu, Pet Fusion makinesi, aşama tabelaları) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
+-- Koridor canlılığı (aşama tabelaları) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okHub, Hub = pcall(require, script.Hub)
 	if okHub then

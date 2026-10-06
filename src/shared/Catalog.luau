@@ -16,23 +16,33 @@ for _, item in Config.Items do
 	Catalog.ItemById[item.id] = item
 end
 
--- Petler: ilk boy Config.Pets'ten gelir; birleştirilmiş (büyümüş) boylar 'id@boy' kimliğiyle burada üretilir (isim öneki, çarpan ve boy Config.PetFusion'dan)
+-- Petler: ilk boy (Small) Config.Pets'ten gelir; birleştirilmiş (büyümüş) boylar 'id@boy' kimliğiyle burada üretilir (boy adı, çarpan ve boy Config.PetFusion'dan).
+-- Her petin alanları: tier (1-4), tierName (Small/Normal/Big/Boss), tierColor, scale, name (ilk boyda 'Cat', diğerlerinde 'Normal Cat') ve label (hep boy adlı: 'Small Cat').
 local fusion = Config.PetFusion
 for _, pet in Config.Pets do
 	pet.baseId = pet.id
+	pet.baseName = pet.name
 	pet.tier = 1
+	pet.tierName = fusion.TierNames[1]
+	pet.tierColor = fusion.TierColors[1]
 	pet.scale = fusion.Scale[1]
+	pet.label = `{pet.tierName} {pet.name}`
 	Catalog.PetById[pet.id] = pet
 	table.insert(Catalog.AllPets, pet)
 end
 for _, base in Config.Pets do
 	for tier = 2, fusion.MaxTier do
 		local id = `{base.id}@{tier}`
+		local tierName = fusion.TierNames[tier]
 		local pet = {
 			id = id,
 			baseId = base.id,
+			baseName = base.name,
 			tier = tier,
-			name = fusion.NamePrefix[tier] .. base.name,
+			tierName = tierName,
+			tierColor = fusion.TierColors[tier],
+			name = `{tierName} {base.name}`,
+			label = `{tierName} {base.name}`,
 			mult = base.mult * fusion.PowerFactor ^ (tier - 1),
 			color = base.color:Lerp(Color3.new(1, 1, 1), 0.1 * (tier - 1)),
 			scale = fusion.Scale[tier],
@@ -40,6 +50,11 @@ for _, base in Config.Pets do
 		Catalog.PetById[id] = pet
 		table.insert(Catalog.AllPets, pet)
 	end
+end
+
+-- En büyük boy (Boss) mu? Efektli gösterilir (PetFollowers, Pets menüsü)
+function Catalog.isBoss(pet)
+	return pet.tier >= fusion.MaxTier
 end
 
 -- Bir sonraki boyun peti (en büyük boyda nil)

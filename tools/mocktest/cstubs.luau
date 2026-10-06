@@ -148,7 +148,7 @@ InstMT.__index = function(self, key)
 			end
 			return list
 		end
-	elseif key == "OnServerEvent" or key == "OnClientEvent" or key == "Running" then
+	elseif key == "OnServerEvent" or key == "OnClientEvent" or key == "Running" or key == "MouseButton1Click" then
 		-- Olay dinleyicisini kaydeder (testler tetikleyebilsin): rawget(olay, "_handlers")[anahtar]
 		return {
 			Connect = function(_, f)

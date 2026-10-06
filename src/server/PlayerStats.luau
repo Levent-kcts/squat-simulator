@@ -1418,7 +1418,7 @@ function PlayerStats.deletePet(player, petId)
 	return true, `Deleted {pet.name}`
 end
 
--- ---------- Pet birleştirme (lobideki Pet Fusion makinesi) ----------
+-- ---------- Pet birleştirme (Pets menüsündeki Merge düğmesi) ----------
 
 -- Birleştirme: aynı id'den Cost kopya silinir, bir üst boydan 1 pet gelir (envanter dolmaz: Cost - 1 yer açılır). Takılı kopya silindiyse takılıdan da düşer,
 -- yeni pet boş yuva varsa takılır. İç fonksiyon, mesaj ve ödül metni dışarıda: fusePet tek, fuseAllPets hepsi için kullanır.
@@ -1472,16 +1472,16 @@ function PlayerStats.fusePet(player, petId)
 	end
 	local fusion = Config.PetFusion
 	if not Catalog.nextTier(pet) then
-		return false, `{pet.name} is already at the maximum size!`
+		return false, `{pet.label} is already at the maximum size!`
 	end
 	local have = countOf(profile.pets, petId)
 	if have < fusion.Cost then
-		return false, `You need {fusion.Cost} {pet.name} to fuse (you have {have}).`
+		return false, `You need {fusion.Cost} {pet.label} to merge (you have {have}).`
 	end
 	local nextPet = fuseOnce(player, profile, petId)
 	refresh(player)
 	requestSave(player)
-	return true, `Fused! You got {nextPet.name} (+{math.floor(nextPet.mult * 100 + 0.5)}% muscle)`, nextPet.id
+	return true, `Merged! You got {nextPet.label} (+{math.floor(nextPet.mult * 100 + 0.5)}% muscle)`, nextPet.id
 end
 
 -- Elde fuse edilebilecek ne varsa birleştirir (yeni oluşan boylar da kendi içinde birleşebilir). Dönüş: başarılı mı, mesaj
@@ -1511,11 +1511,11 @@ function PlayerStats.fuseAllPets(player)
 		end
 	end
 	if fusions == 0 then
-		return false, `You need {Config.PetFusion.Cost} of the same pet to fuse.`
+		return false, `You need {Config.PetFusion.Cost} of the same pet to merge.`
 	end
 	refresh(player)
 	requestSave(player)
-	return true, `Fused {fusions} time{if fusions == 1 then "" else "s"}! Best: {best.name} (+{math.floor(best.mult * 100 + 0.5)}% muscle)`
+	return true, `Merged {fusions} time{if fusions == 1 then "" else "s"}! Best: {best.label} (+{math.floor(best.mult * 100 + 0.5)}% muscle)`
 end
 
 -- ---------- Oyun süresi ödülleri ----------
@@ -1646,7 +1646,7 @@ function PlayerStats.dev(player, command, amount)
 		for _ = 1, 3 do
 			table.insert(profile.pets, pet.id)
 		end
-		message = `3 free {pet.name}: try the Pet Fusion machine!`
+		message = `3 free {pet.name}: open Pets and Merge them!`
 	elseif command == "DiscoverAll" then
 		-- Pet Index'i denemek için bütün petleri keşfedilmiş sayar
 		for _, pet in Config.Pets do
