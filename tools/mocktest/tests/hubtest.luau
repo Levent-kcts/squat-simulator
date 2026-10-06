@@ -1,0 +1,5 @@
+local S = require("./stubs")
+local Hub = require("./Hub")
+local ok, err = pcall(Hub.init)
+print("Hub.init:", ok, err)
+print("DONE")

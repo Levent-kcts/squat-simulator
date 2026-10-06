@@ -1,0 +1,10 @@
+
+local S = require("./cstubs")
+local Env = require("./EnvironmentService")
+local ok, err = pcall(Env.init)
+print("EnvironmentService.init:", ok, err)
+local Wall = require("./WallService")
+local notify = S.newInstance("RemoteEvent")
+local ok2, err2 = pcall(Wall.init, notify)
+print("WallService.init:", ok2, err2)
+print("DONE")

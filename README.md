@@ -96,6 +96,7 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
   - **Denge:** duvar canı aşama içinde artınca (8.2 kat) Win kazancı düşmüştü: aşama 4+ taban can çarpanı `HealthGrowthAfter` 5 > 4.5 yapıldı (12. rebirth 12.0 saat, Win kazancı +%12). Ayakkabı fiyatları skin fiyatlarıyla aynı. Quest ödülleri küçük (günde yaklaşık yarım saatlik ilerleme).
   - **Performans:** `WallClient` her duvarın tuğla desenini (yüzlerce GUI nesnesi) artık sadece oyuncu 160 stud'dan yakınken kurar, 230'dan uzaklaşınca siler; ön yüz GUI'si ve bekleme parçacığı da sadece yakın ve sağlam duvarda açık.
   - **Temizlik:** kullanılmayan `assets/icons/leg_muscle.png` silindi (sahibinin görseli kullanılıyor); Config'te kullanılmayan anahtar kalmadı (taramayla doğrulandı). Hiçbiri Studio'da denenmedi.
+- **Mantık testi aracı (2026-10-06, `tools/mocktest.py`):** Studio'ya çıkmadan kodu ÇALIŞTIRARAK hata avlamak için Roblox taklitli test düzeneği (resmi `luau.exe` + `tools/mocktest/stubs.luau` / `cstubs.luau`). `python tools/mocktest.py` PlayerStats akışlarını (giriş, eğitim, skin, ayakkabı, yumurta, pet birleştirme, günlük görevler, tüm DEV komutları, kayıt), Hub/Ortam/Koridor kurulumunu ve QuestPanel, FusionPanel, WallClient (20 tema deseni, yakınlık döngüsü), Juice efektlerini koşturur; şu an 6/6 test geçiyor. YAKALAR: nil indeksleme, yanlış değişken/alan, çökmeler. YAKALAMAZ: Roblox özellik/enum adı yanlışları ve görünüm (enum adları ayrıca elle tarandı, hepsi geçerli). Bu turda yazılan her şey bu testlerden geçti.
 
 ## 5. Yapılacaklar
 
