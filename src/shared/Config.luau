@@ -283,7 +283,7 @@ return {
 		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
 		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
 		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
-		HealthGrowthAfter = 5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; tools/simulate.py)
+		HealthGrowthAfter = 4.5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; tools/simulate.py)
 
 		Width = 32, -- koridorun ve duvarın genişliği (stud)
 		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır
@@ -468,19 +468,20 @@ return {
 			{ id = "rebirth", text = "Rebirth {goal}x", goals = { 1 }, hardOnly = true },
 		},
 		Rewards = {
-			{ kind = "muscle", clicks = 300 },
-			{ kind = "wins", mult = 2 },
-			{ kind = "muscle", clicks = 1500 },
+			{ kind = "muscle", clicks = 600 },
+			{ kind = "wins", mult = 4 },
+			{ kind = "muscle", clicks = 3000 },
 		},
 	},
 
 	-- PET BİRLEŞTİRME (lobideki Pet Fusion makinesi, client/FusionPanel): Cost tane AYNI pet (aynı tür ve aynı boy) tek bir BİR ÜST BOYLU pete dönüşür.
-	-- Boy arttıkça petin çarpanı PowerFactor katına çıkar (3 pet x 1.1 bonus: birleştirmek takılı pet yuvasından tasarruf ettirir ve biraz kazandırır; 4. boy 27 pet ister, çarpan 3.3^3 = 36 kat), kürenin boyu Scale kadar büyür,
-	-- adı öne ek alır. Birleşmiş petin id'si 'cat@2' gibidir (Catalog.PetById bunları da üretir); Pet Index türe (ilk boy) bakar.
+	-- Boy arttıkça petin çarpanı PowerFactor katına çıkar ve kürenin boyu Scale kadar büyür, adı öne ek alır. Birleşmiş petin id'si 'cat@2' gibidir (Catalog.PetById bunları da üretir);
+	-- Pet Index türe (ilk boy) bakar. PowerFactor DÜŞÜK tutuldu: fazlalık petler hiç boşa gitmediği için birleştirme zaten güç şişirir; tools/simulate.py (oyuncu hemen birleştirir diye en iyimser):
+	-- 3.3 -> 12. rebirth 2.3 saatte (eskiden 12 saat), 2.0 -> 5.3 saat, 1.6 -> 7.6 saat, 1.5 -> ~9 saat. Çarpanı yükseltmeden önce simulate.py ile (fusion=0/1, fusion_factor=...) dene.
 	PetFusion = {
 		Cost = 3,
 		MaxTier = 4,
-		PowerFactor = 3.3,
+		PowerFactor = 1.5,
 		Scale = { 1, 1.35, 1.75, 2.3 },
 		NamePrefix = { "", "Big ", "Giant ", "Titan " },
 	},

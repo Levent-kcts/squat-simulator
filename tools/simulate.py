@@ -50,6 +50,12 @@ SKINS = [(num(l, "price"), num(l, "bonus")) for l in block("Skins").splitlines()
 PETS = {m.group(1): float(m.group(2)) for m in re.finditer(r'id = "(\w+)", name = "[^"]+", mult = ([\d\.]+)', block("Pets"))}
 AURAS = [(num(l, "winPrice"), num(l, "mult")) for l in block("Auras").splitlines() if "winPrice =" in l]
 
+# Pet birleştirme (Config.PetFusion): Cost aynı pet (aynı çarpan ve boy) tek bir üst boya dönüşür, çarpan PowerFactor katına çıkar
+FUSION = block("PetFusion")
+FUSION_COST = int(num(FUSION, "Cost", 3))
+FUSION_MAX = int(num(FUSION, "MaxTier", 4))
+FUSION_FACTOR = num(FUSION, "PowerFactor", 3.3)
+
 EGGS = []
 for m in re.finditer(r'\{ id = "(\w+)", name = "[^"]+", price = (\d+),.*?pets = \{(.*?)\} \}', block("Eggs"), re.S):
     pets = [(p.group(1), float(p.group(2))) for p in re.finditer(r'id = "(\w+)", weight = (\d+)', m.group(3))]
@@ -74,6 +80,8 @@ MOVE = {"Kick": 0.4, "Squat": 0.5}
 args = sys.argv[1:]
 HOURS = float(args[0]) if args and "=" not in args[0] else 12.0
 OVERRIDES = dict(a.split("=") for a in args if "=" in a)
+if "fusion_factor" in OVERRIDES:
+    FUSION_FACTOR = float(OVERRIDES["fusion_factor"])
 if "growth" in OVERRIDES:
     GROWTH = float(OVERRIDES["growth"])
 if "level_mult" in OVERRIDES:
@@ -142,10 +150,10 @@ class Player:
         return BASE_MAX_LEVEL + self.rebirths * MAX_LEVEL_PER_REBIRTH
 
     def pet_mult(self):
-        key = (len(self.pets), self.pets[0] if self.pets else 0, self.pets[2] if len(self.pets) > 2 else 0)
+        key = (len(self.pets), self.pets[0][0] if self.pets else 0, self.pets[2][0] if len(self.pets) > 2 else 0)
         if self._pet_cache_len != key:
             self._pet_cache_len = key
-            self._pet_cache = 1 + sum(sorted(self.pets, reverse=True)[:3])
+            self._pet_cache = 1 + sum(mult for mult, _ in sorted(self.pets, reverse=True)[:3])
         return self._pet_cache
 
     def gain(self):
@@ -195,10 +203,11 @@ class Player:
                 for pet_id, weight in pool:
                     roll -= weight
                     if roll <= 0:
-                        self.pets.append(PETS[pet_id])
+                        self.pets.append((PETS[pet_id], 1))
                         break
                 else:
-                    self.pets.append(PETS[pool[-1][0]])
+                    self.pets.append((PETS[pool[-1][0]], 1))
+                self.fuse_pets()
                 self.pets = sorted(self.pets, reverse=True)[:50]
                 continue
             skins = [s for s in SKINS if s[1] > self.skin and s[0] <= self.wins * 0.5]
@@ -214,6 +223,25 @@ class Player:
                 self.shoe = damage
                 continue
             break
+
+    def fuse_pets(self):
+        """Elde aynı (çarpan, boy) petten FUSION_COST tane varsa birleştirir (oyuncu fırsat buldukça birleştirir diye iyimser: hemen). fusion=0 ile kapatılır."""
+        if not int(OVERRIDES.get("fusion", 1)):
+            return
+        changed = True
+        while changed:
+            changed = False
+            counts = {}
+            for pet in self.pets:
+                counts[pet] = counts.get(pet, 0) + 1
+            for (mult, tier), n in sorted(counts.items()):
+                if n >= FUSION_COST and tier < FUSION_MAX:
+                    for _ in range(FUSION_COST):
+                        self.pets.remove((mult, tier))
+                    self.pets.append((mult * FUSION_FACTOR, tier + 1))
+                    changed = True
+                    break
+        self._pet_cache_len = -1
 
     def rebirth(self):
         self.rebirths += 1

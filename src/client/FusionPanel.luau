@@ -8,6 +8,8 @@ local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
+-- Kutlama efekti (isteğe bağlı): yüklenemezse birleştirme yine çalışır
+local okJuice, Juice = pcall(require, script.Parent.Juice)
 
 local FusionPanel = {}
 
@@ -146,6 +148,9 @@ function FusionPanel.init(screenGui, showToast)
 		task.spawn(function()
 			local ok, message = shopFunction:InvokeServer(action, id)
 			showToast(ok, message or "")
+			if ok and okJuice then
+				pcall(Juice.celebrate, Color3.fromRGB(190, 120, 255), 70) -- birleştirme başarılı: mor parıltı
+			end
 		end)
 	end
 

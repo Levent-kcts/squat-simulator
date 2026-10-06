@@ -237,11 +237,17 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		end
 	end)
 	local okQuestPanel, QuestPanel = pcall(require, script.Parent.QuestPanel) -- hata verirse sadece rozet çalışmaz
+	local lastClaimable = nil
 	local function refreshQuestBadge()
 		if not okQuestPanel then
 			return
 		end
 		local count = QuestPanel.claimable(player)
+		-- Yeni bir görev bitince (alınabilir sayısı artınca) kısa hatırlatma
+		if lastClaimable ~= nil and count > lastClaimable and showToast then
+			showToast(true, "Quest complete! Open the 📜 button to claim your reward.")
+		end
+		lastClaimable = count
 		questBadge.Visible = count > 0
 		questBadgeText.Text = tostring(count)
 	end

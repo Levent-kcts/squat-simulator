@@ -1,6 +1,8 @@
 -- Duvarlar sadece bu oyuncunun ekranında vardır. Diğer oyuncular senin duvarlarını görmez,
 -- yani senin duvarlardan geçtiğini görürler. Canları sunucu tutar, burada sadece gösterilir.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -178,7 +180,7 @@ local function brickPattern(stage, theme)
 		template.Size = UDim2.fromScale(1, 1)
 		template.BackgroundTransparency = 1
 		template.BorderSizePixel = 0
-		template.ZIndex = 0 -- yazıların ve can çubuğunun altında kalsın
+		template.ZIndex = -1 -- okunaklılık plakasının, yazıların ve can çubuğunun altında kalsın
 		local random = Random.new(stage)
 		for row = 0, BRICK_ROWS - 1 do
 			local edges = if row % 2 == 0 then { 0, 0.25, 0.5, 0.75, 1 } else { 0, 0.125, 0.375, 0.625, 0.875, 1 }
@@ -238,7 +240,7 @@ local function createWall(folder, index)
 	gui.PixelsPerStud = 30
 	gui.LightInfluence = 0
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	brickPattern(stage, theme).Parent = gui -- yazılardan ÖNCE kurulur, altta kalır
+	-- Tuğla deseni (yüzlerce GUI nesnesi) burada kurulmaz: oyuncu duvara yaklaşınca WallClient.init'teki döngü kurar, uzaklaşınca siler (setNear)
 	-- Okunaklılık plakası: desenli/dokulu malzemenin üstünde numara, isim ve can çubuğu net okunsun diye yarı saydam koyu zemin
 	local plate = Instance.new("Frame")
 	plate.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -297,8 +299,38 @@ local function createWall(folder, index)
 	end
 
 	local maxHp = Layout.maxHp(index)
-	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient, baseTransparency = baseTransparency }
+	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient, baseTransparency = baseTransparency, stage = stage, near = false, pattern = nil }
 end
+
+-- Duvarın ön yüz GUI'si ve bekleme parçacığı sadece hem sağlam hem YAKIN iken açıktır
+local function applyVisibility(wall)
+	local visible = wall.hp > 0 and wall.near
+	wall.gui.Enabled = visible
+	if wall.ambient then
+		wall.ambient.Enabled = visible
+	end
+end
+
+-- Oyuncu yaklaşınca tuğla deseni kurulur, uzaklaşınca silinir (100 duvarın yüzlerce nesnesi açılışta bellek ve süre yemesin)
+local function setNear(wall, near)
+	if wall.near == near then
+		return
+	end
+	wall.near = near
+	if near then
+		if not wall.pattern then
+			wall.pattern = brickPattern(wall.stage, wall.theme)
+			wall.pattern.Parent = wall.gui
+		end
+	elseif wall.pattern then
+		wall.pattern:Destroy()
+		wall.pattern = nil
+	end
+	applyVisibility(wall)
+end
+
+local NEAR_DISTANCE = 160 -- bu kadar (stud, koridor ekseninde) yakınsa desen kurulur
+local FAR_DISTANCE = 230 -- bundan uzaksa silinir (iki eşik arası titremeyi önler)
 
 local function setHp(wall, hp)
 	local wasAlive = wall.hp > 0
@@ -306,10 +338,7 @@ local function setHp(wall, hp)
 	if hp <= 0 then
 		wall.part.CanCollide = false
 		wall.part.Transparency = 1
-		wall.gui.Enabled = false
-		if wall.ambient then
-			wall.ambient.Enabled = false
-		end
+		applyVisibility(wall)
 		if wasAlive and okJuice then
 			pcall(Juice.wallBroken, wall.part, wall.theme) -- kırılma patlaması + sarsıntı (yakındaysa)
 		end
@@ -319,10 +348,7 @@ local function setHp(wall, hp)
 	local ratio = math.clamp(hp / wall.maxHp, 0, 1)
 	wall.part.CanCollide = true
 	wall.part.Transparency = wall.baseTransparency
-	wall.gui.Enabled = true
-	if wall.ambient then
-		wall.ambient.Enabled = true
-	end
+	applyVisibility(wall)
 	wall.label.Text = `{Format.compact(hp)}/{Format.compact(wall.maxHp)}`
 	wall.fill.Size = UDim2.fromScale(ratio, 1)
 	-- dolu = yeşil, azaldıkça kırmızıya döner
@@ -342,6 +368,33 @@ function WallClient.init(onProgress)
 		walls[i] = createWall(folder, i)
 		setHp(walls[i], walls[i].maxHp)
 	end
+
+	-- İlk aşamaların desenleri hemen kurulur (oyun başında ilk duvarlar önde); gerisini yakınlık döngüsü yönetir
+	for i = 1, math.min(10, cfg.Count) do
+		setNear(walls[i], true)
+	end
+	local sinceCheck = 0
+	RunService.Heartbeat:Connect(function(deltaTime)
+		sinceCheck += deltaTime
+		if sinceCheck < 0.5 then
+			return
+		end
+		sinceCheck = 0
+		local character = Players.LocalPlayer.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not root then
+			return
+		end
+		local z = root.Position.Z
+		for _, wall in walls do
+			local distance = math.abs(wall.part.Position.Z - z)
+			if wall.near and distance > FAR_DISTANCE then
+				setNear(wall, false)
+			elseif not wall.near and distance < NEAR_DISTANCE then
+				setNear(wall, true)
+			end
+		end
+	end)
 
 	local function notify()
 		local frontier = 1
