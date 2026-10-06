@@ -26,7 +26,6 @@ local PanelManager = require(script.PanelManager)
 local clickEvent = ReplicatedStorage:WaitForChild("Click")
 local moveEvent = ReplicatedStorage:WaitForChild("MoveEvent")
 local notifyEvent = ReplicatedStorage:WaitForChild("Notify")
-local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")

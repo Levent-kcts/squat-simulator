@@ -889,7 +889,6 @@ function PlayerStats.processPurchase(player, purchaseId, product)
 	return true
 end
 
--- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
 -- Eğitimin ilk adımı: oyuncu bir hareket (squat/tekme) başlattığında sunucu sayar (Config.Tutorial.ClickGoal'e kadar, kayıtlı). Eğitimi bitmiş oyuncuda bir şey yapmaz.
 function PlayerStats.tutorialClick(player)
 	local profile = profiles[player]
@@ -975,6 +974,7 @@ function PlayerStats.claimQuestBonus(player)
 	return true, `Bonus! 2x Leg Muscle for {Config.Quests.BonusBoostMinutes} minutes!`
 end
 
+-- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
 function PlayerStats.getDamageMultiplier(player)
 	local profile = profiles[player]
 	return profile and profile.damageMultiplier or 1
@@ -1432,12 +1432,30 @@ local function fuseOnce(player, profile, petId)
 	for _ = 1, fusion.Cost do
 		table.remove(profile.pets, table.find(profile.pets, petId))
 	end
+	local removedEquipped = 0 -- takılı olup birleştirmede giden kopya sayısı: yuvaları boş bırakmamak için en iyi takılmamışlarla doldurulur
 	while countOf(profile.equipped, petId) > countOf(profile.pets, petId) do
 		table.remove(profile.equipped, table.find(profile.equipped, petId))
+		removedEquipped += 1
 	end
 	table.insert(profile.pets, nextPet.id)
 	if #profile.equipped < Config.MaxEquippedPets then
 		table.insert(profile.equipped, nextPet.id)
+	end
+	if removedEquipped > 1 then
+		local sorted = table.clone(profile.pets)
+		table.sort(sorted, function(a, b)
+			return Catalog.PetById[a].mult > Catalog.PetById[b].mult
+		end)
+		local toFill = removedEquipped - 1
+		for _, id in sorted do
+			if toFill <= 0 or #profile.equipped >= Config.MaxEquippedPets then
+				break
+			end
+			if countOf(profile.equipped, id) < countOf(profile.pets, id) then
+				table.insert(profile.equipped, id)
+				toFill -= 1
+			end
+		end
 	end
 	PlayerStats.questEvent(player, "fuse", 1)
 	return nextPet

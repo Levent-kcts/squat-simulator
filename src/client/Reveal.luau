@@ -1,6 +1,5 @@
 -- Yumurta açılış ekranı: açılan petler nadirliğe göre renklenen kartlar olarak sırayla zıplayarak belirir, kısa süre durur ve solar.
 -- Sadece görsel: sonucu sunucu verir (PlayerStats.hatchEgg). Yeni açılan pet "NEW!" rozeti alır.
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 

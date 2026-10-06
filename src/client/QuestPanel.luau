@@ -7,6 +7,8 @@ local Workspace = game:GetService("Workspace")
 
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
+-- Ses (isteğe bağlı): ödül alınınca kısa jingle
+local okSfx, Sfx = pcall(require, script.Parent.Sfx)
 
 local QuestPanel = {}
 
@@ -150,6 +152,9 @@ function QuestPanel.init(screenGui, showToast)
 		task.spawn(function()
 			local ok, message = shopFunction:InvokeServer(action, id)
 			showToast(ok, message or "")
+			if ok and okSfx then
+				pcall(Sfx.play, "Win") -- ödül alındı sesi
+			end
 		end)
 	end
 
@@ -224,7 +229,7 @@ function QuestPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(88, 62, 140),
 	}, list)
 	UIStyle.soften(bonusRow, { radius = 12, strength = 0.15, shine = false })
-	local bonusTitle = makeText(bonusRow, {
+	makeText(bonusRow, {
 		Position = UDim2.fromOffset(14, 8),
 		Size = UDim2.new(0.58, -14, 0, 30),
 		Text = "⭐ BONUS: finish all 3 quests",

@@ -10,6 +10,7 @@ local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 -- Kutlama efekti (isteğe bağlı): yüklenemezse birleştirme yine çalışır
 local okJuice, Juice = pcall(require, script.Parent.Juice)
+local okSfx, Sfx = pcall(require, script.Parent.Sfx)
 
 local FusionPanel = {}
 
@@ -150,6 +151,9 @@ function FusionPanel.init(screenGui, showToast)
 			showToast(ok, message or "")
 			if ok and okJuice then
 				pcall(Juice.celebrate, Color3.fromRGB(190, 120, 255), 70) -- birleştirme başarılı: mor parıltı
+			end
+			if ok and okSfx then
+				pcall(Sfx.play, "Rare") -- parlak 'pırıl' sesi (Epic ve üstü pet sesi)
 			end
 		end)
 	end
