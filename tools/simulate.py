@@ -61,6 +61,8 @@ ZONES = [(num(l, "rebirths", 0), num(l, "mult")) for l in TRAINING.splitlines() 
 WALL = block("Wall")
 GROUP_HEALTH = [float(x) for x in re.search(r"GroupHealth = \{([^}]*)\}", WALL).group(1).split(",") if x.strip()]
 HEALTH_GROWTH = num(WALL, "HealthGrowthAfter")
+_steps = re.search(r"GroupHealthSteps = \{([^}]*)\}", WALL)
+GROUP_STEPS = [float(x) for x in _steps.group(1).split(",") if x.strip()] if _steps else [1.0] * 5
 REWARD_GROWTH = num(WALL, "RewardGrowth")
 STAGE_COUNT = int(num(WALL, "Count") // num(WALL, "GroupSize"))
 SPACING = num(WALL, "Spacing")
@@ -229,7 +231,7 @@ class Player:
         trip_time = 4.0  # lobiden ilk duvara yürüme
         hits_total = 0
         for s in range(1, STAGE_COUNT + 1):
-            total_hp = 5 * stage_hp(s)
+            total_hp = sum(GROUP_STEPS) * stage_hp(s)  # aşamadaki 5 duvarın toplam canı (duvarlar kendi içinde de artar)
             hits = max(1, math.ceil(total_hp / max(damage, 1)))
             if hits > 12:
                 break

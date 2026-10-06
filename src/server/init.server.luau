@@ -132,6 +132,7 @@ clickEvent.OnServerEvent:Connect(function(player)
 	local duration = Config.MoveDuration[move]
 	busyUntil[player] = now + duration - MOVE_TOLERANCE
 	broadcastMove(player, move)
+	PlayerStats.tutorialClick(player) -- eğitimin ilk adımı için tıklama sayısı
 
 	task.delay(duration * (Config.MoveContact[move] or 1), function()
 		if player.Parent == nil then

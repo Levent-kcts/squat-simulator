@@ -55,7 +55,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, TutorialDone = false }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, TutorialDone = false, TutorialClicks = 0 }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -175,6 +175,9 @@ local function sanitize(raw)
 		end
 	else
 		data.EquippedPets = bestEquipped(data.Pets)
+	end
+	if type(raw.TutorialClicks) == "number" then
+		data.TutorialClicks = math.clamp(math.floor(raw.TutorialClicks), 0, Config.Tutorial.ClickGoal)
 	end
 	-- Eğitim: kayıtlı true ise bitmiştir; eski kayıtta alan yoksa ilerlemesi olan oyuncu eski oyuncudur (eğitim görmez), tamamen yeni oyuncu görür
 	if raw.TutorialDone == true then
@@ -305,6 +308,7 @@ local function refresh(player)
 		profile.tutorialDone = true -- kayıt, skini alan işlemdeki requestSave (buySkin) ya da sonraki otomatik kayıtla yapılır
 	end
 	player:SetAttribute("TutorialDone", profile.tutorialDone)
+	player:SetAttribute("TutorialClicks", profile.tutorialClicks)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
@@ -361,6 +365,7 @@ local function save(player)
 		MusicLevel = profile.musicLevel,
 		Settings = profile.settings,
 		TutorialDone = profile.tutorialDone,
+		TutorialClicks = profile.tutorialClicks,
 		Discovered = (function()
 			local list = {}
 			for id in profile.discovered do
@@ -492,6 +497,7 @@ local function setup(player)
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
 		tutorialDone = false, -- eğitim bitti mi (ilk skin alınınca true olur; kayıtlı)
+		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
@@ -513,6 +519,7 @@ local function setup(player)
 	profile.skins = data.Skins
 	profile.equippedSkin = data.EquippedSkin
 	profile.tutorialDone = data.TutorialDone
+	profile.tutorialClicks = data.TutorialClicks
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	for _, id in data.Discovered do
@@ -756,6 +763,18 @@ function PlayerStats.processPurchase(player, purchaseId, product)
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
+-- Eğitimin ilk adımı: oyuncu bir hareket (squat/tekme) başlattığında sunucu sayar (Config.Tutorial.ClickGoal'e kadar, kayıtlı). Eğitimi bitmiş oyuncuda bir şey yapmaz.
+function PlayerStats.tutorialClick(player)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or profile.tutorialDone then
+		return
+	end
+	if profile.tutorialClicks < Config.Tutorial.ClickGoal then
+		profile.tutorialClicks += 1
+		player:SetAttribute("TutorialClicks", profile.tutorialClicks)
+	end
+end
+
 function PlayerStats.getDamageMultiplier(player)
 	local profile = profiles[player]
 	return profile and profile.damageMultiplier or 1
@@ -1362,6 +1381,8 @@ function PlayerStats.dev(player, command, amount)
 		profile.boostWinsUntil = 0
 		profile.discovered = {}
 		profile.tutorialDone = false -- eğitim yeniden başlar
+		profile.tutorialClicks = 0
+		player:SetAttribute("TutorialClicks", 0)
 		profile.offlinePending = 0
 		profile.offlineSeconds = 0
 		publishOffline(player, profile)

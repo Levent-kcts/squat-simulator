@@ -90,6 +90,10 @@ function Guide.init(wallClient)
 
 	-- Hedefi belirle: dönüş (konum) ya da nil (çizgi gizli)
 	local function pickTarget(position)
+		-- Eğitimin ilk adımı (squat say): duvara yönlendirme, ilk Config.Tutorial.ClickGoal tıklama bitene kadar çizgi yok
+		if (player:GetAttribute("TutorialClicks") or 0) < Config.Tutorial.ClickGoal then
+			return nil
+		end
 		-- İlk skine yetecek Win varsa: skin rafındaki ilk pede
 		if wins.Value >= firstSkin.price then
 			local pad = findSkinPad()

@@ -31,10 +31,11 @@ end
 function Layout.maxHp(index)
 	local stage = Layout.stageOf(index)
 	local list = cfg.GroupHealth
-	if stage <= #list then
-		return list[stage]
-	end
-	return math.floor(list[#list] * cfg.HealthGrowthAfter ^ (stage - #list) + 0.5)
+	local base = if stage <= #list then list[stage] else math.floor(list[#list] * cfg.HealthGrowthAfter ^ (stage - #list) + 0.5)
+	-- Aşama içindeki sıraya göre artar (1. duvar taban can, sonrakiler GroupHealthSteps kadar daha dayanıklı)
+	local steps = cfg.GroupHealthSteps
+	local step = if steps then (steps[(index - 1) % cfg.GroupSize + 1] or steps[#steps]) else 1
+	return math.max(1, math.floor(base * step + 0.5))
 end
 
 -- Aşamanın teması (Config.Wall.Themes: isim, renk, parçacık, desen). Aynı aşamadaki 5 duvar aynı temayı taşır.

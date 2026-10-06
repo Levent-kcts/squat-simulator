@@ -231,6 +231,8 @@ return {
 	-- Eğitim (tutorial): SADECE yeni oyuncuya gösterilir (üstteki yönerge yazısı ve yol gösterici çizgi), oyuncu İLK SKİNİNİ alana kadar sürer. Kayıtta 'TutorialDone' tutulur;
 	-- eski kayıtlarda ilerleme varsa (kas, Win, rebirth, eşya, pet, skin) eğitim bitmiş sayılır. Adımlar: duvarları kır, Win pedine bas, ilk skin fiyatına (Config.Skins[1]) yetince skin rafına git ve al.
 	-- Çizgi ve yazı client/Guide ve init.client'tadır.
+	-- İlk adım: oyun başında 'Click to squat and get stronger! (0/30)': ClickGoal kez tıklayınca (hareket başlayınca, sunucu sayar, kayıtlı) oyuncu duvara yönlendirilir.
+	Tutorial = { ClickGoal = 30 },
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
 	CameraMaxZoom = 40,
@@ -277,6 +279,9 @@ return {
 		-- HealthGrowthAfter katı olur (3. grup 3000 ise 4. grup 3000 x 5 = 15000).
 		-- Sonraki grupları oyunun ekonomisine (çarpanlar, rebirth) göre ayrıca dengelemek gerekecek.
 		GroupHealth = { 25, 250, 3000 },
+		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
+		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
+		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
 		HealthGrowthAfter = 5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; tools/simulate.py)
 
 		Width = 32, -- koridorun ve duvarın genişliği (stud)

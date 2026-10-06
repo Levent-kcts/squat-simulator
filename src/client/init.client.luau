@@ -123,6 +123,23 @@ local bannerText = makeText(banner, {
 	TextColor3 = Color3.new(1, 1, 1),
 }, 24, 2)
 
+-- Eğitimin ilk adımında ('Click to squat... (n/30)') yazının altında ilerleme çubuğu
+local bannerBar = create("Frame", {
+	Position = UDim2.new(0, 0, 1, 5),
+	Size = UDim2.new(1, 0, 0, 10),
+	BackgroundColor3 = Color3.fromRGB(30, 32, 44),
+	BorderSizePixel = 0,
+	Visible = false,
+}, banner)
+create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bannerBar)
+create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, bannerBar)
+local bannerFill = create("Frame", {
+	Size = UDim2.fromScale(0, 1),
+	BackgroundColor3 = Color3.fromRGB(110, 255, 140),
+	BorderSizePixel = 0,
+}, bannerBar)
+create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bannerFill)
+
 -- =====================================================================
 -- SOL ÜST: sayaçlar (Rebirth sayısı ve Win)
 -- =====================================================================
@@ -503,7 +520,16 @@ local function tutorialActive()
 	return player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false
 end
 
+local function tutorialClicks()
+	return player:GetAttribute("TutorialClicks") or 0
+end
+
 local function tutorialText()
+	-- 1. adım: squat say. Sunucu hareket başlatılınca sayar; ClickGoal kez olunca oyuncu duvara yönlendirilir
+	local goal = Config.Tutorial.ClickGoal
+	if tutorialClicks() < goal then
+		return `Click anywhere to squat and get stronger!  ({tutorialClicks()}/{goal})`
+	end
 	local wins = winValue.Value
 	if wins >= firstSkin.price then
 		return `You have {Format.number(wins)} Wins! Go to the SKIN shelf on the left wall and step on the {firstSkin.name} pad!`
@@ -519,15 +545,19 @@ local function refreshBanner()
 			area = candidate
 		end
 	end
+	local showBar = false
 	if area then
 		banner.Visible = true
 		bannerText.Text = `Training with {area.trainer}: x{string.format("%g", area.mult)} Squat!`
 	elseif tutorialActive() then
 		banner.Visible = true
 		bannerText.Text = tutorialText()
+		showBar = tutorialClicks() < Config.Tutorial.ClickGoal
 	else
 		banner.Visible = false
 	end
+	bannerBar.Visible = showBar
+	bannerFill.Size = UDim2.fromScale(math.clamp(tutorialClicks() / Config.Tutorial.ClickGoal, 0, 1), 1)
 end
 
 local function onProgress(frontier)
@@ -547,6 +577,7 @@ local function onProgress(frontier)
 end
 player:GetAttributeChangedSignal("TrainingArea"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("TutorialDone"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("TutorialClicks"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshBanner)
 winValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)
 refreshBanner()
