@@ -148,7 +148,7 @@ InstMT.__index = function(self, key)
 			end
 			return list
 		end
-	elseif key == "OnServerEvent" or key == "OnClientEvent" then
+	elseif key == "OnServerEvent" or key == "OnClientEvent" or key == "Running" then
 		-- Olay dinleyicisini kaydeder (testler tetikleyebilsin): rawget(olay, "_handlers")[anahtar]
 		return {
 			Connect = function(_, f)
@@ -238,10 +238,11 @@ remoteFunction.InvokeServer = function(_, action, id)
 end
 M.remoteFunction = remoteFunction
 M.playerAdded = {}
+M.characterOwners = {} -- [karakter] = oyuncu (Players:GetPlayerFromCharacter için)
 M.playerRemoving = {}
 local services = {
 	RunService = RunService,
-	Players = { LocalPlayer = localPlayer, PlayerAdded = { Connect = function(_, f) table.insert(M.playerAdded, f) return proxy() end }, PlayerRemoving = { Connect = function(_, f) table.insert(M.playerRemoving, f) return proxy() end }, GetPlayers = function() return {} end, GetPlayerFromCharacter = function() return nil end },
+	Players = { LocalPlayer = localPlayer, PlayerAdded = { Connect = function(_, f) table.insert(M.playerAdded, f) return proxy() end }, PlayerRemoving = { Connect = function(_, f) table.insert(M.playerRemoving, f) return proxy() end }, GetPlayers = function() return {} end, GetPlayerFromCharacter = function(_, character) return M.characterOwners[character] end },
 	DataStoreService = { GetDataStore = function() return {
 		GetAsync = function(_, key) return M.datastore[key] end,
 		UpdateAsync = function(_, key, fn) M.datastore[key] = fn(M.datastore[key]) return M.datastore[key] end,

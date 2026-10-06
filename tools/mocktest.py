@@ -7,6 +7,7 @@ tools/mocktest/stubs.luau ve cstubs.luau'daki taklitlerle değiştirilir) ve too
   hubtest/envtest  Hub, EnvironmentService ve WallService.init (koridorun tamamı) hatasız kuruluyor mu
   trainertest      10 antrenörün kıyafetleri
   shoetest         ayakkabı parlaklık/iz kademeleri
+  shoetrailtest    gerçek AppearanceCleaner: son 4 ayakkabıda ayak ışığı ve iz (sadece koşarken açık), zayıf ayakkabıda iz yok
   ctest            QuestPanel, FusionPanel, WallClient (20 tema deseni, yakınlık döngüsü) ve Juice efektleri (pcall'sız)
   boottest         init.server tüm sunucu modülleriyle açılıyor mu + oyuncu girişi
   flowtest         gerçek init.server işleyicileri: tıklama -> eğitim sayacı, kas, duvar hasarı; Shop: pet birleştirme, görev ödülü (sunucu doğrulamaları)
