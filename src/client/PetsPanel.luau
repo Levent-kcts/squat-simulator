@@ -542,7 +542,10 @@ function PetsPanel.init(screenGui, showToast)
 				showToast(false, `You need {cost} {pet.label} to merge (you have {ownedCount}).`)
 			else
 				invoke("FusePet", pet.id, false, function()
-					selectedId = nextPet.id
+					-- Seçim yeni (büyük) pete GİTMEZ: 12 tilkin hepsini arka arkaya birleştirebilsin diye aynı pet seçili kalır. Sadece o petten hiç kalmadıysa sonuç peti seçilir.
+					if not toCounts(player:GetAttribute("OwnedPets"))[pet.id] then
+						selectedId = nextPet.id
+					end
 					pendingDelete = nil
 					celebrate(nextPet)
 					if PanelManager.isOpen(panel) then
