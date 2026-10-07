@@ -220,6 +220,7 @@ M.newInstance = newInstance
 -- Servisler: istemci için gereken kadar
 local heartbeat = {}
 M.heartbeat = heartbeat
+M.renderStepped = {}
 local RunService = {
 	Heartbeat = {
 		Connect = function(_, f)
@@ -227,7 +228,12 @@ local RunService = {
 			return proxy()
 		end,
 	},
-	RenderStepped = { Connect = function() return proxy() end },
+	RenderStepped = {
+		Connect = function(_, f)
+			table.insert(M.renderStepped, f)
+			return proxy()
+		end,
+	},
 	IsStudio = function() return true end,
 }
 local localPlayer = newInstance("Player")

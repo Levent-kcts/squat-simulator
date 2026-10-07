@@ -271,6 +271,61 @@ S.localPlayer:SetAttribute("LuckBoostUntil", nil)
 S.localPlayer:SetAttribute("RainbowBoostUntil", nil)
 print("potion hud ok")
 
+-- Hareket sırasında boy ölçeği değişirse (level atlama: büyür, rebirth: küçülür) animasyon SIFIRLANMAZ: HipHeight yeni boya göre ölçeklenip hareket sürer, sonda asıl değerine (ölçekli) döner
+local Moves = require("./Moves")
+local moveCharacter = S.localPlayer.Character
+moveCharacter.Parent = S.newInstance("Folder") -- dünyada olmayan karakterin hareketi hemen biter (not character.Parent)
+local moveHumanoid = S.newInstance("Humanoid")
+moveHumanoid.Health = 100
+moveHumanoid.HipHeight = 2
+moveHumanoid.FloorMaterial = "Plastic" -- yerde (taklitte Enum karşılaştırması aynı nesneyi verdiği için havada sayılmasın)
+moveHumanoid.Parent = moveCharacter
+local heightScale = S.newInstance("NumberValue")
+heightScale.Name = "BodyHeightScale"
+heightScale.Value = 1
+heightScale.Parent = moveHumanoid
+local widthScale = S.newInstance("NumberValue")
+widthScale.Name = "BodyWidthScale"
+widthScale.Value = 1
+widthScale.Parent = moveHumanoid
+for _, jointName in { "RightHip", "LeftHip", "Waist" } do
+	local joint = S.newInstance("Motor6D")
+	joint.Name = jointName
+	joint.C0 = S.CFrame.new()
+	joint.Parent = moveCharacter
+end
+local function runRender()
+	for _, f in S.renderStepped do
+		f()
+	end
+end
+local function waitSeconds(seconds)
+	local start = os.clock()
+	while os.clock() - start < seconds do
+	end
+end
+Moves.play(moveCharacter, "Squat")
+waitSeconds(0.22) -- squat'ın en alçak anı (0.18-0.30 sn)
+runRender()
+assert(moveHumanoid.HipHeight > 1.5 and moveHumanoid.HipHeight < 1.9, "çökmüş squat: HipHeight düşmüş olmalı: " .. moveHumanoid.HipHeight)
+heightScale.Value = 2 -- level atladı: boy iki katına çıktı (hareket sürerken)
+runRender()
+assert(moveHumanoid.HipHeight > 3.0 and moveHumanoid.HipHeight < 3.9, "boy değişince hareket sürmeli ve HipHeight yeni boya göre ölçeklenmeli (sıfırlanmamalı): " .. moveHumanoid.HipHeight)
+waitSeconds(0.4) -- hareket bitti
+runRender()
+assert(math.abs(moveHumanoid.HipHeight - 4) < 1e-6, "hareket sonunda HipHeight yeni boyun asıl değerine dönmeli: " .. moveHumanoid.HipHeight)
+-- Rebirth: boy bir anda küçülür (2 -> 0.5), hareket yine sıfırlanmaz ve sonda küçük boyun HipHeight'ı kalır
+Moves.play(moveCharacter, "Squat")
+waitSeconds(0.22)
+runRender()
+heightScale.Value = 0.5
+runRender()
+assert(moveHumanoid.HipHeight < 4 * 0.25, "rebirth küçülmesinde HipHeight küçük boya göre düşük kalmalı: " .. moveHumanoid.HipHeight)
+waitSeconds(0.4)
+runRender()
+assert(math.abs(moveHumanoid.HipHeight - 1) < 1e-6, "rebirth sonrası HipHeight küçük boyun asıl değeri olmalı: " .. moveHumanoid.HipHeight)
+print("moves keep playing across scale changes ok")
+
 -- 7) Takipçi petler: Boss pet efektli (saydam kabuk + parçacık), diğer boylar düz küre ve boyları büyür
 S.localPlayer:SetAttribute("EquippedPets", "cat@4,dog,bunny@3")
 local PetFollowers = require("./PetFollowers")

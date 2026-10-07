@@ -69,16 +69,6 @@ local JOINTS = {
 
 local active = {} -- [character] = { move, start, rig }
 
--- Karakterin boyut ölçeği değişti mi anlamak için (seviye atlayınca karakter büyür, eklem konumları değişir)
-local function scaleKey(humanoid)
-	if not humanoid then
-		return 0
-	end
-	local height = humanoid:FindFirstChild("BodyHeightScale")
-	local width = humanoid:FindFirstChild("BodyWidthScale")
-	return (height and height.Value or 1) * 1000 + (width and width.Value or 1)
-end
-
 local function heightScaleOf(humanoid)
 	local height = humanoid and humanoid:FindFirstChild("BodyHeightScale")
 	return height and height.Value or 1
@@ -88,7 +78,6 @@ end
 local function getRig(character)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	local rig = {
-		scaleKey = scaleKey(humanoid),
 		heightScale = heightScaleOf(humanoid),
 		joints = {},
 		drop = 0.3,
@@ -153,12 +142,24 @@ local function setBase(joint, cframe)
 	end
 end
 
+-- Eklemin ŞU ANKİ taban değeri: karakter hareket sırasında büyürse/küçülürse (level atlama, rebirth) Roblox eklem konumlarını yeni ölçüye göre günceller;
+-- konum her karede buradan okunur, böylece hareket SIFIRLANMADAN yeni ölçüde kaldığı yerden sürer
+local function currentBase(joint)
+	return if joint.motor then joint.motor.C0 else joint.attachment.CFrame
+end
+
+-- Hareket başladığından beri boy ölçeği kaç katına çıktı (1 = değişmedi); HipHeight ve çökme miktarı bununla ölçeklenir
+local function ratioOf(rig)
+	return heightScaleOf(rig.humanoid) / rig.heightScale
+end
+
 local function apply(rig, pose)
 	-- Gövdenin çökmesi: kendi karakterimizde HipHeight azaltılır (ayaklar yerde kalır, gerçek fizikle iner).
 	-- Diğer oyuncuların karakterinin konumu bizde simüle edilmediği için orada sadece kök eklem oynatılır.
-	local dropAmount = rig.drop * (pose.Drop or 0)
+	local ratio = ratioOf(rig)
+	local dropAmount = rig.drop * ratio * (pose.Drop or 0)
 	if rig.isLocal and rig.humanoid then
-		rig.humanoid.HipHeight = math.max(0, rig.hip - dropAmount)
+		rig.humanoid.HipHeight = math.max(0, rig.hip * ratio - dropAmount)
 	end
 
 	for key, joint in rig.joints do
@@ -168,28 +169,23 @@ local function apply(rig, pose)
 			end
 		else
 			local angle = math.rad(pose[key] or 0)
-			-- Eklem konumu sabit kalır, dönüş karakterin X ekseni etrafında eklenir
-			setBase(joint, CFrame.new(joint.c0.Position) * CFrame.Angles(angle, 0, 0) * joint.c0.Rotation)
+			-- Eklem konumu (güncel) sabit kalır, dönüş karakterin X ekseni etrafında eklenir
+			setBase(joint, CFrame.new(currentBase(joint).Position) * CFrame.Angles(angle, 0, 0) * joint.c0.Rotation)
 		end
 	end
 end
 
--- Boyut ölçeği hareket sırasında değiştiyse: yeni konumları koru, sadece dönüşü eski hâline getir
-local function restoreRotationOnly(rig)
-	for key, joint in rig.joints do
-		if key ~= "Root" then
-			local current = if joint.motor then joint.motor.C0 else joint.attachment.CFrame
-			setBase(joint, CFrame.new(current.Position) * joint.c0.Rotation)
-		end
-	end
-end
-
+-- Hareket bitince eklemler dinlenme dönüşüne döner; KONUMLAR güncel (ölçek hareket sırasında değiştiyse yeni ölçüdeki) değerdir. HipHeight de güncel boya göre asıl değerine döner.
 local function restore(rig)
 	if rig.isLocal and rig.humanoid then
-		rig.humanoid.HipHeight = rig.hip
+		rig.humanoid.HipHeight = rig.hip * ratioOf(rig)
 	end
-	for _, joint in rig.joints do
-		setBase(joint, joint.c0)
+	for key, joint in rig.joints do
+		if key == "Root" then
+			setBase(joint, joint.c0)
+		else
+			setBase(joint, CFrame.new(currentBase(joint).Position) * joint.c0.Rotation)
+		end
 	end
 end
 
@@ -235,14 +231,6 @@ RunService.RenderStepped:Connect(function()
 		if state.rig.isLocal and humanoid and humanoid.FloorMaterial == Enum.Material.Air then
 			-- Hareket sırasında zıpladı: bacak sallanması karakteri döndürmesin diye hareketi hemen bırak
 			restore(state.rig)
-			active[character] = nil
-		elseif humanoid and scaleKey(humanoid) ~= state.rig.scaleKey then
-			-- Karakter bu sırada büyüdü (level atladı): hareketi bırak. Çökerken HipHeight düşürülmüştü; yeni boy oranına göre asıl değerine döndürülür,
-			-- yoksa karakter çökmüş/yerinde kalmış gibi takılırdı (özellikle seri tıklamada level çok sık atlanır)
-			restoreRotationOnly(state.rig)
-			if state.rig.isLocal and humanoid then
-				humanoid.HipHeight = state.rig.hip * heightScaleOf(humanoid) / state.rig.heightScale
-			end
 			active[character] = nil
 		elseif t >= state.move.duration or not character.Parent then
 			restore(state.rig)
