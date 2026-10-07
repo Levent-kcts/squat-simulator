@@ -436,7 +436,7 @@ local countLabel = makeText(bar, {
 -- Referanstaki gibi: GÖKKUŞAĞI renkli, kayan zemin (açıkken daha hızlı ve parlak) ve üst kenarda "OFF" / "ON" rozeti.
 -- ALT SATIR (referanstaki gibi): [+1K Power] [+10K Power] [+100K Power] [Auto Click] [+]. Satır ekranda ortalanır; Auto Click sağa kayar.
 -- Üç 'Power' düğmesi Robux ile anında bacak kası satın alır (Config.Shop.Products[].quick), '+' Shop'u açar. Tıklamaları aşağıda (showToast tanımlandıktan sonra) bağlanır.
-local QUICK_WIDTH, QUICK_GAP, AUTO_WIDTH, PLUS_WIDTH, ROW_Y = 96, 8, 200, 36, 138
+local QUICK_WIDTH, QUICK_GAP, AUTO_WIDTH, PLUS_WIDTH, ROW_Y = 104, 8, 200, 36, 138
 local quickProducts = {}
 for _, product in Config.Shop.Products do
 	if product.quick then
@@ -465,6 +465,10 @@ local autoLabel = makeText(autoButton, {
 	Text = "Auto Click",
 	TextColor3 = Color3.new(1, 1, 1),
 }, 26, 3)
+autoLabel.ZIndex = 5 -- yazı ortadaki tıklama simgesinin ÜSTÜNDE kalır
+if Config.Icons.Click and Config.Icons.Click ~= "" then
+	addOutlinedIcon(autoButton, Config.Icons.Click, 36, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
+end
 local autoBadge = makeText(autoButton, {
 	AnchorPoint = Vector2.new(0.5, 0.5),
 	Position = UDim2.new(0.5, 0, 0, 1),
@@ -489,7 +493,8 @@ for index, product in quickProducts do
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
 	UIStyle.soften(button, { radius = 10, strength = 0.3 })
 	if Config.Icons.LegMuscle and Config.Icons.LegMuscle ~= "" then
-		addOutlinedIcon(button, Config.Icons.LegMuscle, 30, UDim2.new(1, 2, 1, 6), Vector2.new(1, 1))
+		-- Bacak simgesi düğmenin ORTASINDA ve yazının ARKASINDA (referanstaki eldiven gibi); yazı ZIndex 5, simge 2-3
+		addOutlinedIcon(button, Config.Icons.LegMuscle, 38, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
 	end
 	makeText(button, {
 		Position = UDim2.fromOffset(4, 6),

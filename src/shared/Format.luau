@@ -16,7 +16,9 @@ function Format.compact(n, decimals)
 		return tostring(n)
 	end
 	local power = math.min(math.floor(math.log10(n) / 3), #SUFFIXES)
-	return string.format("%." .. (decimals or 1) .. "f%s", n / 10 ^ (power * 3), SUFFIXES[power])
+	local text = string.format("%." .. (decimals or 1) .. "f", n / 10 ^ (power * 3))
+	text = string.gsub(text, "%.?0+$", "") -- gereksiz sıfırlar atılır: 1.0K -> 1K, 4.20B -> 4.2B (ondalık sıfır değilse korunur: 883.5K)
+	return text .. SUFFIXES[power]
 end
 
 -- Çarpan yazısı (x işareti çağıranda): 1.5 -> "1.50", 250 -> "250.0", 2704825.32 -> "2.7M". Çok büyük çarpanlar ham ondalıkla taşmasın diye kısaltılır.

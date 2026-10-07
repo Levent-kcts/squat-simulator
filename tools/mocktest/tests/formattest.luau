@@ -7,6 +7,9 @@ local cases = {
 	{ Format.multiplier, 999.94, "999.9" },
 	{ Format.multiplier, 2704825.32, "2.7M" },
 	{ Format.compact, 5, "5" },
+	{ Format.compact, 1000, "1K" },
+	{ Format.compact, 10000, "10K" },
+	{ Format.compact, 100000, "100K" },
 	{ Format.compact, 883549, "883.5K" },
 	{ Format.compact, 2704867, "2.7M" },
 	{ Format.compact, 1.4e15, "1.4Qa" },
@@ -19,5 +22,7 @@ end
 assert(Format.compact(421952954, 2) == "421.95M", Format.compact(421952954, 2))
 assert(Format.compact(4210000000, 2) == "4.21B", Format.compact(4210000000, 2))
 assert(Format.compact(7, 2) == "7")
+assert(Format.compact(4200000000, 2) == "4.2B", Format.compact(4200000000, 2))
+assert(Format.compact(422000000, 1) == "422M", Format.compact(422000000, 1))
 print("formats ok")
 print("DONE")
