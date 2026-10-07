@@ -332,6 +332,43 @@ function UIStyle.petIcon(parent, pet, props)
 	return holder
 end
 
+-- LEGO TUĞLA DESENİ (referanstaki düğme/çubuk görünümü): parent'ın üstüne ince, kayık sıralı (yarım tuğla kaydırmalı) yarı saydam açık dikdörtgenler çizer.
+-- Konumlar ölçek (scale) olduğu için parent'ın pikseli bilinmese de desen oturur. cols x rows: tuğla sayısı (satır başına), radius: köşe yuvarlaklığı (parent ile aynı olsun,
+-- taşan tuğlalar kırpılır), opts.light: tuğla şeffaflığı (büyük = daha silik). Döner: desen çerçevesi (ZIndex 2: arka plan ve dolgunun üstünde, simge/yazının altında)
+function UIStyle.brickSkin(parent, cols, rows, radius, opts)
+	opts = opts or {}
+	local holder = Instance.new("Frame")
+	holder.Name = "BrickSkin"
+	holder.Size = UDim2.fromScale(1, 1)
+	holder.BackgroundTransparency = 1
+	holder.BorderSizePixel = 0
+	holder.ClipsDescendants = true
+	holder.ZIndex = 2
+	holder.Active = false
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, radius or 8)
+	corner.Parent = holder
+	local light = opts.light or 0.88
+	for row = 0, rows - 1 do
+		local shift = if row % 2 == 0 then 0 else -0.5
+		for col = 0, cols do
+			local brick = Instance.new("Frame")
+			brick.Position = UDim2.new((col + shift) / cols, 1, row / rows, 1)
+			brick.Size = UDim2.new(1 / cols, -2, 1 / rows, -2)
+			brick.BackgroundColor3 = WHITE
+			brick.BackgroundTransparency = if (row + col) % 2 == 0 then light else light + 0.05
+			brick.BorderSizePixel = 0
+			brick.ZIndex = 2
+			local brickCorner = Instance.new("UICorner")
+			brickCorner.CornerRadius = UDim.new(0, 2)
+			brickCorner.Parent = brick
+			brick.Parent = holder
+		end
+	end
+	holder.Parent = parent
+	return holder
+end
+
 -- İKSİR SİMGESİ (Frame'lerden çizilir): mantar, cam boyun, renkli sıvı dolu yuvarlak gövde (gradyan), parlak yansıma ve ortasında iksirin emojisi.
 -- potion: Config.Potions.List girdisi (color, emoji, rainbow). props: Position, Size, AnchorPoint ... Kare bir Frame döner.
 local RAINBOW = {

@@ -405,24 +405,28 @@ local gainLabel = makeText(bottom, {
 local bar = create("Frame", {
 	Position = UDim2.fromOffset(0, 72),
 	Size = UDim2.new(1, 0, 0, 54),
-	BackgroundColor3 = Color3.fromRGB(70, 10, 45),
+	BackgroundColor3 = Color3.fromRGB(52, 50, 64), -- boş kısım koyu gri (referanstaki gibi), dolgu kırmızı-pembe
 }, bottom)
 create("UICorner", { CornerRadius = UDim.new(0, 6) }, bar)
 create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, bar)
-UIStyle.soften(bar, { radius = 12, strength = 0.35, shine = false })
+UIStyle.soften(bar, { radius = 12, strength = 0.2, shine = false })
 
 local barFill = create("Frame", {
 	Size = UDim2.fromScale(0, 1),
-	BackgroundColor3 = Color3.fromRGB(255, 20, 130),
+	BackgroundColor3 = Color3.new(1, 1, 1), -- renk gradyandan gelir: üstte açık pembe, altta koyu kırmızı
 	BorderSizePixel = 0,
+	ZIndex = 1,
 }, bar)
-UIStyle.soften(barFill, { radius = 12, strength = 0.3 })
+UIStyle.soften(barFill, { radius = 12, gradient = false })
+create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 78, 172), Color3.fromRGB(226, 24, 74)) }, barFill)
+UIStyle.brickSkin(bar, 22, 4, 12, { light = 0.9 }) -- lego tuğla deseni (referanstaki gibi); yazılar bunun ÜSTÜNDE
 
 local stageLabel = makeText(bar, {
 	Position = UDim2.fromOffset(14, 4),
 	Size = UDim2.new(0.5, 0, 1, -8),
 	TextColor3 = Color3.new(1, 1, 1),
 	TextXAlignment = Enum.TextXAlignment.Left,
+	ZIndex = 5,
 }, 38, 3)
 local countLabel = makeText(bar, {
 	AnchorPoint = Vector2.new(1, 0),
@@ -430,6 +434,7 @@ local countLabel = makeText(bar, {
 	Size = UDim2.new(0.4, 0, 1, -8),
 	TextColor3 = Color3.new(1, 1, 1),
 	TextXAlignment = Enum.TextXAlignment.Right,
+	ZIndex = 5,
 }, 38, 3)
 
 -- Auto Click: açıkken hareketler kendiliğinden tekrarlanır (ileride VIP'ye özel yapılabilir).
@@ -465,6 +470,7 @@ local autoLabel = makeText(autoButton, {
 	Text = "Auto Click",
 	TextColor3 = Color3.new(1, 1, 1),
 }, 26, 3)
+UIStyle.brickSkin(autoButton, 8, 3, 12, { light = 0.9 })
 autoLabel.ZIndex = 5 -- yazı ortadaki tıklama simgesinin ÜSTÜNDE kalır
 if Config.Icons.Click and Config.Icons.Click ~= "" then
 	addOutlinedIcon(autoButton, Config.Icons.Click, 36, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
@@ -491,10 +497,12 @@ for index, product in quickProducts do
 	}, bottom)
 	create("UICorner", { CornerRadius = UDim.new(0, 6) }, button)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-	UIStyle.soften(button, { radius = 10, strength = 0.3 })
+	UIStyle.soften(button, { radius = 10, strength = 0.35 })
+	UIStyle.brickSkin(button, 5, 3, 10, { light = 0.9 }) -- lego tuğla deseni
 	if Config.Icons.LegMuscle and Config.Icons.LegMuscle ~= "" then
-		-- Bacak simgesi düğmenin ORTASINDA ve yazının ARKASINDA (referanstaki eldiven gibi); yazı ZIndex 5, simge 2-3
-		addOutlinedIcon(button, Config.Icons.LegMuscle, 38, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
+		-- Bacak simgesi düğmenin ORTASINDA ve yazının ARKASINDA (referanstaki eldiven gibi); yazı ZIndex 5, simge 2-3 (desenin üstünde)
+		local legIcon = addOutlinedIcon(button, Config.Icons.LegMuscle, 44, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
+		legIcon.ZIndex = 3
 	end
 	makeText(button, {
 		Position = UDim2.fromOffset(4, 6),
@@ -515,12 +523,14 @@ local plusButton = create("TextButton", {
 }, bottom)
 create("UICorner", { CornerRadius = UDim.new(0, 6) }, plusButton)
 create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, plusButton)
-UIStyle.soften(plusButton, { radius = 10, strength = 0.3 })
+UIStyle.soften(plusButton, { radius = 10, strength = 0.35 })
+UIStyle.brickSkin(plusButton, 2, 3, 10, { light = 0.9 })
 makeText(plusButton, {
 	Position = UDim2.fromOffset(2, 2),
 	Size = UDim2.new(1, -4, 1, -6),
 	Text = "+",
 	TextColor3 = Color3.new(1, 1, 1),
+	ZIndex = 5,
 }, 30, 3)
 
 -- Kayıt uyarısı sadece Studio'da ve küçük görünür (canlı oyunda oyuncular görmez, hata Output'a yazılır)

@@ -267,6 +267,10 @@ Config.Icons.Potions.luck = "rbxassetid://1"
 local potionIconFrame = UIStyle.potionIcon(S.newInstance("Frame"), Config.Potions.List[1], {})
 assert(rawget(potionIconFrame, "_children")["ImageLabel"], "iksir görseli varken ImageLabel kullanılmalı")
 Config.Icons.Potions.luck = ""
+-- Lego tuğla deseni (düğme/level çubuğu görünümü): hatasız kurulur, kırpılan ve arka plan/simge arasında kalan bir çerçeve döner
+local brickHost = S.newInstance("Frame")
+local brickSkin = UIStyle.brickSkin(brickHost, 5, 3, 10, { light = 0.9 })
+assert(brickSkin and brickSkin.Name == "BrickSkin" and brickSkin.ZIndex == 2, "tuğla deseni çerçevesi kurulmalı (ZIndex 2)")
 S.localPlayer:SetAttribute("LuckBoostUntil", nil)
 S.localPlayer:SetAttribute("RainbowBoostUntil", nil)
 print("potion hud ok")
