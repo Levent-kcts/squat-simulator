@@ -546,16 +546,39 @@ return {
 		Scale = { 1, 1.4, 1.9, 1.9 },
 	},
 	Pets = {
+		-- Starter Egg
 		{ id = "cat", name = "Cat", mult = 0.1, color = Color3.fromRGB(255, 190, 120) },
+		{ id = "chick", name = "Chick", mult = 0.12, color = Color3.fromRGB(255, 225, 90) },
 		{ id = "dog", name = "Dog", mult = 0.15, color = Color3.fromRGB(170, 120, 80) },
+		{ id = "hamster", name = "Hamster", mult = 0.18, color = Color3.fromRGB(240, 200, 150) },
 		{ id = "bunny", name = "Bunny", mult = 0.2, color = Color3.fromRGB(250, 220, 235) },
+		-- Forest Egg
+		{ id = "frog", name = "Frog", mult = 0.25, color = Color3.fromRGB(80, 210, 110) },
+		{ id = "deer", name = "Deer", mult = 0.3, color = Color3.fromRGB(205, 150, 90) },
 		{ id = "fox", name = "Fox", mult = 0.35, color = Color3.fromRGB(255, 120, 40) },
+		{ id = "owl", name = "Owl", mult = 0.42, color = Color3.fromRGB(160, 130, 100) },
 		{ id = "panda", name = "Panda", mult = 0.5, color = Color3.fromRGB(235, 235, 235) },
+		-- Desert Egg
+		{ id = "snake", name = "Snake", mult = 0.55, color = Color3.fromRGB(120, 190, 100) },
+		{ id = "scorpion", name = "Scorpion", mult = 0.65, color = Color3.fromRGB(170, 60, 50) },
+		{ id = "camel", name = "Camel", mult = 0.72, color = Color3.fromRGB(225, 195, 140) },
 		{ id = "tiger", name = "Tiger", mult = 0.8, color = Color3.fromRGB(255, 170, 40) },
+		{ id = "lion", name = "Lion", mult = 0.9, color = Color3.fromRGB(235, 190, 100) },
+		-- Ice Egg
+		{ id = "penguin", name = "Penguin", mult = 0.85, color = Color3.fromRGB(45, 55, 85) },
+		{ id = "seal", name = "Seal", mult = 0.92, color = Color3.fromRGB(150, 165, 185) },
 		{ id = "wolf", name = "Wolf", mult = 1.0, color = Color3.fromRGB(140, 150, 170) },
+		{ id = "polarbear", name = "Polar Bear", mult = 1.15, color = Color3.fromRGB(245, 248, 255) },
+		{ id = "yeti", name = "Yeti", mult = 1.3, color = Color3.fromRGB(170, 215, 245) },
+		-- Lava Egg
+		{ id = "salamander", name = "Salamander", mult = 1.4, color = Color3.fromRGB(255, 150, 60) },
 		{ id = "dragon", name = "Dragon", mult = 1.5, color = Color3.fromRGB(180, 60, 255) },
+		{ id = "lavacrab", name = "Lava Crab", mult = 1.75, color = Color3.fromRGB(225, 70, 50) },
 		{ id = "phoenix", name = "Phoenix", mult = 2.0, color = Color3.fromRGB(255, 80, 40) },
+		{ id = "golem", name = "Magma Golem", mult = 2.4, color = Color3.fromRGB(110, 95, 110) },
+		-- Galaxy Egg
 		{ id = "unicorn", name = "Unicorn", mult = 3.0, color = Color3.fromRGB(255, 130, 230) },
+		{ id = "alien", name = "Alien", mult = 3.5, color = Color3.fromRGB(140, 235, 160) },
 		{ id = "robot", name = "Robot", mult = 4.0, color = Color3.fromRGB(100, 220, 255) },
 		{ id = "galaxy", name = "Galaxy Cat", mult = 6.0, color = Color3.fromRGB(120, 80, 255) },
 		{ id = "titan", name = "Titan", mult = 10.0, color = Color3.fromRGB(255, 220, 60) },
@@ -565,21 +588,22 @@ return {
 	EggMultiOptions = { 1, 3, 10 },
 
 	-- Yumurtalar (lobinin arka duvarında): üstündeki pedin üstüne basınca Win karşılığı açılır.
-	-- pets = o yumurtadan çıkabilecek petler ve ağırlıkları (büyük sayı = daha sık çıkar). Fiyatlar geçicidir.
+	-- pets = o yumurtadan çıkabilecek petler ve ağırlıkları (büyük sayı = daha sık çıkar). HER PET SADECE BİR YUMURTADA ÇIKAR (sahibi 'her yumurtanın hayvanı kendine özel olsun' dedi): 6 yumurta x 5 pet = 30 pet;
+	-- yeni pet eklerken önce hangi yumurtaya ait olduğunu seç, Config.Pets'te o yumurtanın grubuna koy, Blender modelini (tools/blender/pets_more.py) ekle. Fiyatlar geçicidir.
 	-- color/accent = yumurtanın ana rengi ve benek rengi.
 	Eggs = {
 		{ id = "starter", name = "Starter Egg", price = 5, color = Color3.fromRGB(90, 190, 255), accent = Color3.fromRGB(255, 220, 60),
-			pets = { { id = "cat", weight = 60 }, { id = "dog", weight = 30 }, { id = "bunny", weight = 10 } } },
+			pets = { { id = "cat", weight = 40 }, { id = "chick", weight = 25 }, { id = "dog", weight = 20 }, { id = "hamster", weight = 10 }, { id = "bunny", weight = 5 } } },
 		{ id = "forest", name = "Forest Egg", price = 50, color = Color3.fromRGB(90, 220, 120), accent = Color3.fromRGB(40, 120, 60),
-			pets = { { id = "dog", weight = 40 }, { id = "bunny", weight = 30 }, { id = "fox", weight = 20 }, { id = "panda", weight = 10 } } },
+			pets = { { id = "frog", weight = 35 }, { id = "deer", weight = 25 }, { id = "fox", weight = 20 }, { id = "owl", weight = 14 }, { id = "panda", weight = 6 } } },
 		{ id = "desert", name = "Desert Egg", price = 500, color = Color3.fromRGB(255, 200, 90), accent = Color3.fromRGB(190, 110, 30),
-			pets = { { id = "fox", weight = 40 }, { id = "panda", weight = 30 }, { id = "tiger", weight = 20 }, { id = "wolf", weight = 10 } } },
+			pets = { { id = "snake", weight = 35 }, { id = "scorpion", weight = 25 }, { id = "camel", weight = 20 }, { id = "tiger", weight = 14 }, { id = "lion", weight = 6 } } },
 		{ id = "ice", name = "Ice Egg", price = 2500, color = Color3.fromRGB(190, 240, 255), accent = Color3.fromRGB(90, 160, 255),
-			pets = { { id = "tiger", weight = 40 }, { id = "wolf", weight = 30 }, { id = "dragon", weight = 20 }, { id = "phoenix", weight = 10 } } },
+			pets = { { id = "penguin", weight = 35 }, { id = "seal", weight = 25 }, { id = "wolf", weight = 20 }, { id = "polarbear", weight = 14 }, { id = "yeti", weight = 6 } } },
 		{ id = "lava", name = "Lava Egg", price = 10000, color = Color3.fromRGB(255, 90, 50), accent = Color3.fromRGB(255, 220, 60),
-			pets = { { id = "dragon", weight = 40 }, { id = "phoenix", weight = 30 }, { id = "unicorn", weight = 20 }, { id = "robot", weight = 10 } } },
+			pets = { { id = "salamander", weight = 35 }, { id = "dragon", weight = 25 }, { id = "lavacrab", weight = 20 }, { id = "phoenix", weight = 14 }, { id = "golem", weight = 6 } } },
 		{ id = "galaxy", name = "Galaxy Egg", price = 50000, color = Color3.fromRGB(110, 70, 220), accent = Color3.fromRGB(255, 255, 255),
-			pets = { { id = "unicorn", weight = 40 }, { id = "robot", weight = 30 }, { id = "galaxy", weight = 20 }, { id = "titan", weight = 10 } } },
+			pets = { { id = "unicorn", weight = 35 }, { id = "alien", weight = 25 }, { id = "robot", weight = 20 }, { id = "galaxy", weight = 14 }, { id = "titan", weight = 6 } } },
 	},
 
 	-- İz (trail) efektleri: karakterin arkasında renkli bir iz bırakır ve yürüme hızını artırır (speed = ek hız, stud/sn).

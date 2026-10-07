@@ -1,6 +1,7 @@
 """Birden çok modeli TEK FBX'te toplar (Studio'ya tek seferde aktarmak için): her model ayrı bir nesnedir (adı = model adı), yan yana dizilir.
     blender -b -P tools/blender/pack.py -- test     (cat + starter yumurta: ilk deneme)
-    blender -b -P tools/blender/pack.py -- pets     (13 pet)
+    blender -b -P tools/blender/pack.py -- pets     (13 ilk pet)
+    blender -b -P tools/blender/pack.py -- newpets  (yumurtalara özel 17 yeni pet: pets_more.py)
     blender -b -P tools/blender/pack.py -- eggs     (6 yumurta)
     blender -b -P tools/blender/pack.py -- shoes    (15 ayakkabı)
     blender -b -P tools/blender/pack.py -- coaches  (10 antrenör)
@@ -16,6 +17,7 @@ import bpy  # noqa: E402
 import common as c  # noqa: E402
 from lib import Model, record_manifest  # noqa: E402
 import pets  # noqa: E402
+import pets_more  # noqa: E402
 import eggs  # noqa: E402
 import shoes  # noqa: E402
 import coaches  # noqa: E402
@@ -24,6 +26,7 @@ import muscles  # noqa: E402
 PRESETS = {
     "test": ["pet_cat", "egg_starter"],
     "pets": ["pet_" + pet_id for pet_id, _, _ in pets.PETS],
+    "newpets": ["pet_" + pet_id for pet_id, _, _ in pets_more.PETS],
     "eggs": ["egg_" + egg_id for egg_id, _ in eggs.EGGS],
     "shoes": ["shoe_" + shoe_id for shoe_id, _, _ in shoes.SHOES],
     "coaches": ["coach_" + coach_id for coach_id, _, _ in coaches.COACHES],
@@ -36,7 +39,7 @@ def main():
     label = args[0] if len(args) == 1 and args[0] in PRESETS else "custom"
     names = PRESETS[args[0]] if label != "custom" else args
     builders = {}
-    for pet_id, builder, color in pets.PETS:
+    for pet_id, builder, color in pets.PETS + pets_more.PETS:
         builders["pet_" + pet_id] = lambda m, builder=builder, color=color: builder(m, color)
     for egg_id, builder in eggs.EGGS:
         builders["egg_" + egg_id] = builder

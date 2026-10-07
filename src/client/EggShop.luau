@@ -152,7 +152,7 @@ function EggShop.init(screenGui)
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 68),
-		Size = UDim2.fromOffset(500, 310),
+		Size = UDim2.fromOffset(580, 310), -- 5 pet kartı yan yana sığsın
 		BackgroundColor3 = Color3.fromRGB(45, 48, 62),
 		BackgroundTransparency = 0.05,
 		Active = true, -- panele tıklamak hareket başlatmasın
@@ -186,8 +186,8 @@ function EggShop.init(screenGui)
 		BackgroundTransparency = 1,
 	}, panel)
 	create("UIGridLayout", {
-		CellSize = UDim2.fromOffset(106, 150),
-		CellPadding = UDim2.fromOffset(10, 10),
+		CellSize = UDim2.fromOffset(104, 150),
+		CellPadding = UDim2.fromOffset(8, 10),
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
 		VerticalAlignment = Enum.VerticalAlignment.Center,
 		SortOrder = Enum.SortOrder.LayoutOrder,
