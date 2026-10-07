@@ -1,6 +1,12 @@
 -- Arayüz yumuşatma yardımcıları (referans oyundaki gibi): üstten alta renk geçişi, üstte parlak şerit, yuvarlak köşe, ince kenar,
--- ve pet simgesi (sevimli yüz). Sadece görseldir; oyun mantığına dokunmaz. Her modül kendi düz Frame/TextButton'unu yaratır,
+-- ve pet simgesi (Blender pet modeli varsa 3B ViewportFrame, yoksa sevimli yüz). Sadece görseldir; oyun mantığına dokunmaz. Her modül kendi düz Frame/TextButton'unu yaratır,
 -- sonra UIStyle.soften(nesne, ayarlar) ile yumuşatır.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config"))
+local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
+
 local UIStyle = {}
 
 local WHITE = Color3.new(1, 1, 1)
@@ -151,8 +157,55 @@ local LOOKS = {
 local PINK = Color3.fromRGB(255, 160, 180)
 local DARK = Color3.fromRGB(60, 34, 42)
 
+-- 3B pet simgesi: ReplicatedStorage.GameModels'te 'pet_<tür>' modeli varsa küçük bir ViewportFrame'de (ön tarafından, hafif yandan ve yukarıdan) gösterir.
+-- Birleşmiş boylar ('cat@2') türün modelini kullanır (boy farkı simge boyutundan gelir). props.dim: keşfedilmemiş pet, koyu siluet.
+-- Model yoksa nil döner ve petIcon çizilmiş yüze düşer.
+function UIStyle.petModelIcon(parent, pet, props)
+	local config = Config.Models.PetIcon
+	local part, offset = ModelLibrary.create("pet_" .. (pet.baseId or pet.id), 1)
+	if not part then
+		return nil
+	end
+	local viewport = Instance.new("ViewportFrame")
+	viewport.BackgroundTransparency = 1
+	viewport.Ambient = config.Ambient
+	viewport.LightColor = config.LightColor
+	viewport.LightDirection = config.LightDirection
+	for key, value in props or {} do
+		if key ~= "dim" then
+			viewport[key] = value
+		end
+	end
+	if props and props.dim then
+		viewport.ImageColor3 = config.DimColor
+	end
+	local ratio = Instance.new("UIAspectRatioConstraint")
+	ratio.AspectRatio = 1
+	ratio.Parent = viewport
+
+	-- Model orijinde: kutu merkezi 'offset'te, ön -Z'ye bakar; kamera ön tarafta (-Z), azimut ve yükseklik açısıyla
+	part.CFrame = ModelLibrary.cframe(CFrame.new(), offset)
+	part.Parent = viewport
+	local size = part.Size
+	local reach = math.max(size.X, size.Y, size.Z) * config.Distance
+	local azimuth, elevation = math.rad(config.Azimuth), math.rad(config.Elevation)
+	local direction = Vector3.new(math.sin(azimuth) * math.cos(elevation), math.sin(elevation), -math.cos(azimuth) * math.cos(elevation))
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = config.FieldOfView
+	camera.CFrame = CFrame.lookAt(offset + direction * reach, offset)
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+
+	viewport.Parent = parent
+	return viewport
+end
+
 function UIStyle.petIcon(parent, pet, props)
 	props = props or {}
+	local modelIcon = UIStyle.petModelIcon(parent, pet, props)
+	if modelIcon then
+		return modelIcon
+	end
 	local look = LOOKS[pet.baseId or pet.id] or { ears = "round" } -- birleşmiş boylar ('cat@2') ilk boyun görünümünü taşır
 	local color = pet.color
 	if props.dim then

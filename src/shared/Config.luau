@@ -469,6 +469,18 @@ return {
 		EggScale = 1,
 		ShoeScale = 0.62, -- raftaki ayakkabı modeli (Blender'da ~3.9 stud uzun, rafta ~2.4 stud)
 		CoachScale = 1, -- antrenör modeli (Blender'da ~5.25 stud boy, 4.98 geniş); Training.TrainerScales ile çarpılır
+		-- Menülerdeki 3B pet simgesi (client/UIStyle.petModelIcon, ViewportFrame): kamera açıları ve ışık. Distance = en büyük boyutun katı (küçüldükçe pet büyür),
+		-- Azimuth: yandan açı (derece), Elevation: yukarıdan açı, DimColor: keşfedilmemiş petin siluet rengi (Pet Index).
+		PetIcon = {
+			Distance = 2.1,
+			Azimuth = -24,
+			Elevation = 14,
+			FieldOfView = 30,
+			Ambient = Color3.fromRGB(190, 190, 205),
+			LightColor = Color3.fromRGB(255, 250, 240),
+			LightDirection = Vector3.new(0.5, -0.9, 0.7),
+			DimColor = Color3.fromRGB(58, 60, 76),
+		},
 		MuscleScale = 1, -- bacak kası modelleri (muscle_s<aşama>_thigh|glute|calf): bacak ölçüsüne göre ölçeğin ek çarpanı (1.1 = %10 daha iri)
 		LegRef = { Upper = Vector3.new(1, 1.217, 1), Lower = Vector3.new(1, 1.193, 1) }, -- kas modellerinin çizildiği referans R15 bacak ölçüsü (x genişlik, y boy, z derinlik); tools/blender/muscles.py ile aynı
 		FlipFront = true, -- Roblox içe aktarıcısı modelin önünü +Z'ye koyar (Studio'da görüldü); true = yerleşirken 180 derece çevir, ön -Z'ye baksın. Model farklı dışa aktarılırsa false yap

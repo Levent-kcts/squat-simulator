@@ -242,6 +242,23 @@ for _, hb in S.heartbeat do
 end
 print("PetFollowers with Blender model ok")
 
+-- 3B pet simgesi: model varsa ViewportFrame (kamera + model içinde, koyu siluet 'dim'), modeli olmayan tür çizilmiş yüze düşer
+local UIStyle = require("./UIStyle")
+local Catalog = require("./Catalog")
+local Config = require("./Config")
+local iconHolder = S.newInstance("Frame")
+local cat = Catalog.PetById.cat
+local icon3d = UIStyle.petIcon(iconHolder, cat, { Size = S.UDim2.fromOffset(60, 60) })
+assert(icon3d and icon3d.ClassName == "ViewportFrame", "pet_cat modeli varken simge ViewportFrame olmalı")
+assert(icon3d.CurrentCamera, "ViewportFrame kamerası kurulmalı")
+local dimIcon = UIStyle.petIcon(iconHolder, cat, { Size = S.UDim2.fromOffset(60, 60), dim = true })
+assert(dimIcon.ImageColor3 == Config.Models.PetIcon.DimColor, "keşfedilmemiş pet koyu siluet olmalı")
+local fused = Catalog.PetById["cat@2"]
+assert(fused and UIStyle.petIcon(iconHolder, fused, {}).ClassName == "ViewportFrame", "birleşmiş boy türün modelini kullanmalı")
+local noModel = UIStyle.petIcon(iconHolder, Catalog.PetById.dog, {})
+assert(noModel and noModel.ClassName ~= "ViewportFrame", "pet_dog modeli yokken çizilmiş yüze düşmeli")
+print("3D pet icons ok")
+
 -- Günlük çark istemcisi: E ile çevirme isteği sunucuya gider, dilim seçilince çark dönüp durur ve sonuç gösterilir
 local wheelToasts = {}
 local invokes = {}
