@@ -336,13 +336,13 @@ local backpackMenu = create("Frame", {
 	BackgroundTransparency = 1,
 	Visible = false,
 }, screenGui)
-local function makeMenuButton(row, icon, label, accent)
-	local button = makeSquareButton(UDim2.fromOffset(0, row * 82), icon, label, accent)
+local function makeMenuButton(row, icon, label, accent, imageId)
+	local button = makeSquareButton(UDim2.fromOffset(0, row * 82), icon, label, accent, imageId)
 	button.Parent = backpackMenu
 	return button
 end
-local trailsButton = makeMenuButton(0, "✨", "Trails", { Color3.fromRGB(255, 120, 190), Color3.fromRGB(235, 60, 130) })
-local aurasButton = makeMenuButton(1, "🔮", "Auras", { Color3.fromRGB(200, 120, 255), Color3.fromRGB(110, 70, 235) })
+local trailsButton = makeMenuButton(0, "✨", "Trails", { Color3.fromRGB(255, 120, 190), Color3.fromRGB(235, 60, 130) }, Config.Icons.Trails)
+local aurasButton = makeMenuButton(1, "🔮", "Auras", { Color3.fromRGB(200, 120, 255), Color3.fromRGB(110, 70, 235) }, Config.Icons.Auras)
 
 -- Rebirth butonunun üstündeki yüzde rozeti (level / üst sınır)
 local rebirthBadge = makeText(rebirthButton, {
