@@ -232,7 +232,7 @@ return {
 		Backpack = "rbxassetid://139523703798238",
 		Pets = "rbxassetid://122036590660446",
 		Gifts = "rbxassetid://107783706209695",
-		Potions = { luck = "", muscle = "", wins = "", rainbow = "" }, -- iksir görselleri (assets/icons/potion_<id>.png, tools/blender/potions.py): sahibi Image olarak yükleyip ID'leri verince yazılır; boşken kodla çizilen şişe (UIStyle.potionIcon)
+		Potions = { luck = "rbxassetid://104522704182798", muscle = "rbxassetid://114736473334553", wins = "rbxassetid://91281796981948", rainbow = "rbxassetid://92804106754602" }, -- iksir görselleri (assets/icons/potion_<id>.png, tools/blender/potions.py): sahibinin yüklediği Image'lar, doğrulandı. Boş bırakılırsa kodla çizilen şişe (UIStyle.potionIcon)
 		Trails = "rbxassetid://127034765324159", -- Backpack > Trails düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/trails.png, Image türü, doğrulandı). Boş bırakılırsa ✨ emojisi
 		Auras = "rbxassetid://80241008587441", -- Backpack > Auras düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/auras.png, Image türü, doğrulandı). Boş bırakılırsa 🔮 emojisi
 	}, -- sahibinin yüklediği görseller (hepsi Image türünde, doğrulandı)
