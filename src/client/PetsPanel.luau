@@ -687,8 +687,12 @@ function PetsPanel.init(screenGui, showToast)
 
 		card.MouseButton1Click:Connect(function()
 			if deleteMode then
-				local nextMark = (marked[pet.id] or 0) + 1
-				marked[pet.id] = if nextMark > count then nil else nextMark
+				-- Aç/kapa: işaretliyse tek tıkla iptal edilir (çarpı kalkar). İşaretlenince takılı OLMAYAN kopyalar silinecek sayılır (hepsi takılıysa 1 kopya)
+				if marked[pet.id] then
+					marked[pet.id] = nil
+				else
+					marked[pet.id] = math.max(1, count - equippedCount)
+				end
 			else
 				selectedId = pet.id
 				pendingDelete = nil
@@ -846,7 +850,7 @@ function PetsPanel.init(screenGui, showToast)
 			end
 		end)
 	end)
-	-- Çöp kutusu: 1. basış silme modunu açar, kartlara tıklayıp işaretlenir (her tıklama bir kopya), 2. basış işaretlileri siler
+	-- Çöp kutusu: 1. basış silme modunu açar, kartlara tıklayınca işaretlenir (tekrar tıklayınca iptal), 2. basış işaretlileri siler
 	trash.MouseButton1Click:Connect(function()
 		if not deleteMode then
 			deleteMode = true
