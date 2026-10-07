@@ -419,8 +419,9 @@ function PetsPanel.init(screenGui, showToast)
 		makeText(detail, {
 			Position = UDim2.fromOffset(8, 196),
 			Size = UDim2.fromOffset(DETAIL_WIDTH - 16, 24),
-			Text = `+{percent(pet)}% Leg Muscle`,
-			TextColor3 = Color3.fromRGB(130, 255, 140),
+			-- Sadece TAKILI petler kas kazancına yüzde verir (sunucu hesabı): takılı değilse 'takılınca' diye soluk yazılır
+			Text = if equippedCount > 0 then `+{percent(pet)}% Leg Muscle` else `+{percent(pet)}% when equipped`,
+			TextColor3 = if equippedCount > 0 then Color3.fromRGB(130, 255, 140) else Color3.fromRGB(175, 182, 205),
 		}, 2)
 		makeText(detail, {
 			Position = UDim2.fromOffset(8, 220),
@@ -575,13 +576,16 @@ function PetsPanel.init(screenGui, showToast)
 			pulseStroke(stroke, BOSS_GOLD, BOSS_PINK, 0.9)
 		end
 
-		makeText(card, {
-			Position = UDim2.fromOffset(5, 4),
-			Size = UDim2.fromOffset(52, 15),
-			Text = `+{percent(pet)}%`,
-			TextXAlignment = Enum.TextXAlignment.Left,
-			TextColor3 = WHITE,
-		}, 1.5)
+		-- Yüzde yazısı sadece takılı petlerde var: takılı olmayan pet çarpana yüzde vermez (sahibi karışıklığı düzelttirdi)
+		if equippedCount > 0 then
+			makeText(card, {
+				Position = UDim2.fromOffset(5, 4),
+				Size = UDim2.fromOffset(52, 15),
+				Text = `+{percent(pet)}%`,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = Color3.fromRGB(150, 255, 150),
+			}, 1.5)
+		end
 		-- Kart resimleri Pet Team satırındaki (kullanılan) petlerin yarısı kadardır; boy büyüdükçe biraz büyür (47 / 50 / 55)
 		local iconSize = math.floor(38 + 9 * pet.scale)
 		UIStyle.safePetIcon(card, pet, {

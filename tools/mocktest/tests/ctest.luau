@@ -169,6 +169,7 @@ local trashIcon = buttonNamed(buttonNamed(root2, "TrashButton"), "TrashIcon")
 assert(trashIcon, "alt çöp kutusu düğmesinde simge olmalı")
 local trashImage = rawget(trashIcon, "_children")["ImageLabel"]
 assert(trashImage and rawget(trashImage, "Image") == "rbxassetid://72909566398443", "yüklenen çöp kutusu görseli kullanılmalı")
+assert(t2["+10% when equipped"] and not t2["+10%"], "takılı olmayan petin kartında yüzde olmamalı, ayrıntıda 'when equipped' yazmalı")
 print("PetsPanel merge/equip/delete ok")
 
 -- 3) 3'ten az: ilerleme gösterilir, tıklayınca bilgi mesajı (sunucuya gitmez)
@@ -183,6 +184,7 @@ assert(S.lastInvoke == nil and toasts3[#toasts3] and string.find(toasts3[#toasts
 local root4, toasts4 = openPets("dog@4", "dog@4")
 local t4 = textsUnder(root4, {})
 assert(t4["MAX SIZE"] and t4["Boss Dog"] and t4["Unequip"], "Boss pet ekranı hatalı")
+assert(t4["+33%"] and t4["+33% Leg Muscle"], "takılı petin kartında ve ayrıntısında yüzde olmalı")
 click(buttonWith(root4, "MAX SIZE"))
 assert(string.find(toasts4[#toasts4], "maximum size"), "Boss için 'maximum size' mesajı gelmeli")
 
