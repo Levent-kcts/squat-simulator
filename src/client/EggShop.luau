@@ -59,14 +59,15 @@ local function makeText(parent, props, strokeThickness)
 	return label
 end
 
--- Yumurtadaki sıralı havuz: en sık çıkandan nadire
-local function sortedPool(egg)
+-- Yumurtadaki sıralı havuz: en sık çıkandan nadire. luck > 1 ise (Luck Potion etkinken) yüzdeler şansa göre hesaplanır (Catalog.luckWeights, sunucuyla aynı)
+local function sortedPool(egg, luck)
 	local pool, total = {}, 0
-	for _, entry in egg.pets do
-		total += entry.weight
+	local weights = Catalog.luckWeights(egg, luck or 1)
+	for _, weight in weights do
+		total += weight
 	end
-	for _, entry in egg.pets do
-		table.insert(pool, { pet = Catalog.PetById[entry.id], chance = entry.weight / total * 100 })
+	for index, entry in egg.pets do
+		table.insert(pool, { pet = Catalog.PetById[entry.id], chance = weights[index] / total * 100, base = entry.weight })
 	end
 	table.sort(pool, function(a, b)
 		return a.chance > b.chance
@@ -287,7 +288,8 @@ function EggShop.init(screenGui)
 			end
 		end
 		table.clear(crossMarks)
-		for index, entry in sortedPool(egg) do
+		local luck = player:GetAttribute("EggLuck") or 1
+		for index, entry in sortedPool(egg, luck) do
 			local pet = entry.pet
 			-- Kart bir butondur: üstüne gelince kararır, tıklayınca çarpı konur/kalkar (çarpılı pet çıkınca anında silinir)
 			local card = create("TextButton", {
@@ -320,7 +322,7 @@ function EggShop.init(screenGui)
 				Position = UDim2.fromScale(0.04, 0.78),
 				Size = UDim2.fromScale(0.92, 0.2),
 				Text = string.format("%.1f%%", entry.chance),
-				TextColor3 = Color3.new(1, 1, 1),
+				TextColor3 = if luck > 1 and entry.base < 20 then Color3.fromRGB(150, 255, 150) else Color3.new(1, 1, 1), -- Luck Potion artırdıysa nadir petlerin yüzdesi yeşil
 			}, 2)
 
 			-- Gölge katmanı: üstüne gelince (veya çarpılıyken) kartı karartır
@@ -375,6 +377,13 @@ function EggShop.init(screenGui)
 		refreshCrosses()
 		refreshButtons()
 	end
+
+	-- Luck Potion başlayınca/bitince açık panelin yüzdeleri güncellenir
+	player:GetAttributeChangedSignal("EggLuck"):Connect(function()
+		if currentEgg then
+			showEgg(currentEgg)
+		end
+	end)
 
 	local function openEgg()
 		if not currentEgg or opening then

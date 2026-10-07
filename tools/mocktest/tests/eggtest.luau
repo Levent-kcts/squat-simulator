@@ -2,6 +2,7 @@
 local S = require("./cstubs")
 local Config = require("./Config")
 local ModelInfo = require("./ModelInfo")
+local Catalog = require("./Catalog")
 
 local owner = {}
 for _, egg in Config.Eggs do
@@ -21,5 +22,23 @@ for _, pet in Config.Pets do
 	count += 1
 end
 assert(count == 30, "30 pet olmalı: " .. count)
+-- Luck Potion: luck 1 ağırlıkları aynen verir; luck 2'de en nadir pet x2, en sık pet x1 ağırlıkta kalır, nadirlerin yüzdesi artar
+for _, egg in Config.Eggs do
+	local base = Catalog.luckWeights(egg, 1)
+	local lucky = Catalog.luckWeights(egg, Config.Potions.Mult)
+	local baseTotal, luckyTotal = 0, 0
+	for index, entry in egg.pets do
+		assert(base[index] == entry.weight, egg.id .. ": luck 1 ağırlığı değiştirmemeli")
+		baseTotal += base[index]
+		luckyTotal += lucky[index]
+	end
+	local rarest, commonest = egg.pets[#egg.pets], egg.pets[1]
+	assert(math.abs(lucky[#egg.pets] - rarest.weight * Config.Potions.Mult) < 1e-9, egg.id .. ": en nadir pet x2 olmalı")
+	assert(lucky[1] == commonest.weight, egg.id .. ": en sık pet x1 kalmalı")
+	local before = base[#egg.pets] / baseTotal
+	local after = lucky[#egg.pets] / luckyTotal
+	assert(after > before * 1.4 and after < before * 2.01, egg.id .. ": nadir pet şansı belirgin ama 2 katını geçmeden artmalı: " .. before .. " -> " .. after)
+	assert(lucky[1] / luckyTotal < base[1] / baseTotal, egg.id .. ": en sık petin yüzdesi düşmeli")
+end
 print("egg pools ok", count)
 print("DONE")

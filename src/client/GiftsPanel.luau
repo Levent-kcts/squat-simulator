@@ -44,10 +44,12 @@ local function describe(reward)
 	elseif reward.kind == "pet" then
 		local pet = Catalog.PetById[reward.pet]
 		return Color3.fromRGB(170, 60, 230), "🐾", `{pet.name} Pet`
-	elseif reward.kind == "boostMuscle" then
-		return Color3.fromRGB(245, 110, 40), "🧪", "2x Muscle"
 	end
-	return Color3.fromRGB(250, 160, 40), "🧪", "2x Wins"
+	local potion = Catalog.PotionByKind[reward.kind]
+	if potion then
+		return potion.color, potion.emoji, potion.name
+	end
+	return Color3.fromRGB(250, 160, 40), "🧪", "Potion"
 end
 
 local function formatTime(seconds)

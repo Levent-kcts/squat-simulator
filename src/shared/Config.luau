@@ -98,13 +98,15 @@ return {
 
 	-- Shop (sol menüdeki Shop butonu): Robux ile alınan Developer Product'lar. productId: Creator Hub > Monetization > Developer Products'ta
 	-- oluşturulan ürünün ID'si; 0 = henüz yok, kart "Coming soon" gösterir. Satın alma sunucuda ProcessReceipt ile doğrulanır
-	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostMuscle / boostWins (minutes dk 2x), petSpace (amount ek pet envanter yeri; Pets menüsündeki çanta + işareti bu pencereyi açar), wins (amount Win),
+	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostLuck / boostMuscle / boostWins / boostRainbow (iksirler, minutes dk; bkz. Config.Potions), petSpace (amount ek pet envanter yeri; Pets menüsündeki çanta + işareti bu pencereyi açar), wins (amount Win),
 	-- stageWins (stage. aşamanın Win ödülü kadar), moves (amount hareketlik kas). Fiyatlar (robux) geçicidir.
 	Shop = {
 		Products = {
 			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", kind = "petSpace", amount = 25, robux = 79, productId = 0, color = Color3.fromRGB(235, 70, 70) },
-			{ id = "boostMuscle30", name = "2x Muscle", detail = "30 minutes", icon = "⚡", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
-			{ id = "boostWins30", name = "2x Wins", detail = "30 minutes", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
+			{ id = "luck30", name = "Luck Potion", detail = "2x egg luck, 30 min", icon = "🍀", kind = "boostLuck", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(70, 200, 90) },
+			{ id = "boostMuscle30", name = "Muscle Potion", detail = "2x muscle, 30 min", icon = "💪", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
+			{ id = "boostWins30", name = "Wins Potion", detail = "2x wins, 30 min", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
+			{ id = "rainbow30", name = "Rainbow Potion", detail = "ALL 3 potions, 30 min", icon = "🌈", kind = "boostRainbow", minutes = 30, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
 			{ id = "musclePack", name = "Muscle Pack", detail = "10,000 squats of muscle", icon = "🦵", kind = "moves", amount = 10000, robux = 39, productId = 0, color = Color3.fromRGB(70, 150, 255) },
 			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 29, productId = 0, color = Color3.fromRGB(70, 210, 90) },
 			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
@@ -504,10 +506,10 @@ return {
 		Prizes = {
 			{ kind = "wins", mult = 2, weight = 24, icon = "🏆", label = "Wins", color = Color3.fromRGB(235, 80, 90) },
 			{ kind = "muscle", clicks = 500, weight = 24, icon = "💪", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
-			{ kind = "boostMuscle", minutes = 10, weight = 14, icon = "⚡", label = "2x Muscle", color = Color3.fromRGB(70, 195, 110) },
+			{ kind = "boostMuscle", minutes = 10, weight = 14, icon = "💪", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
 			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
 			{ kind = "muscle", clicks = 2000, weight = 14, icon = "💪", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
-			{ kind = "boostWins", minutes = 10, weight = 8, icon = "⚡", label = "2x Wins", color = Color3.fromRGB(50, 190, 200) },
+			{ kind = "boostWins", minutes = 10, weight = 8, icon = "🏆", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
 			{ kind = "pet", weight = 5, icon = "🐾", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
 			{ kind = "jackpot", mult = 20, clicks = 5000, weight = 1, icon = "💎", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
 		},
@@ -519,7 +521,7 @@ return {
 	-- GÜNLÜK GÖREVLER (SADECE sağ üstteki 📜 dairesi açar, client/QuestPanel; lobideki görev panosu sahibinin isteğiyle KALDIRILDI): her gün PerDay görev (sırayla kolay, orta, zor), gece yarısı (UTC) yenilenir;
 	-- aynı gün herkes aynı görevleri görür (gün sayısıyla seçilir). İlerlemeyi, ödülü ve günü SUNUCU tutar (PlayerStats), kayıtlıdır. Pool: id (olay adı), text ({goal} yerine hedef yazılır),
 	-- goals (kolay/orta/zor slot hedefi), hardOnly (sadece zor slotta çıkar). Rewards: slot başına ödül: muscle = tıklama başı kazanç x clicks, wins = tahmini Win turu ödülü x mult
-	-- (Layout.reward(tahmini aşama), tahmin rebirth sayısından). Üçü de bitince BonusBoostMinutes dakikalık 2x bacak kası güçlendirmesi.
+	-- (Layout.reward(tahmini aşama), tahmin rebirth sayısından). Üçü de bitince BonusBoostMinutes dakikalık RAINBOW POTION (Luck + Muscle + Wins 2x).
 	Quests = {
 		PerDay = 3,
 		BonusBoostMinutes = 15,
@@ -593,23 +595,38 @@ return {
 	-- Yumurta paneli: "T" tuşu bu seçenekler arasında geçiş yapar (bir seferde kaç yumurta açılacağı)
 	EggMultiOptions = { 1, 3, 10 },
 
+	-- İKSİRLER (süreli güçlendirmeler; oturum boyu sürer, kaydedilmez): sol altta geri sayımlı şişe simgesiyle görünür (client/BoostHud). Hepsi Mult (2) kat etki eder.
+	-- Luck Potion: yumurta açarken nadir petlerin ağırlığı artar (Catalog.luckWeights: havuz sıklığa göre sıralanır, en sık pete x1, en nadir pete x2, arası düzgün artar).
+	-- Muscle Potion: tıklama başı bacak kazancı x2. Wins Potion: kazanılan Win x2.
+	-- Rainbow Potion: 'bütün iksirlerden almışsın gibi' sayılır, yani Luck + Muscle + Wins etkisi BİRLİKTE (tek şişe, tek geri sayım). Aynı etki üst üste çarpmaz (iki kaynak da olsa hep x2).
+	-- kind: ödül türü (Shop, Gifts, Wheel, DEV'de bu adla geçer); attribute: oyuncuya yayınlanan bitiş zamanı (sunucu saati).
+	Potions = {
+		Mult = 2,
+		List = {
+			{ id = "luck", kind = "boostLuck", attribute = "LuckBoostUntil", name = "Luck Potion", effect = "2x Egg Luck", emoji = "🍀", color = Color3.fromRGB(70, 210, 90) },
+			{ id = "muscle", kind = "boostMuscle", attribute = "MuscleBoostUntil", name = "Muscle Potion", effect = "2x Leg Muscle", emoji = "💪", color = Color3.fromRGB(255, 120, 50) },
+			{ id = "wins", kind = "boostWins", attribute = "WinBoostUntil", name = "Wins Potion", effect = "2x Wins", emoji = "🏆", color = Color3.fromRGB(255, 205, 50) },
+			{ id = "rainbow", kind = "boostRainbow", attribute = "RainbowBoostUntil", name = "Rainbow Potion", effect = "2x Luck, Muscle & Wins", emoji = "🌈", rainbow = true, color = Color3.fromRGB(255, 255, 255) },
+		},
+	},
+
 	-- Yumurtalar (lobinin arka duvarında): üstündeki pedin üstüne basınca Win karşılığı açılır.
-	-- pets = o yumurtadan çıkabilecek petler ve ağırlıkları (büyük sayı = daha sık çıkar). HER PET SADECE BİR YUMURTADA ÇIKAR (sahibi 'her yumurtanın hayvanı kendine özel olsun' dedi): 6 yumurta x 5 pet = 30 pet;
+	-- pets = o yumurtadan çıkabilecek petler ve ağırlıkları (büyük sayı = daha sık çıkar; her yumurtada 50/30/13/5/2: en sık -> en nadir. Sahibi 'pet şanslarını düşür, iksirler olsun' dedi: nadir petler ZOR, Luck Potion (Config.Potions) nadirleri artırır). HER PET SADECE BİR YUMURTADA ÇIKAR (sahibi 'her yumurtanın hayvanı kendine özel olsun' dedi): 6 yumurta x 5 pet = 30 pet;
 	-- yeni pet eklerken önce hangi yumurtaya ait olduğunu seç, Config.Pets'te o yumurtanın grubuna koy, Blender modelini (tools/blender/pets_more.py) ekle. Fiyatlar geçicidir.
 	-- color/accent = yumurtanın ana rengi ve benek rengi.
 	Eggs = {
 		{ id = "starter", name = "Starter Egg", price = 5, color = Color3.fromRGB(90, 190, 255), accent = Color3.fromRGB(255, 220, 60),
-			pets = { { id = "cat", weight = 40 }, { id = "chick", weight = 25 }, { id = "dog", weight = 20 }, { id = "hamster", weight = 10 }, { id = "bunny", weight = 5 } } },
+			pets = { { id = "cat", weight = 50 }, { id = "chick", weight = 30 }, { id = "dog", weight = 13 }, { id = "hamster", weight = 5 }, { id = "bunny", weight = 2 } } },
 		{ id = "forest", name = "Forest Egg", price = 50, color = Color3.fromRGB(90, 220, 120), accent = Color3.fromRGB(40, 120, 60),
-			pets = { { id = "frog", weight = 35 }, { id = "deer", weight = 25 }, { id = "fox", weight = 20 }, { id = "owl", weight = 14 }, { id = "panda", weight = 6 } } },
+			pets = { { id = "frog", weight = 50 }, { id = "deer", weight = 30 }, { id = "fox", weight = 13 }, { id = "owl", weight = 5 }, { id = "panda", weight = 2 } } },
 		{ id = "desert", name = "Desert Egg", price = 500, color = Color3.fromRGB(255, 200, 90), accent = Color3.fromRGB(190, 110, 30),
-			pets = { { id = "snake", weight = 35 }, { id = "scorpion", weight = 25 }, { id = "camel", weight = 20 }, { id = "tiger", weight = 14 }, { id = "lion", weight = 6 } } },
+			pets = { { id = "snake", weight = 50 }, { id = "scorpion", weight = 30 }, { id = "camel", weight = 13 }, { id = "tiger", weight = 5 }, { id = "lion", weight = 2 } } },
 		{ id = "ice", name = "Ice Egg", price = 2500, color = Color3.fromRGB(190, 240, 255), accent = Color3.fromRGB(90, 160, 255),
-			pets = { { id = "penguin", weight = 35 }, { id = "seal", weight = 25 }, { id = "wolf", weight = 20 }, { id = "polarbear", weight = 14 }, { id = "yeti", weight = 6 } } },
+			pets = { { id = "penguin", weight = 50 }, { id = "seal", weight = 30 }, { id = "wolf", weight = 13 }, { id = "polarbear", weight = 5 }, { id = "yeti", weight = 2 } } },
 		{ id = "lava", name = "Lava Egg", price = 10000, color = Color3.fromRGB(255, 90, 50), accent = Color3.fromRGB(255, 220, 60),
-			pets = { { id = "salamander", weight = 35 }, { id = "dragon", weight = 25 }, { id = "lavacrab", weight = 20 }, { id = "phoenix", weight = 14 }, { id = "golem", weight = 6 } } },
+			pets = { { id = "salamander", weight = 50 }, { id = "dragon", weight = 30 }, { id = "lavacrab", weight = 13 }, { id = "phoenix", weight = 5 }, { id = "golem", weight = 2 } } },
 		{ id = "galaxy", name = "Galaxy Egg", price = 50000, color = Color3.fromRGB(110, 70, 220), accent = Color3.fromRGB(255, 255, 255),
-			pets = { { id = "unicorn", weight = 35 }, { id = "alien", weight = 25 }, { id = "robot", weight = 20 }, { id = "galaxy", weight = 14 }, { id = "titan", weight = 6 } } },
+			pets = { { id = "unicorn", weight = 50 }, { id = "alien", weight = 30 }, { id = "robot", weight = 13 }, { id = "galaxy", weight = 5 }, { id = "titan", weight = 2 } } },
 	},
 
 	-- İz (trail) efektleri: karakterin arkasında renkli bir iz bırakır ve yürüme hızını artırır (speed = ek hız, stud/sn).
@@ -641,7 +658,7 @@ return {
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.
-	-- kind: muscle (amount kadar bacak kası), wins (amount Win), pet (pet id), boostMuscle / boostWins (BoostMinutes dk 2x).
+	-- kind: muscle (amount kadar bacak kası), wins (amount Win), pet (pet id), boostLuck / boostMuscle / boostWins / boostRainbow (iksirler, BoostMinutes dk 2x).
 	-- Ödüller her oyuna girişte yeniden başlar (kayıt edilmez). SkipRobux: "Unlock" butonları Robux yer tutucusu.
 	BoostMinutes = 10,
 	GiftRewards = {
@@ -652,7 +669,7 @@ return {
 		{ time = 600, kind = "pet", pet = "dragon" },
 		{ time = 780, kind = "muscle", amount = 5000 },
 		{ time = 1080, kind = "boostMuscle" },
-		{ time = 1380, kind = "wins", amount = 1000 },
+		{ time = 1380, kind = "boostLuck" },
 		{ time = 1800, kind = "boostWins" },
 		{ time = 2400, kind = "pet", pet = "phoenix" },
 	},

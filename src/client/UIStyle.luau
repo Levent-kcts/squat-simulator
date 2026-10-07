@@ -332,6 +332,54 @@ function UIStyle.petIcon(parent, pet, props)
 	return holder
 end
 
+-- İKSİR SİMGESİ (Frame'lerden çizilir): mantar, cam boyun, renkli sıvı dolu yuvarlak gövde (gradyan), parlak yansıma ve ortasında iksirin emojisi.
+-- potion: Config.Potions.List girdisi (color, emoji, rainbow). props: Position, Size, AnchorPoint ... Kare bir Frame döner.
+local RAINBOW = {
+	Color3.fromRGB(255, 80, 90),
+	Color3.fromRGB(255, 160, 50),
+	Color3.fromRGB(255, 235, 70),
+	Color3.fromRGB(80, 220, 110),
+	Color3.fromRGB(70, 160, 255),
+	Color3.fromRGB(170, 90, 255),
+}
+function UIStyle.potionIcon(parent, potion, props)
+	local holder = Instance.new("Frame")
+	holder.BackgroundTransparency = 1
+	for key, value in props or {} do
+		holder[key] = value
+	end
+	local ratio = Instance.new("UIAspectRatioConstraint")
+	ratio.AspectRatio = 1
+	ratio.Parent = holder
+
+	dot(holder, 0.5, 0.08, 0.26, 0.14, Color3.fromRGB(176, 112, 60), { corner = 0.3, stroke = 2 }) -- mantar
+	dot(holder, 0.5, 0.22, 0.3, 0.3, Color3.fromRGB(215, 236, 252), { corner = 0.2, stroke = 2 }) -- cam boyun
+	local body = dot(holder, 0.5, 0.64, 0.82, 0.68, potion.color, { stroke = 2.5, corner = 0.5 }) -- sıvı dolu gövde
+	local gradient = Instance.new("UIGradient")
+	gradient.Rotation = 90
+	if potion.rainbow then
+		local keypoints = {}
+		for index, color in RAINBOW do
+			table.insert(keypoints, ColorSequenceKeypoint.new((index - 1) / (#RAINBOW - 1), color))
+		end
+		gradient.Color = ColorSequence.new(keypoints)
+	else
+		gradient.Color = ColorSequence.new(UIStyle.lighten(potion.color, 0.4), UIStyle.darken(potion.color, 0.18))
+	end
+	gradient.Parent = body
+	dot(holder, 0.3, 0.5, 0.16, 0.09, WHITE, { rotation = -35, transparency = 0.35 }) -- cam yansıması
+	local symbol = Instance.new("TextLabel")
+	symbol.BackgroundTransparency = 1
+	symbol.AnchorPoint = Vector2.new(0.5, 0.5)
+	symbol.Position = UDim2.fromScale(0.5, 0.67)
+	symbol.Size = UDim2.fromScale(0.5, 0.42)
+	symbol.TextScaled = true
+	symbol.Text = potion.emoji
+	symbol.Parent = holder
+	holder.Parent = parent
+	return holder
+end
+
 -- petIcon bir hata verirse oyun/panel bozulmasın: eski düz daireye döner
 function UIStyle.safePetIcon(parent, pet, props)
 	local ok, result = pcall(UIStyle.petIcon, parent, pet, props)

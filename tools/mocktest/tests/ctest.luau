@@ -237,6 +237,24 @@ assert(shopOpened == 1, "+ düğmesi Shop penceresini açmalı")
 S.localPlayer:SetAttribute("PetCapacity", nil)
 print("PetsPanel bag plus ok")
 
+-- İksirler (sol alt): etkin iksir şişe simgesi + geri sayımla görünür, etkin olmayanlar gizlidir; Rainbow tek şişedir
+local BoostHud = require("./BoostHud")
+local hudRoot = S.newInstance("Frame")
+local hudWorkspace = S.game:GetService("Workspace")
+rawset(hudWorkspace, "GetServerTimeNow", function() return 1000 end) -- sunucu saati taklitte sayı değil, sabit bir sayı veriyoruz
+S.localPlayer:SetAttribute("LuckBoostUntil", 1125)
+S.localPlayer:SetAttribute("RainbowBoostUntil", 1040)
+BoostHud.init(hudRoot)
+rawset(hudWorkspace, "GetServerTimeNow", nil)
+local hudSlots = rawget(hudRoot, "_children")
+assert(hudSlots["Potion_luck"] and hudSlots["Potion_luck"].Visible == true, "Luck Potion sol altta görünmeli")
+assert(hudSlots["Potion_rainbow"].Visible == true, "Rainbow Potion görünmeli")
+assert(hudSlots["Potion_muscle"].Visible == false and hudSlots["Potion_wins"].Visible == false, "etkin olmayan iksir gizli olmalı")
+assert(textsUnder(hudSlots["Potion_luck"], {})["2:05"], "geri sayım 2:05 yazmalı")
+S.localPlayer:SetAttribute("LuckBoostUntil", nil)
+S.localPlayer:SetAttribute("RainbowBoostUntil", nil)
+print("potion hud ok")
+
 -- 7) Takipçi petler: Boss pet efektli (saydam kabuk + parçacık), diğer boylar düz küre ve boyları büyür
 S.localPlayer:SetAttribute("EquippedPets", "cat@4,dog,bunny@3")
 local PetFollowers = require("./PetFollowers")

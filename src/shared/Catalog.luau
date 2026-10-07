@@ -10,10 +10,14 @@ local Catalog = {
 	AuraById = {},
 	SkinById = {},
 	TrainingAreaById = {},
+	PotionByKind = {}, -- iksirler (Config.Potions.List) ödül türüne göre
 }
 
 for _, item in Config.Items do
 	Catalog.ItemById[item.id] = item
+end
+for _, potion in Config.Potions.List do
+	Catalog.PotionByKind[potion.kind] = potion
 end
 
 -- Petler: ilk boy (Small) Config.Pets'ten gelir; birleştirilmiş (büyümüş) boylar 'id@boy' kimliğiyle burada üretilir (boy adı, çarpan ve boy Config.PetFusion'dan).
@@ -80,6 +84,30 @@ end
 
 for _, area in Config.Training.Areas do
 	Catalog.TrainingAreaById[area.id] = area
+end
+
+-- Şans iksiri (Luck Potion): yumurta havuzundaki petlerin etkin ağırlıkları (egg.pets ile aynı sırada). Havuz sıklığa göre sıralanır, en sık pet x1'de kalır,
+-- en nadir pet x luck olur, aradakiler düzgün (geometrik) artar: nadir petler şanslandıkça daha sık çıkar. luck = 1 ise ağırlıklar aynen döner.
+-- Sunucu (PlayerStats.rollPet) ve istemci (yumurta paneli yüzdeleri) AYNI hesabı kullanır.
+function Catalog.luckWeights(egg, luck)
+	local entries = egg.pets
+	local order = {}
+	for index in entries do
+		table.insert(order, index)
+	end
+	table.sort(order, function(a, b)
+		if entries[a].weight ~= entries[b].weight then
+			return entries[a].weight > entries[b].weight
+		end
+		return a < b
+	end)
+	local count = #order
+	local weights = {}
+	for rank, index in order do
+		local exponent = if count > 1 then (rank - 1) / (count - 1) else 0
+		weights[index] = entries[index].weight * (luck or 1) ^ exponent
+	end
+	return weights
 end
 
 -- Pet nadirliği (Config.Rarities): çarpanı sınırın altında kalan ilk sınıf

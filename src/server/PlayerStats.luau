@@ -48,6 +48,25 @@ local function petCapacity(profile)
 	return Config.MaxOwnedPets + profile.petSlots
 end
 
+-- İksirler (Config.Potions): field = profile.boostMuscleUntil / boostWinsUntil / boostLuckUntil. Rainbow Potion hepsini birden sağlar ('bütün iksirlerden almışsın gibi').
+-- Etki hep Config.Potions.Mult katıdır; aynı etki iki kaynaktan gelse de üst üste çarpmaz.
+local POTION_FIELD = {
+	boostLuck = "boostLuckUntil",
+	boostMuscle = "boostMuscleUntil",
+	boostWins = "boostWinsUntil",
+	boostRainbow = "boostRainbowUntil",
+}
+local function potionActive(profile, field)
+	local now = os.time()
+	return now < profile[field] or now < profile.boostRainbowUntil
+end
+
+-- 'Luck Potion! 2x Egg Luck for 10 minutes!' gibi ödül mesajı
+local function potionMessage(kind, minutes)
+	local potion = Catalog.PotionByKind[kind]
+	return `{potion.name}! {potion.effect} for {minutes or Config.BoostMinutes} minutes!`
+end
+
 local function getStat(player, name)
 	local leaderstats = player:FindFirstChild("leaderstats")
 	return leaderstats and leaderstats:FindFirstChild(name)
@@ -157,7 +176,7 @@ local function publishQuests(player)
 			resetAt = (state.day + 1) * 86400,
 			quests = entries,
 			bonusClaimed = state.bonus,
-			bonusText = `2x Leg Muscle for {Config.Quests.BonusBoostMinutes} minutes`,
+			bonusText = `Rainbow Potion for {Config.Quests.BonusBoostMinutes} minutes`,
 		})
 	)
 end
@@ -409,7 +428,7 @@ local function refresh(player)
 	-- Çarpan = petler x level x rebirth x aura; yüzde bonusları (süreli güçlendirme, arkadaş, Index) ayrıca çarpar. Skin ÇARPAN DEĞİL sabit bonustur.
 	local aura = Catalog.AuraById[profile.equippedAura]
 	local auraMultiplier = if aura then aura.mult else 1
-	local boostMultiplier = if os.time() < profile.boostMuscleUntil then 2 else 1
+	local boostMultiplier = if potionActive(profile, "boostMuscleUntil") then Config.Potions.Mult else 1
 	-- Pet Index: sahip olunan her tür keşfedilir (silinse de kalır); keşfedilen her tür +%X (Config.Index)
 	for _, id in profile.pets do
 		profile.discovered[Catalog.PetById[id].baseId] = true -- birleşmiş boylar da türü keşfetmiş sayılır
@@ -474,6 +493,9 @@ local function refresh(player)
 	player:SetAttribute("EquippedAura", profile.equippedAura)
 	player:SetAttribute("MuscleBoostUntil", profile.boostMuscleUntil)
 	player:SetAttribute("WinBoostUntil", profile.boostWinsUntil)
+	player:SetAttribute("LuckBoostUntil", profile.boostLuckUntil)
+	player:SetAttribute("RainbowBoostUntil", profile.boostRainbowUntil)
+	player:SetAttribute("EggLuck", if potionActive(profile, "boostLuckUntil") then Config.Potions.Mult else 1) -- yumurta panelindeki yüzdeler bunu kullanır (Catalog.luckWeights)
 	player:SetAttribute("EquippedTrail", profile.equippedTrail)
 	local autoDeleteList = {}
 	for id in profile.autoDelete do
@@ -561,14 +583,11 @@ local function requestSave(player)
 	end)
 end
 
--- 2x güçlendirmeyi başlatır (kind: "boostMuscle" / "boostWins"); süre bitince kazanç yeniden hesaplanır
+-- İksiri içirir (kind: "boostLuck" / "boostMuscle" / "boostWins" / "boostRainbow"); iksir zaten etkiliyse süre ÜZERİNE eklenir. Süre bitince kazanç yeniden hesaplanır
 local function startBoost(player, profile, kind, minutes)
 	local seconds = (minutes or Config.BoostMinutes) * 60
-	if kind == "boostMuscle" then
-		profile.boostMuscleUntil = os.time() + seconds
-	else
-		profile.boostWinsUntil = os.time() + seconds
-	end
+	local field = POTION_FIELD[kind]
+	profile[field] = math.max(os.time(), profile[field]) + seconds
 	task.delay(seconds + 1, function()
 		if profiles[player] == profile then
 			refresh(player)
@@ -636,6 +655,8 @@ local function setup(player)
 		equipped = {}, -- takılı petler (envanterden kopyalar)
 		boostMuscleUntil = 0, -- os.time() cinsinden süreli 2x güçlendirme bitişleri
 		boostWinsUntil = 0,
+		boostLuckUntil = 0,
+		boostRainbowUntil = 0,
 		claimedGifts = {}, -- oyun süresi ödülleri (bu oturum)
 		offlinePending = 0, -- alınmayı bekleyen çevrimdışı kazanç (bacak kası) ve uzakta geçen süre (saniye)
 		offlineSeconds = 0,
@@ -878,7 +899,7 @@ local function applyProduct(player, profile, product)
 	elseif product.kind == "skip" then
 		-- Level şartını atlayarak rebirth (sunucuda yapılır; duvarları sıfırlamayı Purchases çağırır)
 		return (PlayerStats.rebirth(player, true))
-	elseif product.kind == "boostMuscle" or product.kind == "boostWins" then
+	elseif POTION_FIELD[product.kind] then
 		startBoost(player, profile, product.kind, product.minutes)
 	elseif product.kind == "petSpace" then
 		profile.petSlots = math.min(profile.petSlots + product.amount, Config.MaxExtraPetSlots) -- üst sınırda da satın alma işlenmiş sayılır (Robux boşa gitmesin)
@@ -1005,10 +1026,10 @@ function PlayerStats.claimQuestBonus(player)
 		end
 	end
 	profile.quests.bonus = true
-	startBoost(player, profile, "boostMuscle", Config.Quests.BonusBoostMinutes)
+	startBoost(player, profile, "boostRainbow", Config.Quests.BonusBoostMinutes)
 	refresh(player)
 	requestSave(player)
-	return true, `Bonus! 2x Leg Muscle for {Config.Quests.BonusBoostMinutes} minutes!`
+	return true, `Bonus! {potionMessage("boostRainbow", Config.Quests.BonusBoostMinutes)}`
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
@@ -1021,7 +1042,7 @@ function PlayerStats.addWin(player, amount)
 	local profile = profiles[player]
 	local stat = getStat(player, Config.StatWins)
 	if profile and profile.loaded and stat then
-		local boost = if os.time() < profile.boostWinsUntil then 2 else 1
+		local boost = if potionActive(profile, "boostWinsUntil") then Config.Potions.Mult else 1
 		stat.Value += (amount or 1) * boost
 		requestSave(player)
 		PlayerStats.questEvent(player, "winpads", 1)
@@ -1101,14 +1122,15 @@ function PlayerStats.buySkin(player, skinId)
 end
 
 -- Yumurtanın pet havuzundan ağırlıklarına göre rastgele pet seçer
-local function rollPet(egg)
+local function rollPet(egg, luck)
+	local weights = Catalog.luckWeights(egg, luck or 1) -- Luck Potion nadir petlerin ağırlığını artırır
 	local total = 0
-	for _, entry in egg.pets do
-		total += entry.weight
+	for _, weight in weights do
+		total += weight
 	end
 	local roll = rng:NextNumber() * total
-	for _, entry in egg.pets do
-		roll -= entry.weight
+	for index, entry in egg.pets do
+		roll -= weights[index]
 		if roll <= 0 then
 			return Catalog.PetById[entry.id]
 		end
@@ -1153,11 +1175,12 @@ function PlayerStats.hatchEgg(player, eggId, count)
 
 	local kept, deleted = {}, {}
 	local results = {} -- açılış sırasıyla { id, kept }: istemcideki açılış ekranı için
+	local luck = if potionActive(profile, "boostLuckUntil") then Config.Potions.Mult else 1
 	for _ = 1, count do
 		if wins.Value < egg.price then
 			break
 		end
-		local pet = rollPet(egg)
+		local pet = rollPet(egg, luck)
 		local willDelete = profile.autoDelete[pet.id]
 		if not willDelete and #profile.pets >= petCapacity(profile) then
 			break
@@ -1606,11 +1629,9 @@ function PlayerStats.spinWheel(player)
 		muscle.Value += amount
 		syncLevel(player)
 		message = `+{Format.compact(amount)} Leg Muscle`
-	elseif kind == "boostMuscle" or kind == "boostWins" then
+	elseif POTION_FIELD[kind] then
 		startBoost(player, profile, kind, prize.minutes)
-		message = if kind == "boostMuscle"
-			then `2x Leg Muscle for {prize.minutes} minutes!`
-			else `2x Wins for {prize.minutes} minutes!`
+		message = potionMessage(kind, prize.minutes)
 	elseif kind == "pet" then
 		local pet = rollPet(Config.Eggs[Config.Wheel.PetEgg])
 		table.insert(profile.pets, pet.id)
@@ -1671,11 +1692,9 @@ function PlayerStats.claimGift(player, index)
 			table.insert(profile.equipped, pet.id)
 		end
 		message = `New pet: {pet.name}!`
-	elseif reward.kind == "boostMuscle" or reward.kind == "boostWins" then
-		startBoost(player, profile, reward.kind)
-		message = if reward.kind == "boostMuscle"
-			then `2x Leg Muscle for {Config.BoostMinutes} minutes!`
-			else `2x Wins for {Config.BoostMinutes} minutes!`
+	elseif POTION_FIELD[reward.kind] then
+		startBoost(player, profile, reward.kind, reward.minutes)
+		message = potionMessage(reward.kind, reward.minutes)
 	else
 		return false, "Unknown reward."
 	end
@@ -1759,6 +1778,11 @@ function PlayerStats.dev(player, command, amount)
 		end
 		publishQuests(player)
 		message = "All of today's quests are complete: claim them!"
+	elseif command == "PotionLuck" or command == "PotionMuscle" or command == "PotionWins" or command == "PotionRainbow" then
+		-- İksirleri denemek için: 10 dakikalık iksir içirir (Luck, Muscle, Wins ya da Rainbow)
+		local kind = "boost" .. string.sub(command, 7)
+		startBoost(player, profile, kind, 10)
+		message = potionMessage(kind, 10)
 	elseif command == "WheelReset" then
 		profile.wheelDay = 0
 		publishWheel(player)
@@ -1833,6 +1857,8 @@ function PlayerStats.dev(player, command, amount)
 		profile.equipped = {}
 		profile.boostMuscleUntil = 0
 		profile.boostWinsUntil = 0
+		profile.boostLuckUntil = 0
+		profile.boostRainbowUntil = 0
 		profile.discovered = {}
 		profile.tutorialDone = false -- eğitim yeniden başlar
 		profile.tutorialClicks = 0

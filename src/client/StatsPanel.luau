@@ -60,8 +60,8 @@ function StatsPanel.init(screenGui)
 			local aura = Catalog.AuraById[player:GetAttribute("EquippedAura") or ""]
 			return mult(if aura then aura.mult else 1)
 		end, Color3.new(1, 1, 1) },
-		{ "2x Muscle boost", function()
-			local left = (player:GetAttribute("MuscleBoostUntil") or 0) - os.time()
+		{ "Muscle Potion", function()
+			local left = math.max(player:GetAttribute("MuscleBoostUntil") or 0, player:GetAttribute("RainbowBoostUntil") or 0) - os.time() -- Rainbow Potion da Muscle Potion sayılır
 			return if left > 0 then `x2  ({math.ceil(left / 60)}m left)` else "off"
 		end, Color3.new(1, 1, 1) },
 		{ "Friends", function() return `+{player:GetAttribute("FriendBonus") or 0}%` end, Color3.fromRGB(120, 255, 140) },
