@@ -71,7 +71,7 @@ function WheelPanel.init(screenGui, onSpin)
 		ZIndex = 41,
 	}, backdrop)
 	create("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Height }, holder)
-	local face = WheelFace.build(holder, Config.Wheel.Prizes, { rim = true, hub = true, upright = true })
+	local face = WheelFace.build(holder, Config.Wheel.Prizes, { rim = true, hub = true, upright = true, image = Config.Icons.WheelFace })
 
 	-- İbre: çarkın üstünde sabit, aşağı bakan beyaz üçgen
 	makeText(holder, {

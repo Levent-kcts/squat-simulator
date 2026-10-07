@@ -54,7 +54,9 @@ local function text(parent, props, strokeThickness)
 end
 
 -- parent: kare bir alan (GuiObject ya da SurfaceGui); alanı tamamen kaplar. prizes: Config.Wheel.Prizes (8 dilim).
--- options: rim (dış halka çizilsin mi), hub (göbek çizilsin mi), upright (yazılar çark dönerken dik mi kalsın; arayüzde true, 3B çarkta false).
+-- options: rim (dış halka çizilsin mi), hub (göbek çizilsin mi), upright (yazılar çark dönerken dik mi kalsın; arayüzde true, 3B çarkta false),
+-- clip (disk daireye kırpılsın mı; varsayılan true: CanvasGroup + UICorner. 3B çarkta (SurfaceGui) kırpma çalışmadığı için false: köşeleri çarkın altın halkası örter),
+-- image (verilirse dilimler yerine bu hazır çark resmi (daire şeklinde, şeffaf köşeli PNG) kullanılır: Config.Icons.WheelFace, tools/make_wheel_image.py üretir).
 -- Dönüş: { disc = dönen CanvasGroup, place = function(açı) çarkı (derece, saat yönü) ve yazıları yerleştirir, sliceDegrees }
 function WheelFace.build(parent, prizes, options)
 	options = options or {}
@@ -83,44 +85,50 @@ function WheelFace.build(parent, prizes, options)
 		create("UIStroke", { Thickness = 3, Color = Color3.fromRGB(40, 52, 70) }, rim)
 	end
 
-	-- Dönen disk: CanvasGroup daireye kırpar (yoksa Frame'e düşer: köşeler taşar ama çark yine çalışır)
-	local okGroup, disc = pcall(create, "CanvasGroup", {
+	-- Dönen disk: hazır resim varsa ImageLabel; yoksa CanvasGroup daireye kırpar (clip = false ya da CanvasGroup yoksa düz Frame: köşeler taşar)
+	local diskProps = {
 		Name = "Disc",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
 		Size = UDim2.fromScale(discScale, discScale),
 		BackgroundColor3 = Color3.fromRGB(40, 46, 74),
 		BorderSizePixel = 0,
-	}, root)
-	if not okGroup then
-		disc = create("Frame", {
-			Name = "Disc",
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromScale(discScale, discScale),
-			BackgroundColor3 = Color3.fromRGB(40, 46, 74),
-			BorderSizePixel = 0,
-		}, root)
+	}
+	local disc
+	local useImage = type(options.image) == "string" and options.image ~= ""
+	if useImage then
+		diskProps.BackgroundTransparency = 1
+		diskProps.Image = options.image
+		disc = create("ImageLabel", diskProps, root)
+	else
+		if options.clip ~= false then
+			local okGroup, group = pcall(create, "CanvasGroup", diskProps, root)
+			if okGroup then
+				disc = group
+			end
+		end
+		disc = disc or create("Frame", diskProps, root)
+		if options.clip ~= false then
+			create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
+		end
+		for index, prize in prizes do
+			local slice = SLICES[index]
+			local triangle = create("Frame", {
+				Name = `Slice{index}`,
+				Position = UDim2.fromScale(slice.x, slice.y),
+				Size = UDim2.fromScale(0.5, 0.5),
+				BackgroundColor3 = prize.color,
+				BorderSizePixel = 0,
+			}, disc)
+			create("UIGradient", {
+				Rotation = slice.rotation,
+				Transparency = if slice.first then VISIBLE_FIRST else VISIBLE_SECOND,
+			}, triangle)
+		end
 	end
-	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
 
-	for index, prize in prizes do
-		local slice = SLICES[index]
-		local triangle = create("Frame", {
-			Name = `Slice{index}`,
-			Position = UDim2.fromScale(slice.x, slice.y),
-			Size = UDim2.fromScale(0.5, 0.5),
-			BackgroundColor3 = prize.color,
-			BorderSizePixel = 0,
-		}, disc)
-		create("UIGradient", {
-			Rotation = slice.rotation,
-			Transparency = if slice.first then VISIBLE_FIRST else VISIBLE_SECOND,
-		}, triangle)
-	end
-
-	-- Ayırıcı çizgiler: dikey, yatay ve iki köşegen (diskin kırpması dışarıyı keser)
-	for _, rotation in { 0, 45, 90, 135 } do
+	-- Ayırıcı çizgiler: dikey, yatay ve iki köşegen (diskin kırpması dışarıyı keser); hazır resimde çizgiler resmin içindedir
+	for _, rotation in (if useImage then {} else { 0, 45, 90, 135 }) do
 		create("Frame", {
 			Name = "Divider",
 			AnchorPoint = Vector2.new(0.5, 0.5),

@@ -36,6 +36,8 @@ function WheelClient.init(screenGui, showToast)
 	local spin = nil -- { worldStart, worldDelta, uiStart, uiDelta, elapsed, index, message }
 	local busy = false -- sunucudan yanıt bekleniyor ya da çark dönüyor
 	local panel = nil
+	local openWheel -- E ile çarkı açar (aşağıda tanımlanır; prompt bulunduğunda bağlanır)
+	local panelError = nil -- arayüz kurulamadıysa nedeni (E'ye basınca oyuncuya gösterilir, sahibi Output'a bakmak zorunda kalmasın)
 	local showingResult = false -- arayüzde sonuç yazısı duruyor: kapanıp yeniden açılana kadar durum yazısı üzerine yazılmaz
 
 	-- Çark dünyaya sunucudan gelir: gelince parçalarını bul
@@ -53,6 +55,14 @@ function WheelClient.init(screenGui, showToast)
 		end
 		statusLabel = stand:FindFirstChild("SpinLabel", true)
 		prompt = stand:FindFirstChildWhichIsA("ProximityPrompt", true)
+		-- Ek güvence: bazı durumlarda PromptTriggered yerine prompt'un kendi olayı gelir; ikisi de aynı işlevi çağırır (çift basışı openWheel engeller)
+		if prompt then
+			prompt.Triggered:Connect(function(who)
+				if who == player and openWheel then
+					openWheel()
+				end
+			end)
+		end
 	end)
 
 	-- Hak durumu: sunucunun yayınladığı 'WheelReady' ya da gece yarısı (UTC) geçtiyse hazır
@@ -160,27 +170,46 @@ function WheelClient.init(screenGui, showToast)
 		if okInit then
 			panel = result
 		else
+			panelError = tostring(result)
 			warn(`[WheelClient] Çark arayüzü kurulamadı: {result}`)
 		end
+	else
+		panelError = tostring(WheelPanel)
+		warn(`[WheelClient] WheelPanel yüklenemedi: {WheelPanel}`)
 	end
 
-	ProximityPromptService.PromptTriggered:Connect(function(triggered, who)
-		if who ~= player or triggered:GetAttribute("Panel") ~= "Wheel" then
-			return
+	local lastOpen = 0
+	openWheel = function()
+		if os.clock() - lastOpen < 0.4 then
+			return -- aynı basış hem PromptTriggered hem prompt.Triggered'dan gelirse bir kez say
 		end
-		if panel then
-			showingResult = false
-			panel.open()
-			panel.place(uiAngle)
-			refreshStatus()
-		else
-			trigger()
+		lastOpen = os.clock()
+		local ok, err = pcall(function()
+			if panel then
+				showingResult = false
+				panel.open()
+				panel.place(uiAngle)
+				refreshStatus()
+			else
+				showToast(false, `Wheel window could not load: {panelError or "unknown error"}`)
+				trigger()
+			end
+		end)
+		if not ok then
+			warn(`[WheelClient] Çark arayüzü açılamadı: {err}`)
+			showToast(false, `Wheel window error: {err}`)
+		end
+	end
+	ProximityPromptService.PromptTriggered:Connect(function(triggered, who)
+		if who == player and triggered:GetAttribute("Panel") == "Wheel" then
+			openWheel()
 		end
 	end)
 
 	-- Hareket: dönüş sırasında yavaşlayarak durur; bekleyince lobideki çark yavaş döner, lambalar koşuşur
 	local lampClock, lampStep, statusClock = 0, 0, 0
-	RunService.Heartbeat:Connect(function(dt)
+	local stepFailed = false
+	local function step(dt)
 		if spin then
 			spin.elapsed += dt
 			local progress = math.min(spin.elapsed / wheel.SpinSeconds, 1)
@@ -218,7 +247,17 @@ function WheelClient.init(screenGui, showToast)
 		if statusLabel and isReady() and player:GetAttribute("DataLoaded") == true then
 			statusLabel.TextColor3 = READY_COLOR:Lerp(Color3.new(1, 1, 1), (math.sin(os.clock() * 5) + 1) / 2)
 		end
+	end
+	-- Bir karedeki hata çarkı ve durum yazısını durdurmasın: korumalı çalışır, ilk hata bir kez bildirilir
+	RunService.Heartbeat:Connect(function(dt)
+		local ok, err = pcall(step, dt)
+		if not ok and not stepFailed then
+			stepFailed = true
+			warn(`[WheelClient] Çark hareketi hata verdi: {err}`)
+			showToast(false, `Wheel error: {err}`)
+		end
 	end)
+	print("[WheelClient] hazır; arayüz:", panel ~= nil)
 
 	-- Hatırlatma: eğitimi bitirmiş oyuncu girince hak hazırsa bir kez haber ver (yeni oyuncuya yönerge karışmasın)
 	local reminded = false
