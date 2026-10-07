@@ -124,7 +124,7 @@ function PetFollowers.init()
 			local target
 			if entry.offset then
 				-- Model: orijini tabanın ortasıdır; zeminin biraz üstünde süzülür, kutu merkezine göre yerleşir
-				target = root.CFrame * CFrame.new(side, Config.Models.PetHover + bob, 4) * CFrame.new(entry.offset)
+				target = ModelLibrary.cframe(root.CFrame * CFrame.new(side, Config.Models.PetHover + bob, 4), entry.offset)
 			else
 				target = root.CFrame * CFrame.new(side, 0.5 + bob, 4)
 			end

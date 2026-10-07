@@ -3,6 +3,7 @@
 -- Model yoksa (klasör yok ya da o model henüz yüklenmemiş) nil döner ve çağıran yer eski kod modeline (küre / kod yumurtası) düşer: oyun modelsiz de eksiksiz çalışır.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Config = require(script.Parent.Config)
 local ModelInfo = require(script.Parent.ModelInfo)
 
 local ModelLibrary = {}
@@ -31,7 +32,8 @@ function ModelLibrary.has(name)
 end
 
 -- Modelin kopyası: Anchored, çarpışmasız, boyu ModelInfo[name].size x scale. Dönüş: MeshPart, MODEL ORİJİNİNE (tabanın ortası) göre kutu merkezi (ölçekli).
--- Yerleştirme: part.CFrame = orijinCFrame * CFrame.new(merkez). Önü -Z'dir (Roblox'un 'ileri'si), yani oyuncunun baktığı yöne bakar.
+-- Yerleştirme: part.CFrame = ModelLibrary.cframe(orijinCFrame, merkez). Roblox içe aktarıcısı FBX'in önünü +Z'ye koyuyor (sahibi Studio'da gördü: kedi ve yumurta ters bakıyordu),
+-- bu yüzden Config.Models.FlipFront açıkken model yerleşirken Y çevresinde 180 derece çevrilir ve önü -Z'ye (Roblox'un 'ileri'si, oyuncunun baktığı yön) bakar.
 function ModelLibrary.create(name, scale)
 	local info = ModelInfo[name]
 	local source = findSource(name)
@@ -53,6 +55,15 @@ function ModelLibrary.create(name, scale)
 	part.Color = Color3.new(1, 1, 1) -- renkler palet dokusundan gelir, boya karıştırma
 	part.Size = info.size * scale
 	return part, info.center * scale
+end
+
+-- Modelin yerleşeceği CFrame: orijin (tabanın ortası) orijinCFrame'de, kutu merkezi offset kadar ötede, önü doğru yöne bakar
+function ModelLibrary.cframe(originCFrame, offset)
+	local result = originCFrame * CFrame.new(offset)
+	if Config.Models.FlipFront then
+		result = result * CFrame.Angles(0, math.pi, 0)
+	end
+	return result
 end
 
 return ModelLibrary

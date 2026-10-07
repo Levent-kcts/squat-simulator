@@ -467,6 +467,7 @@ return {
 		PetScale = 0.8,
 		PetHover = -1.8,
 		EggScale = 1,
+		FlipFront = true, -- Roblox içe aktarıcısı modelin önünü +Z'ye koyar (Studio'da görüldü); true = yerleşirken 180 derece çevir, ön -Z'ye baksın. Model farklı dışa aktarılırsa false yap
 	},
 
 	-- GÜNLÜK ÇARK (server/WheelService: lobinin sağ arka köşesinde duran dönen çark, client/WheelPanel: E'ye basınca açılan arayüz, client/WheelController: dönüş animasyonu; mantık PlayerStats.spinWheel): her oyuncu günde 1 kez (UTC gün) çevirir,

@@ -43,7 +43,7 @@ local function buildEgg(parent, egg, frame, center)
 	if mesh then
 		mesh.Name = "Shell"
 		local origin = frame * CFrame.new(center - Vector3.new(0, 3.6 * EGG_SCALE, 0)) -- modelin orijini tabanın ortasıdır
-		mesh.CFrame = origin * CFrame.new(offset)
+		mesh.CFrame = ModelLibrary.cframe(origin, offset)
 		mesh.Parent = model
 		model.Parent = parent
 		return
