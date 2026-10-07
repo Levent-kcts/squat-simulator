@@ -165,7 +165,10 @@ assert(S.lastInvoke == nil, "Delete ilk basışta silmemeli")
 assert(textsUnder(root2, {})["Sure?"], "Delete ilk basışta 'Sure?' demeli")
 click(buttonWith(root2, "Sure?"))
 assert(S.lastInvoke and S.lastInvoke[1] == "DeletePet" and S.lastInvoke[2] == "cat", "ikinci basış DeletePet göndermeli")
-assert(buttonNamed(buttonNamed(root2, "TrashButton"), "TrashIcon"), "alt çöp kutusu düğmesinde çizili simge olmalı")
+local trashIcon = buttonNamed(buttonNamed(root2, "TrashButton"), "TrashIcon")
+assert(trashIcon, "alt çöp kutusu düğmesinde simge olmalı")
+local trashImage = rawget(trashIcon, "_children")["ImageLabel"]
+assert(trashImage and rawget(trashImage, "Image") == "rbxassetid://72909566398443", "yüklenen çöp kutusu görseli kullanılmalı")
 print("PetsPanel merge/equip/delete ok")
 
 -- 3) 3'ten az: ilerleme gösterilir, tıklayınca bilgi mesajı (sunucuya gitmez)
