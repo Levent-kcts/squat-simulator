@@ -259,14 +259,22 @@ function PetsPanel.init(screenGui, showToast)
 		Size = UDim2.fromOffset(3 * TEAM_SLOT + 2 * 10, TEAM_SLOT),
 		BackgroundTransparency = 1,
 	}, panel)
+	-- Sağ üç düğme (Equip Best yerinde, Unequip All biraz yukarı, altında ikinci Merge All; sahibi istedi): hepsi Pet Team satırının yüksekliğine sığar, kart ızgarasına binmez
+	local sideX = rightX + 3 * TEAM_SLOT + 30
+	local sideWidth = rightWidth - (3 * TEAM_SLOT + 30)
+	local SIDE_HEIGHT, SIDE_GAP = 34, 5
 	local equipBest = makeButton(panel, {
-		Position = UDim2.fromOffset(rightX + 3 * TEAM_SLOT + 30, 86),
-		Size = UDim2.fromOffset(rightWidth - (3 * TEAM_SLOT + 30), 40),
+		Position = UDim2.fromOffset(sideX, 86),
+		Size = UDim2.fromOffset(sideWidth, SIDE_HEIGHT),
 	}, "Equip Best", GREEN)
 	local unequipAll = makeButton(panel, {
-		Position = UDim2.fromOffset(rightX + 3 * TEAM_SLOT + 30, 86 + TEAM_SLOT - 40),
-		Size = UDim2.fromOffset(rightWidth - (3 * TEAM_SLOT + 30), 40),
+		Position = UDim2.fromOffset(sideX, 86 + SIDE_HEIGHT + SIDE_GAP),
+		Size = UDim2.fromOffset(sideWidth, SIDE_HEIGHT),
 	}, "Unequip All", ORANGE)
+	local sideMergeAll, sideMergeAllText = makeButton(panel, {
+		Position = UDim2.fromOffset(sideX, 86 + 2 * (SIDE_HEIGHT + SIDE_GAP)),
+		Size = UDim2.fromOffset(sideWidth, SIDE_HEIGHT),
+	}, "Merge All", PURPLE)
 
 	local grid = create("ScrollingFrame", {
 		Position = UDim2.fromOffset(rightX, 86 + TEAM_SLOT + 8),
@@ -820,6 +828,8 @@ function PetsPanel.init(screenGui, showToast)
 			else ""
 		mergeAll.BackgroundColor3 = if anyMergeable then PURPLE else GREY
 		mergeAllText.Text = if anyMergeable then "Merge All" else "Nothing to merge"
+		sideMergeAll.BackgroundColor3 = mergeAll.BackgroundColor3
+		sideMergeAllText.Text = if anyMergeable then "Merge All" else "Nothing to merge"
 	end
 
 	equipBest.MouseButton1Click:Connect(function()
@@ -831,7 +841,7 @@ function PetsPanel.init(screenGui, showToast)
 	moreSpace.MouseButton1Click:Connect(function()
 		showToast(false, "More pet space is coming soon!")
 	end)
-	mergeAll.MouseButton1Click:Connect(function()
+	local function mergeEverything()
 		local owned = toCounts(player:GetAttribute("OwnedPets"))
 		local any = false
 		for id, count in owned do
@@ -852,7 +862,9 @@ function PetsPanel.init(screenGui, showToast)
 				pcall(Sfx.play, "Rare")
 			end
 		end)
-	end)
+	end
+	mergeAll.MouseButton1Click:Connect(mergeEverything)
+	sideMergeAll.MouseButton1Click:Connect(mergeEverything)
 	-- Çöp kutusu: 1. basış silme modunu açar, kartlara tıklayınca işaretlenir (tekrar tıklayınca iptal), 2. basış işaretlileri siler
 	trash.MouseButton1Click:Connect(function()
 		if not deleteMode then
