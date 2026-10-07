@@ -492,7 +492,7 @@ local function refresh()
 	-- Antrenman alanındayken kazanç pedin çarpanıyla çarpılır (sunucu AreaMultiplier'ı pede girince ayarlar)
 	local areaMultiplier = player:GetAttribute("AreaMultiplier") or 1
 	local perClick = math.floor((player:GetAttribute("PerClick") or 1) * areaMultiplier)
-	gainLabel.Text = `+{Format.short(perClick)}/click  x{Format.multiplier(player:GetAttribute("DamageMultiplier") or 1)} dmg`
+	gainLabel.Text = `+{Format.compact(perClick)}/click  x{Format.multiplier(player:GetAttribute("DamageMultiplier") or 1)} dmg`
 	multiplierLabel.Text = `x{Format.multiplier((player:GetAttribute("TotalMultiplier") or 1) * areaMultiplier)} Multiplier`
 	autoBadge.Text = if autoClick then "ON" else "OFF"
 	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
@@ -770,7 +770,7 @@ local function refreshLevel()
 		countLabel.Text = "MAX"
 		TweenService:Create(barFill, barTween, { Size = UDim2.fromScale(1, 1) }):Play()
 	else
-		countLabel.Text = `{taps}/{needed}`
+		countLabel.Text = `{Format.compact(taps, 2)}/{Format.compact(needed, 2)}` -- 421.95M/2.84B (level sayısı hariç büyük sayılar K/M/B ile kısalır)
 		TweenService:Create(barFill, barTween, { Size = UDim2.fromScale(math.clamp(taps / needed, 0, 1), 1) }):Play()
 	end
 
