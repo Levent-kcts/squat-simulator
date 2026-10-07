@@ -232,6 +232,7 @@ return {
 		Backpack = "rbxassetid://139523703798238",
 		Pets = "rbxassetid://122036590660446",
 		Gifts = "rbxassetid://107783706209695",
+		Potions = { luck = "", muscle = "", wins = "", rainbow = "" }, -- iksir görselleri (assets/icons/potion_<id>.png, tools/blender/potions.py): sahibi Image olarak yükleyip ID'leri verince yazılır; boşken kodla çizilen şişe (UIStyle.potionIcon)
 		Trails = "rbxassetid://127034765324159", -- Backpack > Trails düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/trails.png, Image türü, doğrulandı). Boş bırakılırsa ✨ emojisi
 		Auras = "rbxassetid://80241008587441", -- Backpack > Auras düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/auras.png, Image türü, doğrulandı). Boş bırakılırsa 🔮 emojisi
 	}, -- sahibinin yüklediği görseller (hepsi Image türünde, doğrulandı)
@@ -603,10 +604,10 @@ return {
 	Potions = {
 		Mult = 2,
 		List = {
-			{ id = "luck", kind = "boostLuck", attribute = "LuckBoostUntil", name = "Luck Potion", effect = "2x Egg Luck", emoji = "🍀", color = Color3.fromRGB(70, 210, 90) },
-			{ id = "muscle", kind = "boostMuscle", attribute = "MuscleBoostUntil", name = "Muscle Potion", effect = "2x Leg Muscle", emoji = "💪", color = Color3.fromRGB(255, 120, 50) },
-			{ id = "wins", kind = "boostWins", attribute = "WinBoostUntil", name = "Wins Potion", effect = "2x Wins", emoji = "🏆", color = Color3.fromRGB(255, 205, 50) },
-			{ id = "rainbow", kind = "boostRainbow", attribute = "RainbowBoostUntil", name = "Rainbow Potion", effect = "2x Luck, Muscle & Wins", emoji = "🌈", rainbow = true, color = Color3.fromRGB(255, 255, 255) },
+			{ id = "luck", kind = "boostLuck", attribute = "LuckBoostUntil", name = "Luck Potion", effect = "2x Egg Luck", description = "Rare pets hatch from eggs up to 2x more often.", emoji = "🍀", color = Color3.fromRGB(70, 210, 90) },
+			{ id = "muscle", kind = "boostMuscle", attribute = "MuscleBoostUntil", name = "Muscle Potion", effect = "2x Leg Muscle", description = "Doubles the Leg Muscle you get from every squat.", emoji = "💪", color = Color3.fromRGB(255, 120, 50) },
+			{ id = "wins", kind = "boostWins", attribute = "WinBoostUntil", name = "Wins Potion", effect = "2x Wins", description = "Doubles every Win you earn.", emoji = "🏆", color = Color3.fromRGB(255, 205, 50) },
+			{ id = "rainbow", kind = "boostRainbow", attribute = "RainbowBoostUntil", name = "Rainbow Potion", effect = "2x Luck, Muscle & Wins", description = "Counts as ALL potions: 2x egg luck, 2x muscle and 2x Wins!", emoji = "🌈", rainbow = true, color = Color3.fromRGB(255, 255, 255) },
 		},
 	},
 

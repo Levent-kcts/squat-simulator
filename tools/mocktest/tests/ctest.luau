@@ -239,6 +239,8 @@ print("PetsPanel bag plus ok")
 
 -- İksirler (sol alt): etkin iksir şişe simgesi + geri sayımla görünür, etkin olmayanlar gizlidir; Rainbow tek şişedir
 local BoostHud = require("./BoostHud")
+local Config = require("./Config")
+local UIStyle = require("./UIStyle")
 local hudRoot = S.newInstance("Frame")
 local hudWorkspace = S.game:GetService("Workspace")
 rawset(hudWorkspace, "GetServerTimeNow", function() return 1000 end) -- sunucu saati taklitte sayı değil, sabit bir sayı veriyoruz
@@ -251,6 +253,20 @@ assert(hudSlots["Potion_luck"] and hudSlots["Potion_luck"].Visible == true, "Luc
 assert(hudSlots["Potion_rainbow"].Visible == true, "Rainbow Potion görünmeli")
 assert(hudSlots["Potion_muscle"].Visible == false and hudSlots["Potion_wins"].Visible == false, "etkin olmayan iksir gizli olmalı")
 assert(textsUnder(hudSlots["Potion_luck"], {})["2:05"], "geri sayım 2:05 yazmalı")
+-- Üzerine gelince (dokunmatikte tıklayınca) beyaz açıklama kutusu: ad, açıklama, kalan süre; tekrar tıklayınca kapanır
+local tooltip = hudSlots["PotionTooltip"]
+assert(tooltip and tooltip.Visible == false, "açıklama kutusu başta gizli olmalı")
+click(hudSlots["Potion_luck"])
+assert(tooltip.Visible == true, "iksire tıklayınca açıklama kutusu açılmalı")
+local tipTexts = textsUnder(tooltip, {})
+assert(tipTexts["Luck Potion"] and tipTexts[Config.Potions.List[1].description] and tipTexts["Time left: 2:05"], "kutuda ad, açıklama ve kalan süre olmalı")
+click(hudSlots["Potion_luck"])
+assert(tooltip.Visible == false, "ikinci tıklama kutuyu kapatmalı")
+-- Hazır görsel (Config.Icons.Potions) verilince çizilmiş şişe yerine ImageLabel kullanılır
+Config.Icons.Potions.luck = "rbxassetid://1"
+local potionIconFrame = UIStyle.potionIcon(S.newInstance("Frame"), Config.Potions.List[1], {})
+assert(rawget(potionIconFrame, "_children")["ImageLabel"], "iksir görseli varken ImageLabel kullanılmalı")
+Config.Icons.Potions.luck = ""
 S.localPlayer:SetAttribute("LuckBoostUntil", nil)
 S.localPlayer:SetAttribute("RainbowBoostUntil", nil)
 print("potion hud ok")

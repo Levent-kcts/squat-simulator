@@ -352,6 +352,19 @@ function UIStyle.potionIcon(parent, potion, props)
 	ratio.AspectRatio = 1
 	ratio.Parent = holder
 
+	-- Sahibin yüklediği hazır görsel (Config.Icons.Potions) varsa o, yoksa aşağıdaki çizilmiş şişe
+	local imageId = Config.Icons.Potions[potion.id]
+	if imageId and imageId ~= "" then
+		local image = Instance.new("ImageLabel")
+		image.BackgroundTransparency = 1
+		image.Size = UDim2.fromScale(1, 1)
+		image.Image = imageId
+		image.ScaleType = Enum.ScaleType.Fit
+		image.Parent = holder
+		holder.Parent = parent
+		return holder
+	end
+
 	dot(holder, 0.5, 0.08, 0.26, 0.14, Color3.fromRGB(176, 112, 60), { corner = 0.3, stroke = 2 }) -- mantar
 	dot(holder, 0.5, 0.22, 0.3, 0.3, Color3.fromRGB(215, 236, 252), { corner = 0.2, stroke = 2 }) -- cam boyun
 	local body = dot(holder, 0.5, 0.64, 0.82, 0.68, potion.color, { stroke = 2.5, corner = 0.5 }) -- sıvı dolu gövde
