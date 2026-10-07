@@ -53,7 +53,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	-- ---------------- 1) FREE REWARD ----------------
 	local reward = create("TextButton", {
 		LayoutOrder = 1,
-		Size = UDim2.fromOffset(200, 88),
+		Size = UDim2.fromOffset(150, 64), -- küçük tutulur (sahibi istedi): eskiden 200x88 idi ve lobiyi (raflar, tabelalar) kapatıyordu
 		Text = "",
 		AutoButtonColor = true,
 		BackgroundColor3 = Color3.fromRGB(255, 168, 36),
@@ -65,24 +65,24 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	if Config.Icons.Gifts and Config.Icons.Gifts ~= "" then
 		create("ImageLabel", {
 			BackgroundTransparency = 1,
-			Position = UDim2.fromOffset(8, 12),
-			Size = UDim2.fromOffset(60, 60),
+			Position = UDim2.fromOffset(6, 9),
+			Size = UDim2.fromOffset(44, 44),
 			Image = Config.Icons.Gifts,
 			ScaleType = Enum.ScaleType.Fit,
 		}, reward)
 	else
-		text(reward, { Position = UDim2.fromOffset(8, 12), Size = UDim2.fromOffset(60, 60), Text = "🎁" }, 0)
+		text(reward, { Position = UDim2.fromOffset(6, 9), Size = UDim2.fromOffset(44, 44), Text = "🎁" }, 0)
 	end
 	text(reward, {
-		Position = UDim2.fromOffset(72, 8),
-		Size = UDim2.fromOffset(120, 26),
+		Position = UDim2.fromOffset(54, 6),
+		Size = UDim2.fromOffset(90, 18),
 		Text = "FREE REWARD",
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 2)
 	local timer = text(reward, {
-		Position = UDim2.fromOffset(72, 36),
-		Size = UDim2.fromOffset(120, 42),
+		Position = UDim2.fromOffset(54, 25),
+		Size = UDim2.fromOffset(90, 32),
 		Text = "--:--",
 		TextColor3 = Color3.fromRGB(255, 250, 200),
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -380,7 +380,18 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	local function refreshFriends()
 		local percent = player:GetAttribute("FriendBonus") or 0
 		local friendCount = player:GetAttribute("FriendCount") or 0
-		percentLabel.Text = `{percent}%`
+		-- Arkadaş yokken dev '0%' olumsuz mesaj veriyordu (sahibi: küçült): küçük bir 'INVITE' çağrısı gösterilir; bonus başlayınca büyük yüzde döner
+		if percent <= 0 then
+			percentLabel.Text = "INVITE"
+			percentLabel.TextColor3 = Color3.fromRGB(150, 205, 255)
+			percentLabel.Size = UDim2.fromOffset(60, 18)
+			percentLabel.Position = UDim2.new(0.5, 0, 0, 48)
+		else
+			percentLabel.Text = `{percent}%`
+			percentLabel.TextColor3 = Color3.fromRGB(255, 214, 46)
+			percentLabel.Size = UDim2.fromOffset(62, 36)
+			percentLabel.Position = UDim2.new(0.5, 0, 0, 41)
+		end
 		tooltipCount.Text = `{friendCount} / {Config.Friends.MaxFriends} friends here (max +{Config.Friends.MaxFriends * Config.Friends.PercentPerFriend}%)`
 		if percent > lastPercent then
 			-- Yeni arkadaş geldi: yüzde büyüyüp yerine oturur

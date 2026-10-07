@@ -34,7 +34,7 @@ local function text(parent, props, strokeThickness)
 end
 
 local function mult(value)
-	return `x{string.format("%.2f", value)}`
+	return `x{Format.multiplier(value)}`
 end
 
 -- Döner: pencereyi açıp kapatan fonksiyon

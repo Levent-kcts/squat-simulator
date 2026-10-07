@@ -361,11 +361,11 @@ rebirthBadge.ZIndex = 3
 local bottom = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 1),
 	Position = UDim2.new(0.5, 0, 1, -14),
-	Size = UDim2.new(0.5, 0, 0, 154),
+	Size = UDim2.new(0.5, 0, 0, 180),
 	BackgroundTransparency = 1,
 	ZIndex = 0, -- alt grup (level çubuğu, Auto Click) açılan pencerelerin hep ALTINDA kalır
 }, screenGui)
-create("UISizeConstraint", { MaxSize = Vector2.new(580, 154), MinSize = Vector2.new(320, 154) }, bottom)
+create("UISizeConstraint", { MaxSize = Vector2.new(580, 180), MinSize = Vector2.new(320, 180) }, bottom)
 
 -- Level sınırında çıkan uyarı (çubuğun üstünde)
 local rebirthHint = makeText(bottom, {
@@ -377,9 +377,10 @@ local rebirthHint = makeText(bottom, {
 	Visible = false,
 }, 26, 3)
 
+-- Üst bilgi iki satırdır (eskiden tek satırda üst üste biniyordu): 1. satır büyük 'Leg Muscle' sayısı, 2. satır solda çarpan, sağda tıklama başı kazanç
 local multiplierLabel = makeText(bottom, {
-	Position = UDim2.fromOffset(2, 8),
-	Size = UDim2.new(0.25, 0, 0, 26),
+	Position = UDim2.fromOffset(2, 42),
+	Size = UDim2.new(0.48, 0, 0, 24),
 	TextColor3 = Color3.fromRGB(110, 255, 120),
 	TextXAlignment = Enum.TextXAlignment.Left,
 }, 24, 2)
@@ -387,21 +388,21 @@ local multiplierLabel = makeText(bottom, {
 local muscleLabel = makeText(bottom, {
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.fromScale(0.5, 0),
-	Size = UDim2.new(0.36, 0, 0, 40),
+	Size = UDim2.new(0.7, 0, 0, 40),
 	TextColor3 = Color3.new(1, 1, 1),
 }, 36, 3)
 local pop = create("UIScale", {}, muscleLabel)
 
 local gainLabel = makeText(bottom, {
 	AnchorPoint = Vector2.new(1, 0),
-	Position = UDim2.new(1, -2, 0, 8),
-	Size = UDim2.new(0.4, 0, 0, 26),
+	Position = UDim2.new(1, -2, 0, 42),
+	Size = UDim2.new(0.5, 0, 0, 24),
 	TextColor3 = Color3.fromRGB(255, 220, 90),
 	TextXAlignment = Enum.TextXAlignment.Right,
 }, 24, 2)
 
 local bar = create("Frame", {
-	Position = UDim2.fromOffset(0, 46),
+	Position = UDim2.fromOffset(0, 72),
 	Size = UDim2.new(1, 0, 0, 54),
 	BackgroundColor3 = Color3.fromRGB(70, 10, 45),
 }, bottom)
@@ -434,7 +435,7 @@ local countLabel = makeText(bar, {
 -- Referanstaki gibi: GÖKKUŞAĞI renkli, kayan zemin (açıkken daha hızlı ve parlak) ve üst kenarda "OFF" / "ON" rozeti.
 local autoButton = create("TextButton", {
 	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.new(0.5, 0, 0, 110),
+	Position = UDim2.new(0.5, 0, 0, 138),
 	Size = UDim2.fromOffset(220, 40),
 	Text = "",
 	AutoButtonColor = false,
@@ -491,8 +492,8 @@ local function refresh()
 	-- Antrenman alanındayken kazanç pedin çarpanıyla çarpılır (sunucu AreaMultiplier'ı pede girince ayarlar)
 	local areaMultiplier = player:GetAttribute("AreaMultiplier") or 1
 	local perClick = math.floor((player:GetAttribute("PerClick") or 1) * areaMultiplier)
-	gainLabel.Text = `+{Format.number(perClick)}/click  x{string.format("%g", player:GetAttribute("DamageMultiplier") or 1)} dmg`
-	multiplierLabel.Text = `x{string.format("%.2f", (player:GetAttribute("TotalMultiplier") or 1) * areaMultiplier)} Multiplier`
+	gainLabel.Text = `+{Format.short(perClick)}/click  x{Format.multiplier(player:GetAttribute("DamageMultiplier") or 1)} dmg`
+	multiplierLabel.Text = `x{Format.multiplier((player:GetAttribute("TotalMultiplier") or 1) * areaMultiplier)} Multiplier`
 	autoBadge.Text = if autoClick then "ON" else "OFF"
 	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
 	warning.Visible = RunService:IsStudio() and player:GetAttribute("DataError") == true

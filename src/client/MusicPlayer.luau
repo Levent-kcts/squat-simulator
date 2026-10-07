@@ -16,7 +16,8 @@ local FONT = Enum.Font.FredokaOne
 local MARQUEE_SPEED = 55 -- kayan yazının hızı (piksel/sn)
 local BODY_WIDTH = 296
 local BODY_HEIGHT = 100
-local BODY_SCALE = 0.85 -- teyp ana ölçeğin biraz küçüğüdür (referans oyunda teyp yok, ekranı kaplamasın)
+local BODY_SCALE = 0.62 -- teyp ana ölçeğin küçüğüdür (referans oyunda teyp yok, ekranı kaplamasın; sahibi 'büyük' dedi: 0.85'ten küçültüldü)
+local MARQUEE_GAP = 60 -- kayan yazının iki tekrarı arası boşluk (birim): pencere uzun süre boş kalmaz
 
 local ICON_COLOR = Color3.fromRGB(245, 245, 250) -- önceki/sonraki simgeleri ve orta düğmenin dolgusu
 local DARK = Color3.fromRGB(34, 36, 46) -- orta düğmedeki duraklat/oynat simgesi
@@ -103,17 +104,22 @@ function MusicPlayer.init(screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 7) }, window)
 	create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(120, 130, 165) }, window)
 	UIStyle.soften(window, { radius = 8, gradient = false, shine = false })
-	local marquee = create("TextLabel", {
-		BackgroundTransparency = 1,
-		Font = FONT,
-		TextSize = 20,
-		TextColor3 = LIME,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextWrapped = false,
-		AutomaticSize = Enum.AutomaticSize.X,
-		Size = UDim2.new(0, 0, 1, 0),
-		Text = "",
-	}, window)
+	local function makeMarquee()
+		return create("TextLabel", {
+			BackgroundTransparency = 1,
+			Font = FONT,
+			TextSize = 20,
+			TextColor3 = LIME,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextWrapped = false,
+			AutomaticSize = Enum.AutomaticSize.X,
+			Size = UDim2.new(0, 0, 1, 0),
+			Text = "",
+		}, window)
+	end
+	local marquee = makeMarquee()
+	local marquee2 = makeMarquee() -- ikinci kopya: yazı kayarken kesintisiz döngü (uzun adlarda); kısa ad sığıyorsa gizli, yazı sabit durur
+	marquee2.Visible = false
 
 	local scrolling = false
 	local marqueeX = 0
@@ -123,18 +129,29 @@ function MusicPlayer.init(screenGui)
 		return pixels / ((if rootScale then rootScale.Scale else 1) * BODY_SCALE)
 	end
 	local function resetMarquee()
-		marqueeX = unscaled(window.AbsoluteSize.X)
+		marqueeX = 10 -- yazı pencerenin başında görünür başlar (eskiden pencerenin sağ dışından başlar, bir süre boş görünürdü)
 	end
 
 	RunService.Heartbeat:Connect(function(dt)
 		if not scrolling then
 			return
 		end
+		local width = unscaled(marquee.AbsoluteSize.X)
+		local windowWidth = unscaled(window.AbsoluteSize.X)
+		if width <= windowWidth - 20 then
+			-- kısa ad pencereye sığıyor: kaydırma, sabit dur
+			marquee.Position = UDim2.fromOffset(10, 0)
+			marquee2.Visible = false
+			return
+		end
+		local period = width + MARQUEE_GAP
 		marqueeX -= MARQUEE_SPEED * dt
-		if marqueeX < -unscaled(marquee.AbsoluteSize.X) then
-			marqueeX = unscaled(window.AbsoluteSize.X)
+		if marqueeX < -period then
+			marqueeX += period
 		end
 		marquee.Position = UDim2.fromOffset(marqueeX, 0)
+		marquee2.Visible = true
+		marquee2.Position = UDim2.fromOffset(marqueeX + period, 0)
 	end)
 
 	-- Müzik kapalıysa açar (teyp butonlarına basmak "dinlemek istiyorum" demektir)
@@ -150,6 +167,7 @@ function MusicPlayer.init(screenGui)
 			marquee.Text = "MUSIC OFF"
 			marquee.TextColor3 = Color3.fromRGB(150, 155, 175)
 			marquee.Position = UDim2.fromOffset(10, 0)
+			marquee2.Visible = false
 			return
 		end
 		local track = Sfx.getTrack()
@@ -163,11 +181,13 @@ function MusicPlayer.init(screenGui)
 		end
 		if marquee.Text ~= label then
 			marquee.Text = label
+			marquee2.Text = label
 			resetMarquee()
 		end
 		-- Duraklatılınca yazı durur ve sarıya döner
 		local paused = Sfx.isPaused()
 		marquee.TextColor3 = if paused then AMBER else LIME
+		marquee2.TextColor3 = marquee.TextColor3
 		scrolling = not paused
 	end
 
