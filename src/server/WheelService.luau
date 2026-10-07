@@ -44,7 +44,8 @@ local function textLabel(parent, props, strokeThickness)
 	return label
 end
 
-function WheelService.init()
+-- notifyEvent (isteğe bağlı): Config.Wheel.Debug açıkken çarka basıldığında sunucunun haberi olduğunu oyuncuya gösterir (E'ye basınca bir şey olmuyorsa nerede koptuğunu görmek için)
+function WheelService.init(notifyEvent)
 	local wheel = Config.Wheel
 	local lobby = Config.Lobby
 	local floorTop = Layout.FloorTop
@@ -124,6 +125,11 @@ function WheelService.init()
 	prompt.RequiresLineOfSight = false
 	prompt:SetAttribute("Panel", "Wheel")
 	prompt.Parent = plinthTop
+	if wheel.Debug and notifyEvent then
+		prompt.Triggered:Connect(function(player)
+			notifyEvent:FireClient(player, true, "DEBUG: the server received your wheel button press")
+		end)
+	end
 
 	-- ---------- Dönen kısım: Model 'DailyWheel' (PrimaryPart = WheelPivot, dönüş ekseni yerel Z) ----------
 	local model = Instance.new("Model")

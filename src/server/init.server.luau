@@ -43,7 +43,7 @@ end
 do
 	local okWheel, WheelService = pcall(require, script.WheelService)
 	if okWheel then
-		local started, err = pcall(WheelService.init)
+		local started, err = pcall(WheelService.init, notifyEvent)
 		if not started then
 			warn(`[Server] WheelService init failed: {err}`)
 		end

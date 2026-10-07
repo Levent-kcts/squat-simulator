@@ -22,7 +22,7 @@ local WAIT_COLOR = Color3.fromRGB(190, 200, 225)
 local LAMP_ON = Color3.fromRGB(255, 250, 225)
 local LAMP_OFF = Color3.fromRGB(255, 170, 60)
 
--- showToast(ok, mesaj): kısa bildirim. Dönüş: çarkı çevirmeyi deneyen fonksiyon (arayüzdeki Spin düğmesiyle aynı)
+-- showToast(ok, mesaj): kısa bildirim. Dönüş: { trigger = çarkı çevirmeyi deneyen fonksiyon (arayüzdeki Spin düğmesiyle aynı), open = çark arayüzünü açan fonksiyon (E) }
 function WheelClient.init(screenGui, showToast)
 	local player = Players.LocalPlayer
 	local wheel = Config.Wheel
@@ -277,7 +277,7 @@ function WheelClient.init(screenGui, showToast)
 	end
 	remind()
 
-	return trigger
+	return { trigger = trigger, open = openWheel }
 end
 
 return WheelClient

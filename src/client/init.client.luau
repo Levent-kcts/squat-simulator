@@ -36,13 +36,16 @@ player.CameraMaxZoomDistance = Config.CameraMaxZoom
 local FONT = Enum.Font.FredokaOne
 
 -- Yeni/isteğe bağlı modüller korumalı yüklenir ve başlatılır: biri hata verirse oyunun geri kalanı çalışmaya devam eder
+local startupErrors = {} -- [modül adı] = hata metni: açılış hatası oyuncuya da gösterilebilsin (Output'a bakmadan; örneğin çark)
 local function loadOptional(name)
 	local module = script:FindFirstChild(name)
 	if not module then
+		startupErrors[name] = "module not found"
 		return nil
 	end
 	local ok, result = pcall(require, module)
 	if not ok then
+		startupErrors[name] = tostring(result)
 		warn(`[Client] Could not load {name}: {result}`)
 		return nil
 	end
@@ -795,6 +798,7 @@ local function loadPanel(name, ...)
 		if ok then
 			return result
 		end
+		startupErrors[name] = tostring(result)
 		warn(`[Client] {name} init failed: {result}`)
 	end
 	return nil
@@ -802,7 +806,18 @@ end
 local toggleIndex = loadPanel("IndexPanel", screenGui)
 local toggleStats = loadPanel("StatsPanel", screenGui)
 local toggleQuests = loadPanel("QuestPanel", screenGui, showToast)
-loadPanel("WheelClient", screenGui, showToast) -- lobideki günlük çark (hareket, E ile çevirme, tabela yazısı)
+local wheelControl = loadPanel("WheelClient", screenGui, showToast) -- lobideki günlük çark (hareket, E ile açılan arayüz, tabela yazısı)
+-- Çarka E ile basınca: çark modülü açıldıysa arayüzü açar; açılamadıysa nedenini oyuncuya EKRANDA gösterir (Output'a bakmaya gerek kalmasın)
+game:GetService("ProximityPromptService").PromptTriggered:Connect(function(prompt, who)
+	if who ~= player or prompt:GetAttribute("Panel") ~= "Wheel" then
+		return
+	end
+	if wheelControl and wheelControl.open then
+		wheelControl.open()
+	else
+		showToast(false, `The daily wheel could not start: {startupErrors.WheelClient or "unknown error"}`)
+	end
+end)
 safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {

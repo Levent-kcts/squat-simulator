@@ -228,9 +228,11 @@ S.remoteFunction.InvokeServer = function(_, action, id)
 	return true, "+123 Wins", 3
 end
 local WheelClient = require("./WheelClient")
-local trigger = WheelClient.init(S.newInstance("Frame"), function(_, message)
+local wheelControl = WheelClient.init(S.newInstance("Frame"), function(_, message)
 	table.insert(wheelToasts, message)
 end)
+local trigger = wheelControl.trigger
+assert(type(wheelControl.open) == "function", "çark açma işlevi dönmeli")
 trigger()
 assert(invokes[1] == "SpinWheel", "çevirme SpinWheel göndermeli")
 for _ = 1, 16 do
