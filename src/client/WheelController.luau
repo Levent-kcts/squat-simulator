@@ -134,6 +134,11 @@ function WheelController.init(screenGui, showToast)
 		if busy then
 			return
 		end
+		-- Bugünkü hak kullanılmışsa sunucuya gitmeden söyle (sunucu yine de doğrular)
+		if not isReady() and panel and panel.isOpen() and player:GetAttribute("DataLoaded") == true then
+			panel.setStatus(false, `You already spun today! {waitText()}.`, false)
+			return
+		end
 		busy = true
 		if panel then
 			panel.setStatus(true, "", true)
@@ -142,7 +147,9 @@ function WheelController.init(screenGui, showToast)
 			local ok, message, index = shopFunction:InvokeServer("SpinWheel", "")
 			if not ok or type(index) ~= "number" or not wheel.Prizes[index] then
 				busy = false
-				showToast(false, message or "The wheel is not available right now.")
+				if not (panel and panel.isOpen()) then
+					showToast(false, message or "The wheel is not available right now.") -- arayüz açıksa mesaj zaten onun içinde görünür
+				end
 				if panel then
 					panel.setStatus(isReady(), message, false)
 				end

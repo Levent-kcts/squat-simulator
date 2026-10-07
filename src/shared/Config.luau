@@ -466,7 +466,7 @@ return {
 	-- kind: wins (tahmini aşama ödülü x mult, görev ödülü gibi), muscle (tıklama başı kazanç x clicks), boostMuscle / boostWins (minutes dakika 2x), pet (PetEgg yumurtasının havuzundan, envanter doluysa Win),
 	-- jackpot (hem Win mult hem kas clicks). icon/label/color sadece çarkın görünüşü içindir; miktarlar oyuncunun gücüne göre ölçeklendiği için çarkta yazmaz, sonuçta gösterilir.
 	Wheel = {
-		Debug = true, -- TEST: çarka basınca ekranda 'server received' bildirimi çıkar (E'ye basınca bir şey olmuyorsa nerede koptuğunu görmek için); çark çalışınca false yap
+		Debug = false, -- TEST (şu an kapalı): çarka basınca ekranda 'server received' bildirimi çıkar (E'ye basınca bir şey olmuyorsa nerede koptuğunu görmek için); çark çalışınca false yap
 		Radius = 4.6, -- görünen yuvarlak yüzün yarıçapı (stud); lobideki çarkın altın halkası bunun 1.45 katına kadar uzanır (kare yüzün köşelerini örter)
 		SpinSeconds = 5.5, -- dönüş süresi
 		IdleSpeed = 9, -- beklerken yavaş dönüş (derece / saniye)

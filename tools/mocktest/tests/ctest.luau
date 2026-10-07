@@ -254,6 +254,8 @@ local spins = 0
 local wheelPanel = WheelPanel.init(wheelRoot, function()
 	spins += 1
 end)
+wheelRoot = rawget(S.localPlayer, "_children").PlayerGui -- panel kendi tam ekran ScreenGui'sinde (WheelGui) kurulur
+assert(rawget(wheelRoot, "_children").WheelGui, "çark arayüzü kendi ScreenGui'sinde olmalı")
 wheelPanel.open()
 assert(wheelPanel.isOpen(), "panel açılmalı")
 local wheelTexts = textsUnder(wheelRoot, {})
