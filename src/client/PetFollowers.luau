@@ -1,4 +1,4 @@
--- Takılı petleri oyuncunun arkasında süzülen küreler olarak gösterir (sadece bu oyuncuya görünür).
+-- Takılı petleri oyuncunun arkasında süzülen modeller olarak gösterir (sadece bu oyuncuya görünür). Blender modeli (kutu pet, shared/ModelLibrary 'pet_<id>') varsa o, yoksa renkli küre.
 -- Boy arttıkça küre büyür (Small < Normal < Big); BOSS (en büyük boy) Big ile aynı boydadır ama üstünde parlayan bir efekt vardır:
 -- altın/pembe parıltı parçacıkları, nabız gibi atan saydam kabuk ve ince bir dış çizgi.
 local Players = game:GetService("Players")
@@ -6,7 +6,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Catalog"))
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Catalog = require(Shared:WaitForChild("Catalog"))
+local Config = require(Shared:WaitForChild("Config"))
+local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
 
 local PetFollowers = {}
 
@@ -18,7 +21,8 @@ local function addBossEffect(part, pet)
 	local shell = Instance.new("Part")
 	shell.Name = "BossShell"
 	shell.Shape = Enum.PartType.Ball
-	shell.Size = part.Size * 1.3
+	local diameter = math.max(part.Size.X, part.Size.Y, part.Size.Z) * 1.1
+	shell.Size = Vector3.new(diameter, diameter, diameter) -- top şekli her zaman eşit boyutludur
 	shell.Material = Enum.Material.Neon
 	shell.Color = pet.color:Lerp(BOSS_GOLD, 0.6)
 	shell.Transparency = 0.75
@@ -69,18 +73,26 @@ function PetFollowers.init()
 		for id in string.gmatch(equipped, "[^,]+") do
 			local pet = Catalog.PetById[id]
 			if pet then
-				local part = Instance.new("Part")
-				part.Name = pet.label
-				part.Shape = Enum.PartType.Ball
-				part.Size = Vector3.new(1.8, 1.8, 1.8) * pet.scale -- birleştirilmiş petler büyüktür (Config.PetFusion.Scale)
-				part.Material = Enum.Material.Neon
-				part.Color = pet.color
-				part.Anchored = true
-				part.CanCollide = false
-				part.CanTouch = false
-				part.CanQuery = false
+				-- Blender kutu modeli varsa o (boyu pet.scale ile büyür), yoksa eski küre
+				local part, offset = ModelLibrary.create("pet_" .. pet.baseId, Config.Models.PetScale * pet.scale)
+				if part then
+					part.Name = pet.label
+				else
+					part = Instance.new("Part")
+					part.Name = pet.label
+					part.Shape = Enum.PartType.Ball
+					part.Size = Vector3.new(1.8, 1.8, 1.8) * pet.scale -- birleştirilmiş petler büyüktür (Config.PetFusion.Scale)
+					part.Material = Enum.Material.Neon
+					part.Color = pet.color
+					part.Anchored = true
+					part.CanCollide = false
+					part.CanTouch = false
+					part.CanQuery = false
+					offset = nil
+				end
 				part.Parent = Workspace
-				local entry = { part = part, baseSize = part.Size }
+				local diameter = math.max(part.Size.X, part.Size.Y, part.Size.Z) * (if offset then 0.85 else 1)
+				local entry = { part = part, baseSize = Vector3.new(diameter, diameter, diameter), offset = offset }
 				if Catalog.isBoss(pet) then
 					local ok, shell = pcall(addBossEffect, part, pet)
 					if ok then
@@ -109,7 +121,13 @@ function PetFollowers.init()
 		for i, entry in parts do
 			local side = (i - (count + 1) / 2) * 4.6
 			local bob = math.sin(now * 3 + i) * 0.4
-			local target = root.CFrame * CFrame.new(side, 0.5 + bob, 4)
+			local target
+			if entry.offset then
+				-- Model: orijini tabanın ortasıdır; zeminin biraz üstünde süzülür, kutu merkezine göre yerleşir
+				target = root.CFrame * CFrame.new(side, Config.Models.PetHover + bob, 4) * CFrame.new(entry.offset)
+			else
+				target = root.CFrame * CFrame.new(side, 0.5 + bob, 4)
+			end
 			local part = entry.part
 			part.CFrame = part.CFrame:Lerp(target, 0.15)
 			local shell = entry.shell

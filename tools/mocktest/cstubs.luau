@@ -161,6 +161,17 @@ InstMT.__index = function(self, key)
 				return proxy()
 			end,
 		}
+	elseif key == "Clone" then
+		-- Kopya: aynı sınıf ve ham alanlar (Name, Size...), çocuklar ve ebeveyn kopyalanmaz
+		return function(s)
+			local copy = newInstance(rawget(s, "ClassName"))
+			for k, v in s do
+				if k ~= "_children" and k ~= "_attrs" and k ~= "Parent" and k ~= "_signals" and k ~= "_handlers" then
+					rawset(copy, k, v)
+				end
+			end
+			return copy
+		end
 	elseif key == "Destroy" or key == "ClearAllChildren" then
 		return function() end
 	elseif key == "IsA" then

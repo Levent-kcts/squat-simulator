@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy  # noqa: E402
 import bmesh  # noqa: E402
 import common as c  # noqa: E402
-from lib import Model, darker, lighter, mix  # noqa: E402
+from lib import Model, darker, lighter, mix, record_manifest  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
 RX = 2.4
@@ -313,6 +313,7 @@ def main():
         model = Model("egg_" + egg_id)
         builder(model)
         obj = model.finish(textures)
+        record_manifest(obj)
         c.export_fbx([obj], os.path.join(c.OUT, "fbx", "egg_" + egg_id + ".fbx"))
         print("MODEL", egg_id, "üçgen:", c.tri_count(obj), "renk:", len(obj["palette"]))
         models.append(obj)
@@ -329,4 +330,5 @@ def main():
     c.save_blend(os.path.join(c.OUT, "blend", "eggs_all.blend"))
 
 
-main()
+if __name__ == "__main__":
+    main()

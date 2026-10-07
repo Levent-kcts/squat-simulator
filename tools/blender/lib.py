@@ -206,3 +206,42 @@ def move_object(obj, offset):
 
 def export_single(obj, path):
     c.export_fbx([obj], path)
+
+
+# ---------------------------------------------------------------- model bilgisi (oyun koduyla paylaşılan ölçüler)
+MANIFEST_JSON = os.path.join(c.OUT, "models.json")
+MANIFEST_LUA = os.path.join(c.ROOT, "src", "shared", "ModelInfo.luau")
+
+
+def record_manifest(obj):
+    """Modelin Roblox eksenlerindeki ölçüsünü (stud) ve orijine göre kutu merkezini kaydeder (oyun, içe aktarma ölçeğinden bağımsız doğru boyutu bundan hesaplar).
+    Blender (x, y, z) -> Roblox (x, z, -y): Blender +Y (modelin önü) Roblox'ta -Z'dir. Obje dünya orijininde ve dönüşümleri uygulanmış olmalı."""
+    import json
+
+    coords = [v.co for v in obj.data.vertices]
+    mins = [min(co[i] for co in coords) for i in range(3)]
+    maxs = [max(co[i] for co in coords) for i in range(3)]
+    size = (maxs[0] - mins[0], maxs[2] - mins[2], maxs[1] - mins[1])
+    center = ((maxs[0] + mins[0]) / 2, (maxs[2] + mins[2]) / 2, -(maxs[1] + mins[1]) / 2)
+    data = {}
+    if os.path.exists(MANIFEST_JSON):
+        with open(MANIFEST_JSON, encoding="utf-8") as handle:
+            data = json.load(handle)
+    data[obj.name] = {"size": [round(v, 4) for v in size], "center": [round(v, 4) for v in center]}
+    os.makedirs(os.path.dirname(MANIFEST_JSON), exist_ok=True)
+    with open(MANIFEST_JSON, "w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=1, sort_keys=True)
+    lines = [
+        "-- OTOMATİK ÜRETİLİR (tools/blender/lib.py, record_manifest): Blender modellerinin Roblox eksenlerindeki ölçüsü (stud) ve MODEL ORİJİNİNE (tabanın ortası) göre kutu merkezi.",
+        "-- Elle düzenleme; modeli yeniden üretince güncellenir. shared/ModelLibrary bununla modeli içe aktarma ölçeğinden bağımsız doğru boyutta ve yerde kurar.",
+        "return {",
+    ]
+    for name in sorted(data):
+        entry = data[name]
+        size_text = ", ".join(str(v) for v in entry["size"])
+        center_text = ", ".join(str(v) for v in entry["center"])
+        lines.append("\t" + name + " = { size = Vector3.new(" + size_text + "), center = Vector3.new(" + center_text + ") },")
+    lines.append("}")
+    with open(MANIFEST_LUA, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write("\n".join(lines) + "\n")
+    return size, center

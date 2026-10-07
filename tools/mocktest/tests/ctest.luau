@@ -220,6 +220,28 @@ for _, hb in S.heartbeat do
 end
 print("PetFollowers boss effect ok")
 
+-- Blender modelleri: ReplicatedStorage.GameModels içinde 'pet_cat' varsa ModelLibrary onu ModelInfo boyutunda verir, PetFollowers model olarak kullanır (Boss dahil)
+local ModelLibrary = require("./ModelLibrary")
+local ModelInfo = require("./ModelInfo")
+assert(not ModelLibrary.has("pet_cat"), "GameModels yokken model olmamalı")
+local gameModels = S.newInstance("Folder")
+gameModels.Name = "GameModels"
+gameModels.Parent = S.replicated
+local sourceMesh = S.newInstance("MeshPart")
+sourceMesh.Name = "pet_cat"
+sourceMesh.Parent = gameModels
+assert(ModelLibrary.has("pet_cat"), "GameModels içindeki pet_cat bulunmalı")
+local createdMesh, createdOffset = ModelLibrary.create("pet_cat", 0.8)
+assert(createdMesh and math.abs(createdMesh.Size.Y - ModelInfo.pet_cat.size.Y * 0.8) < 1e-6, "model ModelInfo boyutunda olmalı")
+assert(createdOffset and math.abs(createdOffset.Y - ModelInfo.pet_cat.center.Y * 0.8) < 1e-6, "kutu merkezi ölçeklenmeli")
+assert(ModelLibrary.create("pet_yok", 1) == nil, "olmayan model nil dönmeli")
+S.localPlayer:SetAttribute("EquippedPets", "cat@4,cat,dog")
+PetFollowers.init()
+for _, hb in S.heartbeat do
+	hb(0.05)
+end
+print("PetFollowers with Blender model ok")
+
 -- Günlük çark istemcisi: E ile çevirme isteği sunucuya gider, dilim seçilince çark dönüp durur ve sonuç gösterilir
 local wheelToasts = {}
 local invokes = {}

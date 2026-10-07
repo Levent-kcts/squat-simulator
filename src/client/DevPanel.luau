@@ -21,6 +21,8 @@ local BUTTONS = {
 	{ "All Skins", "AllSkins" },
 	{ "Free Pet", "FreePet" },
 	{ "3 Same Pets", "FreeCats" },
+	{ "Free Cat", "FreeCat" },
+	{ "Free Boss Cat", "FreeBossCat" },
 	{ "Complete Quests", "QuestsComplete" },
 	{ "Reset Quests", "QuestsReset" },
 	{ "Wheel Ready", "WheelReset" },

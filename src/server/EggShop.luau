@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local PlayerStats = require(script.Parent.PlayerStats)
 local Shelf = require(script.Parent.Shelf)
+local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
 
 local EggShop = {}
 
@@ -36,6 +37,17 @@ local LAYOUT = {
 local function buildEgg(parent, egg, frame, center)
 	local model = Instance.new("Model")
 	model.Name = `Egg_{egg.id}`
+
+	-- Blender yumurtası (fantastik süslü model, shared/ModelLibrary 'egg_<id>') varsa o; yoksa aşağıdaki kod yumurtası
+	local mesh, offset = ModelLibrary.create("egg_" .. egg.id, Config.Models.EggScale)
+	if mesh then
+		mesh.Name = "Shell"
+		local origin = frame * CFrame.new(center - Vector3.new(0, 3.6 * EGG_SCALE, 0)) -- modelin orijini tabanın ortasıdır
+		mesh.CFrame = origin * CFrame.new(offset)
+		mesh.Parent = model
+		model.Parent = parent
+		return
+	end
 
 	local function sphere(name, size, offset, color, material)
 		local p = Instance.new("Part")

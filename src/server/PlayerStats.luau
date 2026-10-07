@@ -1726,6 +1726,17 @@ function PlayerStats.dev(player, command, amount)
 		local pet = rollPet(Config.Eggs[rng:NextInteger(1, #Config.Eggs)])
 		table.insert(profile.pets, pet.id)
 		message = `Free pet: {pet.name}`
+	elseif command == "FreeCat" or command == "FreeBossCat" then
+		-- Blender kedi modelini denemek için: Small ya da Boss kedi verir ve (yer varsa) takar
+		if #profile.pets >= Config.MaxOwnedPets then
+			return false, "Your pet inventory is full."
+		end
+		local petId = if command == "FreeBossCat" then `cat@{Config.PetFusion.MaxTier}` else "cat"
+		table.insert(profile.pets, petId)
+		if #profile.equipped < Config.MaxEquippedPets then
+			table.insert(profile.equipped, petId)
+		end
+		message = `Free {Catalog.PetById[petId].label} (equipped if there was room)`
 	elseif command == "QuestsComplete" then
 		-- Günlük görevleri denemek için bugünün üç görevini de bitmiş yapar
 		ensureQuestDay(profile)

@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy  # noqa: E402
 import common as c  # noqa: E402
-from lib import Model, darker, lighter, mix  # noqa: E402
+from lib import Model, darker, lighter, mix, record_manifest  # noqa: E402
 
 W, D, H = 2.1, 1.9, 1.85  # gövde-baş küpü
 FEET = 0.28
@@ -361,6 +361,7 @@ def main():
         model = Model("pet_" + pet_id)
         builder(model, color)
         obj = model.finish(textures)
+        record_manifest(obj)
         c.export_fbx([obj], os.path.join(c.OUT, "fbx", "pet_" + pet_id + ".fbx"))
         print("MODEL", pet_id, "üçgen:", c.tri_count(obj), "renk:", len(obj["palette"]))
         models.append(obj)
@@ -378,4 +379,5 @@ def main():
     c.save_blend(os.path.join(c.OUT, "blend", "pets_all.blend"))
 
 
-main()
+if __name__ == "__main__":
+    main()

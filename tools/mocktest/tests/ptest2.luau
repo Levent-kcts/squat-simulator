@@ -27,7 +27,7 @@ local commands = {
 	{ "AddLevel", 10 }, { "MaxLevel" }, { "AddRebirth" }, { "AddRebirth", 10 }, { "AddWins", 100 }, { "AddWins", 1000000 },
 	{ "AddMuscle", 1000 }, { "AddMuscle", 10000000 }, { "AllShoes" }, { "AllSkins" }, { "FreePet" }, { "FreeCats" },
 	{ "DiscoverAll" }, { "BreakStage" }, { "TeleportToWalls" }, { "GiftTime", 10 }, { "FakeFriends", 3 }, { "FakeFriends", 0 },
-	{ "SimulateOffline", 1 }, { "SimulateOffline", 8 }, { "ShowOffline" }, { "ClearOffline" }, { "QuestsComplete" }, { "QuestsReset" },
+	{ "SimulateOffline", 1 }, { "SimulateOffline", 8 }, { "ShowOffline" }, { "ClearOffline" }, { "QuestsComplete" }, { "QuestsReset" }, { "FreeCat" }, { "FreeBossCat" }, { "WheelReset" },
 }
 for _, cmd in commands do
 	try("dev " .. cmd[1], PlayerStats.dev, player, cmd[1], cmd[2])
