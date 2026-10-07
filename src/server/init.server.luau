@@ -140,8 +140,9 @@ local function broadcastMove(player, move)
 	end
 end
 
--- HER TIKLAMA bacak kasını ANINDA verir (sahibi: 'her clickte leg power alayım, squat'ın bitmesini beklemesin'). Hareket (animasyon) ve duvara hasar ise hareket
--- boştayken başlar: squat'ta hasar hareketin SONUNDA, tekmede ayağın duvara değdiği anda (Config.MoveContact); hareket sürerken gelen tıklama kas verir ama yeni hareket başlatmaz.
+-- SQUAT (duvardan uzak ya da antrenman pedinde): HER TIKLAMA bacak kasını ANINDA verir (sahibi: 'her clickte leg power alayım, squat'ın bitmesini beklemesin'); hareket sürerken
+-- gelen tıklama kas verir ama yeni hareket başlatmaz. TEKME (duvarın önünde): tıklama KAS VERMEZ (sahibi: 'duvara her tıkladığımda saymasın, duvara vurmak için animasyonu beklesin'):
+-- sadece hareket boşken tekme başlar, kas ve duvara hasar tek seferde ayağın duvara değdiği anda gelir (Config.MoveContact), hareket sürerken gelen tıklamalar tamamen yok sayılır.
 -- Gecikme dalgalanması yüzünden geçerli tıklamalar reddedilmesin diye hareket süresinden küçük bir pay düşülür.
 local MOVE_TOLERANCE = 0.1
 local busyUntil = {}
@@ -168,19 +169,11 @@ Players.PlayerRemoving:Connect(function(player)
 	clickBuckets[player] = nil
 end)
 
-clickEvent.OnServerEvent:Connect(function(player)
-	local now = os.clock()
-	if not allowClick(player, now) then
-		return -- saniyede çok fazla tıklama (otomatik tıklayıcı ya da hile): fazlası yok sayılır
-	end
-
-	-- Antrenman alanındaysa (açık bir pedin üstünde) pedin çarpanı geçerlidir
-	local area = TrainingArea.getArea(player)
-
-	-- 1) Bacak kası: her tıklamada hemen
+-- Bir tıklamanın kazancı: bacak kası + eğitim sayacı + günlük görev + level atlama. Döner: verildi mi (veri yüklenmediyse false)
+local function creditClick(player, area)
 	local muscle, gained = PlayerStats.addMuscle(player, if area then area.mult else 1)
 	if not muscle then
-		return -- veri henüz yüklenmedi
+		return false
 	end
 	PlayerStats.tutorialClick(player) -- eğitimin ilk adımı için tıklama sayısı
 	PlayerStats.questEvent(player, "clicks", 1) -- günlük görev ilerlemesi
@@ -189,29 +182,52 @@ clickEvent.OnServerEvent:Connect(function(player)
 	if leveledUp then
 		notifyEvent:FireClient(player, true, `Level up! You are now level {newLevel}`)
 	end
+	return true
+end
 
-	-- 2) Hareket ve duvara hasar: sadece önceki hareket bittiyse yeni bir hareket başlar
-	if now < (busyUntil[player] or 0) then
-		return
+-- Duvara hasar = toplam bacak kası x ayakkabı hasar çarpanı (tıklama sayısıyla çarpılmaz)
+local function hitWalls(player)
+	local total = PlayerStats.getMuscle(player)
+	if total then
+		local _, brokenWalls = WallService.hit(player, math.floor(total * PlayerStats.getDamageMultiplier(player)))
+		if brokenWalls and brokenWalls > 0 then
+			PlayerStats.questEvent(player, "walls", brokenWalls) -- günlük görev ilerlemesi
+		end
 	end
-	-- Antrenman alanındaysa squat; değilse duvara yakınsa tekme, uzaktaysa squat
+end
+
+clickEvent.OnServerEvent:Connect(function(player)
+	local now = os.clock()
+	if not allowClick(player, now) then
+		return -- saniyede çok fazla tıklama (otomatik tıklayıcı ya da hile): fazlası yok sayılır
+	end
+
+	-- Antrenman alanındaysa (açık bir pedin üstünde) squat ve pedin çarpanı; değilse duvara yakınsa tekme, uzaktaysa squat
+	local area = TrainingArea.getArea(player)
 	local move = if not area and WallService.isNearWall(player) then "Kick" else "Squat"
+	local idle = now >= (busyUntil[player] or 0)
+
+	if move == "Squat" then
+		-- Squat: her tıklamada hemen kas
+		if not creditClick(player, area) then
+			return -- veri henüz yüklenmedi
+		end
+	end
+	if not idle then
+		return -- hareket sürüyor: squat'ta kas verildi, tekmede tıklama sayılmaz
+	end
+
 	local duration = Config.MoveDuration[move]
 	busyUntil[player] = now + duration - MOVE_TOLERANCE
 	broadcastMove(player, move)
-
 	task.delay(duration * (Config.MoveContact[move] or 1), function()
 		if player.Parent == nil then
 			return -- oyundan çıktı
 		end
-		local total = PlayerStats.getMuscle(player)
-		if total then
-			-- Hasar = toplam bacak kası x ayakkabı hasar çarpanı
-			local _, brokenWalls = WallService.hit(player, math.floor(total * PlayerStats.getDamageMultiplier(player)))
-			if brokenWalls and brokenWalls > 0 then
-				PlayerStats.questEvent(player, "walls", brokenWalls) -- günlük görev ilerlemesi
-			end
+		if move == "Kick" then
+			creditClick(player, nil) -- tekmede kas ayak duvara değince (hareket başına bir kez) verilir
 		end
+		hitWalls(player)
 	end)
 end)
 

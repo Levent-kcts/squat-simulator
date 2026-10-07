@@ -91,13 +91,32 @@ assert(counted <= Config.ClickLimit.Burst + 2, "hız sınırı: 50 ani tıklama 
 assert(counted >= 1, "hız sınırı en az bir tıklamayı saymalı")
 print("click limit ok, counted", counted)
 
--- Duvarın önünde tekme: hasar duvara gitmeli (muscle x ayakkabı)
+-- Duvarın önünde TEKME: tıklama kas VERMEZ, hareket boştayken tek tekme başlar; kas ve duvar hasarı ayak değince (gecikmiş işlev) tek seferde gelir, hareket sürerken gelen tıklamalar yok sayılır
 root.Position = S.Vector3.new(0, 3, Layout.wallZ(1) + Config.Wall.Thickness / 2 + 4)
+do
+	local start = os.clock()
+	while os.clock() - start < Config.MoveDuration.Squat + 0.05 do
+	end
+end
 table.clear(S.delayed)
-clickOnce()
+local kickPerClick = player:GetAttribute("PerClick")
+local kickBefore = stat(Config.StatLegMuscle)
+click(player)
+click(player)
+click(player)
+assert(stat(Config.StatLegMuscle) == kickBefore, "tekmede tıklama hemen kas vermemeli")
+local kickTimers = 0
+for _, delayed in S.delayed do
+	if math.abs(delayed[1] - Config.MoveDuration.Kick * Config.MoveContact.Kick) < 1e-6 then
+		kickTimers += 1
+	end
+end
+assert(kickTimers == 1, "art arda tıklamada tek tekme başlamalı: " .. kickTimers)
 for _, delayed in S.delayed do
 	pcall(delayed[2])
 end
+local kickGain = stat(Config.StatLegMuscle) - kickBefore
+assert(kickGain >= kickPerClick and kickGain < kickPerClick * 1.5, "tekme ayak değince TEK tıklamalık kas vermeli: " .. kickGain .. " (tıklama başı " .. kickPerClick .. ")")
 print("after kick: muscle", stat(Config.StatLegMuscle))
 
 -- Shop eylemleri (sunucu doğrulaması)
