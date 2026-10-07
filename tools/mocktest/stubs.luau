@@ -27,6 +27,7 @@ M.Vector3 = {
 	new = function(x, y, z)
 		return { X = x, Y = y, Z = z }
 	end,
+	zero = { X = 0, Y = 0, Z = 0 },
 }
 M.Vector2 = M.Vector3
 M.Enum = setmetatable({}, {
