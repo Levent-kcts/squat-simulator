@@ -1,6 +1,7 @@
 -- Günlük çark istemcisi: lobideki çarkın (server/WheelService) hareketi ve kullanımı. SADECE görsel/etkileşimdir; çevirme hakkını ve ödülü SUNUCU verir (PlayerStats.spinWheel).
 --  * Çark beklerken yavaşça döner, kenar lambaları koşuşur (herkesin ekranında kendi kopyası döner).
---  * E ile (ProximityPrompt 'Panel' = 'Wheel') sunucuya 'SpinWheel' istenir; sunucu dilimi seçip ödülü verir, istemci çarkı o dilimde (ibrenin altında) duracak şekilde döndürür, sonra sonucu gösterir.
+--  * E ile (ProximityPrompt 'Panel' = 'Wheel') karartılmış arka planlı çark arayüzü açılır (client/WheelPanel); 'Spin!' düğmesi sunucudan 'SpinWheel' ister.
+--  * Sunucu dilimi seçip ödülü verir; istemci hem arayüzdeki hem lobideki çarkı o dilim İBRENİN altında duracak şekilde döndürür, sonra sonucu gösterir.
 --  * Tabeladaki yazı her oyuncuya kendi durumunu söyler: 'FREE SPIN READY!' ya da kalan süre.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,7 +10,8 @@ local Workspace = game:GetService("Workspace")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
--- Kutlama efekti ve ses (isteğe bağlı): yüklenemezse çark yine çalışır
+-- Arayüz, kutlama efekti ve ses (isteğe bağlı): yüklenemezse lobideki çark yine çalışır
+local okPanel, WheelPanel = pcall(require, script.Parent.WheelPanel)
 local okJuice, Juice = pcall(require, script.Parent.Juice)
 local okSfx, Sfx = pcall(require, script.Parent.Sfx)
 
@@ -20,7 +22,7 @@ local WAIT_COLOR = Color3.fromRGB(190, 200, 225)
 local LAMP_ON = Color3.fromRGB(255, 250, 225)
 local LAMP_OFF = Color3.fromRGB(255, 170, 60)
 
--- showToast(ok, mesaj): kısa bildirim. Dönüş: çarkı çevirmeyi deneyen fonksiyon (E ile aynı)
+-- showToast(ok, mesaj): kısa bildirim. Dönüş: çarkı çevirmeyi deneyen fonksiyon (arayüzdeki Spin düğmesiyle aynı)
 function WheelClient.init(screenGui, showToast)
 	local player = Players.LocalPlayer
 	local wheel = Config.Wheel
@@ -29,9 +31,12 @@ function WheelClient.init(screenGui, showToast)
 
 	local model, basePivot, statusLabel, prompt
 	local lamps = {}
-	local angle = 0 -- derece, saat yönünde
-	local spin = nil -- { start, delta, elapsed, index, message }
+	local worldAngle = 0 -- lobideki çarkın açısı (derece, saat yönü); beklerken yavaş döner
+	local uiAngle = 0 -- arayüzdeki çarkın açısı; beklerken durur, sadece çevirirken döner
+	local spin = nil -- { worldStart, worldDelta, uiStart, uiDelta, elapsed, index, message }
 	local busy = false -- sunucudan yanıt bekleniyor ya da çark dönüyor
+	local panel = nil
+	local showingResult = false -- arayüzde sonuç yazısı duruyor: kapanıp yeniden açılana kadar durum yazısı üzerine yazılmaz
 
 	-- Çark dünyaya sunucudan gelir: gelince parçalarını bul
 	task.spawn(function()
@@ -65,6 +70,10 @@ function WheelClient.init(screenGui, showToast)
 		local left = secondsLeft()
 		return left ~= nil and left <= 0
 	end
+	local function waitText()
+		local left = math.max(0, math.floor(secondsLeft() or 0))
+		return `Next free spin in {left // 3600}h {(left % 3600) // 60}m`
+	end
 
 	local function refreshStatus()
 		local ready = isReady()
@@ -74,13 +83,16 @@ function WheelClient.init(screenGui, showToast)
 			elseif ready then
 				statusLabel.Text = "FREE SPIN READY!"
 			else
-				local left = math.max(0, math.floor(secondsLeft() or 0))
-				statusLabel.Text = `Next free spin in {left // 3600}h {(left % 3600) // 60}m`
+				statusLabel.Text = waitText()
 				statusLabel.TextColor3 = WAIT_COLOR
 			end
 		end
 		if prompt then
 			prompt.ActionText = if ready then "Spin (FREE)" else "Spin (used today)"
+		end
+		-- Arayüz açıkken düğme ve durum yazısı (dönüş sırasında sonuç yazısı korunur)
+		if panel and panel.isOpen() then
+			panel.setStatus(ready, if busy or showingResult then nil elseif ready then "Your free daily spin is ready!" else waitText(), busy)
 		end
 	end
 
@@ -89,9 +101,15 @@ function WheelClient.init(screenGui, showToast)
 		local result = spin
 		spin = nil
 		busy = false
-		angle = angle % 360
+		worldAngle = worldAngle % 360
+		uiAngle = uiAngle % 360
 		local prize = wheel.Prizes[result.index]
 		showToast(true, result.message)
+		showingResult = true
+		if panel then
+			panel.setStatus(false, nil, false)
+			panel.showResult(result.message, prize.color)
+		end
 		if okJuice then
 			pcall(Juice.banner, "DAILY WHEEL", prize.color, result.message)
 			pcall(Juice.celebrate, prize.color, if prize.kind == "jackpot" then 160 else 70)
@@ -107,50 +125,88 @@ function WheelClient.init(screenGui, showToast)
 			return
 		end
 		busy = true
+		if panel then
+			panel.setStatus(true, "", true)
+		end
 		task.spawn(function()
 			local ok, message, index = shopFunction:InvokeServer("SpinWheel", "")
 			if not ok or type(index) ~= "number" or not wheel.Prizes[index] then
 				busy = false
 				showToast(false, message or "The wheel is not available right now.")
+				if panel then
+					panel.setStatus(isReady(), message, false)
+				end
 				return
 			end
-			-- İndeks dilimi saat yönünde (index - 1) * dilim açısı kadar uzaktadır; çark -o kadar dönerse ibrenin altına gelir
-			local target = -(index - 1) * sliceDegrees + (math.random() - 0.5) * sliceDegrees * 0.5
-			local delta = ((target - angle) % 360) + 360 * 5
-			spin = { start = angle, delta = delta, elapsed = 0, index = index, message = message }
+			-- Dilim i, [(i-1), i] x dilim açısı aralığındadır (ortası (i - 0.5) x dilim açısı); çark -o kadar dönerse dilim ibrenin altına gelir, biraz sapma ekle
+			local target = -(index - 0.5) * sliceDegrees + (math.random() - 0.5) * sliceDegrees * 0.6
+			spin = {
+				worldStart = worldAngle,
+				worldDelta = ((target - worldAngle) % 360) + 360 * 5,
+				uiStart = uiAngle,
+				uiDelta = ((target - uiAngle) % 360) + 360 * 5,
+				elapsed = 0,
+				index = index,
+				message = message,
+			}
+			if panel then
+				panel.showResult("", nil)
+			end
 		end)
 	end
 
+	if okPanel then
+		local okInit, result = pcall(WheelPanel.init, screenGui, trigger)
+		if okInit then
+			panel = result
+		else
+			warn(`[WheelClient] Çark arayüzü kurulamadı: {result}`)
+		end
+	end
+
 	ProximityPromptService.PromptTriggered:Connect(function(triggered, who)
-		if who == player and triggered:GetAttribute("Panel") == "Wheel" then
+		if who ~= player or triggered:GetAttribute("Panel") ~= "Wheel" then
+			return
+		end
+		if panel then
+			showingResult = false
+			panel.open()
+			panel.place(uiAngle)
+			refreshStatus()
+		else
 			trigger()
 		end
 	end)
 
-	-- Hareket: dönüş sırasında yavaşlayarak durur; bekleyince yavaş döner, lambalar koşuşur
+	-- Hareket: dönüş sırasında yavaşlayarak durur; bekleyince lobideki çark yavaş döner, lambalar koşuşur
 	local lampClock, lampStep, statusClock = 0, 0, 0
 	RunService.Heartbeat:Connect(function(dt)
-		if not model or not basePivot then
-			return
-		end
 		if spin then
 			spin.elapsed += dt
 			local progress = math.min(spin.elapsed / wheel.SpinSeconds, 1)
-			angle = spin.start + spin.delta * (1 - (1 - progress) ^ 3.2)
+			local eased = 1 - (1 - progress) ^ 3.2
+			worldAngle = spin.worldStart + spin.worldDelta * eased
+			uiAngle = spin.uiStart + spin.uiDelta * eased
 			if progress >= 1 then
 				finishSpin()
 			end
 		else
-			angle = (angle + wheel.IdleSpeed * dt) % 360
+			worldAngle = (worldAngle + wheel.IdleSpeed * dt) % 360
 		end
-		model:PivotTo(basePivot * CFrame.Angles(0, 0, math.rad(angle)))
+		if panel and panel.isOpen() then
+			panel.place(uiAngle)
+		end
 
-		lampClock += dt
-		if lampClock >= (if spin then 0.07 else 0.18) then
-			lampClock = 0
-			lampStep += 1
-			for index, lamp in lamps do
-				lamp.Color = if (index + lampStep) % 3 == 0 then LAMP_ON else LAMP_OFF
+		if model and basePivot then
+			model:PivotTo(basePivot * CFrame.Angles(0, 0, math.rad(worldAngle)))
+
+			lampClock += dt
+			if lampClock >= (if spin then 0.07 else 0.18) then
+				lampClock = 0
+				lampStep += 1
+				for index, lamp in lamps do
+					lamp.Color = if (index + lampStep) % 3 == 0 then LAMP_ON else LAMP_OFF
+				end
 			end
 		end
 
@@ -173,7 +229,7 @@ function WheelClient.init(screenGui, showToast)
 		if player:GetAttribute("WheelReady") == true then
 			reminded = true
 			task.delay(8, function()
-				showToast(true, "🎡 Your free daily spin is ready! Find the wheel on the left side of the lobby.")
+				showToast(true, "🎡 Your free daily spin is ready! Find the wheel in the back-right corner of the lobby.")
 			end)
 		end
 	end

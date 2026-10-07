@@ -1,5 +1,6 @@
--- Günlük çark: lobide spawn'ın SOLUNDA, odaya (spawn'a) doğru dönük, lego sütunlu bir kapı çerçevesinin içinde duran dönen ödül çarkı.
--- Burada sadece GÖRÜNÜŞ ve etkileşim noktası kurulur; çevirme mantığı (günde 1 hak, ödül seçimi) PlayerStats.spinWheel'dedir, dönüş animasyonu client/WheelClient'tadır.
+-- Günlük çark: lobinin sağ arka köşesinde (sahibi 'bu köşeye koy' dedi), lobinin ortasına (spawn'a) doğru dönük, lego sütunlu bir kapı çerçevesinin içinde duran dönen ödül çarkı.
+-- Burada sadece GÖRÜNÜŞ ve etkileşim noktası kurulur; çarkın yüzü (8 dilim) shared/WheelFace ile SurfaceGui'ye çizilir. Çevirme mantığı (günde 1 hak, ödül seçimi) PlayerStats.spinWheel'dedir,
+-- dönüş animasyonu ve E'ye basınca açılan arayüz client/WheelClient ve client/WheelPanel'dedir.
 -- İki parça kurulur: Workspace.DailyWheel (dönen Model: dilimler, göbek, ışıklar; PrimaryPart = 'WheelPivot') ve Workspace.DailyWheelStand (sabit klasör: kaide, sütunlar, tabela,
 -- ibre, ProximityPrompt, durum yazısı 'SpinLabel'). Koridorda/lobide yeni ışık paneli YOK kuralı korunur (sadece parlayan Neon lambalar).
 local Workspace = game:GetService("Workspace")
@@ -8,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Layout = require(Shared:WaitForChild("Layout"))
+local WheelFace = require(Shared:WaitForChild("WheelFace"))
 local Build = require(script.Parent.Build)
 
 local WheelService = {}
@@ -49,8 +51,9 @@ function WheelService.init()
 	local rimRadius = radius + 0.6
 	local axleY = 2.1 + rimRadius -- çarkın alt kenarı kaidenin 0.5 stud üstünde
 
-	-- Yerel eksen: -Z spawn'a (okuyucuya) bakar, +Z arkaya, Y yukarı. WheelAngle kadar spawn'a doğru döner
-	local frame = CFrame.new(lobby.WheelX, 0, lobby.WheelZ) * CFrame.Angles(0, -math.pi / 2 - math.rad(lobby.WheelAngle), 0)
+	-- Yerel eksen: -Z (WheelFaceX, WheelFaceZ) noktasına, yani lobinin ortasına (okuyucuya) bakar, +Z arkaya, Y yukarı. Yatay dönüş: bakış yönü (-sin, -cos)
+	local lookX, lookZ = lobby.WheelFaceX - lobby.WheelX, lobby.WheelFaceZ - lobby.WheelZ
+	local frame = CFrame.new(lobby.WheelX, 0, lobby.WheelZ) * CFrame.Angles(0, math.atan2(-lookX, -lookZ), 0)
 	local axle = frame * CFrame.new(0, floorTop + axleY, 0)
 
 	local stand = Instance.new("Folder")
@@ -149,49 +152,20 @@ function WheelService.init()
 	local face = addPart("WheelFace", Vector3.new(1, radius * 2 + 0.2, radius * 2 + 0.2), CFrame.new(0, 0, -0.1) * CFrame.Angles(0, math.pi / 2, 0), NAVY, Enum.Material.SmoothPlastic)
 	face.Shape = Enum.PartType.Cylinder
 
-	-- Dilimler: her dilim 3 basamaklı pervane kanadı (dışa doğru genişler), aralarında koyu çizgi kalır; üstüne simge ve ad yazılır
-	local sliceAngle = 2 * math.pi / count
-	local innerRadius, outerRadius = 2.4, radius - 0.1
-	local steps = 3
-	local stepLength = (outerRadius - innerRadius) / steps
-	local labelRadius = innerRadius + stepLength * 1.5
-	for index, prize in wheel.Prizes do
-		local phi = (index - 1) * sliceAngle -- saat yönünde, yukarıdan başlar
-		for step = 1, steps do
-			local inner = innerRadius + (step - 1) * stepLength
-			local width = 2 * inner * math.tan(sliceAngle / 2) - 0.12
-			local center = inner + stepLength / 2
-			local piece = addPart(
-				`Slice{index}`,
-				Vector3.new(width, stepLength, 0.3),
-				CFrame.new(-math.sin(phi) * center, math.cos(phi) * center, -0.75) * CFrame.Angles(0, 0, phi),
-				prize.color,
-				Enum.Material.SmoothPlastic
-			)
-			piece.Name = `Slice{index}`
-		end
-		-- Yazı için görünmez levha: dilimle birlikte döner, yazının üstü dilimin dışa bakan yönüdür
-		local label = addPart(
-			`SliceLabel{index}`,
-			Vector3.new(2.4, 2.3, 0.05),
-			CFrame.new(-math.sin(phi) * labelRadius, math.cos(phi) * labelRadius, -0.95) * CFrame.Angles(0, 0, phi),
-			prize.color,
-			Enum.Material.SmoothPlastic
-		)
-		label.Transparency = 1
-		local gui = Instance.new("SurfaceGui")
-		gui.Face = Enum.NormalId.Front
-		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-		gui.PixelsPerStud = 60
-		gui.Parent = label
-		textLabel(gui, { Position = UDim2.fromScale(0.1, 0.02), Size = UDim2.fromScale(0.8, 0.5), Text = prize.icon, TextColor3 = Color3.new(1, 1, 1) }, 0)
-		textLabel(gui, { Position = UDim2.fromScale(0.04, 0.54), Size = UDim2.fromScale(0.92, 0.36), Text = prize.label, TextColor3 = Color3.new(1, 1, 1) }, 2)
-	end
+	-- Çarkın yüzü: ön yüzde şeffaf kare bir levha; üstündeki SurfaceGui'ye 8 renkli dilim, ayırıcılar ve yazılar çizilir (shared/WheelFace). Levha çarkla birlikte döner
+	local carrier = addPart("WheelFaceCarrier", Vector3.new(radius * 2, radius * 2, 0.05), CFrame.new(0, 0, -0.66), NAVY, Enum.Material.SmoothPlastic)
+	carrier.Transparency = 1
+	local faceGui = Instance.new("SurfaceGui")
+	faceGui.Face = Enum.NormalId.Front
+	faceGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	faceGui.PixelsPerStud = 60
+	faceGui.Parent = carrier
+	WheelFace.build(faceGui, wheel.Prizes, { rim = false, hub = false, upright = false })
 
 	-- Göbek ve merkez kapağı
-	local hub = addPart("WheelHub", Vector3.new(0.8, 4.4, 4.4), CFrame.new(0, 0, -1.0) * CFrame.Angles(0, math.pi / 2, 0), GOLD, Enum.Material.SmoothPlastic)
+	local hub = addPart("WheelHub", Vector3.new(0.8, 3, 3), CFrame.new(0, 0, -1.0) * CFrame.Angles(0, math.pi / 2, 0), GOLD, Enum.Material.SmoothPlastic)
 	hub.Shape = Enum.PartType.Cylinder
-	local cap = addPart("WheelCap", Vector3.new(0.6, 1.8, 1.8), CFrame.new(0, 0, -1.5) * CFrame.Angles(0, math.pi / 2, 0), Color3.fromRGB(255, 60, 70), Enum.Material.Neon)
+	local cap = addPart("WheelCap", Vector3.new(0.6, 1.3, 1.3), CFrame.new(0, 0, -1.5) * CFrame.Angles(0, math.pi / 2, 0), Color3.fromRGB(255, 60, 70), Enum.Material.Neon)
 	cap.Shape = Enum.PartType.Cylinder
 
 	-- Kenar lambaları: istemci sırayla yakıp söndürür (koşuşan ışık)

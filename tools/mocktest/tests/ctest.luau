@@ -245,6 +245,27 @@ S.remoteFunction.InvokeServer = function()
 end
 trigger()
 assert(string.find(wheelToasts[#wheelToasts], "already spun"), "reddedilen çevirmede mesaj gösterilmeli")
+-- Çark arayüzü: karartılmış panel, 8 dilimin yazıları, Spin düğmesi onSpin'i çağırır, durum değişince düğme yazısı değişir
+local WheelPanel = require("./WheelPanel")
+local wheelRoot = S.newInstance("Frame")
+local spins = 0
+local wheelPanel = WheelPanel.init(wheelRoot, function()
+	spins += 1
+end)
+wheelPanel.open()
+assert(wheelPanel.isOpen(), "panel açılmalı")
+local wheelTexts = textsUnder(wheelRoot, {})
+for _, label in { "DAILY WHEEL", "Spin! (1)", "Wins", "Muscle", "Pet!", "JACKPOT", "24%", "1%", "5%" } do
+	assert(wheelTexts[label], "çark arayüzünde yazı yok: " .. label)
+end
+click(buttonNamed(wheelRoot, "SpinButton"))
+assert(spins == 1, "Spin düğmesi onSpin çağırmalı")
+wheelPanel.place(123)
+wheelPanel.setStatus(false, "Next free spin in 1h 0m", false)
+wheelTexts = textsUnder(wheelRoot, {})
+assert(wheelTexts["Spin! (0)"] and wheelTexts["Next free spin in 1h 0m"], "hak yokken düğme ve süre yazısı değişmeli")
+wheelPanel.close()
+assert(not wheelPanel.isOpen(), "panel kapanmalı")
 print("WheelClient ok")
 
 -- Index ve Stats pencereleri

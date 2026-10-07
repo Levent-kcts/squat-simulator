@@ -16,12 +16,19 @@ local children = rawget(fakeWorkspace, "_children")
 assert(children.DailyWheel, "dönen çark modeli kurulmadı")
 assert(children.DailyWheelStand, "çark standı kurulmadı")
 local parts = rawget(children.DailyWheel, "_children")
-for index = 1, #Config.Wheel.Prizes do
-	assert(parts["Slice" .. index], "dilim yok: " .. index)
-	assert(parts["SliceLabel" .. index], "dilim yazısı yok: " .. index)
-end
-for _, name in { "WheelPivot", "WheelRim", "WheelFace", "WheelHub", "WheelCap", "WheelLamp" } do
+for _, name in { "WheelPivot", "WheelRim", "WheelFace", "WheelFaceCarrier", "WheelHub", "WheelCap", "WheelLamp" } do
 	assert(parts[name], "çark parçası yok: " .. name)
+end
+-- Çarkın yüzü: levhanın SurfaceGui'sinde 8 dilim (dik üçgen), ayırıcılar ve 8 yazı kutusu
+local faceGui = rawget(parts.WheelFaceCarrier, "_children").SurfaceGui
+assert(faceGui, "yüz levhasında SurfaceGui yok")
+local face = rawget(faceGui, "_children").WheelFace
+assert(face, "WheelFace çizilmedi")
+local disc = rawget(face, "_children").Disc
+assert(disc and rawget(disc, "ClassName") == "CanvasGroup", "dönen disk CanvasGroup olmalı")
+for index = 1, #Config.Wheel.Prizes do
+	assert(rawget(disc, "_children")["Slice" .. index], "dilim yok: " .. index)
+	assert(rawget(face, "_children")["Label" .. index], "dilim yazısı yok: " .. index)
 end
 assert(rawget(children.DailyWheel, "PrimaryPart") == parts.WheelPivot, "PrimaryPart WheelPivot olmalı")
 
