@@ -487,8 +487,8 @@ local autoClick = false
 
 local function refresh()
 	muscleLabel.Text = `{Format.compact(muscleValue.Value)} {Config.StatLegMuscle}` -- referanstaki '2M Punch' gibi: önce sayı (büyük sayılar K/M/B ile kısalır)
-	winLabel.Text = Format.number(winValue.Value)
-	rebirthLabel.Text = Format.number(rebirthValue.Value)
+	winLabel.Text = Format.compact(winValue.Value) -- 2.8M gibi (1000 altı olduğu gibi); sahibi sayaçların da kısalmasını istedi
+	rebirthLabel.Text = Format.compact(rebirthValue.Value)
 	-- Antrenman alanındayken kazanç pedin çarpanıyla çarpılır (sunucu AreaMultiplier'ı pede girince ayarlar)
 	local areaMultiplier = player:GetAttribute("AreaMultiplier") or 1
 	local perClick = math.floor((player:GetAttribute("PerClick") or 1) * areaMultiplier)
