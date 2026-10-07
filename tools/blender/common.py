@@ -265,7 +265,7 @@ def export_fbx(objs, path):
         add_leaf_bones=False,
         bake_anim=False,
         path_mode="COPY",
-        embed_textures=False,
+        embed_textures=True,  # palet dokusu FBX'in içine gömülür (Roblox içe aktarırken tek dosya yeter)
     )
 
 
