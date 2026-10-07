@@ -3,7 +3,8 @@
     blender -b -P tools/blender/pack.py -- pets     (13 pet)
     blender -b -P tools/blender/pack.py -- eggs     (6 yumurta)
     blender -b -P tools/blender/pack.py -- shoes    (15 ayakkabı)
-    blender -b -P tools/blender/pack.py -- cat dog egg_starter ...   (seçilenler: pet_<id> / egg_<id> ya da çıplak id)
+    blender -b -P tools/blender/pack.py -- coaches  (10 antrenör)
+    blender -b -P tools/blender/pack.py -- cat dog egg_starter ...   (seçilenler: pet_<id> / egg_<id> / shoe_<id> / coach_<kıyafet> ya da çıplak id)
 Çıktı: assets/blender/fbx/pack_<ad>.fbx. Studio'da içe aktarınca bir Model oluşur, içinde her model bir MeshPart (adı pet_cat, egg_starter...).
 """
 import os
@@ -16,12 +17,14 @@ from lib import Model, record_manifest  # noqa: E402
 import pets  # noqa: E402
 import eggs  # noqa: E402
 import shoes  # noqa: E402
+import coaches  # noqa: E402
 
 PRESETS = {
     "test": ["pet_cat", "egg_starter"],
     "pets": ["pet_" + pet_id for pet_id, _, _ in pets.PETS],
     "eggs": ["egg_" + egg_id for egg_id, _ in eggs.EGGS],
     "shoes": ["shoe_" + shoe_id for shoe_id, _, _ in shoes.SHOES],
+    "coaches": ["coach_" + coach_id for coach_id, _, _ in coaches.COACHES],
 }
 
 
@@ -36,11 +39,13 @@ def main():
         builders["egg_" + egg_id] = builder
     for shoe_id, spec, extra in shoes.SHOES:
         builders["shoe_" + shoe_id] = lambda m, spec=spec, extra=extra: shoes.build(m, spec, extra)
+    for coach_id, builder, color in coaches.COACHES:
+        builders["coach_" + coach_id] = lambda m, builder=builder, color=color: builder(m, color)
     c.reset()
     textures = os.path.join(c.OUT, "textures")
     objects = []
     for name in names:
-        key = name if name in builders else next(prefix + name for prefix in ("pet_", "egg_", "shoe_") if prefix + name in builders)
+        key = name if name in builders else next(prefix + name for prefix in ("pet_", "egg_", "shoe_", "coach_") if prefix + name in builders)
         model = Model(key)
         builders[key](model)
         obj = model.finish(textures)

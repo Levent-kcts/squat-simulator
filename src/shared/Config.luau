@@ -468,6 +468,7 @@ return {
 		PetHover = -1.8,
 		EggScale = 1,
 		ShoeScale = 0.62, -- raftaki ayakkabı modeli (Blender'da ~3.9 stud uzun, rafta ~2.4 stud)
+		CoachScale = 1, -- antrenör modeli (Blender'da ~5.25 stud boy, 4.98 geniş); Training.TrainerScales ile çarpılır
 		FlipFront = true, -- Roblox içe aktarıcısı modelin önünü +Z'ye koyar (Studio'da görüldü); true = yerleşirken 180 derece çevir, ön -Z'ye baksın. Model farklı dışa aktarılırsa false yap
 	},
 

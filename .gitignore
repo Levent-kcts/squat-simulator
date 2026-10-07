@@ -8,3 +8,5 @@
 sourcemap.json
 
 *.blend1
+
+__pycache__/

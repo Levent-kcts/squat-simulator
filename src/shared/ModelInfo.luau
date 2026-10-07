@@ -1,6 +1,16 @@
 -- OTOMATİK ÜRETİLİR (tools/blender/lib.py, record_manifest): Blender modellerinin Roblox eksenlerindeki ölçüsü (stud) ve MODEL ORİJİNİNE (tabanın ortası) göre kutu merkezi.
 -- Elle düzenleme; modeli yeniden üretince güncellenir. shared/ModelLibrary bununla modeli içe aktarma ölçeğinden bağımsız doğru boyutta ve yerde kurar.
 return {
+	coach_ember = { size = Vector3.new(4.98, 6.8355, 2.098), center = Vector3.new(0.0, 3.4078, -0.049) },
+	coach_flame = { size = Vector3.new(4.98, 6.4868, 2.098), center = Vector3.new(0.0, 3.2334, -0.049) },
+	coach_frost = { size = Vector3.new(4.98, 6.2829, 2.088), center = Vector3.new(0.0, 3.1315, -0.054) },
+	coach_leaf = { size = Vector3.new(4.98, 6.5186, 2.6364), center = Vector3.new(0.0, 3.2493, -0.0) },
+	coach_nova = { size = Vector3.new(5.29, 7.21, 2.148), center = Vector3.new(0.155, 3.595, -0.024) },
+	coach_pixel = { size = Vector3.new(4.98, 6.96, 2.14), center = Vector3.new(0.0, 3.47, -0.12) },
+	coach_prism = { size = Vector3.new(4.98, 7.13, 2.088), center = Vector3.new(0.0, 3.555, -0.054) },
+	coach_shadow = { size = Vector3.new(4.98, 6.4883, 3.8134), center = Vector3.new(0.0, 3.2341, 0.8492) },
+	coach_volt = { size = Vector3.new(4.98, 6.9485, 2.3582), center = Vector3.new(0.0, 3.4642, -0.0) },
+	coach_wave = { size = Vector3.new(4.98, 6.4849, 2.9908), center = Vector3.new(0.0, 3.2324, 0.3974) },
 	egg_desert = { size = Vector3.new(5.49, 6.2, 5.0106), center = Vector3.new(0.0, 3.1, -0.075) },
 	egg_forest = { size = Vector3.new(5.3141, 7.0211, 5.2947), center = Vector3.new(0.0, 3.5106, -0.0755) },
 	egg_galaxy = { size = Vector3.new(7.8929, 6.48, 7.3945), center = Vector3.new(0.0, 3.24, -0.0707) },

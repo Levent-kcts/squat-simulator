@@ -1,5 +1,13 @@
 -- Basit manken: kafa, gövde, kollar, bacaklar ve siyah şort. Skin rafındaki skin mankeni ve antrenman alanındaki antrenör
 -- yer tutucusu bunu kullanır. Yüzü izleyiciye (yerel -Z) bakar, tabanı center yüksekliğindedir.
+-- ANTRENÖRLER: ReplicatedStorage > GameModels içinde Blender koçu 'coach_<kıyafet>' varsa (shared/ModelLibrary) o gösterilir
+-- (parçacıklar kodla eklenir); yoksa aşağıdaki kod mankeni kıyafetiyle kurulur.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config"))
+local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
+
 local Mannequin = {}
 
 local SHORTS_COLOR = Color3.fromRGB(20, 20, 25)
@@ -35,6 +43,16 @@ end
 local FIRE = "rbxasset://textures/particles/fire_main.dds"
 local SMOKE = "rbxasset://textures/particles/smoke_main.dds"
 
+-- Parçacık ayarları (hem kod mankeninde hem Blender koçunda aynı); hostAt: Blender koçunda parçacığın çıkacağı yer (taban merkezine göre, birimler ölçeksiz)
+local FX = {
+	flame = { from = Color3.fromRGB(255, 70, 20), to = Color3.fromRGB(255, 200, 60), texture = FIRE, size = 1.3, rate = 12, speed = 2, rise = 4, life = 0.7, light = 1, hostAt = Vector3.new(0, 6.0, 0) },
+	ember = { from = Color3.fromRGB(255, 160, 40), to = Color3.fromRGB(255, 60, 20), texture = FIRE, size = 0.7, rate = 7, speed = 1.5, rise = 3, spread = 60, life = 1, hostAt = Vector3.new(0, 6.0, 0) },
+	frost = { from = Color3.fromRGB(235, 250, 255), size = 0.45, rate = 8, speed = 0.5, rise = -2, spread = 90, life = 1.4, light = 0.4, hostAt = Vector3.new(0, 7.2, 0) },
+	volt = { from = Color3.fromRGB(255, 250, 150), to = Color3.fromRGB(255, 220, 40), size = 0.35, rate = 14, speed = 4, spread = 180, life = 0.35, light = 1, hostAt = Vector3.new(0.26, 6.6, 0) },
+	nova = { from = Color3.fromRGB(230, 190, 255), to = Color3.fromRGB(150, 90, 255), size = 0.5, rate = 8, speed = 1, spread = 180, life = 1.2, light = 1, hostAt = Vector3.new(0, 6.05, 0) },
+	shadow = { from = Color3.fromRGB(60, 40, 90), to = Color3.fromRGB(20, 15, 30), texture = SMOKE, size = 1.4, rate = 7, speed = 0.8, rise = 1.5, spread = 40, life = 1.4, light = 0, hostAt = Vector3.new(0, 5.2, -0.5) },
+}
+
 -- Kafayı saran renkli bant
 local function band(part, color)
 	return part("Headband", Vector3.new(0.22, 1.4, 1.4), Vector3.new(0, 4.95, 0), color, CYLINDER, nil, SIDEWAYS)
@@ -61,7 +79,7 @@ local OUTFITS = {
 		band(part, Color3.fromRGB(235, 40, 40))
 		local top = part("FlameHost", Vector3.new(0.3, 0.3, 0.3), Vector3.new(0, 5.4, 0), Color3.fromRGB(255, 120, 30), BALL, NEON)
 		top.Transparency = 1
-		emitter(top, { from = Color3.fromRGB(255, 70, 20), to = Color3.fromRGB(255, 200, 60), texture = FIRE, size = 1.3, rate = 12, speed = 2, rise = 4, life = 0.7, light = 1 })
+		emitter(top, FX.flame)
 	end,
 	-- Ember: turuncu bant, bileklikler ve uçuşan közler
 	ember = function(part)
@@ -71,7 +89,7 @@ local OUTFITS = {
 		end
 		local host = part("EmberHost", Vector3.new(0.3, 0.3, 0.3), Vector3.new(0, 5.2, 0), Color3.fromRGB(255, 150, 30), BALL, NEON)
 		host.Transparency = 1
-		emitter(host, { from = Color3.fromRGB(255, 160, 40), to = Color3.fromRGB(255, 60, 20), texture = FIRE, size = 0.7, rate = 7, speed = 1.5, rise = 3, spread = 60, life = 1 })
+		emitter(host, FX.ember)
 	end,
 	-- Pixel: kare güneş gözlüğü ve havada süzülen pikseller
 	pixel = function(part)
@@ -91,19 +109,19 @@ local OUTFITS = {
 		end
 		local host = part("SnowHost", Vector3.new(0.3, 0.3, 0.3), Vector3.new(0, 6.3, 0), Color3.fromRGB(255, 255, 255), BALL)
 		host.Transparency = 1
-		emitter(host, { from = Color3.fromRGB(235, 250, 255), size = 0.45, rate = 8, speed = 0.5, rise = -2, spread = 90, life = 1.4, light = 0.4 })
+		emitter(host, FX.frost)
 	end,
 	-- Volt: şimşek şeklinde saç ve kıvılcım
 	volt = function(part)
 		part("Bolt", Vector3.new(0.3, 0.5, 0.2), Vector3.new(0.2, 5.5, 0), Color3.fromRGB(255, 235, 60), nil, NEON)
 		part("Bolt", Vector3.new(0.3, 0.5, 0.2), Vector3.new(-0.1, 5.9, 0), Color3.fromRGB(255, 235, 60), nil, NEON)
 		local tip = part("Bolt", Vector3.new(0.3, 0.5, 0.2), Vector3.new(0.2, 6.3, 0), Color3.fromRGB(255, 235, 60), nil, NEON)
-		emitter(tip, { from = Color3.fromRGB(255, 250, 150), to = Color3.fromRGB(255, 220, 40), size = 0.35, rate = 14, speed = 4, spread = 180, life = 0.35, light = 1 })
+		emitter(tip, FX.volt)
 	end,
 	-- Nova: başının üstünde mor halka (hale) ve yıldız parıltısı
 	nova = function(part)
 		local halo = part("Halo", Vector3.new(0.12, 1.9, 1.9), Vector3.new(0, 6.0, 0), Color3.fromRGB(190, 120, 255), CYLINDER, NEON, SIDEWAYS)
-		emitter(halo, { from = Color3.fromRGB(230, 190, 255), to = Color3.fromRGB(150, 90, 255), size = 0.5, rate = 8, speed = 1, spread = 180, life = 1.2, light = 1 })
+		emitter(halo, FX.nova)
 	end,
 	-- Prism: gökkuşağı renkli taç parçaları
 	prism = function(part)
@@ -120,7 +138,7 @@ local OUTFITS = {
 		end
 		local host = part("SmokeHost", Vector3.new(0.3, 0.3, 0.3), Vector3.new(0, 5.0, 0.3), Color3.fromRGB(20, 15, 30), BALL)
 		host.Transparency = 1
-		emitter(host, { from = Color3.fromRGB(60, 40, 90), to = Color3.fromRGB(20, 15, 30), texture = SMOKE, size = 1.4, rate = 7, speed = 0.8, rise = 1.5, spread = 40, life = 1.4, light = 0 })
+		emitter(host, FX.shadow)
 	end,
 }
 
@@ -130,6 +148,33 @@ local OUTFITS = {
 function Mannequin.build(parent, name, frame, center, scale, skin, shorts, outfit)
 	local model = Instance.new("Model")
 	model.Name = name
+
+	-- Blender koçu (coach_<kıyafet>): tek MeshPart, rengi dokusundan gelir; parçacıklar görünmez ev sahiplerine kodla eklenir
+	local mesh, offset = nil, nil
+	if outfit then
+		mesh, offset = ModelLibrary.create("coach_" .. outfit, scale * Config.Models.CoachScale)
+	end
+	if mesh then
+		mesh.Name = "Coach"
+		mesh.CFrame = ModelLibrary.cframe(frame * CFrame.new(center), offset) -- modelin orijini tabanın ortasıdır
+		mesh.Parent = model
+		local fx = FX[outfit]
+		if fx then
+			local host = Instance.new("Part")
+			host.Name = "FxHost"
+			host.Anchored = true
+			host.CanCollide = false
+			host.CanQuery = false
+			host.CanTouch = false
+			host.Size = Vector3.new(0.3, 0.3, 0.3) * scale
+			host.CFrame = frame * CFrame.new(center + fx.hostAt * scale)
+			host.Transparency = 1
+			host.Parent = model
+			emitter(host, fx)
+		end
+		model.Parent = parent
+		return model
+	end
 
 	local function part(partName, size, offset, color, shape, material, rotation)
 		local p = Instance.new("Part")
