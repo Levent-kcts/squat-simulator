@@ -94,6 +94,71 @@ local function toList(csv)
 	return list
 end
 
+-- Çöp kutusu simgesi (sahibinin verdiği gri çöp kutusu görseli gibi): Config.Icons.Trash doluysa yüklenen görsel, boşsa aynı renk ve biçimde Frame'lerden çizilir
+-- (assets/icons/trash.png yüklenince ID Config.Icons.Trash'e yazılır). pixels = kare simgenin kenarı.
+local function addTrashIcon(parent, pixels)
+	local holder = create("Frame", {
+		Name = "TrashIcon",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(pixels, pixels),
+		BackgroundTransparency = 1,
+		ZIndex = 4,
+	}, parent)
+	local imageId = Config.Icons.Trash
+	if imageId and imageId ~= "" then
+		create("ImageLabel", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Image = imageId,
+			ScaleType = Enum.ScaleType.Fit,
+			ZIndex = 4,
+		}, holder)
+		return holder
+	end
+
+	local light, mid, dark = Color3.fromRGB(211, 221, 227), Color3.fromRGB(170, 192, 200), Color3.fromRGB(124, 151, 166)
+	-- Soldan sağa iki tonlu yuvarlak parça (görseldeki sol açık / sağ koyu ayrımı); gradyan renkle çarpıldığı için zemin beyazdır
+	local function piece(x, y, w, h, left, right, radius, z)
+		local frame = create("Frame", {
+			Position = UDim2.fromScale(x, y),
+			Size = UDim2.fromScale(w, h),
+			BackgroundColor3 = if right then WHITE else left,
+			BorderSizePixel = 0,
+			ZIndex = z,
+		}, holder)
+		create("UICorner", { CornerRadius = UDim.new(radius, 0) }, frame)
+		if right then
+			create("UIGradient", {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, left),
+					ColorSequenceKeypoint.new(0.46, left),
+					ColorSequenceKeypoint.new(0.461, right),
+					ColorSequenceKeypoint.new(1, right),
+				}),
+			}, frame)
+		end
+		return frame
+	end
+
+	-- Kulp (halka), gövde, kapak altı şeridi, kapak ve üç dikey yuva
+	local ring = create("Frame", {
+		Position = UDim2.fromScale(0.32, 0.04),
+		Size = UDim2.fromScale(0.36, 0.32),
+		BackgroundTransparency = 1,
+		ZIndex = 1,
+	}, holder)
+	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, ring)
+	create("UIStroke", { Thickness = math.max(2, math.floor(pixels * 0.075)), Color = mid }, ring)
+	piece(0.17, 0.42, 0.66, 0.54, light, mid, 0.14, 2)
+	piece(0.13, 0.34, 0.74, 0.12, mid, dark, 0.3, 3)
+	piece(0.08, 0.2, 0.84, 0.17, light, mid, 0.45, 4)
+	piece(0.27, 0.54, 0.07, 0.34, mid, nil, 0.5, 5)
+	piece(0.465, 0.54, 0.07, 0.34, dark, nil, 0.5, 5)
+	piece(0.66, 0.54, 0.07, 0.34, dark, nil, 0.5, 5)
+	return holder
+end
+
 local function percent(pet)
 	return math.floor(pet.mult * 100 + 0.5)
 end
@@ -230,13 +295,13 @@ function PetsPanel.init(screenGui, showToast)
 	local trash = create("TextButton", {
 		Position = UDim2.fromOffset(rightX, HEIGHT - 52),
 		Size = UDim2.fromOffset(58, 40),
-		Text = "🗑",
-		Font = FONT,
-		TextSize = 26,
+		Name = "TrashButton",
+		Text = "",
 		BackgroundColor3 = RED,
 	}, panel)
 	create("UIStroke", { Thickness = 3, Color = BLACK }, trash)
 	UIStyle.soften(trash, { radius = 10, strength = 0.28 })
+	addTrashIcon(trash, 30)
 	local mergeAll, mergeAllText = makeButton(panel, {
 		Position = UDim2.fromOffset(rightX + 66, HEIGHT - 52),
 		Size = UDim2.fromOffset(150, 40),
@@ -410,9 +475,13 @@ function PetsPanel.init(screenGui, showToast)
 		-- Delete: iki basış ister (yanlışlıkla silmesin)
 		local confirming = pendingDelete == pet.id
 		local deleteButton = makeButton(detail, {
+			Name = "DeleteButton",
 			Position = UDim2.fromOffset(168, 276),
 			Size = UDim2.fromOffset(58, 38),
-		}, if confirming then "Sure?" else "🗑", RED)
+		}, if confirming then "Sure?" else "", RED)
+		if not confirming then
+			addTrashIcon(deleteButton, 28)
+		end
 		deleteButton.MouseButton1Click:Connect(function()
 			if pendingDelete == pet.id then
 				pendingDelete = nil
@@ -512,10 +581,11 @@ function PetsPanel.init(screenGui, showToast)
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = WHITE,
 		}, 1.5)
-		local iconSize = math.min(math.floor(54 + 15 * pet.scale), 82)
+		-- Kullanılan (takılı) petlerin resmi kullanılmayanlardan belirgin büyüktür (sahibi istedi); ikisinde de boy büyüdükçe resim büyür
+		local iconSize = if equippedCount > 0 then math.min(math.floor(62 + 12 * pet.scale), 84) else math.floor(42 + 10 * pet.scale)
 		UIStyle.safePetIcon(card, pet, {
-			AnchorPoint = Vector2.new(0.5, 0),
-			Position = UDim2.new(0.5, 0, 0, 22),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.5, 0, 0, 64),
 			Size = UDim2.fromOffset(iconSize, iconSize),
 		})
 		if boss then
@@ -641,7 +711,7 @@ function PetsPanel.init(screenGui, showToast)
 			}, box)
 			if pet then
 				box.Text = ""
-				local iconSize = math.min(math.floor(36 + 12 * pet.scale), 56)
+				local iconSize = math.min(math.floor(40 + 14 * pet.scale), 62)
 				UIStyle.safePetIcon(box, pet, {
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),

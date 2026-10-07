@@ -218,6 +218,7 @@ return {
 		Quests = "", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
 		Index = "", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
+		Trash = "", -- Pets menüsündeki çöp kutusu simgesi: sahibinin verdiği gri çöp kutusu (assets/icons/trash.png; yüklenince Image ID yazılır, boşken aynı görünümde Frame'lerden çizilir)
 		Wins = "", -- sol üstteki Win sayacının kupa simgesi (görsel yüklenince ID yazılır; boşken 🏆 emojisi)
 		Friends = "rbxassetid://139194631320002", -- sağ üstteki arkadaş bonusu simgesi: sahibinin yüklediği 'friends' görseli (Image türü, doğrulandı). Boş bırakılırsa 👥 emojisi
 		LegMuscle = "rbxassetid://81118324194991", -- Offline Earnings penceresindeki büyük bacak kası simgesi: sahibinin yüklediği "leg-emoji-clipart-xl" görseli (Image türü, doğrulandı). Boş bırakılırsa 🦵 emojisi görünür

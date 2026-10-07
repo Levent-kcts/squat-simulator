@@ -105,6 +105,19 @@ local function buttonWith(instance, text)
 	end
 	return nil
 end
+-- Adı verilen ilk nesne (ayrıntı kutusundaki 'DeleteButton', alttaki 'TrashButton')
+local function buttonNamed(instance, name)
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "Name") == name then
+			return child
+		end
+		local deeper = buttonNamed(child, name)
+		if deeper then
+			return deeper
+		end
+	end
+	return nil
+end
 local function click(button)
 	assert(button, "tıklanacak düğme bulunamadı")
 	local handlers = rawget(button, "_handlers")
@@ -147,11 +160,12 @@ assert(S.lastInvoke[1] == "FusePet" and S.lastInvoke[2] == "cat", "Merge düğme
 click(buttonWith(root2, "Merge All"))
 assert(S.lastInvoke[1] == "FuseAllPets", "Merge All FuseAllPets göndermeli")
 S.lastInvoke = nil
-click(buttonWith(root2, "🗑"))
+click(buttonNamed(root2, "DeleteButton"))
 assert(S.lastInvoke == nil, "Delete ilk basışta silmemeli")
 assert(textsUnder(root2, {})["Sure?"], "Delete ilk basışta 'Sure?' demeli")
 click(buttonWith(root2, "Sure?"))
 assert(S.lastInvoke and S.lastInvoke[1] == "DeletePet" and S.lastInvoke[2] == "cat", "ikinci basış DeletePet göndermeli")
+assert(buttonNamed(buttonNamed(root2, "TrashButton"), "TrashIcon"), "alt çöp kutusu düğmesinde çizili simge olmalı")
 print("PetsPanel merge/equip/delete ok")
 
 -- 3) 3'ten az: ilerleme gösterilir, tıklayınca bilgi mesajı (sunucuya gitmez)
