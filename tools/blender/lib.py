@@ -120,7 +120,11 @@ class Model:
         return self._add(obj, rgb, name=name)
 
     # ---- bitirme: palet dokusu, UV, tek mesh
-    def finish(self, folder_textures):
+    def finish(self, folder_textures, textured=True, base_rgb=(255, 255, 255)):
+        """textured=False: doku ve UV YOK, tek düz malzeme (base_rgb). Oyunda MeshPart.Color ile boyanacak modeller (bacak kasları) için:
+        Roblox, TextureID'li MeshPart'ta Color'ı dokuyla ÇARPMAZ (renk dokudan gelir), bu yüzden renkli boyanacak mesh dokusuz olmalı."""
+        if not textured:
+            return self._finish_plain(base_rgb)
         colors = []
         for obj in self.parts:
             rgb = tuple(obj["rgb"])
@@ -184,6 +188,29 @@ class Model:
         for poly in joined.data.polygons:
             poly.use_smooth = True
         joined["palette"] = colors
+        return joined
+
+    def _finish_plain(self, base_rgb):
+        mat = bpy.data.materials.new(self.name + "_Material")
+        mat.use_nodes = True
+        bsdf = mat.node_tree.nodes["Principled BSDF"]
+        bsdf.inputs["Base Color"].default_value = c.srgb(base_rgb)
+        bsdf.inputs["Roughness"].default_value = 0.55
+        for obj in self.parts:
+            c.apply_modifiers(obj)
+        joined = c.join(self.parts, self.name)
+        bpy.context.view_layer.objects.active = joined
+        joined.select_set(True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        joined.data.materials.clear()
+        joined.data.materials.append(mat)
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.mesh.remove_doubles(threshold=0.0005)
+        bpy.ops.object.mode_set(mode="OBJECT")
+        for poly in joined.data.polygons:
+            poly.use_smooth = True
+        joined["palette"] = [tuple(base_rgb)]
         return joined
 
 

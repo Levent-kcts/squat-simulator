@@ -44,12 +44,12 @@ local plain = newCharacter(1)
 LegGrowth.buildMuscles(plain, 0)
 assert(countByName(plain:FindFirstChild("LegMuscles")).Muscle == nil, "aşama 0'da kas olmamalı")
 
--- 3) Model varken: bacak başına 2 mesh (uyluk + baldır), boyutları ModelInfo x bacak/referans oranı
+-- 3) Model varken: bacak başına 3 mesh (uyluk + popo + baldır), boyutları ModelInfo x bacak/referans oranı
 local gameModels = S.newInstance("Folder")
 gameModels.Name = "GameModels"
 gameModels.Parent = S.replicated
 for stage = 1, 6 do
-	for _, part in { "thigh", "calf" } do
+	for _, part in { "thigh", "glute", "calf" } do
 		local name = string.format("muscle_s%d_%s", stage, part)
 		assert(ModelInfo[name], "ModelInfo'da yok (tools/blender/muscles.py): " .. name)
 		local mesh = S.newInstance("MeshPart")
@@ -61,7 +61,7 @@ for _, stage in { 1, 4, 6 } do
 	local big = newCharacter(2) -- genişlik/boy ölçeği 2: kas da 2 kat büyür
 	LegGrowth.buildMuscles(big, stage)
 	local models = countByName(big:FindFirstChild("LegMuscles"))
-	assert(models.Muscle == 4, "model kası sayısı 4 olmalı (2 bacak x uyluk+baldır): " .. tostring(models.Muscle))
+	assert(models.Muscle == 6, "model kası sayısı 6 olmalı (2 bacak x uyluk+popo+baldır): " .. tostring(models.Muscle))
 	local found = false
 	for _, child in big:FindFirstChild("LegMuscles"):GetChildren() do
 		if child.Name == "Muscle" and child.ClassName == "MeshPart" then
@@ -71,7 +71,7 @@ for _, stage in { 1, 4, 6 } do
 	end
 	assert(found, "MeshPart kas yok")
 end
--- bacak ölçüsü referansın iki katı: her kasın genişliği ilgili ModelInfo genişliği x 2 x MuscleScale olmalı (uyluk ya da baldır)
+-- bacak ölçüsü referansın iki katı: her kasın genişliği ilgili ModelInfo genişliği x 2 x MuscleScale olmalı (uyluk, popo ya da baldır)
 local check = newCharacter(2)
 LegGrowth.buildMuscles(check, 2)
 local matched = 0
@@ -79,14 +79,15 @@ for _, child in check:FindFirstChild("LegMuscles"):GetChildren() do
 	if child.Name == "Muscle" then
 		local thigh = math.abs(child.Size.X - ModelInfo.muscle_s2_thigh.size.X * 2 * Config.Models.MuscleScale) < 1e-6
 		local calf = math.abs(child.Size.X - ModelInfo.muscle_s2_calf.size.X * 2 * Config.Models.MuscleScale) < 1e-6
-		assert(thigh or calf, "kas bacak ölçüsüne göre ölçeklenmeli")
+		local glute = math.abs(child.Size.X - ModelInfo.muscle_s2_glute.size.X * 2 * Config.Models.MuscleScale) < 1e-6
+		assert(thigh or calf or glute, "kas bacak ölçüsüne göre ölçeklenmeli")
 		matched += 1
 	end
 end
-assert(matched == 4, "ölçeği doğrulanan kas sayısı 4 olmalı: " .. matched)
+assert(matched == 6, "ölçeği doğrulanan kas sayısı 6 olmalı: " .. matched)
 -- aşama sınırı: 6'dan büyük aşama 6. modeli kullanır
 local over = newCharacter(1)
 LegGrowth.buildMuscles(over, 9)
-assert(countByName(over:FindFirstChild("LegMuscles")).Muscle == 4, "aşama sınırı: son model kullanılmalı")
+assert(countByName(over:FindFirstChild("LegMuscles")).Muscle == 6, "aşama sınırı: son model kullanılmalı")
 print("leg muscles ok")
 print("DONE")

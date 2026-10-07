@@ -53,7 +53,7 @@ def main():
         key = name if name in builders else next(prefix + name for prefix in ("pet_", "egg_", "shoe_", "coach_") if prefix + name in builders)
         model = Model(key)
         builders[key](model)
-        obj = model.finish(textures)
+        obj = model.finish(textures, textured=not key.startswith("muscle_"))  # bacak kasları dokusuzdur (oyunda Color ile boyanır)
         record_manifest(obj)
         objects.append(obj)
     for index, obj in enumerate(objects):  # yan yana diz (dışa aktarma konumları sadece düzen içindir; oyun yeniden konumlandırır)

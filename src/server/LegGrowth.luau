@@ -39,10 +39,10 @@ local function addMuscle(folder, leg, size, offset, color)
 	part.Parent = folder
 end
 
--- Blender kası (shared/ModelLibrary 'muscle_s<aşama>_thigh' / '_calf'): mesh, bacak parçasının merkezine göre çizilmiştir ve gerçek bacak ölçüsünün
--- referansa (Config.Models.LegRef) oranıyla ölçeklenir (Humanoid boy/genişlik ölçeği ne olursa olsun). Doku gri tonludur, Color ten rengiyle çarpılır.
--- Model yoksa false döner ve çağıran yer küre kaslara düşer.
-local function addMuscleModel(folder, leg, modelName, reference, color)
+-- Blender kası (shared/ModelLibrary 'muscle_s<aşama>_thigh' / '_glute' / '_calf'): mesh, bacak parçasının merkezine göre çizilmiştir ve gerçek bacak ölçüsünün
+-- referansa (Config.Models.LegRef) oranıyla ölçeklenir (Humanoid boy/genişlik ölçeği ne olursa olsun). Meshlerde DOKU YOK: renk MeshPart.Color ile verilir
+-- (Roblox dokulu MeshPart'ta Color'ı dokuyla çarpmaz, Studio'da gri çıktı). Model yoksa false döner ve çağıran yer küre kaslara düşer.
+local function addMuscleModel(folder, leg, modelName, reference, color, material)
 	local models = Config.Models
 	local size = leg.Size
 	local scale = Vector3.new(size.X / reference.X, size.Y / reference.Y, size.Z / reference.Z) * models.MuscleScale
@@ -52,7 +52,7 @@ local function addMuscleModel(folder, leg, modelName, reference, color)
 	end
 	part.Name = "Muscle"
 	part.Color = color
-	part.Material = Enum.Material.SmoothPlastic
+	part.Material = material or Enum.Material.SmoothPlastic
 	part.Anchored = false -- ModelLibrary sabit verir; kas bacakla birlikte oynamalı
 	part.CFrame = ModelLibrary.cframe(leg.CFrame, offset)
 
@@ -150,13 +150,18 @@ local function buildMuscles(character, stage)
 			local y = upper.Size.Y
 			local skin = forcedColor or upper.Color
 			if muscular then
-				-- Blender kasları: uyluk (ön/arka uyluk + siyah şortlu popo) ve baldır; model yoksa o grup küre kaslara düşer
+				-- Blender kasları: uyluk, popo (şort renginde) ve baldır; model yoksa o grup küre kaslara düşer
 				local modelStage = math.clamp(stage, 1, MODEL_STAGES)
 				local refs = Config.Models.LegRef
-				local thighModel = Config.Appearance.Shorts and addMuscleModel(folder, upper, `muscle_s{modelStage}_thigh`, refs.Upper, skin) -- popo koyu şort renginde çizildi, şortsuz modda küre kullanılır
-				if not thighModel then
+				local shortsLook = if Config.Appearance.Shorts then SHORTS_COLOR else skin
+				local gluteMaterial = if Config.Appearance.Shorts then Enum.Material.Fabric else nil
+				if addMuscleModel(folder, upper, `muscle_s{modelStage}_thigh`, refs.Upper, skin) then
+					if not addMuscleModel(folder, upper, `muscle_s{modelStage}_glute`, refs.Upper, shortsLook, gluteMaterial) then
+						addMuscle(folder, upper, Vector3.new(w * (1.2 + 0.05 * g), y * 0.6, w * (1.0 + 0.12 * g)), Vector3.new(0, y * 0.3, w * 0.4), shortsLook)
+					end
+				else
 					-- popo: uyluğun üst-arka kısmında
-					addMuscle(folder, upper, Vector3.new(w * (1.2 + 0.05 * g), y * 0.6, w * (1.0 + 0.12 * g)), Vector3.new(0, y * 0.3, w * 0.4), if Config.Appearance.Shorts then SHORTS_COLOR else skin)
+					addMuscle(folder, upper, Vector3.new(w * (1.2 + 0.05 * g), y * 0.6, w * (1.0 + 0.12 * g)), Vector3.new(0, y * 0.3, w * 0.4), shortsLook)
 					-- ön uyluk
 					addMuscle(folder, upper, Vector3.new(w * (1.0 + 0.03 * g), y * (0.62 + 0.015 * g), w * (1.05 + 0.07 * g)), Vector3.new(0, -y * 0.1, -w * (0.25 + 0.01 * g)), skin)
 					-- arka uyluk
