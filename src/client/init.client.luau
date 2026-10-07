@@ -605,12 +605,14 @@ safeInit("MusicPlayer", loadOptional("MusicPlayer"), screenGui) -- sağ alttaki 
 -- =====================================================================
 -- HAREKET (tıklama / Auto Click)
 -- =====================================================================
--- Bir hareket sürerken yeni tıklamalar yok sayılır. Puan squat'ta hareket bitince, tekmede ayak değince sunucudan gelir.
+-- HER tıklama sunucuya gider ve bacak kasını hemen verir (hareketin bitmesi beklenmez). Hareket (animasyon) ise sadece boştayken başlar:
+-- hareket sürerken gelen tıklama yeni animasyon başlatmaz. Duvara hasar sunucudan hareketle gelir (squat bitince, tekmede ayak değince).
 local busyUntil = 0
 
-local function tryAction()
+-- Boştaysa bir hareket (tekme/squat) başlatır. Döner: başladı mı
+local function playMove()
 	if os.clock() < busyUntil then
-		return
+		return false
 	end
 
 	-- Duvara yakınsa tekme (duvara dönerek), uzaktaysa squat
@@ -618,11 +620,11 @@ local function tryAction()
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not root or not humanoid then
-		return
+		return false
 	end
 	-- Havadayken hareket başlatma: bacak sallanması karakteri döndürüp bozuyordu
 	if humanoid.FloorMaterial == Enum.Material.Air then
-		return
+		return false
 	end
 	local near = WallClient.isNearWall(root.Position)
 	local move = if near then "Kick" else "Squat"
@@ -632,31 +634,34 @@ local function tryAction()
 
 	busyUntil = os.clock() + Config.MoveDuration[move]
 	Moves.play(character, move)
-	clickEvent:FireServer()
 	-- Tekme sesi ayak duvara değdiği anda çalar; ses istemcide çalındığı için ağ gecikmesi yoktur
 	if move == "Kick" and Sfx then
 		task.delay(Config.MoveDuration.Kick * Config.MoveContact.Kick, function()
 			pcall(Sfx.play, "Kick")
 		end)
 	end
+	return true
 end
 
--- Arayüz butonlarına basmak sayılmaz
+-- Arayüz butonlarına basmak sayılmaz. Her tıklama sayılır (sunucu hızı sınırlar), animasyon boştayken oynar
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then
 		return
 	end
 	local inputType = input.UserInputType
 	if inputType == Enum.UserInputType.MouseButton1 or inputType == Enum.UserInputType.Touch then
-		tryAction()
+		playMove()
+		clickEvent:FireServer()
 	end
 end)
 
 -- Auto Click açıkken ya da açık bir antrenman alanındayken (sunucu TrainingArea özniteliğini ayarlar) bir hareket
--- bitince diğeri kendiliğinden başlar: karakter otomatik squat yapar
+-- bitince diğeri kendiliğinden başlar: karakter otomatik squat yapar (hareket başına bir tıklama)
 RunService.Heartbeat:Connect(function()
 	if autoClick or (player:GetAttribute("TrainingArea") or "") ~= "" then
-		tryAction()
+		if playMove() then
+			clickEvent:FireServer()
+		end
 	end
 end)
 

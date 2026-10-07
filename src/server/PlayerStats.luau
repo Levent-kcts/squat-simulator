@@ -810,6 +810,16 @@ function PlayerStats.addMuscle(player, areaMultiplier)
 	return stat.Value, gained
 end
 
+-- Oyuncunun şu anki toplam bacak kası (duvara hasar = toplam kas x ayakkabı çarpanı); veri yüklenmediyse nil
+function PlayerStats.getMuscle(player)
+	local profile = profiles[player]
+	local stat = getStat(player, Config.StatLegMuscle)
+	if not profile or not profile.loaded or not stat then
+		return nil
+	end
+	return stat.Value
+end
+
 -- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
 function PlayerStats.canSave(player)
 	local profile = profiles[player]

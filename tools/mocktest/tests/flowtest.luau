@@ -41,19 +41,55 @@ local function clickOnce()
 	end
 	click(player)
 end
+local muscleAtStart = stat(Config.StatLegMuscle)
 for _ = 1, 7 do
 	clickOnce()
 end
 print("TutorialClicks:", player:GetAttribute("TutorialClicks"))
 assert(player:GetAttribute("TutorialClicks") == Config.Tutorial.ClickGoal, "eğitim sayacı hedefte durmalı")
 
--- Hareketin bittiği an verilen ödül: bekleyen gecikmiş işlevleri çalıştır
+-- HER TIKLAMA bacak kasını ANINDA verir: hareketin bitmesini beklemeden (gecikmiş işlevler çalışmadan) kas artmış olmalı
+assert(stat(Config.StatLegMuscle) > muscleAtStart, "her tıklama hemen bacak kası vermeli")
+-- Gecikmiş işlevler sadece duvar hasarını yapar: kasa ek kas eklememeli
 local before = stat(Config.StatLegMuscle)
 for _, delayed in S.delayed do
 	pcall(delayed[2])
 end
-print("muscle gained from moves:", stat(Config.StatLegMuscle) - before)
-assert(stat(Config.StatLegMuscle) > before, "hareketler bacak kası vermeli")
+assert(stat(Config.StatLegMuscle) == before, "hareket sonu kas eklememeli (kas tıklamada verildi)")
+
+-- Hızlı seri (hiç beklemeden 3 tıklama): üçü de kas verir ama sadece İLK tıklama bir hareket (duvar hasarı zamanlayıcısı) başlatır
+table.clear(S.delayed)
+local function waitIdle()
+	local start = os.clock()
+	while os.clock() - start < Config.MoveDuration.Squat + 0.05 do
+	end
+end
+waitIdle() -- önceki hareketin bitmesi (hız kovası da dolar)
+table.clear(S.delayed)
+local perClick = player:GetAttribute("PerClick")
+local fastBefore = stat(Config.StatLegMuscle)
+click(player)
+click(player)
+click(player)
+local squatTimers = 0
+for _, delayed in S.delayed do
+	if math.abs(delayed[1] - Config.MoveDuration.Squat * (Config.MoveContact.Squat or 1)) < 1e-6 then
+		squatTimers += 1
+	end
+end
+assert(squatTimers == 1, "art arda tıklamada tek hareket başlamalı: " .. squatTimers)
+assert(stat(Config.StatLegMuscle) - fastBefore >= 3 * perClick, "üç hızlı tıklama üç kez kas vermeli")
+
+-- Hız sınırı: aşırı hızlı tıklama (otomatik tıklayıcı) Burst'ten fazla kas vermez
+waitIdle()
+local limitBefore = stat(Config.StatLegMuscle)
+for _ = 1, 50 do
+	click(player)
+end
+local counted = (stat(Config.StatLegMuscle) - limitBefore) / player:GetAttribute("PerClick")
+assert(counted <= Config.ClickLimit.Burst + 2, "hız sınırı: 50 ani tıklama " .. counted .. " kez sayıldı")
+assert(counted >= 1, "hız sınırı en az bir tıklamayı saymalı")
+print("click limit ok, counted", counted)
 
 -- Duvarın önünde tekme: hasar duvara gitmeli (muscle x ayakkabı)
 root.Position = S.Vector3.new(0, 3, Layout.wallZ(1) + Config.Wall.Thickness / 2 + 4)

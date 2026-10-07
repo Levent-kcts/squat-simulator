@@ -83,11 +83,13 @@ return {
 
 	-- Tıklama
 	MusclePerClick = 1, -- eşya/pet yokken her tıklamada kaç bacak kası artar (hasar = toplam bacak kası)
-	-- Her tıklama bir hareket (animasyon) başlatır; hareket sürerken yeni tıklamalar yok sayılır.
-	-- Puan ve hasar bir kez verilir: squat'ta hareket BİTTİĞİNDE, tekmede ayağın duvara DEĞDİĞİ anda (hareket süresinin MoveContact oranı).
-	-- Eskiden tekmede de hareket bitince verilirdi: ayak 0.2 sn'de değiyor, duvar 0.4 sn + ping sonra kırılıyor, ses ve görüntü tekmeden geç kalıyordu.
-	-- Hareket süresi bitmeden yeni tıklama yine kabul edilmez, yani hızlı tıklamanın faydası yoktur. Süreler saniye cinsindendir.
+	-- Hareket (animasyon) boştayken gelen tıklama bir hareket başlatır; duvara HASAR bu hareketle gelir: squat'ta hareket BİTTİĞİNDE, tekmede ayağın duvara DEĞDİĞİ anda (hareket süresinin MoveContact oranı).
+	-- Eskiden tekmede de hareket bitince verilirdi: ayak 0.2 sn'de değiyor, duvar 0.4 sn + ping sonra kırılıyor, ses ve görüntü tekmeden geç kalıyordu. Süreler saniye cinsindendir.
 	MoveDuration = { Kick = 0.4, Squat = 0.5 },
+	-- HER TIKLAMA bacak kasını ANINDA verir (sahibi 'her clickte leg power alayım, squat'ın bitmesini beklemesin' dedi; hareketin bitmesi beklenmez).
+	-- Hareket (animasyon) ve duvara hasar ise sadece hareket boştayken başlar: bir hareket sürerken gelen tıklama kas verir ama yeni hareket/hasar başlatmaz.
+	-- Hile önlemi: sunucu tıklamaları jeton kovasıyla sınırlar (saniyede en çok PerSecond, ani seri için Burst). Auto Click ve antrenman alanındaki otomatik squat hareket başına bir tıklamadır.
+	ClickLimit = { PerSecond = 12, Burst = 6 },
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
 	-- Kayıt sistemi

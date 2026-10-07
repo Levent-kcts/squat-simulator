@@ -140,42 +140,76 @@ local function broadcastMove(player, move)
 	end
 end
 
--- Bir hareket (animasyon) süresince yeni tıklamalar yok sayılır. Puan ve hasar bir kez verilir: squat'ta hareketin SONUNDA,
--- tekmede ayağın duvara değdiği anda (Config.MoveContact; hareket yine bitmeden yeni tıklama kabul edilmez).
--- Gecikme dalgalanması yüzünden geçerli tıklamalar reddedilmesin diye küçük bir pay bırakılır.
+-- HER TIKLAMA bacak kasını ANINDA verir (sahibi: 'her clickte leg power alayım, squat'ın bitmesini beklemesin'). Hareket (animasyon) ve duvara hasar ise hareket
+-- boştayken başlar: squat'ta hasar hareketin SONUNDA, tekmede ayağın duvara değdiği anda (Config.MoveContact); hareket sürerken gelen tıklama kas verir ama yeni hareket başlatmaz.
+-- Gecikme dalgalanması yüzünden geçerli tıklamalar reddedilmesin diye hareket süresinden küçük bir pay düşülür.
 local MOVE_TOLERANCE = 0.1
 local busyUntil = {}
+local clickBuckets = {} -- [oyuncu] = { tokens, last }: tıklama hızı sınırı (jeton kovası, Config.ClickLimit)
+
+local function allowClick(player, now)
+	local limit = Config.ClickLimit
+	local bucket = clickBuckets[player]
+	if not bucket then
+		bucket = { tokens = limit.Burst, last = now }
+		clickBuckets[player] = bucket
+	end
+	bucket.tokens = math.min(limit.Burst, bucket.tokens + (now - bucket.last) * limit.PerSecond)
+	bucket.last = now
+	if bucket.tokens < 1 then
+		return false
+	end
+	bucket.tokens -= 1
+	return true
+end
+
+Players.PlayerRemoving:Connect(function(player)
+	busyUntil[player] = nil
+	clickBuckets[player] = nil
+end)
 
 clickEvent.OnServerEvent:Connect(function(player)
 	local now = os.clock()
+	if not allowClick(player, now) then
+		return -- saniyede çok fazla tıklama (otomatik tıklayıcı ya da hile): fazlası yok sayılır
+	end
+
+	-- Antrenman alanındaysa (açık bir pedin üstünde) pedin çarpanı geçerlidir
+	local area = TrainingArea.getArea(player)
+
+	-- 1) Bacak kası: her tıklamada hemen
+	local muscle, gained = PlayerStats.addMuscle(player, if area then area.mult else 1)
+	if not muscle then
+		return -- veri henüz yüklenmedi
+	end
+	PlayerStats.tutorialClick(player) -- eğitimin ilk adımı için tıklama sayısı
+	PlayerStats.questEvent(player, "clicks", 1) -- günlük görev ilerlemesi
+	-- Kazanılan bacak kası level çubuğunu doldurur; dolunca level atlanır
+	local leveledUp, newLevel = PlayerStats.addTap(player, gained)
+	if leveledUp then
+		notifyEvent:FireClient(player, true, `Level up! You are now level {newLevel}`)
+	end
+
+	-- 2) Hareket ve duvara hasar: sadece önceki hareket bittiyse yeni bir hareket başlar
 	if now < (busyUntil[player] or 0) then
 		return
 	end
-
-	-- Antrenman alanındaysa (açık bir pedin üstünde) squat ve pedin çarpanı; değilse duvara yakınsa tekme, uzaktaysa squat
-	local area = TrainingArea.getArea(player)
+	-- Antrenman alanındaysa squat; değilse duvara yakınsa tekme, uzaktaysa squat
 	local move = if not area and WallService.isNearWall(player) then "Kick" else "Squat"
 	local duration = Config.MoveDuration[move]
 	busyUntil[player] = now + duration - MOVE_TOLERANCE
 	broadcastMove(player, move)
-	PlayerStats.tutorialClick(player) -- eğitimin ilk adımı için tıklama sayısı
-	PlayerStats.questEvent(player, "clicks", 1) -- günlük görev ilerlemesi
 
 	task.delay(duration * (Config.MoveContact[move] or 1), function()
 		if player.Parent == nil then
 			return -- oyundan çıktı
 		end
-		local muscle, gained = PlayerStats.addMuscle(player, if area then area.mult else 1)
-		if muscle then
+		local total = PlayerStats.getMuscle(player)
+		if total then
 			-- Hasar = toplam bacak kası x ayakkabı hasar çarpanı
-			local _, brokenWalls = WallService.hit(player, math.floor(muscle * PlayerStats.getDamageMultiplier(player)))
+			local _, brokenWalls = WallService.hit(player, math.floor(total * PlayerStats.getDamageMultiplier(player)))
 			if brokenWalls and brokenWalls > 0 then
 				PlayerStats.questEvent(player, "walls", brokenWalls) -- günlük görev ilerlemesi
-			end
-			-- Kazanılan bacak kası level çubuğunu doldurur; dolunca level atlanır
-			local leveledUp, newLevel = PlayerStats.addTap(player, gained)
-			if leveledUp then
-				notifyEvent:FireClient(player, true, `Level up! You are now level {newLevel}`)
 			end
 		end
 	end)
