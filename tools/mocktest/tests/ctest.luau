@@ -220,6 +220,33 @@ for _, hb in S.heartbeat do
 end
 print("PetFollowers boss effect ok")
 
+-- Günlük çark istemcisi: E ile çevirme isteği sunucuya gider, dilim seçilince çark dönüp durur ve sonuç gösterilir
+local wheelToasts = {}
+local invokes = {}
+S.remoteFunction.InvokeServer = function(_, action, id)
+	table.insert(invokes, action)
+	return true, "+123 Wins", 3
+end
+local WheelClient = require("./WheelClient")
+local trigger = WheelClient.init(S.newInstance("Frame"), function(_, message)
+	table.insert(wheelToasts, message)
+end)
+trigger()
+assert(invokes[1] == "SpinWheel", "çevirme SpinWheel göndermeli")
+for _ = 1, 16 do
+	for _, hb in S.heartbeat do
+		hb(0.5)
+	end
+end
+assert(wheelToasts[#wheelToasts] == "+123 Wins", "dönüş bitince sonuç gösterilmeli")
+-- Dönüş bittikten sonra yeni istek serbesttir; sunucu reddederse (aynı gün) hata mesajı gösterilir
+S.remoteFunction.InvokeServer = function()
+	return false, "You already spun today! Next free spin in 3h 10m."
+end
+trigger()
+assert(string.find(wheelToasts[#wheelToasts], "already spun"), "reddedilen çevirmede mesaj gösterilmeli")
+print("WheelClient ok")
+
 -- Index ve Stats pencereleri
 S.localPlayer:SetAttribute("DiscoveredPets", "cat,dog")
 S.localPlayer:SetAttribute("IndexBonus", 2)

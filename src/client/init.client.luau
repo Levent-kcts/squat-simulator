@@ -802,6 +802,7 @@ end
 local toggleIndex = loadPanel("IndexPanel", screenGui)
 local toggleStats = loadPanel("StatsPanel", screenGui)
 local toggleQuests = loadPanel("QuestPanel", screenGui, showToast)
+loadPanel("WheelClient", screenGui, showToast) -- lobideki günlük çark (hareket, E ile çevirme, tabela yazısı)
 safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {

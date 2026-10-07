@@ -91,4 +91,27 @@ local again = shop(player, "ClaimQuest", 1)
 assert(again == false, "aynı görev iki kez alınamaz")
 local badSlot = shop(player, "ClaimQuest", 99)
 assert(badSlot == false, "olmayan görev reddedilmeli")
+
+-- Günlük çark: günde 1 hak, sonucu sunucu seçer (dilim sırası döner), aynı gün ikinci çevirme reddedilir, DEV 'WheelReset' hakkı geri verir
+assert(player:GetAttribute("WheelReady") == true, "yeni oyuncuda çark hakkı hazır olmalı")
+local spun, spinMessage, spinIndex = shop(player, "SpinWheel", "")
+print("Shop SpinWheel:", spun, spinMessage, spinIndex)
+assert(spun == true and type(spinMessage) == "string" and spinIndex >= 1 and spinIndex <= #Config.Wheel.Prizes, "çark çevrilebilmeli ve dilim sırası dönmeli")
+assert(player:GetAttribute("WheelReady") == false, "çevirdikten sonra hak kullanılmış görünmeli")
+local spunAgain, againMessage = shop(player, "SpinWheel", "")
+assert(spunAgain == false and string.find(againMessage, "Next free spin"), "aynı gün ikinci çevirme reddedilmeli")
+-- Her dilim en az bir kez çıkmalı, ödüller sunucuda verilmeli (Win/kas/boost/pet), hata olmamalı
+local seen, kinds = {}, {}
+local winsBefore, muscleBefore = stat(Config.StatWins), stat(Config.StatLegMuscle)
+for _ = 1, 3000 do
+	PlayerStats.dev(player, "WheelReset")
+	local ok, message, index = shop(player, "SpinWheel", "")
+	assert(ok == true, "çark çevrilebilmeli: " .. tostring(message))
+	seen[index] = true
+	kinds[Config.Wheel.Prizes[index].kind] = true -- (pet dilimi envanter dolunca Win'e döner: o da denenir)
+end
+for index = 1, #Config.Wheel.Prizes do
+	assert(seen[index], "dilim hiç çıkmadı: " .. index)
+end
+print("wheel prizes seen:", #Config.Wheel.Prizes, "wins/muscle delta:", stat(Config.StatWins) - winsBefore, stat(Config.StatLegMuscle) - muscleBefore)
 print("DONE")

@@ -39,6 +39,19 @@ do
 	end
 end
 
+-- Günlük çark (lobide spawn'ın solunda) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
+do
+	local okWheel, WheelService = pcall(require, script.WheelService)
+	if okWheel then
+		local started, err = pcall(WheelService.init)
+		if not started then
+			warn(`[Server] WheelService init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load WheelService: {WheelService}`)
+	end
+end
+
 -- Arkadaş bonusu isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFriends, FriendBonus = pcall(require, script.FriendBonus)
@@ -208,6 +221,8 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return PlayerStats.claimQuest(player, id)
 	elseif action == "ClaimQuestBonus" then
 		return PlayerStats.claimQuestBonus(player)
+	elseif action == "SpinWheel" then
+		return PlayerStats.spinWheel(player) -- günlük çark: ok, mesaj, dilim sırası
 	elseif action == "FusePet" and type(id) == "string" then
 		return PlayerStats.fusePet(player, id)
 	elseif action == "FuseAllPets" then

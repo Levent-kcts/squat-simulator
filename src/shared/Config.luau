@@ -272,6 +272,11 @@ return {
 		LeaderboardX = -50,
 		LeaderboardZ = 53.5,
 		LeaderboardAngle = 28,
+		-- Günlük çark: spawn'ın SOL tarafındaki boşlukta (sahibi 'sol taraftaki boşluğa çark' dedi), raflara (x < -38) çarpmaz, spawn yolu (|x| < 17) açık kalır.
+		-- WheelAngle: çarkın spawn'a doğru kaç derece döndüğü (0 = tam sağa, +X'e bakar).
+		WheelX = -27,
+		WheelZ = -10,
+		WheelAngle = 20,
 		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı: koridor tarafına doğru kaydırıldı, duvarın arka ucu (z > 23) yeni şeyler için boş
 	},
 
@@ -453,6 +458,26 @@ return {
 		{ name = "Epic", maxMult = 1.2, color = Color3.fromRGB(180, 90, 255) },
 		{ name = "Legendary", maxMult = 3.5, color = Color3.fromRGB(255, 190, 40) },
 		{ name = "Mythic", maxMult = math.huge, color = Color3.fromRGB(255, 70, 140) },
+	},
+	-- GÜNLÜK ÇARK (server/WheelService: lobide spawn'ın solunda duran dönen çark, client/WheelClient: dönüş animasyonu; mantık PlayerStats.spinWheel): her oyuncu günde 1 kez (UTC gün) çevirir,
+	-- sonucu ve ödülü SUNUCU seçer, ödül hemen verilir ve kaydedilir (kayıtta WheelDay). Prizes sırası = dilimlerin saat yönündeki sırası (1. dilim üstte başlar); weight = şans ağırlığı (toplam 100).
+	-- kind: wins (tahmini aşama ödülü x mult, görev ödülü gibi), muscle (tıklama başı kazanç x clicks), boostMuscle / boostWins (minutes dakika 2x), pet (PetEgg yumurtasının havuzundan, envanter doluysa Win),
+	-- jackpot (hem Win mult hem kas clicks). icon/label/color sadece çarkın görünüşü içindir; miktarlar oyuncunun gücüne göre ölçeklendiği için çarkta yazmaz, sonuçta gösterilir.
+	Wheel = {
+		Radius = 5.2, -- dilimlerin dış yarıçapı (stud)
+		SpinSeconds = 5.5, -- dönüş süresi
+		IdleSpeed = 9, -- beklerken yavaş dönüş (derece / saniye)
+		PetEgg = 3, -- 'pet' dilimi Config.Eggs içindeki bu sıradaki yumurtanın havuzundan pet verir
+		Prizes = {
+			{ kind = "wins", mult = 2, weight = 24, icon = "🏆", label = "Wins", color = Color3.fromRGB(235, 80, 90) },
+			{ kind = "muscle", clicks = 500, weight = 24, icon = "💪", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
+			{ kind = "boostMuscle", minutes = 10, weight = 14, icon = "⚡", label = "2x Muscle", color = Color3.fromRGB(70, 195, 110) },
+			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
+			{ kind = "muscle", clicks = 2000, weight = 14, icon = "💪", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
+			{ kind = "boostWins", minutes = 10, weight = 8, icon = "⚡", label = "2x Wins", color = Color3.fromRGB(50, 190, 200) },
+			{ kind = "pet", weight = 5, icon = "🐾", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
+			{ kind = "jackpot", mult = 20, clicks = 5000, weight = 1, icon = "💎", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
+		},
 	},
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)
 	MaxOwnedPets = 50,

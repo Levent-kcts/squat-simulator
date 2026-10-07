@@ -105,16 +105,21 @@ local function ensureQuestDay(profile)
 	end
 end
 
+-- Oyuncunun o sıralar oynadığı tahmini aşamanın Win ödülü (rebirth sayısından): günlük görev ve çark Win ödülleri bununla ölçeklenir
+local function estimatedStageReward(player)
+	local rebirthStat = getStat(player, Config.StatRebirths)
+	local rebirths = if rebirthStat then rebirthStat.Value else 0
+	local stage = math.clamp(math.floor(2 + 2.6 * math.log(1 + rebirths) + 0.5), 1, Layout.StageCount)
+	return Layout.reward(stage)
+end
+
 -- Slotun ödülü: kind ('muscle' / 'wins') ve miktar. Miktar oyuncunun gücüne göre ölçeklenir (kas: tıklama başı kazanç, Win: tahmini aşama ödülü)
 local function questReward(profile, player, slot)
 	local definition = Config.Quests.Rewards[slot]
 	if definition.kind == "muscle" then
 		return "muscle", math.max(100, math.floor(profile.gain * definition.clicks))
 	end
-	local rebirthStat = getStat(player, Config.StatRebirths)
-	local rebirths = if rebirthStat then rebirthStat.Value else 0
-	local stage = math.clamp(math.floor(2 + 2.6 * math.log(1 + rebirths) + 0.5), 1, Layout.StageCount)
-	return "wins", Layout.reward(stage) * definition.mult
+	return "wins", estimatedStageReward(player) * definition.mult
 end
 
 local function rewardText(kind, amount)
@@ -152,9 +157,20 @@ local function publishQuests(player)
 	)
 end
 
+-- Günlük çark (Config.Wheel): bugün (UTC gün) çevrildi mi? İstemci (client/WheelClient) 'WheelReady' ve bir sonraki hak zamanını ('WheelNext', epoch saniye) okur
+local function publishWheel(player)
+	local profile = profiles[player]
+	if not profile then
+		return
+	end
+	local today = currentQuestDay()
+	player:SetAttribute("WheelReady", profile.wheelDay ~= today)
+	player:SetAttribute("WheelNext", (today + 1) * 86400)
+end
+
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -180,6 +196,9 @@ local function sanitize(raw)
 	end
 	if type(raw.MusicLevel) == "number" then
 		data.MusicLevel = math.clamp(math.floor(raw.MusicLevel), 0, Config.Music.maxLevel)
+	end
+	if type(raw.WheelDay) == "number" then
+		data.WheelDay = math.max(0, math.floor(raw.WheelDay)) -- çarkın son çevrildiği UTC gün
 	end
 	if type(raw.Discovered) == "table" then
 		for _, id in raw.Discovered do
@@ -422,6 +441,7 @@ local function refresh(player)
 	player:SetAttribute("TutorialDone", profile.tutorialDone)
 	player:SetAttribute("TutorialClicks", profile.tutorialClicks)
 	publishQuests(player)
+	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
 	player:SetAttribute("PerClick", profile.gain)
@@ -480,6 +500,7 @@ local function save(player)
 		TutorialDone = profile.tutorialDone,
 		TutorialClicks = profile.tutorialClicks,
 		Quests = profile.quests,
+		WheelDay = profile.wheelDay,
 		Discovered = (function()
 			local list = {}
 			for id in profile.discovered do
@@ -612,6 +633,7 @@ local function setup(player)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
 		tutorialDone = false, -- eğitim bitti mi (ilk skin alınınca true olur; kayıtlı)
 		quests = newQuestState(0), -- günlük görevler (gün, ilerleme, alınanlar, bonus); kayıttan yüklenir
+		wheelDay = 0, -- günlük çarkın son çevrildiği UTC gün (os.time() / 86400); bugüne eşitse bugünkü hak kullanılmış demektir (kayıtlı)
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
@@ -636,6 +658,7 @@ local function setup(player)
 	profile.tutorialDone = data.TutorialDone
 	profile.tutorialClicks = data.TutorialClicks
 	profile.quests = data.Quests
+	profile.wheelDay = data.WheelDay
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	for _, id in data.Discovered do
@@ -1518,6 +1541,84 @@ function PlayerStats.fuseAllPets(player)
 	return true, `Merged {fusions} time{if fusions == 1 then "" else "s"}! Best: {best.label} (+{math.floor(best.mult * 100 + 0.5)}% muscle)`
 end
 
+-- ---------- Günlük çark (Config.Wheel) ----------
+
+-- Ağırlıklara göre bir dilim seçer (sunucuda). Dönüş: dilim sırası, dilim
+local function pickWheelPrize()
+	local prizes = Config.Wheel.Prizes
+	local total = 0
+	for _, prize in prizes do
+		total += prize.weight
+	end
+	local roll = rng:NextNumber() * total
+	for index, prize in prizes do
+		roll -= prize.weight
+		if roll <= 0 then
+			return index, prize
+		end
+	end
+	return #prizes, prizes[#prizes]
+end
+
+-- Çarkı çevirir: günde 1 hak (UTC gün), sonucu ve ödülü SUNUCU belirler, ödül hemen verilir ve kaydedilir. Dönüş: başarılı mı, mesaj, dilim sırası (istemci animasyonu o dilimde durdurur)
+function PlayerStats.spinWheel(player)
+	local profile = profiles[player]
+	local muscle = getStat(player, Config.StatLegMuscle)
+	local wins = getStat(player, Config.StatWins)
+	if not profile or not profile.loaded or not muscle or not wins then
+		return false, "Loading your data, please wait."
+	end
+	local today = currentQuestDay()
+	if profile.wheelDay == today then
+		local left = (today + 1) * 86400 - os.time()
+		return false, `You already spun today! Next free spin in {left // 3600}h {(left % 3600) // 60}m.`
+	end
+
+	local index, prize = pickWheelPrize()
+	local kind = prize.kind
+	-- Envanter doluysa pet dilimi Win'e döner
+	if kind == "pet" and #profile.pets >= Config.MaxOwnedPets then
+		kind = "wins"
+		prize = { kind = "wins", mult = 4 }
+	end
+
+	local message
+	if kind == "wins" then
+		local amount = estimatedStageReward(player) * prize.mult
+		wins.Value += amount
+		message = `+{Format.compact(amount)} Wins`
+	elseif kind == "muscle" then
+		local amount = math.max(100, math.floor(profile.gain * prize.clicks))
+		muscle.Value += amount
+		syncLevel(player)
+		message = `+{Format.compact(amount)} Leg Muscle`
+	elseif kind == "boostMuscle" or kind == "boostWins" then
+		startBoost(player, profile, kind, prize.minutes)
+		message = if kind == "boostMuscle"
+			then `2x Leg Muscle for {prize.minutes} minutes!`
+			else `2x Wins for {prize.minutes} minutes!`
+	elseif kind == "pet" then
+		local pet = rollPet(Config.Eggs[Config.Wheel.PetEgg])
+		table.insert(profile.pets, pet.id)
+		if #profile.equipped < Config.MaxEquippedPets then
+			table.insert(profile.equipped, pet.id)
+		end
+		message = `New pet: {pet.name}!`
+	else -- jackpot: Win ve bacak kası birlikte
+		local winAmount = estimatedStageReward(player) * prize.mult
+		local muscleAmount = math.max(100, math.floor(profile.gain * prize.clicks))
+		wins.Value += winAmount
+		muscle.Value += muscleAmount
+		syncLevel(player)
+		message = `JACKPOT! +{Format.compact(winAmount)} Wins and +{Format.compact(muscleAmount)} Leg Muscle!`
+	end
+
+	profile.wheelDay = today
+	refresh(player)
+	requestSave(player)
+	return true, message, index
+end
+
 -- ---------- Oyun süresi ödülleri ----------
 
 -- index. ödülü alır: süresi dolmuş ve bu oturumda alınmamış olmalı. Dönüş: başarılı mı, mesaj
@@ -1633,6 +1734,10 @@ function PlayerStats.dev(player, command, amount)
 		end
 		publishQuests(player)
 		message = "All of today's quests are complete: claim them!"
+	elseif command == "WheelReset" then
+		profile.wheelDay = 0
+		publishWheel(player)
+		message = "Daily wheel is ready again"
 	elseif command == "QuestsReset" then
 		profile.quests = newQuestState(currentQuestDay())
 		publishQuests(player)
@@ -1708,6 +1813,7 @@ function PlayerStats.dev(player, command, amount)
 		profile.tutorialClicks = 0
 		player:SetAttribute("TutorialClicks", 0)
 		profile.quests = newQuestState(currentQuestDay())
+		profile.wheelDay = 0
 		publishQuests(player)
 		profile.offlinePending = 0
 		profile.offlineSeconds = 0

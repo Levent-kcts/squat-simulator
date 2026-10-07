@@ -23,6 +23,7 @@ local BUTTONS = {
 	{ "3 Same Pets", "FreeCats" },
 	{ "Complete Quests", "QuestsComplete" },
 	{ "Reset Quests", "QuestsReset" },
+	{ "Wheel Ready", "WheelReset" },
 	{ "Discover All Pets", "DiscoverAll" },
 	{ "Break Stage", "BreakStage" },
 	{ "TP to Walls", "TeleportToWalls" },
