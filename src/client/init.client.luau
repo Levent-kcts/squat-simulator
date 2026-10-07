@@ -238,7 +238,8 @@ local winLabel = makeStatChip(2, "🏆", Config.Icons.Wins)
 -- koyu zeminde büyük ikon (siyah çizgili + gölgeli) ve butonun en altında, ikonun altına binen kalın kenarlı küçük yazı.
 -- accent = { üst-sol renk, alt-sağ renk } çerçevenin gradyanı; imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji.
 local BORDER = 4
-local function makeSquareButton(position, icon, label, accent, imageId)
+-- iconSize: görselin kenarı (varsayılan 56). Kenarlara kadar dolu görseller (Auras alevi) taşmasın diye küçültülür (Config.IconSizes)
+local function makeSquareButton(position, icon, label, accent, imageId, iconSize)
 	local button = create("TextButton", {
 		Position = position,
 		Size = UDim2.fromOffset(74, 74),
@@ -266,7 +267,8 @@ local function makeSquareButton(position, icon, label, accent, imageId)
 	end)
 
 	if imageId and imageId ~= "" then
-		addOutlinedIcon(button, imageId, 56, UDim2.new(0.5, 0, 0, 2), Vector2.new(0.5, 0))
+		iconSize = iconSize or 56
+		addOutlinedIcon(button, imageId, iconSize, UDim2.new(0.5, 0, 0, 2 + (56 - iconSize) / 2), Vector2.new(0.5, 0))
 	else
 		makeText(button, {
 			Position = UDim2.fromScale(0.1, 0.03),
@@ -336,13 +338,13 @@ local backpackMenu = create("Frame", {
 	BackgroundTransparency = 1,
 	Visible = false,
 }, screenGui)
-local function makeMenuButton(row, icon, label, accent, imageId)
-	local button = makeSquareButton(UDim2.fromOffset(0, row * 82), icon, label, accent, imageId)
+local function makeMenuButton(row, icon, label, accent, imageId, iconSize)
+	local button = makeSquareButton(UDim2.fromOffset(0, row * 82), icon, label, accent, imageId, iconSize)
 	button.Parent = backpackMenu
 	return button
 end
-local trailsButton = makeMenuButton(0, "✨", "Trails", { Color3.fromRGB(255, 120, 190), Color3.fromRGB(235, 60, 130) }, Config.Icons.Trails)
-local aurasButton = makeMenuButton(1, "🔮", "Auras", { Color3.fromRGB(200, 120, 255), Color3.fromRGB(110, 70, 235) }, Config.Icons.Auras)
+local trailsButton = makeMenuButton(0, "✨", "Trails", { Color3.fromRGB(255, 120, 190), Color3.fromRGB(235, 60, 130) }, Config.Icons.Trails, Config.IconSizes.Trails)
+local aurasButton = makeMenuButton(1, "🔮", "Auras", { Color3.fromRGB(200, 120, 255), Color3.fromRGB(110, 70, 235) }, Config.Icons.Auras, Config.IconSizes.Auras)
 
 -- Rebirth butonunun üstündeki yüzde rozeti (level / üst sınır)
 local rebirthBadge = makeText(rebirthButton, {

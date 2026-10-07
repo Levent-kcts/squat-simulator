@@ -233,6 +233,8 @@ return {
 		Trails = "rbxassetid://127034765324159", -- Backpack > Trails düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/trails.png, Image türü, doğrulandı). Boş bırakılırsa ✨ emojisi
 		Auras = "rbxassetid://80241008587441", -- Backpack > Auras düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/auras.png, Image türü, doğrulandı). Boş bırakılırsa 🔮 emojisi
 	}, -- sahibinin yüklediği görseller (hepsi Image türünde, doğrulandı)
+	-- Menü düğmelerindeki simge kenarı (piksel, varsayılan 56). Görsel kenarlara kadar doluysa küçült: Auras alevi 56'da düğmeden taşıyordu (sahibi söyledi).
+	IconSizes = { Auras = 44 },
 
 	-- Eğitim (tutorial): SADECE yeni oyuncuya gösterilir (üstteki yönerge yazısı ve yol gösterici çizgi), oyuncu İLK SKİNİNİ alana kadar sürer. Kayıtta 'TutorialDone' tutulur;
 	-- eski kayıtlarda ilerleme varsa (kas, Win, rebirth, eşya, pet, skin) eğitim bitmiş sayılır. Adımlar: duvarları kır, Win pedine bas, ilk skin fiyatına (Config.Skins[1]) yetince skin rafına git ve al.
