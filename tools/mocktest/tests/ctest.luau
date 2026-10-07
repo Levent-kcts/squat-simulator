@@ -159,7 +159,7 @@ click(buttonWith(root2, "Normal (3/3)"))
 assert(S.lastInvoke[1] == "FusePet" and S.lastInvoke[2] == "cat", "Merge düğmesi FusePet göndermeli")
 click(buttonWith(root2, "Merge All"))
 assert(S.lastInvoke[1] == "FuseAllPets", "Merge All FuseAllPets göndermeli")
--- Merge All iki yerde vardır (altta çöp kutusunun yanında ve sağdaki Equip Best / Unequip All düğmelerinin altında); ikisi de aynı işi yapar
+-- Merge All TEK düğmedir (sağda Equip Best / Unequip All'un altında); çöp kutusunun yanındaki eski düğme sahibinin isteğiyle kaldırıldı
 local function allButtonsWith(instance, text, found)
 	for _, child in rawget(instance, "_children") do
 		if rawget(child, "ClassName") == "TextButton" and textsUnder(child, {})[text] then
@@ -169,13 +169,7 @@ local function allButtonsWith(instance, text, found)
 	end
 	return found
 end
-local mergeButtons = allButtonsWith(root2, "Merge All", {})
-assert(#mergeButtons == 2, "Merge All düğmesi iki tane olmalı: " .. #mergeButtons)
-for _, button in mergeButtons do
-	S.lastInvoke = nil
-	click(button)
-	assert(S.lastInvoke and S.lastInvoke[1] == "FuseAllPets", "her Merge All FuseAllPets göndermeli")
-end
+assert(#allButtonsWith(root2, "Merge All", {}) == 1, "Merge All düğmesi tek olmalı")
 S.lastInvoke = nil
 click(buttonNamed(root2, "DeleteButton"))
 assert(S.lastInvoke == nil, "Delete ilk basışta silmemeli")

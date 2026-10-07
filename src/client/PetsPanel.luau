@@ -259,7 +259,7 @@ function PetsPanel.init(screenGui, showToast)
 		Size = UDim2.fromOffset(3 * TEAM_SLOT + 2 * 10, TEAM_SLOT),
 		BackgroundTransparency = 1,
 	}, panel)
-	-- Sağ üç düğme (Equip Best yerinde, Unequip All biraz yukarı, altında ikinci Merge All; sahibi istedi): hepsi Pet Team satırının yüksekliğine sığar, kart ızgarasına binmez
+	-- Sağ üç düğme (Equip Best yerinde, Unequip All biraz yukarı, altında Merge All; çöp kutusunun yanındaki eski Merge All sahibinin isteğiyle KALDIRILDI, geri ekleme): hepsi Pet Team satırının yüksekliğine sığar, kart ızgarasına binmez
 	local sideX = rightX + 3 * TEAM_SLOT + 30
 	local sideWidth = rightWidth - (3 * TEAM_SLOT + 30)
 	local SIDE_HEIGHT, SIDE_GAP = 34, 5
@@ -271,7 +271,7 @@ function PetsPanel.init(screenGui, showToast)
 		Position = UDim2.fromOffset(sideX, 86 + SIDE_HEIGHT + SIDE_GAP),
 		Size = UDim2.fromOffset(sideWidth, SIDE_HEIGHT),
 	}, "Unequip All", ORANGE)
-	local sideMergeAll, sideMergeAllText = makeButton(panel, {
+	local mergeAll, mergeAllText = makeButton(panel, {
 		Position = UDim2.fromOffset(sideX, 86 + 2 * (SIDE_HEIGHT + SIDE_GAP)),
 		Size = UDim2.fromOffset(sideWidth, SIDE_HEIGHT),
 	}, "Merge All", PURPLE)
@@ -311,13 +311,9 @@ function PetsPanel.init(screenGui, showToast)
 	create("UIStroke", { Thickness = 3, Color = BLACK }, trash)
 	UIStyle.soften(trash, { radius = 10, strength = 0.28 })
 	addTrashIcon(trash, 30)
-	local mergeAll, mergeAllText = makeButton(panel, {
-		Position = UDim2.fromOffset(rightX + 66, HEIGHT - 52),
-		Size = UDim2.fromOffset(150, 40),
-	}, "Merge All", PURPLE)
 	local bottomHint = makeText(panel, {
-		Position = UDim2.fromOffset(rightX + 226, HEIGHT - 50),
-		Size = UDim2.fromOffset(rightWidth - 226, 36),
+		Position = UDim2.fromOffset(rightX + 70, HEIGHT - 50),
+		Size = UDim2.fromOffset(rightWidth - 70, 36),
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(255, 120, 120),
 		TextWrapped = true,
@@ -828,8 +824,6 @@ function PetsPanel.init(screenGui, showToast)
 			else ""
 		mergeAll.BackgroundColor3 = if anyMergeable then PURPLE else GREY
 		mergeAllText.Text = if anyMergeable then "Merge All" else "Nothing to merge"
-		sideMergeAll.BackgroundColor3 = mergeAll.BackgroundColor3
-		sideMergeAllText.Text = if anyMergeable then "Merge All" else "Nothing to merge"
 	end
 
 	equipBest.MouseButton1Click:Connect(function()
@@ -864,7 +858,6 @@ function PetsPanel.init(screenGui, showToast)
 		end)
 	end
 	mergeAll.MouseButton1Click:Connect(mergeEverything)
-	sideMergeAll.MouseButton1Click:Connect(mergeEverything)
 	-- Çöp kutusu: 1. basış silme modunu açar, kartlara tıklayınca işaretlenir (tekrar tıklayınca iptal), 2. basış işaretlileri siler
 	trash.MouseButton1Click:Connect(function()
 		if not deleteMode then
