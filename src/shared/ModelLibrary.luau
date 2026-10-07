@@ -31,7 +31,7 @@ function ModelLibrary.has(name)
 	return ModelInfo[name] ~= nil and findSource(name) ~= nil
 end
 
--- Modelin kopyası: Anchored, çarpışmasız, boyu ModelInfo[name].size x scale. Dönüş: MeshPart, MODEL ORİJİNİNE (tabanın ortası) göre kutu merkezi (ölçekli).
+-- Modelin kopyası: Anchored, çarpışmasız, boyu ModelInfo[name].size x scale (scale sayı ya da Vector3 olabilir: Vector3 eksen eksen ölçekler, bacak kasları gibi). Dönüş: MeshPart, MODEL ORİJİNİNE (tabanın ortası) göre kutu merkezi (ölçekli).
 -- Yerleştirme: part.CFrame = ModelLibrary.cframe(orijinCFrame, merkez). Roblox içe aktarıcısı FBX'in önünü +Z'ye koyuyor (sahibi Studio'da gördü: kedi ve yumurta ters bakıyordu),
 -- bu yüzden Config.Models.FlipFront açıkken model yerleşirken Y çevresinde 180 derece çevrilir ve önü -Z'ye (Roblox'un 'ileri'si, oyuncunun baktığı yön) bakar.
 function ModelLibrary.create(name, scale)

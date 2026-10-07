@@ -4,6 +4,7 @@
     blender -b -P tools/blender/pack.py -- eggs     (6 yumurta)
     blender -b -P tools/blender/pack.py -- shoes    (15 ayakkabı)
     blender -b -P tools/blender/pack.py -- coaches  (10 antrenör)
+    blender -b -P tools/blender/pack.py -- muscles  (12 bacak kası: 6 aşama x uyluk/baldır)
     blender -b -P tools/blender/pack.py -- cat dog egg_starter ...   (seçilenler: pet_<id> / egg_<id> / shoe_<id> / coach_<kıyafet> ya da çıplak id)
 Çıktı: assets/blender/fbx/pack_<ad>.fbx. Studio'da içe aktarınca bir Model oluşur, içinde her model bir MeshPart (adı pet_cat, egg_starter...).
 """
@@ -18,6 +19,7 @@ import pets  # noqa: E402
 import eggs  # noqa: E402
 import shoes  # noqa: E402
 import coaches  # noqa: E402
+import muscles  # noqa: E402
 
 PRESETS = {
     "test": ["pet_cat", "egg_starter"],
@@ -25,6 +27,7 @@ PRESETS = {
     "eggs": ["egg_" + egg_id for egg_id, _ in eggs.EGGS],
     "shoes": ["shoe_" + shoe_id for shoe_id, _, _ in shoes.SHOES],
     "coaches": ["coach_" + coach_id for coach_id, _, _ in coaches.COACHES],
+    "muscles": [name for name, _, _ in muscles.MODELS],
 }
 
 
@@ -41,6 +44,8 @@ def main():
         builders["shoe_" + shoe_id] = lambda m, spec=spec, extra=extra: shoes.build(m, spec, extra)
     for coach_id, builder, color in coaches.COACHES:
         builders["coach_" + coach_id] = lambda m, builder=builder, color=color: builder(m, color)
+    for muscle_name, builder, stage in muscles.MODELS:
+        builders[muscle_name] = lambda m, builder=builder, stage=stage: builder(m, stage)
     c.reset()
     textures = os.path.join(c.OUT, "textures")
     objects = []

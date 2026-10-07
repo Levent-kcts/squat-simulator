@@ -179,6 +179,9 @@ local services = {
 		GetPlayers = function()
 			return {}
 		end,
+		GetPlayerFromCharacter = function()
+			return nil
+		end,
 	},
 	HttpService = {
 		JSONEncode = function(_, v)

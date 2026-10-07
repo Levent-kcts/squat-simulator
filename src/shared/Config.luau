@@ -469,6 +469,8 @@ return {
 		EggScale = 1,
 		ShoeScale = 0.62, -- raftaki ayakkabı modeli (Blender'da ~3.9 stud uzun, rafta ~2.4 stud)
 		CoachScale = 1, -- antrenör modeli (Blender'da ~5.25 stud boy, 4.98 geniş); Training.TrainerScales ile çarpılır
+		MuscleScale = 1, -- bacak kası modelleri (muscle_s<aşama>_thigh|calf): bacak ölçüsüne göre ölçeğin ek çarpanı (1.1 = %10 daha iri)
+		LegRef = { Upper = Vector3.new(1, 1.217, 1), Lower = Vector3.new(1, 1.193, 1) }, -- kas modellerinin çizildiği referans R15 bacak ölçüsü (x genişlik, y boy, z derinlik); tools/blender/muscles.py ile aynı
 		FlipFront = true, -- Roblox içe aktarıcısı modelin önünü +Z'ye koyar (Studio'da görüldü); true = yerleşirken 180 derece çevir, ön -Z'ye baksın. Model farklı dışa aktarılırsa false yap
 	},
 
