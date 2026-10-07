@@ -230,8 +230,8 @@ return {
 		Backpack = "rbxassetid://139523703798238",
 		Pets = "rbxassetid://122036590660446",
 		Gifts = "rbxassetid://107783706209695",
-		Trails = "", -- Backpack > Trails düğmesinin simgesi: sahibinin verdiği görsel (assets/icons/trails.png, şeffaf PNG); sahibi Roblox'a Image olarak yükleyip ID'yi verince buraya yazılır, boşken ✨ emojisi
-		Auras = "", -- Backpack > Auras düğmesinin simgesi: sahibinin verdiği görsel (assets/icons/auras.png, şeffaf PNG); yüklenince ID yazılır, boşken 🔮 emojisi
+		Trails = "rbxassetid://127034765324159", -- Backpack > Trails düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/trails.png, Image türü, doğrulandı). Boş bırakılırsa ✨ emojisi
+		Auras = "rbxassetid://80241008587441", -- Backpack > Auras düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/auras.png, Image türü, doğrulandı). Boş bırakılırsa 🔮 emojisi
 	}, -- sahibinin yüklediği görseller (hepsi Image türünde, doğrulandı)
 
 	-- Eğitim (tutorial): SADECE yeni oyuncuya gösterilir (üstteki yönerge yazısı ve yol gösterici çizgi), oyuncu İLK SKİNİNİ alana kadar sürer. Kayıtta 'TutorialDone' tutulur;
