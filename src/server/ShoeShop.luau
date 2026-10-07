@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local ShoeModel = require(Shared:WaitForChild("ShoeModel"))
+local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
 local PlayerStats = require(script.Parent.PlayerStats)
 local Shelf = require(script.Parent.Shelf)
 
@@ -16,6 +17,20 @@ local SHOE_SCALE = 0.4 -- ayakkabı çifti ~3 stud geniş, postamentin biraz alt
 local function buildShoes(parent, item, frame, center)
 	local model = Instance.new("Model")
 	model.Name = `Shoes_{item.id}`
+
+	-- Blender ayakkabısı (shared/ModelLibrary 'shoe_<id>') varsa çift olarak o dizilir; yoksa aşağıdaki kod modeli
+	local firstShoe, offset = ModelLibrary.create("shoe_" .. item.id, Config.Models.ShoeScale)
+	if firstShoe then
+		for _, side in { -1, 1 } do
+			local mesh = if side == -1 then firstShoe else (ModelLibrary.create("shoe_" .. item.id, Config.Models.ShoeScale))
+			mesh.Name = "Shoe"
+			-- Modelin orijini tabanın ortasıdır; taban postamentin hemen üstünde durur. Burun izleyiciye (yerel -Z) bakar.
+			mesh.CFrame = ModelLibrary.cframe(frame * CFrame.new(center + Vector3.new(side * 0.96, ShoeModel.BOTTOM * SHOE_SCALE, 0)), offset)
+			mesh.Parent = model
+		end
+		model.Parent = parent
+		return
+	end
 
 	local function part(name, size, offset, color, material)
 		local p = Instance.new("Part")
