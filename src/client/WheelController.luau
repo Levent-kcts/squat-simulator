@@ -15,7 +15,7 @@ local okPanel, WheelPanel = pcall(require, script.Parent.WheelPanel)
 local okJuice, Juice = pcall(require, script.Parent.Juice)
 local okSfx, Sfx = pcall(require, script.Parent.Sfx)
 
-local WheelClient = {}
+local WheelController = {}
 
 local READY_COLOR = Color3.fromRGB(255, 235, 110)
 local WAIT_COLOR = Color3.fromRGB(190, 200, 225)
@@ -23,7 +23,7 @@ local LAMP_ON = Color3.fromRGB(255, 250, 225)
 local LAMP_OFF = Color3.fromRGB(255, 170, 60)
 
 -- showToast(ok, mesaj): kısa bildirim. Dönüş: { trigger = çarkı çevirmeyi deneyen fonksiyon (arayüzdeki Spin düğmesiyle aynı), open = çark arayüzünü açan fonksiyon (E) }
-function WheelClient.init(screenGui, showToast)
+function WheelController.init(screenGui, showToast)
 	local player = Players.LocalPlayer
 	local wheel = Config.Wheel
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
@@ -171,11 +171,11 @@ function WheelClient.init(screenGui, showToast)
 			panel = result
 		else
 			panelError = tostring(result)
-			warn(`[WheelClient] Çark arayüzü kurulamadı: {result}`)
+			warn(`[WheelController] Çark arayüzü kurulamadı: {result}`)
 		end
 	else
 		panelError = tostring(WheelPanel)
-		warn(`[WheelClient] WheelPanel yüklenemedi: {WheelPanel}`)
+		warn(`[WheelController] WheelPanel yüklenemedi: {WheelPanel}`)
 	end
 
 	local lastOpen = 0
@@ -196,7 +196,7 @@ function WheelClient.init(screenGui, showToast)
 			end
 		end)
 		if not ok then
-			warn(`[WheelClient] Çark arayüzü açılamadı: {err}`)
+			warn(`[WheelController] Çark arayüzü açılamadı: {err}`)
 			showToast(false, `Wheel window error: {err}`)
 		end
 	end
@@ -253,11 +253,11 @@ function WheelClient.init(screenGui, showToast)
 		local ok, err = pcall(step, dt)
 		if not ok and not stepFailed then
 			stepFailed = true
-			warn(`[WheelClient] Çark hareketi hata verdi: {err}`)
+			warn(`[WheelController] Çark hareketi hata verdi: {err}`)
 			showToast(false, `Wheel error: {err}`)
 		end
 	end)
-	print("[WheelClient] hazır; arayüz:", panel ~= nil)
+	print("[WheelController] hazır; arayüz:", panel ~= nil)
 
 	-- Hatırlatma: eğitimi bitirmiş oyuncu girince hak hazırsa bir kez haber ver (yeni oyuncuya yönerge karışmasın)
 	local reminded = false
@@ -280,4 +280,4 @@ function WheelClient.init(screenGui, showToast)
 	return { trigger = trigger, open = openWheel }
 end
 
-return WheelClient
+return WheelController

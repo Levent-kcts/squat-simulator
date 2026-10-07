@@ -227,8 +227,8 @@ S.remoteFunction.InvokeServer = function(_, action, id)
 	table.insert(invokes, action)
 	return true, "+123 Wins", 3
 end
-local WheelClient = require("./WheelClient")
-local wheelControl = WheelClient.init(S.newInstance("Frame"), function(_, message)
+local WheelController = require("./WheelController")
+local wheelControl = WheelController.init(S.newInstance("Frame"), function(_, message)
 	table.insert(wheelToasts, message)
 end)
 local trigger = wheelControl.trigger
@@ -268,7 +268,7 @@ wheelTexts = textsUnder(wheelRoot, {})
 assert(wheelTexts["Spin! (0)"] and wheelTexts["Next free spin in 1h 0m"], "hak yokken düğme ve süre yazısı değişmeli")
 wheelPanel.close()
 assert(not wheelPanel.isOpen(), "panel kapanmalı")
-print("WheelClient ok")
+print("WheelController ok")
 
 -- Index ve Stats pencereleri
 S.localPlayer:SetAttribute("DiscoveredPets", "cat,dog")

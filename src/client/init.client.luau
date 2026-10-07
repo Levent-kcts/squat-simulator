@@ -806,7 +806,7 @@ end
 local toggleIndex = loadPanel("IndexPanel", screenGui)
 local toggleStats = loadPanel("StatsPanel", screenGui)
 local toggleQuests = loadPanel("QuestPanel", screenGui, showToast)
-local wheelControl = loadPanel("WheelClient", screenGui, showToast) -- lobideki günlük çark (hareket, E ile açılan arayüz, tabela yazısı)
+local wheelControl = loadPanel("WheelController", screenGui, showToast) -- lobideki günlük çark (hareket, E ile açılan arayüz, tabela yazısı)
 -- TEST (Config.Wheel.Debug): çark başlayamadıysa nedeni ekranda KALICI bir kutuda gösterilir (kısa bildirim başka bildirimle ezilebiliyor); çark çalışınca Debug = false yapılır
 if Config.Wheel.Debug and not wheelControl then
 	local names = {}
@@ -827,7 +827,7 @@ if Config.Wheel.Debug and not wheelControl then
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		Text = "WHEEL DEBUG: wheel client did not start.\nError: "
-			.. tostring(startupErrors.WheelClient or "none (init returned nothing)")
+			.. tostring(startupErrors.WheelController or "none (init returned nothing)")
 			.. "\nWheel modules found in Client script: "
 			.. table.concat(names, ", ")
 			.. " (children total: "
@@ -835,7 +835,7 @@ if Config.Wheel.Debug and not wheelControl then
 			.. ")",
 		ZIndex = 100,
 	}, screenGui)
-	warn(`[Client] WHEEL DEBUG: {startupErrors.WheelClient}`)
+	warn(`[Client] WHEEL DEBUG: {startupErrors.WheelController}`)
 end
 -- Çarka E ile basınca: çark modülü açıldıysa arayüzü açar; açılamadıysa nedenini oyuncuya EKRANDA gösterir (Output'a bakmaya gerek kalmasın)
 game:GetService("ProximityPromptService").PromptTriggered:Connect(function(prompt, who)
@@ -845,7 +845,7 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 	if wheelControl and wheelControl.open then
 		wheelControl.open()
 	else
-		showToast(false, `The daily wheel could not start: {startupErrors.WheelClient or "unknown error"}`)
+		showToast(false, `The daily wheel could not start: {startupErrors.WheelController or "unknown error"}`)
 	end
 end)
 safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests)

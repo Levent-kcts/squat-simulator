@@ -1,6 +1,6 @@
 -- Günlük çark: lobinin sağ arka köşesinde (sahibi 'bu köşeye koy' dedi), lobinin ortasına (spawn'a) doğru dönük, lego sütunlu bir kapı çerçevesinin içinde duran dönen ödül çarkı.
 -- Burada sadece GÖRÜNÜŞ ve etkileşim noktası kurulur; çarkın yüzü (8 dilim) shared/WheelFace ile SurfaceGui'ye çizilir. Çevirme mantığı (günde 1 hak, ödül seçimi) PlayerStats.spinWheel'dedir,
--- dönüş animasyonu ve E'ye basınca açılan arayüz client/WheelClient ve client/WheelPanel'dedir.
+-- dönüş animasyonu ve E'ye basınca açılan arayüz client/WheelController ve client/WheelPanel'dedir.
 -- İki parça kurulur: Workspace.DailyWheel (dönen Model: yüz, altın halka, göbek, lambalar; PrimaryPart = 'WheelPivot') ve Workspace.DailyWheelStand (sabit klasör: kaide, sütunlar, tabela,
 -- ibre, ProximityPrompt, durum yazısı 'SpinLabel'). Koridorda/lobide yeni ışık paneli YOK kuralı korunur (sadece parlayan Neon lambalar).
 -- YÜZ NASIL YUVARLAK GÖRÜNÜR: SurfaceGui içindeki CanvasGroup daireye kırpmadı (kare görünüyordu, sahibi 'yuvarlak üstü kare olmuş çok kötü' dedi). Bu yüzden yüz KARE çizilir ve
@@ -98,7 +98,7 @@ function WheelService.init(notifyEvent)
 	textLabel(bannerGui, { Position = UDim2.fromScale(0.05, 0.04), Size = UDim2.fromScale(0.9, 0.6), Text = "DAILY WHEEL", TextColor3 = Color3.new(1, 1, 1) }, 3)
 	textLabel(bannerGui, { Position = UDim2.fromScale(0.2, 0.66), Size = UDim2.fromScale(0.6, 0.26), Text = "1 FREE SPIN EVERY DAY", TextColor3 = Color3.fromRGB(255, 245, 215) }, 2)
 
-	-- Durum yazısı (tabelanın üstünde): 'FREE SPIN READY!' ya da kalan süre; her oyuncuya kendi istemcisi yazar (client/WheelClient)
+	-- Durum yazısı (tabelanın üstünde): 'FREE SPIN READY!' ya da kalan süre; her oyuncuya kendi istemcisi yazar (client/WheelController)
 	local statusGui = Instance.new("BillboardGui")
 	statusGui.Name = "SpinStatus"
 	statusGui.Adornee = banner

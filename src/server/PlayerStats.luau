@@ -157,7 +157,7 @@ local function publishQuests(player)
 	)
 end
 
--- Günlük çark (Config.Wheel): bugün (UTC gün) çevrildi mi? İstemci (client/WheelClient) 'WheelReady' ve bir sonraki hak zamanını ('WheelNext', epoch saniye) okur
+-- Günlük çark (Config.Wheel): bugün (UTC gün) çevrildi mi? İstemci (client/WheelController) 'WheelReady' ve bir sonraki hak zamanını ('WheelNext', epoch saniye) okur
 local function publishWheel(player)
 	local profile = profiles[player]
 	if not profile then
