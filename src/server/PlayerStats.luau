@@ -43,6 +43,11 @@ local function bestEquipped(pets)
 	return equipped
 end
 
+-- Pet envanterinin dolu sayılacağı sınır: başlangıç yeri + Shop'tan alınan ek yerler (profile.petSlots)
+local function petCapacity(profile)
+	return Config.MaxOwnedPets + profile.petSlots
+end
+
 local function getStat(player, name)
 	local leaderstats = player:FindFirstChild("leaderstats")
 	return leaderstats and leaderstats:FindFirstChild(name)
@@ -170,7 +175,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -274,9 +279,12 @@ local function sanitize(raw)
 			end
 		end
 	end
+	if type(raw.PetSlots) == "number" then
+		data.PetSlots = math.clamp(math.floor(raw.PetSlots), 0, Config.MaxExtraPetSlots)
+	end
 	if type(raw.Pets) == "table" then
 		for _, id in raw.Pets do
-			if Catalog.PetById[id] and #data.Pets < Config.MaxOwnedPets then
+			if Catalog.PetById[id] and #data.Pets < Config.MaxOwnedPets + data.PetSlots then
 				table.insert(data.Pets, id)
 			end
 		end
@@ -459,6 +467,7 @@ local function refresh(player)
 	player:SetAttribute("EquippedSkin", profile.equippedSkin)
 	player:SetAttribute("SkinBonus", skinBonus)
 	player:SetAttribute("OwnedPets", table.concat(profile.pets, ","))
+	player:SetAttribute("PetCapacity", Config.MaxOwnedPets + profile.petSlots)
 	player:SetAttribute("EquippedPets", table.concat(equipped, ","))
 	player:SetAttribute("OwnedTrails", table.concat(profile.trails, ","))
 	player:SetAttribute("OwnedAuras", table.concat(profile.auras, ","))
@@ -501,6 +510,7 @@ local function save(player)
 		TutorialClicks = profile.tutorialClicks,
 		Quests = profile.quests,
 		WheelDay = profile.wheelDay,
+		PetSlots = profile.petSlots,
 		Discovered = (function()
 			local list = {}
 			for id in profile.discovered do
@@ -633,6 +643,7 @@ local function setup(player)
 		settings = {}, -- oyuncu ayarları (Config.Settings anahtarları: true/false)
 		tutorialDone = false, -- eğitim bitti mi (ilk skin alınınca true olur; kayıtlı)
 		quests = newQuestState(0), -- günlük görevler (gün, ilerleme, alınanlar, bonus); kayıttan yüklenir
+		petSlots = 0, -- Shop'tan alınan ek pet envanter yeri (Config.MaxOwnedPets'e eklenir; kayıtlı)
 		wheelDay = 0, -- günlük çarkın son çevrildiği UTC gün (os.time() / 86400); bugüne eşitse bugünkü hak kullanılmış demektir (kayıtlı)
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
@@ -659,6 +670,7 @@ local function setup(player)
 	profile.tutorialClicks = data.TutorialClicks
 	profile.quests = data.Quests
 	profile.wheelDay = data.WheelDay
+	profile.petSlots = data.PetSlots
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	for _, id in data.Discovered do
@@ -868,6 +880,8 @@ local function applyProduct(player, profile, product)
 		return (PlayerStats.rebirth(player, true))
 	elseif product.kind == "boostMuscle" or product.kind == "boostWins" then
 		startBoost(player, profile, product.kind, product.minutes)
+	elseif product.kind == "petSpace" then
+		profile.petSlots = math.min(profile.petSlots + product.amount, Config.MaxExtraPetSlots) -- üst sınırda da satın alma işlenmiş sayılır (Robux boşa gitmesin)
 	elseif product.kind == "wins" then
 		wins.Value += product.amount
 	elseif product.kind == "stageWins" then
@@ -1145,7 +1159,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 		end
 		local pet = rollPet(egg)
 		local willDelete = profile.autoDelete[pet.id]
-		if not willDelete and #profile.pets >= Config.MaxOwnedPets then
+		if not willDelete and #profile.pets >= petCapacity(profile) then
 			break
 		end
 		wins.Value -= egg.price
@@ -1577,7 +1591,7 @@ function PlayerStats.spinWheel(player)
 	local index, prize = pickWheelPrize()
 	local kind = prize.kind
 	-- Envanter doluysa pet dilimi Win'e döner
-	if kind == "pet" and #profile.pets >= Config.MaxOwnedPets then
+	if kind == "pet" and #profile.pets >= petCapacity(profile) then
 		kind = "wins"
 		prize = { kind = "wins", mult = 4 }
 	end
@@ -1649,7 +1663,7 @@ function PlayerStats.claimGift(player, index)
 		message = `+{reward.amount} Wins`
 	elseif reward.kind == "pet" then
 		local pet = Catalog.PetById[reward.pet]
-		if #profile.pets >= Config.MaxOwnedPets then
+		if #profile.pets >= petCapacity(profile) then
 			return false, "Your pet inventory is full."
 		end
 		table.insert(profile.pets, pet.id)
@@ -1720,7 +1734,7 @@ function PlayerStats.dev(player, command, amount)
 		end
 		message = "All skins unlocked"
 	elseif command == "FreePet" then
-		if #profile.pets >= Config.MaxOwnedPets then
+		if #profile.pets >= petCapacity(profile) then
 			return false, "Your pet inventory is full."
 		end
 		local pet = rollPet(Config.Eggs[rng:NextInteger(1, #Config.Eggs)])
@@ -1728,7 +1742,7 @@ function PlayerStats.dev(player, command, amount)
 		message = `Free pet: {pet.name}`
 	elseif command == "FreeCat" or command == "FreeBossCat" then
 		-- Blender kedi modelini denemek için: Small ya da Boss kedi verir ve (yer varsa) takar
-		if #profile.pets >= Config.MaxOwnedPets then
+		if #profile.pets >= petCapacity(profile) then
 			return false, "Your pet inventory is full."
 		end
 		local petId = if command == "FreeBossCat" then `cat@{Config.PetFusion.MaxTier}` else "cat"
@@ -1755,7 +1769,7 @@ function PlayerStats.dev(player, command, amount)
 		message = "Today's quests were reset"
 	elseif command == "FreeCats" then
 		-- Pet birleştirmeyi denemek için aynı petten 3 tane (envanter yeterse)
-		if #profile.pets + 3 > Config.MaxOwnedPets then
+		if #profile.pets + 3 > petCapacity(profile) then
 			return false, "Your pet inventory is too full for 3 more pets."
 		end
 		local pet = Config.Pets[rng:NextInteger(1, #Config.Pets)]

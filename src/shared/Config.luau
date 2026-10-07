@@ -98,10 +98,11 @@ return {
 
 	-- Shop (sol menüdeki Shop butonu): Robux ile alınan Developer Product'lar. productId: Creator Hub > Monetization > Developer Products'ta
 	-- oluşturulan ürünün ID'si; 0 = henüz yok, kart "Coming soon" gösterir. Satın alma sunucuda ProcessReceipt ile doğrulanır
-	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostMuscle / boostWins (minutes dk 2x), wins (amount Win),
+	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostMuscle / boostWins (minutes dk 2x), petSpace (amount ek pet envanter yeri; Pets menüsündeki çanta + işareti bu pencereyi açar), wins (amount Win),
 	-- stageWins (stage. aşamanın Win ödülü kadar), moves (amount hareketlik kas). Fiyatlar (robux) geçicidir.
 	Shop = {
 		Products = {
+			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", kind = "petSpace", amount = 25, robux = 79, productId = 0, color = Color3.fromRGB(235, 70, 70) },
 			{ id = "boostMuscle30", name = "2x Muscle", detail = "30 minutes", icon = "⚡", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
 			{ id = "boostWins30", name = "2x Wins", detail = "30 minutes", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
 			{ id = "musclePack", name = "Muscle Pack", detail = "10,000 squats of muscle", icon = "🦵", kind = "moves", amount = 10000, robux = 39, productId = 0, color = Color3.fromRGB(70, 150, 255) },
@@ -508,7 +509,8 @@ return {
 		},
 	},
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)
-	MaxOwnedPets = 50,
+	MaxOwnedPets = 50, -- başlangıç pet envanteri; Shop'tan alınan 'Pet Space' (kind = petSpace) ile artar (kayıtlı, en çok MaxExtraPetSlots ek yer)
+	MaxExtraPetSlots = 200,
 
 	-- GÜNLÜK GÖREVLER (SADECE sağ üstteki 📜 dairesi açar, client/QuestPanel; lobideki görev panosu sahibinin isteğiyle KALDIRILDI): her gün PerDay görev (sırayla kolay, orta, zor), gece yarısı (UTC) yenilenir;
 	-- aynı gün herkes aynı görevleri görür (gün sayısıyla seçilir). İlerlemeyi, ödülü ve günü SUNUCU tutar (PlayerStats), kayıtlıdır. Pool: id (olay adı), text ({goal} yerine hedef yazılır),

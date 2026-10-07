@@ -780,7 +780,14 @@ rebirthButton.MouseButton1Click:Connect(openRebirthPanel)
 -- =====================================================================
 -- SOL BUTONLARIN İŞLEVLERİ
 -- =====================================================================
-local togglePets = PetsPanel.init(screenGui, showToast)
+local toggleShop = nil -- Shop penceresi aşağıda kurulur; Pets menüsündeki çanta + işareti onu açar
+local togglePets = PetsPanel.init(screenGui, showToast, function()
+	if toggleShop then
+		toggleShop()
+	else
+		showToast(false, "Shop is coming soon!")
+	end
+end)
 petsButton.MouseButton1Click:Connect(togglePets)
 
 local toggleGifts = GiftsPanel.init(screenGui, showToast, function(count)
@@ -913,7 +920,6 @@ end)
 
 -- Shop: Robux ürünleri penceresi (korumalı yüklenir: hata verirse buton "coming soon" der)
 local ShopPanelModule = loadOptional("ShopPanel")
-local toggleShop = nil
 if ShopPanelModule then
 	local okShop, result = pcall(ShopPanelModule.init, screenGui, showToast)
 	if okShop then

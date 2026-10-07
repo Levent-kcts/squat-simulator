@@ -165,7 +165,8 @@ local function percent(pet)
 end
 
 -- showToast(ok, mesaj): kısa bildirim. Dönüş: paneli açıp kapatan fonksiyon.
-function PetsPanel.init(screenGui, showToast)
+-- openShop: Shop (Robux) penceresini açan işlev; çanta simgesinin + işareti onu çağırır (ek pet yeri satın alma)
+function PetsPanel.init(screenGui, showToast, openShop)
 	local player = Players.LocalPlayer
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 	local fusion = Config.PetFusion
@@ -201,28 +202,42 @@ function PetsPanel.init(screenGui, showToast)
 	}, 3)
 	local multiplierText = makeText(panel, {
 		Position = UDim2.fromOffset(180, 8),
-		Size = UDim2.fromOffset(WIDTH - 180 - 280, 36),
+		Size = UDim2.fromOffset(WIDTH - 180 - 180, 36),
 		TextColor3 = Color3.fromRGB(150, 255, 150),
 	}, 2.5)
 
+	-- Çanta sayacı (kapatma düğmesinin hemen solunda): çanta simgesi, sayı ve çantanın sağ altında beyaz + (Robux'la ek pet yeri, Shop'u açar)
 	local countBox = create("Frame", {
-		Position = UDim2.fromOffset(WIDTH - 276, 8),
+		Position = UDim2.fromOffset(WIDTH - 164, 8),
 		Size = UDim2.fromOffset(104, 36),
 		BackgroundColor3 = BLACK,
 		BackgroundTransparency = 0.4,
 	}, panel)
 	UIStyle.round(countBox, 10)
 	create("UIStroke", { Thickness = 2, Color = WHITE, Transparency = 0.7 }, countBox)
+	makeText(countBox, {
+		Position = UDim2.fromOffset(5, 3),
+		Size = UDim2.fromOffset(30, 30),
+		Text = "🎒",
+		TextColor3 = WHITE,
+	}, 0)
 	local countText = makeText(countBox, {
-		Position = UDim2.fromScale(0.06, 0.1),
-		Size = UDim2.fromScale(0.88, 0.8),
+		Position = UDim2.fromOffset(38, 3),
+		Size = UDim2.new(1, -42, 1, -6),
 		TextColor3 = WHITE,
 	}, 2)
-
-	local moreSpace = makeButton(panel, {
-		Position = UDim2.fromOffset(WIDTH - 164, 8),
-		Size = UDim2.fromOffset(104, 36),
-	}, "More +", GREEN)
+	local plusButton = create("TextButton", {
+		Name = "BuyPetSpace",
+		Position = UDim2.fromOffset(20, 15),
+		Size = UDim2.fromOffset(22, 22),
+		BackgroundTransparency = 1,
+		Text = "+",
+		Font = FONT,
+		TextSize = 26,
+		TextColor3 = WHITE,
+		ZIndex = 5,
+	}, countBox)
+	create("UIStroke", { Thickness = 2.5, Color = BLACK }, plusButton)
 	local close = create("TextButton", {
 		Position = UDim2.fromOffset(WIDTH - 52, 6),
 		Size = UDim2.fromOffset(40, 40),
@@ -767,7 +782,7 @@ function PetsPanel.init(screenGui, showToast)
 		local equippedTotal = #equippedList
 
 		multiplierText.Text = `x{string.format("%.2f", player:GetAttribute("PetMultiplier") or 1)} Pet Multiplier`
-		countText.Text = `🎒 {ownedTotal}/{Config.MaxOwnedPets}`
+		countText.Text = `{ownedTotal}/{player:GetAttribute("PetCapacity") or Config.MaxOwnedPets}`
 		teamTitle.Text = `Pet Team ({equippedTotal}/{Config.MaxEquippedPets} Pets)`
 
 		-- En güçlüden başlayarak sırala (aynı güçte büyük boy önce)
@@ -832,8 +847,12 @@ function PetsPanel.init(screenGui, showToast)
 	unequipAll.MouseButton1Click:Connect(function()
 		invoke("UnequipAllPets", "", true)
 	end)
-	moreSpace.MouseButton1Click:Connect(function()
-		showToast(false, "More pet space is coming soon!")
+	plusButton.MouseButton1Click:Connect(function()
+		if openShop then
+			openShop() -- Robux (Shop) penceresi: 'Pet Space' kartı
+		else
+			showToast(false, "More pet space is coming soon!")
+		end
 	end)
 	local function mergeEverything()
 		local owned = toCounts(player:GetAttribute("OwnedPets"))
@@ -909,7 +928,7 @@ function PetsPanel.init(screenGui, showToast)
 			render()
 		end
 	end
-	for _, name in { "EquippedPets", "PetMultiplier" } do
+	for _, name in { "EquippedPets", "PetMultiplier", "PetCapacity" } do
 		player:GetAttributeChangedSignal(name):Connect(onChange)
 	end
 	player:GetAttributeChangedSignal("OwnedPets"):Connect(function()

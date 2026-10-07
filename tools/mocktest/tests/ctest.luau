@@ -218,6 +218,25 @@ S.localPlayer:SetAttribute("OwnedPets", "cat,cat,cat,dog")
 assert(#hintToasts == 1, "ipucu oturumda bir kez gelmeli")
 print("PetsPanel hint ok")
 
+-- Çanta sayacı: More+ düğmesi YOK, çantanın sağ altında + işareti Shop'u (Robux) açar, sayaç PetCapacity'yi gösterir
+S.localPlayer:SetAttribute("OwnedPets", "cat,cat,dog")
+S.localPlayer:SetAttribute("EquippedPets", "")
+S.localPlayer:SetAttribute("PetCapacity", 75)
+local shopOpened = 0
+local capRoot = S.newInstance("Frame")
+PetsPanel.init(capRoot, function() end, function()
+	shopOpened += 1
+end)()
+local capTexts = textsUnder(capRoot, {})
+assert(not capTexts["More +"], "More + düğmesi kaldırıldı")
+assert(capTexts["3/75"], "çanta sayacı kapasiteyi göstermeli (3/75)")
+local plus = buttonNamed(capRoot, "BuyPetSpace")
+assert(plus and plus.Text == "+", "çantanın yanında + düğmesi olmalı")
+click(plus)
+assert(shopOpened == 1, "+ düğmesi Shop penceresini açmalı")
+S.localPlayer:SetAttribute("PetCapacity", nil)
+print("PetsPanel bag plus ok")
+
 -- 7) Takipçi petler: Boss pet efektli (saydam kabuk + parçacık), diğer boylar düz küre ve boyları büyür
 S.localPlayer:SetAttribute("EquippedPets", "cat@4,dog,bunny@3")
 local PetFollowers = require("./PetFollowers")

@@ -125,7 +125,7 @@ function EggShop.init(screenGui)
 	end
 
 	local function refreshPads()
-		local full = petCount() >= Config.MaxOwnedPets
+		local full = petCount() >= (player:GetAttribute("PetCapacity") or Config.MaxOwnedPets)
 		local wins = winValue.Value
 		for _, entry in entries do
 			local pad, price = entry.pad, entry.price
@@ -146,6 +146,7 @@ function EggShop.init(screenGui)
 	end
 	winValue:GetPropertyChangedSignal("Value"):Connect(refreshPads)
 	player:GetAttributeChangedSignal("OwnedPets"):Connect(refreshPads)
+	player:GetAttributeChangedSignal("PetCapacity"):Connect(refreshPads)
 	refreshPads()
 
 	-- ---------- Yaklaşınca açılan panel ----------
