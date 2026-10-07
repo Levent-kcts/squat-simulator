@@ -20,6 +20,7 @@ local PetsPanel = {}
 local FONT = Enum.Font.FredokaOne
 local WIDTH, HEIGHT = 790, 470
 local DETAIL_WIDTH = 240
+local TEAM_SLOT = 90 -- Pet Team yuvalarının kenarı: oradaki (kullanılan) petlerin resmi alttaki kartlardan BÜYÜK olmalı (sahibi istedi)
 local WHITE = Color3.new(1, 1, 1)
 local BLACK = Color3.new(0, 0, 0)
 local GREEN = Color3.fromRGB(60, 200, 40)
@@ -255,21 +256,21 @@ function PetsPanel.init(screenGui, showToast)
 	}, 2)
 	local teamRow = create("Frame", {
 		Position = UDim2.fromOffset(rightX, 86),
-		Size = UDim2.fromOffset(3 * 70 + 2 * 10, 70),
+		Size = UDim2.fromOffset(3 * TEAM_SLOT + 2 * 10, TEAM_SLOT),
 		BackgroundTransparency = 1,
 	}, panel)
 	local equipBest = makeButton(panel, {
-		Position = UDim2.fromOffset(rightX + 250, 86),
-		Size = UDim2.fromOffset(rightWidth - 250, 32),
+		Position = UDim2.fromOffset(rightX + 3 * TEAM_SLOT + 30, 86),
+		Size = UDim2.fromOffset(rightWidth - (3 * TEAM_SLOT + 30), 40),
 	}, "Equip Best", GREEN)
 	local unequipAll = makeButton(panel, {
-		Position = UDim2.fromOffset(rightX + 250, 124),
-		Size = UDim2.fromOffset(rightWidth - 250, 32),
+		Position = UDim2.fromOffset(rightX + 3 * TEAM_SLOT + 30, 86 + TEAM_SLOT - 40),
+		Size = UDim2.fromOffset(rightWidth - (3 * TEAM_SLOT + 30), 40),
 	}, "Unequip All", ORANGE)
 
 	local grid = create("ScrollingFrame", {
-		Position = UDim2.fromOffset(rightX, 166),
-		Size = UDim2.fromOffset(rightWidth, 246),
+		Position = UDim2.fromOffset(rightX, 86 + TEAM_SLOT + 8),
+		Size = UDim2.fromOffset(rightWidth, 412 - (86 + TEAM_SLOT + 8)),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ScrollBarThickness = 8,
@@ -277,7 +278,7 @@ function PetsPanel.init(screenGui, showToast)
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 	}, panel)
 	create("UIGridLayout", {
-		CellSize = UDim2.fromOffset(114, 134),
+		CellSize = UDim2.fromOffset(114, 118),
 		CellPadding = UDim2.fromOffset(8, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, grid)
@@ -581,11 +582,11 @@ function PetsPanel.init(screenGui, showToast)
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = WHITE,
 		}, 1.5)
-		-- Kullanılan (takılı) petlerin resmi kullanılmayanlardan belirgin büyüktür (sahibi istedi); ikisinde de boy büyüdükçe resim büyür
-		local iconSize = if equippedCount > 0 then math.min(math.floor(62 + 12 * pet.scale), 84) else math.floor(42 + 10 * pet.scale)
+		-- Kart resimleri Pet Team satırındaki (kullanılan) petlerden küçüktür; boy büyüdükçe biraz büyür (50 / 54 / 59)
+		local iconSize = math.floor(40 + 10 * pet.scale)
 		UIStyle.safePetIcon(card, pet, {
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.5, 0, 0, 64),
+			Position = UDim2.new(0.5, 0, 0, 52),
 			Size = UDim2.fromOffset(iconSize, iconSize),
 		})
 		if boss then
@@ -698,8 +699,8 @@ function PetsPanel.init(screenGui, showToast)
 			local id = equippedList[slot]
 			local pet = id and Catalog.PetById[id]
 			local box = create(if pet then "TextButton" else "Frame", {
-				Position = UDim2.fromOffset((slot - 1) * 80, 0),
-				Size = UDim2.fromOffset(70, 70),
+				Position = UDim2.fromOffset((slot - 1) * (TEAM_SLOT + 10), 0),
+				Size = UDim2.fromOffset(TEAM_SLOT, TEAM_SLOT),
 				BackgroundColor3 = if pet then Catalog.rarityOf(pet).color else BLACK,
 				BackgroundTransparency = if pet then 0.35 else 0.5,
 			}, teamRow)
@@ -711,7 +712,7 @@ function PetsPanel.init(screenGui, showToast)
 			}, box)
 			if pet then
 				box.Text = ""
-				local iconSize = math.min(math.floor(40 + 14 * pet.scale), 62)
+				local iconSize = math.min(math.floor(58 + 14 * pet.scale), TEAM_SLOT - 8)
 				UIStyle.safePetIcon(box, pet, {
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),
