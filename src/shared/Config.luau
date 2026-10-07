@@ -112,7 +112,10 @@ return {
 			{ id = "boostMuscle30", name = "Muscle Potion", detail = "2x muscle, 30 min", icon = "💪", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
 			{ id = "boostWins30", name = "Wins Potion", detail = "2x wins, 30 min", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
 			{ id = "rainbow30", name = "Rainbow Potion", detail = "ALL 3 potions, 30 min", icon = "🌈", kind = "boostRainbow", minutes = 30, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
-			{ id = "musclePack", name = "Muscle Pack", detail = "10,000 squats of muscle", icon = "🦵", kind = "moves", amount = 10000, robux = 39, productId = 0, color = Color3.fromRGB(70, 150, 255) },
+			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
+			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", kind = "moves", amount = 1000, robux = 19, productId = 0, quick = true, color = Color3.fromRGB(255, 45, 140) },
+			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", kind = "moves", amount = 10000, robux = 79, productId = 0, quick = true, color = Color3.fromRGB(232, 32, 112) },
+			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", kind = "moves", amount = 100000, robux = 399, productId = 0, quick = true, color = Color3.fromRGB(180, 20, 70) },
 			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 29, productId = 0, color = Color3.fromRGB(70, 210, 90) },
 			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
 		},

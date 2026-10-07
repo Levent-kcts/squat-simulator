@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -433,10 +434,23 @@ local countLabel = makeText(bar, {
 
 -- Auto Click: açıkken hareketler kendiliğinden tekrarlanır (ileride VIP'ye özel yapılabilir).
 -- Referanstaki gibi: GÖKKUŞAĞI renkli, kayan zemin (açıkken daha hızlı ve parlak) ve üst kenarda "OFF" / "ON" rozeti.
+-- ALT SATIR (referanstaki gibi): [+1K Power] [+10K Power] [+100K Power] [Auto Click] [+]. Satır ekranda ortalanır; Auto Click sağa kayar.
+-- Üç 'Power' düğmesi Robux ile anında bacak kası satın alır (Config.Shop.Products[].quick), '+' Shop'u açar. Tıklamaları aşağıda (showToast tanımlandıktan sonra) bağlanır.
+local QUICK_WIDTH, QUICK_GAP, AUTO_WIDTH, PLUS_WIDTH, ROW_Y = 96, 8, 200, 36, 138
+local quickProducts = {}
+for _, product in Config.Shop.Products do
+	if product.quick then
+		table.insert(quickProducts, product)
+	end
+end
+local rowWidth = #quickProducts * (QUICK_WIDTH + QUICK_GAP) + AUTO_WIDTH + QUICK_GAP + PLUS_WIDTH
+local rowLeft = -rowWidth / 2
+local autoLeft = rowLeft + #quickProducts * (QUICK_WIDTH + QUICK_GAP)
+
 local autoButton = create("TextButton", {
-	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.new(0.5, 0, 0, 138),
-	Size = UDim2.fromOffset(220, 40),
+	AnchorPoint = Vector2.new(0, 0),
+	Position = UDim2.new(0.5, autoLeft, 0, ROW_Y),
+	Size = UDim2.fromOffset(AUTO_WIDTH, 40),
 	Text = "",
 	AutoButtonColor = false,
 	BackgroundColor3 = Color3.new(1, 1, 1), -- renk gökkuşağı gradyanından gelir
@@ -459,6 +473,50 @@ local autoBadge = makeText(autoButton, {
 	TextColor3 = Color3.fromRGB(255, 92, 70),
 	ZIndex = 5,
 }, 22, 3)
+
+-- Hızlı satın alma düğmeleri: kırmızı-pembe, kalın siyah çerçeveli, sağ altında bacak simgesi; sağdaki yeşil '+' Shop'u açar
+local quickButtons = {}
+for index, product in quickProducts do
+	local button = create("TextButton", {
+		Name = "Quick_" .. product.id,
+		Position = UDim2.new(0.5, rowLeft + (index - 1) * (QUICK_WIDTH + QUICK_GAP), 0, ROW_Y),
+		Size = UDim2.fromOffset(QUICK_WIDTH, 40),
+		Text = "",
+		AutoButtonColor = true,
+		BackgroundColor3 = product.color,
+	}, bottom)
+	create("UICorner", { CornerRadius = UDim.new(0, 6) }, button)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+	UIStyle.soften(button, { radius = 10, strength = 0.3 })
+	if Config.Icons.LegMuscle and Config.Icons.LegMuscle ~= "" then
+		addOutlinedIcon(button, Config.Icons.LegMuscle, 30, UDim2.new(1, 2, 1, 6), Vector2.new(1, 1))
+	end
+	makeText(button, {
+		Position = UDim2.fromOffset(4, 6),
+		Size = UDim2.new(1, -8, 1, -10),
+		Text = `+{Format.compact(product.amount)} Power`,
+		TextColor3 = Color3.new(1, 1, 1),
+		ZIndex = 5,
+	}, 20, 3)
+	table.insert(quickButtons, { button = button, product = product })
+end
+local plusButton = create("TextButton", {
+	Name = "PlusButton",
+	Position = UDim2.new(0.5, autoLeft + AUTO_WIDTH + QUICK_GAP, 0, ROW_Y),
+	Size = UDim2.fromOffset(PLUS_WIDTH, 40),
+	Text = "",
+	AutoButtonColor = true,
+	BackgroundColor3 = Color3.fromRGB(120, 205, 30),
+}, bottom)
+create("UICorner", { CornerRadius = UDim.new(0, 6) }, plusButton)
+create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, plusButton)
+UIStyle.soften(plusButton, { radius = 10, strength = 0.3 })
+makeText(plusButton, {
+	Position = UDim2.fromOffset(2, 2),
+	Size = UDim2.new(1, -4, 1, -6),
+	Text = "+",
+	TextColor3 = Color3.new(1, 1, 1),
+}, 30, 3)
 
 -- Kayıt uyarısı sadece Studio'da ve küçük görünür (canlı oyunda oyuncular görmez, hata Output'a yazılır)
 local warning = create("TextLabel", {
@@ -949,6 +1007,24 @@ if ShopPanelModule then
 	end
 end
 shopButton.MouseButton1Click:Connect(function()
+	if toggleShop then
+		toggleShop()
+	else
+		showToast(false, "Shop is coming soon!")
+	end
+end)
+
+-- Alt satırdaki hızlı satın alma düğmeleri: ürün ID'si varsa Roblox satın alma penceresi, yoksa 'coming soon' (Robux aşamasında ID'ler girilir); '+' Shop'u açar
+for _, entry in quickButtons do
+	entry.button.MouseButton1Click:Connect(function()
+		if entry.product.productId > 0 then
+			MarketplaceService:PromptProductPurchase(player, entry.product.productId)
+		else
+			showToast(false, `{entry.product.name} is coming soon!`)
+		end
+	end)
+end
+plusButton.MouseButton1Click:Connect(function()
 	if toggleShop then
 		toggleShop()
 	else

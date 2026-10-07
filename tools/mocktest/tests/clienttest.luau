@@ -143,4 +143,35 @@ end
 local label = labelWith("You have")
 assert(label and rawget(rawget(label, "Parent"), "Visible") == false, "eğitim bitince yönerge çerçevesi gizlenmeli")
 print("tutorial banner states ok")
+
+-- Alt satır: Auto Click'in solunda 3 hızlı satın alma düğmesi, sağında '+' (Shop); ürün ID'si yokken tıklayınca 'coming soon' bildirimi (hata vermemeli)
+for _, text in { "+1K Power", "+10K Power", "+100K Power" } do
+	assert(hasText(text), "hızlı satın alma düğmesi yok: " .. text)
+end
+local quickCount = 0
+for _, product in Config.Shop.Products do
+	if product.quick then
+		quickCount += 1
+		assert(product.kind == "moves" and product.amount > 0 and product.productId == 0, "hızlı ürün 'moves' türünde ve ID'si henüz 0 olmalı: " .. product.id)
+	end
+end
+assert(quickCount == 3, "3 hızlı satın alma ürünü olmalı: " .. quickCount)
+local function findNamed(instance, name)
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "Name") == name then
+			return child
+		end
+		local deeper = findNamed(child, name)
+		if deeper then
+			return deeper
+		end
+	end
+	return nil
+end
+for _, id in { "Quick_power1k", "Quick_power10k", "Quick_power100k", "PlusButton" } do
+	local button = findNamed(S.localPlayer, id)
+	assert(button, "düğme bulunamadı: " .. id)
+	rawget(button, "_handlers").MouseButton1Click() -- coming soon / Shop açma: hata vermemeli
+end
+print("quick buy buttons ok")
 print("DONE")

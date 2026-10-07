@@ -84,6 +84,10 @@ assert(player:GetAttribute("RainbowBoostUntil") > os.time(), "Rainbow Potion bit
 for _, kind in { "PotionLuck", "PotionMuscle", "PotionWins", "PotionRainbow" } do
 	try("dev " .. kind, PlayerStats.dev, player, kind)
 end
+-- Hızlı satın alma (+1K Power): kind 'moves' amount tıklamalık bacak kası verir
+local muscleBeforePurchase = PlayerStats.getMuscle(player)
+try("processPurchase power1k", PlayerStats.processPurchase, player, "p9", { kind = "moves", amount = 1000 })
+assert(PlayerStats.getMuscle(player) >= muscleBeforePurchase + 1000, "+1K Power en az 1000 bacak kası vermeli")
 local capacityBefore = player:GetAttribute("PetCapacity")
 assert(capacityBefore == Config.MaxOwnedPets, "başlangıç pet kapasitesi Config.MaxOwnedPets olmalı: " .. tostring(capacityBefore))
 try("processPurchase petSpace", PlayerStats.processPurchase, player, "r3", { kind = "petSpace", amount = 25 })
