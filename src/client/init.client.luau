@@ -655,10 +655,22 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	end
 end)
 
--- Auto Click açıkken ya da açık bir antrenman alanındayken (sunucu TrainingArea özniteliğini ayarlar) bir hareket
--- bitince diğeri kendiliğinden başlar: karakter otomatik squat yapar (hareket başına bir tıklama)
-RunService.Heartbeat:Connect(function()
-	if autoClick or (player:GetAttribute("TrainingArea") or "") ~= "" then
+-- AUTO CLICK açıkken (koçun pedinde de) SERİ SERİ tıklar: saniyede Config.AutoClick.PerSecond tıklama, her tıklama anında kas verir (elle hızlı tıklamayla aynı);
+-- animasyon boştayken oynar. Kare atlaması sonrası yığılma olmasın diye birikim en çok 2 tıklamadır. Sunucu hız sınırı Config.ClickLimit'tir.
+-- Auto Click KAPALIYKEN açık bir antrenman pedindeyken (sunucu TrainingArea özniteliğini ayarlar) pedin kendi otomatik squat'ı sürer: hareket başına bir tıklama.
+local autoCredit = 0
+RunService.Heartbeat:Connect(function(dt)
+	if autoClick then
+		autoCredit = math.min(autoCredit + dt * Config.AutoClick.PerSecond, 2)
+		while autoCredit >= 1 do
+			autoCredit -= 1
+			playMove()
+			clickEvent:FireServer()
+		end
+		return
+	end
+	autoCredit = 0
+	if (player:GetAttribute("TrainingArea") or "") ~= "" then
 		if playMove() then
 			clickEvent:FireServer()
 		end

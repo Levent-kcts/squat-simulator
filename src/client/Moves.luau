@@ -79,11 +79,17 @@ local function scaleKey(humanoid)
 	return (height and height.Value or 1) * 1000 + (width and width.Value or 1)
 end
 
+local function heightScaleOf(humanoid)
+	local height = humanoid and humanoid:FindFirstChild("BodyHeightScale")
+	return height and height.Value or 1
+end
+
 -- Eklem bilgileri her harekette yeniden okunur (karakter boyutu değişmiş olabilir, eski değerler geçersiz kalır)
 local function getRig(character)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	local rig = {
 		scaleKey = scaleKey(humanoid),
+		heightScale = heightScaleOf(humanoid),
 		joints = {},
 		drop = 0.3,
 		humanoid = humanoid,
@@ -231,8 +237,12 @@ RunService.RenderStepped:Connect(function()
 			restore(state.rig)
 			active[character] = nil
 		elseif humanoid and scaleKey(humanoid) ~= state.rig.scaleKey then
-			-- Karakter bu sırada büyüdü: hareketi bırak
+			-- Karakter bu sırada büyüdü (level atladı): hareketi bırak. Çökerken HipHeight düşürülmüştü; yeni boy oranına göre asıl değerine döndürülür,
+			-- yoksa karakter çökmüş/yerinde kalmış gibi takılırdı (özellikle seri tıklamada level çok sık atlanır)
 			restoreRotationOnly(state.rig)
+			if state.rig.isLocal and humanoid then
+				humanoid.HipHeight = state.rig.hip * heightScaleOf(humanoid) / state.rig.heightScale
+			end
 			active[character] = nil
 		elseif t >= state.move.duration or not character.Parent then
 			restore(state.rig)

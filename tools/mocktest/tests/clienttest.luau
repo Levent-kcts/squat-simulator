@@ -19,6 +19,14 @@ S.localPlayer:SetAttribute("MaxLevel", 20)
 S.localPlayer:SetAttribute("TapsNeeded", 10)
 S.localPlayer:SetAttribute("QuestData", "x")
 S.jsonData = { resetAt = os.time() + 100, quests = {}, bonusClaimed = false, bonusText = "" }
+-- Click olayını sayan sahte uzak olay (Auto Click testi için): istemci her tıklamada FireServer çağırır
+local clickRemote = S.newInstance("RemoteEvent")
+clickRemote.Name = "Click"
+clickRemote.Parent = S.replicated
+local clicksSent = 0
+rawset(clickRemote, "FireServer", function()
+	clicksSent += 1
+end)
 local ok, err = pcall(require, "./clientMain")
 print("client boot:", ok, err)
 if not ok then
@@ -41,6 +49,41 @@ for _ = 1, 3 do
 		end
 	end
 end
+-- AUTO CLICK: açılınca istemci SERİ SERİ tıklar (kare başına Config.AutoClick.PerSecond hızında), kapalıyken tıklamaz
+local function findAutoButton(instance)
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "ClassName") == "TextButton" then
+			for _, grandchild in rawget(child, "_children") do
+				if rawget(grandchild, "Text") == "Auto Click" then
+					return child
+				end
+			end
+		end
+		local deeper = findAutoButton(child)
+		if deeper then
+			return deeper
+		end
+	end
+	return nil
+end
+local autoButton = findAutoButton(S.localPlayer)
+assert(autoButton, "Auto Click düğmesi bulunamadı")
+local sentBefore = clicksSent
+for _ = 1, 3 do
+	for _, hb in S.heartbeat do
+		pcall(hb, 0.5)
+	end
+end
+assert(clicksSent == sentBefore, "Auto Click kapalıyken tıklama gitmemeli")
+rawget(autoButton, "_handlers").MouseButton1Click()
+for _ = 1, 4 do
+	for _, hb in S.heartbeat do
+		pcall(hb, 0.5)
+	end
+end
+assert(clicksSent - sentBefore >= 6, "Auto Click seri tıklamalı (kare başına 2): " .. (clicksSent - sentBefore))
+rawget(autoButton, "_handlers").MouseButton1Click() -- kapat
+print("auto click rapid-fire ok:", clicksSent - sentBefore)
 -- Eğitim yazısı: ekrandaki TextLabel'ları gezip duruma göre doğru yönergenin çıktığını denetle
 local function allTexts()
 	local found = {}

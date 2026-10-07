@@ -28,9 +28,11 @@ local LAYOUT = {
 	frameColor = Color3.fromRGB(25, 25, 32),
 }
 local CHECK_INTERVAL = 0.2 -- oyuncunun hangi pedde durduğu bu aralıkla kontrol edilir (saniye)
+local EXIT_GRACE = 1.2 -- pedden kısa süre çıkmış görünmek (level atlayınca karakter büyür, kök parça bir an kayar) otomatik squat'ı kesmez: bu kadar süre beklenir
 
 local active = {} -- [oyuncu] = alan: içinde durduğu ve AÇIK olan alan (otomatik squat)
 local standing = {} -- [oyuncu] = alan: içinde durduğu alan (kilitli de olabilir)
+local lastUsable = {} -- [oyuncu] = pedde son kez açık alan olarak görüldüğü an (os.clock)
 
 -- Oyuncunun şu an antrenman yaptığı alan (yoksa nil). Tıklama işleyicisi çarpanı buradan alır.
 function TrainingArea.getArea(player)
@@ -69,7 +71,7 @@ function TrainingArea.init(notifyEvent)
 		for _, zone in zones do
 			local relative = zone.pad.CFrame:PointToObjectSpace(position)
 			local half = zone.pad.Size / 2
-			if math.abs(relative.X) <= half.X and math.abs(relative.Z) <= half.Z and relative.Y > -2 and relative.Y < 14 then
+			if math.abs(relative.X) <= half.X and math.abs(relative.Z) <= half.Z and relative.Y > -2 and relative.Y < 30 then
 				return zone.area
 			end
 		end
@@ -79,6 +81,7 @@ function TrainingArea.init(notifyEvent)
 	Players.PlayerRemoving:Connect(function(player)
 		active[player] = nil
 		standing[player] = nil
+		lastUsable[player] = nil
 	end)
 
 	task.spawn(function()
@@ -104,6 +107,9 @@ function TrainingArea.init(notifyEvent)
 				local usable = nil
 				if area and PlayerStats.isAreaUnlocked(player, area) then
 					usable = area
+					lastUsable[player] = os.clock()
+				elseif active[player] and os.clock() - (lastUsable[player] or 0) < EXIT_GRACE then
+					usable = active[player] -- kısa süreli kayma: aktif alan korunur
 				end
 				if usable ~= active[player] then
 					setActive(player, usable)

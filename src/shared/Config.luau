@@ -90,6 +90,9 @@ return {
 	-- Hareket (animasyon) ve duvara hasar ise sadece hareket boştayken başlar: bir hareket sürerken gelen tıklama kas verir ama yeni hareket/hasar başlatmaz.
 	-- Hile önlemi: sunucu tıklamaları jeton kovasıyla sınırlar (saniyede en çok PerSecond, ani seri için Burst). Auto Click ve antrenman alanındaki otomatik squat hareket başına bir tıklamadır.
 	ClickLimit = { PerSecond = 12, Burst = 6 },
+	-- AUTO CLICK düğmesi açıkken (antrenman pedinde, koçun yanında da) istemci SERİ SERİ tıklar: saniyede PerSecond tıklama (elle hızlı tıklamayla aynı), her biri anında kas verir.
+	-- Sunucu sınırının (ClickLimit.PerSecond) biraz altında tutulur ki otomatik tıklamalar reddedilmesin. Antrenman pedinde Auto Click KAPALIYKEN pedin kendi otomatik squat'ı hareket başına bir tıklamadır.
+	AutoClick = { PerSecond = 10 },
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
 	-- Kayıt sistemi
