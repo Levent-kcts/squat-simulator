@@ -20,7 +20,7 @@ local PetsPanel = {}
 local FONT = Enum.Font.FredokaOne
 local WIDTH, HEIGHT = 790, 470
 local DETAIL_WIDTH = 240
-local TEAM_SLOT = 90 -- Pet Team yuvalarının kenarı: oradaki (kullanılan) petlerin resmi alttaki kartlardan BÜYÜK olmalı (sahibi istedi)
+local TEAM_SLOT = 112 -- Pet Team yuvalarının kenarı: oradaki (kullanılan) petlerin resmi alttaki kartlardan BÜYÜK olmalı (sahibi istedi)
 local WHITE = Color3.new(1, 1, 1)
 local BLACK = Color3.new(0, 0, 0)
 local GREEN = Color3.fromRGB(60, 200, 40)
@@ -278,7 +278,7 @@ function PetsPanel.init(screenGui, showToast)
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 	}, panel)
 	create("UIGridLayout", {
-		CellSize = UDim2.fromOffset(114, 118),
+		CellSize = UDim2.fromOffset(92, 96),
 		CellPadding = UDim2.fromOffset(8, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, grid)
@@ -576,17 +576,17 @@ function PetsPanel.init(screenGui, showToast)
 		end
 
 		makeText(card, {
-			Position = UDim2.fromOffset(6, 4),
-			Size = UDim2.fromOffset(58, 16),
+			Position = UDim2.fromOffset(5, 4),
+			Size = UDim2.fromOffset(52, 15),
 			Text = `+{percent(pet)}%`,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = WHITE,
 		}, 1.5)
-		-- Kart resimleri Pet Team satırındaki (kullanılan) petlerden küçüktür; boy büyüdükçe biraz büyür (50 / 54 / 59)
-		local iconSize = math.floor(40 + 10 * pet.scale)
+		-- Kart resimleri Pet Team satırındaki (kullanılan) petlerin yarısı kadardır; boy büyüdükçe biraz büyür (47 / 50 / 55)
+		local iconSize = math.floor(38 + 9 * pet.scale)
 		UIStyle.safePetIcon(card, pet, {
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.5, 0, 0, 52),
+			Position = UDim2.new(0.5, 0, 0, 42),
 			Size = UDim2.fromOffset(iconSize, iconSize),
 		})
 		if boss then
@@ -596,8 +596,8 @@ function PetsPanel.init(screenGui, showToast)
 		-- Boy ve ad şeridi
 		local strip = create("Frame", {
 			AnchorPoint = Vector2.new(0.5, 1),
-			Position = UDim2.new(0.5, 0, 1, -5),
-			Size = UDim2.new(1, -10, 0, 22),
+			Position = UDim2.new(0.5, 0, 1, -4),
+			Size = UDim2.new(1, -8, 0, 20),
 			BackgroundColor3 = pet.tierColor,
 			ZIndex = 3,
 		}, card)
@@ -615,8 +615,8 @@ function PetsPanel.init(screenGui, showToast)
 		if count > 1 then
 			local badge = create("Frame", {
 				AnchorPoint = Vector2.new(1, 1),
-				Position = UDim2.new(1, -5, 1, -30),
-				Size = UDim2.fromOffset(34, 18),
+				Position = UDim2.new(1, -4, 1, -26),
+				Size = UDim2.fromOffset(30, 16),
 				BackgroundColor3 = BLACK,
 				BackgroundTransparency = 0.3,
 				ZIndex = 5,
@@ -635,12 +635,12 @@ function PetsPanel.init(screenGui, showToast)
 		if equippedCount > 0 then
 			local badge = create("Frame", {
 				AnchorPoint = Vector2.new(1, 0),
-				Position = UDim2.new(1, -4, 0, 4),
-				Size = UDim2.fromOffset(if equippedCount > 1 then 36 else 26, 26),
+				Position = UDim2.new(1, -3, 0, 3),
+				Size = UDim2.fromOffset(if equippedCount > 1 then 32 else 24, 24),
 				BackgroundColor3 = Color3.fromRGB(60, 210, 70),
 				ZIndex = 5,
 			}, card)
-			UIStyle.round(badge, 13)
+			UIStyle.round(badge, 12)
 			create("UIStroke", { Thickness = 3, Color = BLACK }, badge)
 			makeText(badge, {
 				Position = UDim2.fromScale(0.08, 0.1),
@@ -712,7 +712,7 @@ function PetsPanel.init(screenGui, showToast)
 			}, box)
 			if pet then
 				box.Text = ""
-				local iconSize = math.min(math.floor(58 + 14 * pet.scale), TEAM_SLOT - 8)
+				local iconSize = math.min(math.floor(76 + 16 * pet.scale), TEAM_SLOT - 8)
 				UIStyle.safePetIcon(box, pet, {
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),
