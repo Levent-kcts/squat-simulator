@@ -10,3 +10,6 @@ sourcemap.json
 *.blend1
 
 __pycache__/
+
+# Yapay zekadan gelen buyuk ham simge JPG'leri (tools/icons/cutout.py bunlardan assets/icons/*.png uretir)
+assets/icons/new/*.jpg

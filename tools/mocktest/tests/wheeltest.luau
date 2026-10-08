@@ -40,4 +40,30 @@ local prompt = rawget(stand.WheelPlinthTop, "_children").ProximityPrompt
 assert(prompt and prompt:GetAttribute("Panel") == "Wheel", "ProximityPrompt 'Panel' = 'Wheel' olmalı")
 assert(rawget(rawget(stand.WheelBanner, "_children").SpinStatus, "_children").SpinLabel, "durum yazısı SpinLabel yok")
 print("WheelService ok")
+
+-- Simge görselleri: Config.Icons'ta görsel yüklüyken çark dilimleri emoji yerine ImageLabel çizer (iksir dilimleri iksir görselini, diğerleri imageKey'i kullanır)
+local WheelFace = require("./WheelFace")
+local Catalog = require("./Catalog")
+assert(Catalog.iconImage("Wins") == "", "görsel yokken boş dönmeli")
+Config.Icons.Wins = "rbxassetid://111"
+Config.Icons.Pet = "rbxassetid://222"
+Config.Icons.Potions.muscle = "rbxassetid://333"
+assert(Catalog.iconImage("Wins") == "rbxassetid://111" and Catalog.iconImage(nil, "muscle") == "rbxassetid://333", "iconImage yanlış")
+local imgHost = S.newInstance("Frame")
+WheelFace.build(imgHost, Config.Wheel.Prizes, { rim = false, hub = false, upright = false, clip = false })
+local winsIndex, petIndex, potionIndex
+for index, prize in Config.Wheel.Prizes do
+	winsIndex = winsIndex or (if prize.kind == "wins" then index else nil)
+	petIndex = petIndex or (if prize.kind == "pet" then index else nil)
+	potionIndex = potionIndex or (if prize.kind == "boostMuscle" then index else nil)
+end
+local function prizeImage(index)
+	local holder = rawget(rawget(imgHost, "_children").WheelFace or imgHost, "_children")["Label" .. index]
+	local icon = holder and rawget(holder, "_children").PrizeIcon
+	return icon and rawget(icon, "Image")
+end
+assert(prizeImage(winsIndex) == "rbxassetid://111", "Wins dilimi kupa görselini göstermeli: " .. tostring(prizeImage(winsIndex)))
+assert(prizeImage(petIndex) == "rbxassetid://222", "Pet dilimi pati görselini göstermeli")
+assert(prizeImage(potionIndex) == "rbxassetid://333", "iksir dilimi iksir görselini göstermeli")
+print("wheel prize images ok")
 print("DONE")

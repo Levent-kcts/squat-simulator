@@ -28,6 +28,18 @@ for _, sku in Config.Shop.Potions do
 	Catalog.PotionSkuById[sku.id] = sku
 end
 
+-- Bir ödül/ürün simgesinin görseli: imageKey = Config.Icons anahtarı ('Wins', 'LegMuscle', 'Pet'...), potionId = iksir id'si ('luck', 'muscle', 'wins', 'rainbow').
+-- Görsel yüklenmişse 'rbxassetid://...', yoksa '' döner (çağıran emoji yedeğine düşer).
+function Catalog.iconImage(imageKey, potionId)
+	if potionId then
+		local potions = Config.Icons.Potions
+		local id = potions and potions[potionId]
+		return if type(id) == "string" then id else ""
+	end
+	local id = imageKey and Config.Icons[imageKey]
+	return if type(id) == "string" then id else ""
+end
+
 -- Bir iksir türü (kind: boostLuck...) ve süre (dakika) için Shop ürün kimliği ('luck15'); öyle bir ürün yoksa nil. Çark/Gifts/görev iksirleri envantere bu kimlikle girer.
 function Catalog.potionSkuFor(kind, minutes)
 	local potion = Catalog.PotionByKind[kind]

@@ -3,6 +3,8 @@
 -- Dilim şekli: Roblox arayüzünde pasta dilimi yoktur; 8 dilimin sınırları 0/45/90... derecede olduğu için her dilim, bir çeyrek karenin köşegeniyle kesilmiş DİK ÜÇGENDİR:
 -- çeyrek kareye (UIGradient) şeffaflık basamağı verilerek köşegenin bir yanı gizlenir. Sonra bütün dilimler bir CanvasGroup içinde yuvarlak köşeyle (UICorner) daireye kırpılır
 -- (kırpılmış köşeler görünmez), köşegenlerin tırtıkları ayırıcı çizgilerin altında kalır. Dilim sayısı SEKİZ olmak zorundadır (Config.Wheel.Prizes).
+local Catalog = require(script.Parent.Catalog)
+
 local WheelFace = {}
 
 local SLICE_COUNT = 8
@@ -150,7 +152,19 @@ function WheelFace.build(parent, prizes, options)
 			Size = UDim2.fromScale(0.2 * discScale, 0.22 * discScale),
 			BackgroundTransparency = 1,
 		}, root)
-		text(holder, { Position = UDim2.fromScale(0, 0), Size = UDim2.fromScale(1, 0.46), Text = prize.icon, TextColor3 = Color3.new(1, 1, 1) }, 0)
+		local image = Catalog.iconImage(prize.imageKey, prize.potion) -- yüklü görsel varsa emoji yerine o
+		if image ~= "" then
+			create("ImageLabel", {
+				Name = "PrizeIcon",
+				Position = UDim2.fromScale(0, 0),
+				Size = UDim2.fromScale(1, 0.46),
+				BackgroundTransparency = 1,
+				Image = image,
+				ScaleType = Enum.ScaleType.Fit,
+			}, holder)
+		else
+			text(holder, { Position = UDim2.fromScale(0, 0), Size = UDim2.fromScale(1, 0.46), Text = prize.icon, TextColor3 = Color3.new(1, 1, 1) }, 0)
+		end
 		text(holder, { Position = UDim2.fromScale(0, 0.46), Size = UDim2.fromScale(1, 0.28), Text = prize.label, TextColor3 = Color3.new(1, 1, 1) }, 1.5)
 		text(holder, {
 			Position = UDim2.fromScale(0.1, 0.74),

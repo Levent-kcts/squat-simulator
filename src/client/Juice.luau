@@ -31,6 +31,12 @@ local function rootPart()
 	return character and character:FindFirstChild("HumanoidRootPart")
 end
 
+-- Config.Icons'ta görsel yüklüyse onu, yoksa emojiyi verir (ekran yazılarının simgesi)
+local function popIcon(key, emoji)
+	local id = Config.Icons[key]
+	return if type(id) == "string" and id ~= "" then id else emoji
+end
+
 local function styledLabel(parent, text, color, strokeThickness)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
@@ -91,7 +97,17 @@ function Juice.screenPop(text, color, icon, scale)
 	holder.Rotation = math.random(-10, 10)
 	holder.Parent = screenGuiRef
 
-	local iconLabel, iconStroke = styledLabel(holder, icon or "🦵", Color3.new(1, 1, 1), 0)
+	-- icon: emoji ya da görsel kimliği ('rbxassetid://...': Config.Icons yüklüyse)
+	local iconLabel
+	if string.find(tostring(icon), "rbxassetid://", 1, true) == 1 then
+		iconLabel = Instance.new("ImageLabel")
+		iconLabel.BackgroundTransparency = 1
+		iconLabel.Image = icon
+		iconLabel.ScaleType = Enum.ScaleType.Fit
+		iconLabel.Parent = holder
+	else
+		iconLabel = styledLabel(holder, icon or "🦵", Color3.new(1, 1, 1), 0)
+	end
 	iconLabel.Size = UDim2.fromScale(0.3, 1)
 	iconLabel.Position = UDim2.fromScale(0, 0)
 
@@ -108,7 +124,7 @@ function Juice.screenPop(text, color, icon, scale)
 	local startPosition = holder.Position
 	TweenService:Create(holder, TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = startPosition - UDim2.fromScale(0, 0.07) }):Play()
 	local fade = TweenInfo.new(0.45, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0.45)
-	TweenService:Create(iconLabel, fade, { TextTransparency = 1 }):Play()
+	TweenService:Create(iconLabel, fade, if iconLabel:IsA("ImageLabel") then { ImageTransparency = 1 } else { TextTransparency = 1 }):Play()
 	TweenService:Create(valueLabel, fade, { TextTransparency = 1 }):Play()
 	TweenService:Create(valueStroke, fade, { Transparency = 1 }):Play()
 	Debris:AddItem(holder, 1.05)
@@ -394,7 +410,7 @@ function Juice.init(screenGui)
 		last.muscle = muscle.Value
 		if delta > 0 and ready() then
 			local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
-			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.fromRGB(90, 220, 255), "🦵")
+			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.fromRGB(90, 220, 255), popIcon("LegMuscle", "🦵"))
 		end
 	end)
 
@@ -402,7 +418,7 @@ function Juice.init(screenGui)
 		local delta = wins.Value - last.wins
 		last.wins = wins.Value
 		if delta > 0 and ready() then
-			Juice.screenPop(`+{Format.compact(delta)} Wins`, Color3.fromRGB(255, 215, 70), "🏆", 1.25)
+			Juice.screenPop(`+{Format.compact(delta)} Wins`, Color3.fromRGB(255, 215, 70), popIcon("Wins", "🏆"), 1.25)
 			Juice.celebrate(Color3.fromRGB(255, 210, 60), 25)
 			sfx("Win")
 		end

@@ -248,6 +248,8 @@ return {
 		PetSpace = "", -- Pet Space kartı: pati rozetli kırmızı sırt çantası (shop_petspace.png)
 		WinPack = "", -- Win Pack kartı: ağzından kupa fırlayan çuval (shop_winpack.png)
 		WinPackBig = "", -- Mega Win Pack kartı: altın ve kupa dolu açık sandık (shop_winpack_big.png)
+		Jackpot = "", -- çarktaki JACKPOT dilimi: büyük mavi elmas (jackpot.png)
+		Pet = "", -- çarktaki Pet! dilimi ve Gifts pet ödülü: pati rozeti (pet.png)
 		Friends = "rbxassetid://139194631320002", -- sağ üstteki arkadaş bonusu simgesi: sahibinin yüklediği 'friends' görseli (Image türü, doğrulandı). Boş bırakılırsa 👥 emojisi
 		LegMuscle = "rbxassetid://81118324194991", -- Offline Earnings penceresindeki büyük bacak kası simgesi: sahibinin yüklediği "leg-emoji-clipart-xl" görseli (Image türü, doğrulandı). Boş bırakılırsa 🦵 emojisi görünür
 		Shop = "rbxassetid://88209777338839",
@@ -522,7 +524,7 @@ return {
 	-- GÜNLÜK ÇARK (server/WheelService: lobinin sağ arka köşesinde duran dönen çark, client/WheelPanel: E'ye basınca açılan arayüz, client/WheelController: dönüş animasyonu; mantık PlayerStats.spinWheel): her oyuncu günde 1 kez (UTC gün) çevirir,
 	-- sonucu ve ödülü SUNUCU seçer, ödül hemen verilir ve kaydedilir (kayıtta WheelDay). Prizes sırası = dilimlerin saat yönündeki sırası (1. dilim üstte, ibrenin hemen sağında başlar); TAM 8 dilim olmalı (shared/WheelFace dik üçgenlerle çizer); weight = şans ağırlığı (toplam 100).
 	-- kind: wins (tahmini aşama ödülü x mult, görev ödülü gibi), muscle (tıklama başı kazanç x clicks), boostMuscle / boostWins (minutes dakika 2x), pet (PetEgg yumurtasının havuzundan, envanter doluysa Win),
-	-- jackpot (hem Win mult hem kas clicks). icon/label/color sadece çarkın görünüşü içindir; miktarlar oyuncunun gücüne göre ölçeklendiği için çarkta yazmaz, sonuçta gösterilir.
+	-- jackpot (hem Win mult hem kas clicks). icon (emoji yedeği) / imageKey (Config.Icons anahtarı) / potion (iksir id) / label / color sadece çarkın görünüşü içindir; görsel yüklüyse emoji yerine o çizilir; miktarlar oyuncunun gücüne göre ölçeklendiği için çarkta yazmaz, sonuçta gösterilir.
 	Wheel = {
 		Debug = false, -- TEST (şu an kapalı): çarka basınca ekranda 'server received' bildirimi çıkar (E'ye basınca bir şey olmuyorsa nerede koptuğunu görmek için); çark çalışınca false yap
 		Radius = 4.6, -- görünen yuvarlak yüzün yarıçapı (stud); lobideki çarkın altın halkası bunun 1.45 katına kadar uzanır (kare yüzün köşelerini örter)
@@ -530,14 +532,14 @@ return {
 		IdleSpeed = 9, -- beklerken yavaş dönüş (derece / saniye)
 		PetEgg = 3, -- 'pet' dilimi Config.Eggs içindeki bu sıradaki yumurtanın havuzundan pet verir
 		Prizes = {
-			{ kind = "wins", mult = 2, weight = 24, icon = "🏆", label = "Wins", color = Color3.fromRGB(235, 80, 90) },
-			{ kind = "muscle", clicks = 500, weight = 24, icon = "💪", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
-			{ kind = "boostMuscle", minutes = 15, weight = 14, icon = "💪", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
-			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
-			{ kind = "muscle", clicks = 2000, weight = 14, icon = "💪", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
-			{ kind = "boostWins", minutes = 15, weight = 8, icon = "🏆", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
-			{ kind = "pet", weight = 5, icon = "🐾", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
-			{ kind = "jackpot", mult = 20, clicks = 5000, weight = 1, icon = "💎", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
+			{ kind = "wins", mult = 2, weight = 24, icon = "🏆", imageKey = "Wins", label = "Wins", color = Color3.fromRGB(235, 80, 90) },
+			{ kind = "muscle", clicks = 500, weight = 24, icon = "💪", imageKey = "LegMuscle", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
+			{ kind = "boostMuscle", minutes = 15, weight = 14, icon = "💪", potion = "muscle", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
+			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", imageKey = "Wins", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
+			{ kind = "muscle", clicks = 2000, weight = 14, icon = "💪", imageKey = "LegMuscle", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
+			{ kind = "boostWins", minutes = 15, weight = 8, icon = "🏆", potion = "wins", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
+			{ kind = "pet", weight = 5, icon = "🐾", imageKey = "Pet", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
+			{ kind = "jackpot", mult = 20, clicks = 5000, weight = 1, icon = "💎", imageKey = "Jackpot", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
 		},
 	},
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)

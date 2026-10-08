@@ -35,21 +35,21 @@ local function makeText(parent, props, strokeThickness)
 	return label
 end
 
--- Ödül türüne göre kart rengi, simgesi ve yazısı
+-- Ödül türüne göre kart rengi, simgesi (emoji yedeği), yazısı ve görseli (Config.Icons yüklüyse; yoksa '')
 local function describe(reward)
 	if reward.kind == "muscle" then
-		return Color3.fromRGB(240, 50, 140), "🦵", `+{Format.compact(reward.amount)} Muscle`
+		return Color3.fromRGB(240, 50, 140), "🦵", `+{Format.compact(reward.amount)} Muscle`, Catalog.iconImage("LegMuscle")
 	elseif reward.kind == "wins" then
-		return Color3.fromRGB(250, 190, 40), "🏆", `+{Format.number(reward.amount)} Wins`
+		return Color3.fromRGB(250, 190, 40), "🏆", `+{Format.number(reward.amount)} Wins`, Catalog.iconImage("Wins")
 	elseif reward.kind == "pet" then
 		local pet = Catalog.PetById[reward.pet]
-		return Color3.fromRGB(170, 60, 230), "🐾", `{pet.name} Pet`
+		return Color3.fromRGB(170, 60, 230), "🐾", `{pet.name} Pet`, Catalog.iconImage("Pet")
 	end
 	local potion = Catalog.PotionByKind[reward.kind]
 	if potion then
-		return potion.color, potion.emoji, potion.name
+		return potion.color, potion.emoji, potion.name, Catalog.iconImage(nil, potion.id)
 	end
-	return Color3.fromRGB(250, 160, 40), "🧪", "Potion"
+	return Color3.fromRGB(250, 160, 40), "🧪", "Potion", ""
 end
 
 local function formatTime(seconds)
@@ -118,13 +118,24 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 
 	local cells = {} -- [index] = { statusButton, statusLabel }
 	for index, reward in Config.GiftRewards do
-		local color, icon, text = describe(reward)
+		local color, icon, text, image = describe(reward)
 
 		local cell = create("Frame", { LayoutOrder = index, BackgroundTransparency = 1 }, area)
 		local card = create("Frame", { Size = UDim2.new(1, 0, 0, 108), BackgroundColor3 = color }, cell)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 		UIStyle.soften(card, { radius = 12, strength = 0.28 })
-		makeText(card, { Position = UDim2.fromScale(0.15, 0.08), Size = UDim2.fromScale(0.7, 0.55), Text = icon }, 0)
+		if image ~= "" then
+			create("ImageLabel", {
+				Name = "RewardIcon",
+				Position = UDim2.fromScale(0.15, 0.04),
+				Size = UDim2.fromScale(0.7, 0.62),
+				BackgroundTransparency = 1,
+				Image = image,
+				ScaleType = Enum.ScaleType.Fit,
+			}, card)
+		else
+			makeText(card, { Position = UDim2.fromScale(0.15, 0.08), Size = UDim2.fromScale(0.7, 0.55), Text = icon }, 0)
+		end
 		makeText(card, {
 			Position = UDim2.fromScale(0.04, 0.68),
 			Size = UDim2.fromScale(0.92, 0.28),
