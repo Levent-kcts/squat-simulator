@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local ShoeModel = require(Shared:WaitForChild("ShoeModel"))
+local ShoeWear = require(script.Parent.ShoeWear)
 
 local AppearanceCleaner = {}
 
@@ -165,10 +166,11 @@ local function equippedShoe(character)
 	return player and Catalog.ItemById[player:GetAttribute("EquippedShoe") or ""]
 end
 
--- Ayakkabı: ayak parçasının kendisi ayakkabının renginde ve parlak (Neon) boyanır (dışarıdan parça eklenmez).
--- Parlaklık güçle artar: neon renk yoğunluğu (ShoeModel.neonColor) + ayakta yanan ışık (parlaklığı ve menzili kademeyle büyür).
--- Sadece R15'te ayak parçası var; R6'da bacak tek parça olduğu için ayakkabı görünmez.
+-- Ayakkabı: takılı ayakkabının Blender modeli ayaklara oturur (server/ShoeWear), ayak parçası gizlenir; ayak rengi DEĞİŞMEZ (sahibi ayağın boyanmasını beğenmedi).
+-- Parlaklık güçle artar: ayakta yanan ışık (parlaklığı ve menzili kademeyle büyür) ve en güçlü 4 ayakkabıda iz parçacığı.
+-- YEDEK: model GameModels'a aktarılmamışsa (ya da R6) ayak parçası eskisi gibi ayakkabının renginde ve Neon boyanır (ShoeModel.neonColor).
 -- Neon malzeme şart: mat malzemede bu avatarın ayak/bacak rengi ekranda değişmedi (parça rengi doğru yazılsa bile, nedeni bulunamadı).
+-- Sadece R15'te ayak parçası var; R6'da bacak tek parça olduğu için ayakkabı görünmez.
 local GLOW_NAME = "ShoeGlow"
 local TRAIL_NAME = "ShoeTrail"
 local trailConnections = setmetatable({}, { __mode = "k" }) -- [karakter] = Humanoid.Running bağlantısı (izi yürüyüşe göre açıp kapatır)
@@ -236,6 +238,7 @@ end
 
 local function applyShoes(character, shoe)
 	clearShoeGlow(character)
+	local worn = ShoeWear.apply(character, shoe) -- shoe nil ise eski ayakkabı parçalarını da kaldırır
 	if not shoe then
 		return
 	end
@@ -243,8 +246,10 @@ local function applyShoes(character, shoe)
 	for _, name in { "LeftFoot", "RightFoot" } do
 		local foot = character:FindFirstChild(name)
 		if foot and foot:IsA("BasePart") then
-			foot.Color = ShoeModel.neonColor(shoe)
-			foot.Material = Enum.Material.Neon
+			if not worn then
+				foot.Color = ShoeModel.neonColor(shoe)
+				foot.Material = Enum.Material.Neon
+			end
 
 			local light = Instance.new("PointLight")
 			light.Name = GLOW_NAME
