@@ -9,7 +9,6 @@ local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Progression = require(Shared:WaitForChild("Progression"))
 local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
-local ShoeWear = require(script.Parent.ShoeWear)
 
 local LegGrowth = {}
 
@@ -224,15 +223,13 @@ local function apply(player)
 
 	-- Şort hemen kurulur (karakter hiçbir an çıplak görünmesin), boyut değişimi oturunca bir kez daha kurulur
 	buildMuscles(character, Progression.legStage(level))
-	ShoeWear.refit(character)
 
-	-- Humanoid parçaları yeniden boyutlandırdıktan sonra kasları ve ayakkabıları yeniden kur (parça ölçüleri değişmiş olur)
+	-- Humanoid parçaları yeniden boyutlandırdıktan sonra kasları yeniden kur (parça ölçüleri değişmiş olur)
 	local token = (tokens[character] or 0) + 1
 	tokens[character] = token
 	task.delay(0.3, function()
 		if tokens[character] == token and character.Parent then
 			buildMuscles(character, Progression.legStage(level))
-			ShoeWear.refit(character)
 		end
 	end)
 end

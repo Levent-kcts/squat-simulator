@@ -172,17 +172,7 @@ InstMT.__index = function(self, key)
 			end
 			return copy
 		end
-	elseif key == "Destroy" then
-		-- Roblox'ta Destroy nesneyi ebeveyninden çıkarır: FindFirstChild artık bulmamalı
-		return function(s)
-			local parent = rawget(s, "Parent")
-			local siblings = parent and rawget(parent, "_children")
-			local name = rawget(s, "Name")
-			if siblings and name and siblings[name] == s then
-				siblings[name] = nil
-			end
-		end
-	elseif key == "ClearAllChildren" then
+	elseif key == "Destroy" or key == "ClearAllChildren" then
 		return function() end
 	elseif key == "IsA" then
 		return function(s, name)

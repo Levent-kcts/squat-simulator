@@ -503,17 +503,6 @@ return {
 		PetHover = -1.8,
 		EggScale = 1,
 		ShoeScale = 0.62, -- raftaki ayakkabı modeli (Blender'da ~3.9 stud uzun, rafta ~2.4 stud)
-		-- KARAKTERİN AYAĞINDAKİ ayakkabı (server/ShoeWear): raftaki shoe_<id> modeli, ayak parçasının ölçüsüne (R15 Foot 1 x 0.3 x 1) göre EKSEN EKSEN ölçeklenir, ayak gizlenir.
-		-- sx = model genişliği, sl = model uzunluğu (ayağın derinliğine), sh = model boyu (ayağın boyuna) için taban ölçek (ayakkabı ~ ayak boyutunda, hafif iri: 1.0 x 1.6 x 0.75 stud);
-		-- heel = topuğun bacağın ARKA yüzünden ne kadar geride duracağı (stud, ayak derinliğiyle ölçeklenir): ayakkabı geriye değil öne uzar, bacak ağzından girer.
-		-- Sayıları değiştirirsen `blender -b -P tools/blender/shoe_wear_preview.py -- shots` ile bak (aynı sayıları buradan okur).
-		-- Sayıların yanına 'ad = sayı' kalıbında yorum yazma (önizleme betiği bloğu bu kalıpla okur).
-		ShoeWear = {
-			sx = 0.64,
-			sl = 0.46,
-			sh = 0.38,
-			heel = 0.1,
-		},
 		CoachScale = 1, -- antrenör modeli (Blender'da ~5.25 stud boy, 4.98 geniş); Training.TrainerScales ile çarpılır
 		-- Menülerdeki 3B pet simgesi (client/UIStyle.petModelIcon, ViewportFrame): kamera açıları ve ışık. Distance = en büyük boyutun katı (küçüldükçe pet büyür),
 		-- Azimuth: yandan açı (derece), Elevation: yukarıdan açı, DimColor: keşfedilmemiş petin siluet rengi (Pet Index).
