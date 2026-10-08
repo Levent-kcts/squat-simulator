@@ -236,20 +236,20 @@ return {
 	UI = { ReferenceHeight = 663, MinScale = 0.75, MaxScale = 1.75 },
 
 	Icons = {
-		Quests = "", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
-		Index = "", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
-		Stats = "", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
+		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
+		Index = "rbxassetid://86290456757551", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
+		Stats = "rbxassetid://128930779424288", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
 		Trash = "rbxassetid://72909566398443", -- Pets menüsündeki çöp kutusu simgesi: sahibinin yüklediği gri çöp kutusu (assets/icons/trash.png, Image türü, doğrulandı). Boş bırakılırsa aynı görünümde Frame'lerden çizilir
 		WheelFace = "", -- günlük çarkın hazır yüzü (daire şeklinde, şeffaf köşeli PNG: tools/make_wheel_image.py -> assets/icons/wheel.png). Yüklenince Image ID yazılır; boşken yüz arayüz nesneleriyle çizilir
-		Wins = "", -- sol üstteki Win sayacının kupa simgesi (assets/icons/trophy.png, tools/icons/make_icons.py; görsel yüklenince ID yazılır; boşken 🏆 emojisi)
+		Wins = "rbxassetid://133100241786570", -- sol üstteki Win sayacının kupa simgesi (assets/icons/trophy.png, tools/icons/make_icons.py; görsel yüklenince ID yazılır; boşken 🏆 emojisi)
 		-- Shop kartı simgeleri (tools/icons/make_icons.py -> assets/icons/shop_<ad>.png; sahibi Image olarak yükler, ID'ler buraya yazılır; boşken kartta emoji görünür).
 		-- Power kartları LegMuscle simgesini kullanır (aşağıdaki Products[].imageKey).
-		Vip = "", -- VIP kartı: altın taç (shop_vip.png)
-		PetSpace = "", -- Pet Space kartı: pati rozetli kırmızı sırt çantası (shop_petspace.png)
-		WinPack = "", -- Win Pack kartı: ağzından kupa fırlayan çuval (shop_winpack.png)
-		WinPackBig = "", -- Mega Win Pack kartı: altın ve kupa dolu açık sandık (shop_winpack_big.png)
-		Jackpot = "", -- çarktaki JACKPOT dilimi: büyük mavi elmas (jackpot.png)
-		Pet = "", -- çarktaki Pet! dilimi ve Gifts pet ödülü: pati rozeti (pet.png)
+		Vip = "rbxassetid://133858463726932", -- VIP kartı: altın taç (shop_vip.png)
+		PetSpace = "rbxassetid://139642340114329", -- Pet Space kartı: pati rozetli kırmızı sırt çantası (shop_petspace.png)
+		WinPack = "rbxassetid://81474050038938", -- Win Pack kartı: ağzından kupa fırlayan çuval (shop_winpack.png)
+		WinPackBig = "rbxassetid://127205440550150", -- Mega Win Pack kartı: altın ve kupa dolu açık sandık (shop_winpack_big.png)
+		Jackpot = "rbxassetid://86147189405055", -- çarktaki JACKPOT dilimi: büyük mavi elmas (jackpot.png)
+		Pet = "rbxassetid://103419094625471", -- çarktaki Pet! dilimi ve Gifts pet ödülü: pati rozeti (pet.png)
 		Friends = "rbxassetid://139194631320002", -- sağ üstteki arkadaş bonusu simgesi: sahibinin yüklediği 'friends' görseli (Image türü, doğrulandı). Boş bırakılırsa 👥 emojisi
 		LegMuscle = "rbxassetid://81118324194991", -- Offline Earnings penceresindeki büyük bacak kası simgesi: sahibinin yüklediği "leg-emoji-clipart-xl" görseli (Image türü, doğrulandı). Boş bırakılırsa 🦵 emojisi görünür
 		Shop = "rbxassetid://88209777338839",
@@ -258,7 +258,7 @@ return {
 		Backpack = "rbxassetid://139523703798238",
 		Pets = "rbxassetid://122036590660446",
 		Gifts = "rbxassetid://107783706209695",
-		Potions = { luck = "rbxassetid://104522704182798", muscle = "rbxassetid://114736473334553", wins = "rbxassetid://91281796981948", rainbow = "rbxassetid://92804106754602" }, -- iksir görselleri (assets/icons/potion_<id>.png, tools/blender/potions.py): sahibinin yüklediği Image'lar, doğrulandı. Boş bırakılırsa kodla çizilen şişe (UIStyle.potionIcon)
+		Potions = { luck = "rbxassetid://91056972058738", muscle = "rbxassetid://98486348856459", wins = "rbxassetid://85296637105560", rainbow = "rbxassetid://120946113586884" }, -- iksir görselleri (assets/icons/potion_<id>.png, Gemini çizimi, 2026-10-09): sahibinin yüklediği Image'lar, doğrulandı. Boş bırakılırsa kodla çizilen şişe (UIStyle.potionIcon)
 		Click = "rbxassetid://138038526402176", -- Auto Click düğmesinin ortasındaki (yazının arkasında) tıklama simgesi: sahibinin yüklediği görsel (Image türü, doğrulandı). Boş bırakılırsa simge çizilmez
 		Trails = "rbxassetid://127034765324159", -- Backpack > Trails düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/trails.png, Image türü, doğrulandı). Boş bırakılırsa ✨ emojisi
 		Auras = "rbxassetid://80241008587441", -- Backpack > Auras düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/auras.png, Image türü, doğrulandı). Boş bırakılırsa 🔮 emojisi

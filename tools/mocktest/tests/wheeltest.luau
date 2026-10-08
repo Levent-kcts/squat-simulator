@@ -44,6 +44,8 @@ print("WheelService ok")
 -- Simge görselleri: Config.Icons'ta görsel yüklüyken çark dilimleri emoji yerine ImageLabel çizer (iksir dilimleri iksir görselini, diğerleri imageKey'i kullanır)
 local WheelFace = require("./WheelFace")
 local Catalog = require("./Catalog")
+local savedIcons = { Wins = Config.Icons.Wins, Pet = Config.Icons.Pet, muscle = Config.Icons.Potions.muscle }
+Config.Icons.Wins = ""
 assert(Catalog.iconImage("Wins") == "", "görsel yokken boş dönmeli")
 Config.Icons.Wins = "rbxassetid://111"
 Config.Icons.Pet = "rbxassetid://222"
@@ -65,5 +67,6 @@ end
 assert(prizeImage(winsIndex) == "rbxassetid://111", "Wins dilimi kupa görselini göstermeli: " .. tostring(prizeImage(winsIndex)))
 assert(prizeImage(petIndex) == "rbxassetid://222", "Pet dilimi pati görselini göstermeli")
 assert(prizeImage(potionIndex) == "rbxassetid://333", "iksir dilimi iksir görselini göstermeli")
+Config.Icons.Wins, Config.Icons.Pet, Config.Icons.Potions.muscle = savedIcons.Wins, savedIcons.Pet, savedIcons.muscle
 print("wheel prize images ok")
 print("DONE")
