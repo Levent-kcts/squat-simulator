@@ -20,28 +20,55 @@ local HIDDEN_ATTRIBUTE = "ShoeOriginalTransparency" -- ayak gizlenince asıl şe
 -- [karakter] = { folder, fits = { yeniden oturt işlevleri }, connections = { Size dinleyicileri } }
 local active = setmetatable({}, { __mode = "k" })
 
+-- Bacağın (LowerLeg) ayağa göre merkezi ve derinliği: ayak ile bacak normalde aynı merkezde durur, rig farklıysa ayakkabı yine BACAĞIN altına oturur.
+-- Bulunamazsa nil (ayak ölçüsü kullanılır).
+local function legAlignment(foot, leg)
+	if not leg or not leg:IsA("BasePart") then
+		return nil
+	end
+	local ok, relative = pcall(function()
+		return foot.CFrame:PointToObjectSpace(leg.Position)
+	end)
+	if ok and relative and type(relative.X) == "number" and type(relative.Z) == "number" then
+		return relative, leg.Size.Z
+	end
+	return nil
+end
+
 -- Ayağın o anki ölçüsüne göre ayakkabının boyutu ve ayağa göre CFrame'i. baseSize/baseOffset: ölçeksiz (1x) model boyutu ve orijine göre kutu merkezi.
--- Roblox'ta modelin eksenleri: x genişlik, y boy, z uzunluk. Orijin tabanın ortası; ayak giriş merkezi (opening, Blender'da uzunluk ekseninde, ön artı) bacak merkezine gelir.
-local function fitFor(foot, baseSize, baseOffset)
+-- Roblox'ta modelin eksenleri: x genişlik, y boy, z uzunluk. Orijin tabanın ortası. Topuk, bacağın arka yüzünden 'heel' kadar geride; ayakkabı öne (-Z) uzanır.
+local function fitFor(foot, leg, baseSize, baseOffset)
 	local wear = Config.Models.ShoeWear
 	local size = foot.Size
 	local widthRatio, heightRatio, depthRatio = size.X / FOOT_REF.X, size.Y / FOOT_REF.Y, size.Z / FOOT_REF.Z
 	local scale = Vector3.new(wear.sx * widthRatio, wear.sh * heightRatio, wear.sl * depthRatio)
+	local shoeSize = baseSize * scale
 	local offset = baseOffset * scale
-	-- Orijin: ayağın tabanında; ön -Z olduğu için 'opening' (arkada, eksi) ayakkabıyı öne (-Z) iter
-	local origin = Vector3.new(0, -size.Y / 2, wear.opening * wear.sl * depthRatio)
+	local centerX, centerZ, legDepth = 0, 0, size.Z
+	local relative, depth = legAlignment(foot, leg)
+	if relative then
+		centerX, centerZ, legDepth = relative.X, relative.Z, depth
+	end
 	local flip = Config.Models.FlipFront
-	-- FlipFront: parça 180 derece döner, orijinin kutu merkezine göre yeri de çevrilir (x ve z eksi)
+	local originZ = centerZ
+	if flip then
+		-- Parçanın merkezi origin + (-offset.x, offset.y, -offset.z) (180 derece dönük); arka ucu merkez + yarı uzunluk = topuk
+		local heelZ = centerZ + legDepth / 2 + wear.heel * depthRatio
+		originZ = heelZ - shoeSize.Z / 2 + offset.Z
+	end
+	local origin = Vector3.new(centerX, -size.Y / 2, originZ)
 	local center = origin + (if flip then Vector3.new(-offset.X, offset.Y, -offset.Z) else offset)
 	local cframe = CFrame.new(center)
 	if flip then
 		cframe = cframe * CFrame.Angles(0, math.pi, 0)
 	end
-	return baseSize * scale, cframe
+	return shoeSize, cframe
 end
 
+local reported = false -- ilk oturtmada ölçüleri bir kez yazar (Studio'da uyumsuzluk olursa Output'tan bakılır)
+
 -- Tek ayağa ayakkabı parçasını kurar. Döner: başarılı mı
-local function attach(folder, foot, modelName, record)
+local function attach(folder, foot, leg, modelName, record)
 	local part, baseOffset = ModelLibrary.create(modelName, 1)
 	if not part then
 		return false
@@ -63,13 +90,17 @@ local function attach(folder, foot, modelName, record)
 		if not foot.Parent or not part.Parent then
 			return
 		end
-		local shoeSize, cframe = fitFor(foot, baseSize, baseOffset)
+		local shoeSize, cframe = fitFor(foot, leg, baseSize, baseOffset)
 		part.Size = shoeSize
 		weld.C0 = cframe
 	end
-	local shoeSize, cframe = fitFor(foot, baseSize, baseOffset)
+	local shoeSize, cframe = fitFor(foot, leg, baseSize, baseOffset)
 	part.Size = shoeSize
 	weld.C0 = cframe
+	if not reported then
+		reported = true
+		print(`[ShoeWear] {foot.Name} size {foot.Size}, lower leg size {if leg then leg.Size else "none"}, shoe size {shoeSize}, shoe offset {cframe.Position}`)
+	end
 	part.CFrame = foot.CFrame * cframe
 	weld.Parent = part
 	part.Parent = folder
@@ -138,7 +169,8 @@ function ShoeWear.apply(character, shoe)
 	local count = 0
 	for _, footName in FEET do
 		local foot = character:FindFirstChild(footName)
-		if foot and foot:IsA("BasePart") and attach(folder, foot, modelName, record) then
+		local leg = character:FindFirstChild((string.gsub(footName, "Foot", "LowerLeg")))
+		if foot and foot:IsA("BasePart") and attach(folder, foot, leg, modelName, record) then
 			count += 1
 		end
 	end

@@ -1,6 +1,6 @@
 """Ayakkabıların KARAKTERDE nasıl duracağının önizlemesi (oyuna aktarılmaz, sadece bakmak için).
 R15 bacaklarını kutularla taklit eder (UpperLeg 1 x 1.217 x 1, LowerLeg 1 x 1.193 x 1, Foot 1 x 0.3 x 1) ve ayakkabı modellerini oyundaki gibi oturtur:
-ölçek = (WEAR.sx * genişlik, WEAR.sl * derinlik, WEAR.sh * boy) (src/shared/Config.luau > Models.ShoeWear ile AYNI sayılar), ayakkabının ayak giriş merkezi bacak merkezine gelir.
+ölçek = (WEAR.sx * genişlik, WEAR.sl * derinlik, WEAR.sh * boy) (src/shared/Config.luau > Models.ShoeWear ile AYNI sayılar), topuk bacağın arka yüzünden WEAR.heel kadar geride, ayakkabı öne uzanır.
     blender -b -P tools/blender/shoe_wear_preview.py -- lineup        (15 ayakkabı, başlangıç boyu)
     blender -b -P tools/blender/shoe_wear_preview.py -- close         (4 ayakkabı yakından, başlangıç boyu)
     blender -b -P tools/blender/shoe_wear_preview.py -- max           (son büyüme evresi: genişlik x2.0, boy x2.2)
@@ -74,7 +74,9 @@ def character(shoe_id, x0, y0, w, h, torso=False):
         shoe.hide_render = False
         shoe.hide_viewport = False
         shoe.scale = (WEAR["sx"] * w, WEAR["sl"] * w, WEAR["sh"] * h)
-        shoe.location = (cx, y0 - WEAR["opening"] * WEAR["sl"] * w, 0)  # ayak giriş merkezi bacak merkezinde (ön = +Y)
+        # topuk, bacağın arka yüzünden 'heel' kadar geride (ön = +Y); orijin = topuk + modelin topuk ucundan orijine uzaklık (ölçekli)
+        back = -min(corner[1] for corner in source.bound_box)
+        shoe.location = (cx, y0 - (0.5 * w + WEAR["heel"] * w) + back * WEAR["sl"] * w, 0)
     if torso:
         base = foot_h + lower_h + upper_h
         box("LowerTorso", (x0, y0, base + 0.2 * h), (2 * w, w, 0.4 * h), SHORTS)
