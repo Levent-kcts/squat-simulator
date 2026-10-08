@@ -58,7 +58,7 @@ function RebirthPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(235, 40, 190),
 	}, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	makeText(header, { Position = UDim2.fromOffset(14, 8), Size = UDim2.fromOffset(42, 42), Text = "🔄" }, 0)
+	UIStyle.headerIcon(header, Config.Icons.Rebirth, "🔄", { Position = UDim2.fromOffset(12, 5), Size = UDim2.fromOffset(48, 48) })
 	makeText(header, {
 		Position = UDim2.fromOffset(64, 8),
 		Size = UDim2.new(0.5, 0, 1, -16),

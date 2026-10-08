@@ -224,4 +224,20 @@ local badge = findNamed("UpgradeBadge")
 assert(badge, "Pet Space kartında '+' rozeti olmalı")
 assert(rawget(findNamed("BadgeText"), "Text") == "+", "rozet yazısı '+' olmalı")
 print("shop card images ok")
+
+-- Pencere başlığı simgeleri: sol menü / sağ üst düğmelerle AYNI görsel (Config.Icons) olmalı; çanta sayacı Shop'taki Pet Space görselini kullanır
+local headerImages = {}
+local function collectHeaderIcons(instance)
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "Name") == "HeaderIcon" and rawget(child, "ClassName") == "ImageLabel" then
+			headerImages[rawget(child, "Image")] = true
+		end
+		collectHeaderIcons(child)
+	end
+end
+collectHeaderIcons(S.localPlayer)
+for _, key in { "Shop", "Rebirth", "Settings", "Pets", "Gifts", "Quests", "Index", "Stats", "Trails", "Auras", "PetSpace" } do
+	assert(Config.Icons[key] ~= "" and headerImages[Config.Icons[key]], "pencere başlığında menüdeki görsel yok: " .. key)
+end
+print("window header icons ok")
 print("DONE")

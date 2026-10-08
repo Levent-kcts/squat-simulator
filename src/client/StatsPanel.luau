@@ -91,10 +91,11 @@ function StatsPanel.init(screenGui)
 		BackgroundColor3 = Color3.fromRGB(70, 160, 255),
 	}, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	UIStyle.headerIcon(header, Config.Icons.Stats, "📊", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
 	text(header, {
-		Position = UDim2.fromOffset(16, 8),
-		Size = UDim2.new(1, -90, 1, -16),
-		Text = "📊 STATS",
+		Position = UDim2.fromOffset(68, 8),
+		Size = UDim2.new(1, -150, 1, -16),
+		Text = "STATS",
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 3)

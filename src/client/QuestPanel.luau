@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 -- Ses (isteğe bağlı): ödül alınınca kısa jingle
@@ -93,10 +94,11 @@ function QuestPanel.init(screenGui, showToast)
 		BackgroundColor3 = Color3.fromRGB(255, 160, 40),
 	}, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	UIStyle.headerIcon(header, Config.Icons.Quests, "📜", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
 	makeText(header, {
-		Position = UDim2.fromOffset(16, 8),
-		Size = UDim2.fromOffset(300, 40),
-		Text = "📜 DAILY QUESTS",
+		Position = UDim2.fromOffset(68, 8),
+		Size = UDim2.fromOffset(250, 40),
+		Text = "DAILY QUESTS",
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 3)

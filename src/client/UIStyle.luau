@@ -369,6 +369,29 @@ function UIStyle.brickSkin(parent, cols, rows, radius, opts)
 	return holder
 end
 
+-- PENCERE BAŞLIĞI SİMGESİ: sol menüdeki / sağ üstteki düğmeyle AYNI görsel (imageId = Config.Icons.X) olsun diye tek yerden çizilir; görsel yüklü değilse emoji yazısı kalır.
+-- props: Position, Size (kare). Döner: simge nesnesi (ImageLabel ya da TextLabel, adı 'HeaderIcon').
+function UIStyle.headerIcon(parent, imageId, emoji, props)
+	local icon
+	if type(imageId) == "string" and imageId ~= "" then
+		icon = Instance.new("ImageLabel")
+		icon.Image = imageId
+		icon.ScaleType = Enum.ScaleType.Fit
+	else
+		icon = Instance.new("TextLabel")
+		icon.Text = emoji
+		icon.Font = Enum.Font.FredokaOne
+		icon.TextScaled = true
+		icon.TextColor3 = Color3.new(1, 1, 1)
+	end
+	icon.Name = "HeaderIcon"
+	icon.BackgroundTransparency = 1
+	icon.Position = props.Position
+	icon.Size = props.Size
+	icon.Parent = parent
+	return icon
+end
+
 -- İKSİR SİMGESİ (Frame'lerden çizilir): mantar, cam boyun, renkli sıvı dolu yuvarlak gövde (gradyan), parlak yansıma ve ortasında iksirin emojisi.
 -- potion: Config.Potions.List girdisi (color, emoji, rainbow). props: Position, Size, AnchorPoint ... Kare bir Frame döner.
 local RAINBOW = {

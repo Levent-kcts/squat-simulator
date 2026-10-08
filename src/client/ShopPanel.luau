@@ -63,10 +63,11 @@ function ShopPanel.init(screenGui, showToast)
 	}, panel)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, header)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	UIStyle.headerIcon(header, Config.Icons.Shop, "🛒", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
 	text(header, {
-		Position = UDim2.fromOffset(16, 6),
-		Size = UDim2.new(1, -90, 1, -12),
-		Text = "🛒 SHOP",
+		Position = UDim2.fromOffset(68, 6),
+		Size = UDim2.new(1, -150, 1, -12),
+		Text = "SHOP",
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 3)

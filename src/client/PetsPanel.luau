@@ -193,10 +193,11 @@ function PetsPanel.init(screenGui, showToast, openShop)
 	create("UIStroke", { Thickness = 3, Color = WHITE, Transparency = 0.75 }, panel)
 
 	-- Üst şerit: başlık, çarpan, envanter sayısı, More Space, X
+	UIStyle.headerIcon(panel, Config.Icons.Pets, "🐾", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(44, 44) })
 	makeText(panel, {
-		Position = UDim2.fromOffset(18, 6),
-		Size = UDim2.fromOffset(150, 40),
-		Text = "🐾 Pets",
+		Position = UDim2.fromOffset(62, 6),
+		Size = UDim2.fromOffset(110, 40),
+		Text = "Pets",
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = WHITE,
 	}, 3)
@@ -215,12 +216,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 	}, panel)
 	UIStyle.round(countBox, 10)
 	create("UIStroke", { Thickness = 2, Color = WHITE, Transparency = 0.7 }, countBox)
-	makeText(countBox, {
-		Position = UDim2.fromOffset(5, 3),
-		Size = UDim2.fromOffset(30, 30),
-		Text = "🎒",
-		TextColor3 = WHITE,
-	}, 0)
+	UIStyle.headerIcon(countBox, Config.Icons.PetSpace, "🎒", { Position = UDim2.fromOffset(3, 2), Size = UDim2.fromOffset(32, 32) }) -- Shop'taki Pet Space görseliyle aynı
 	local countText = makeText(countBox, {
 		Position = UDim2.fromOffset(38, 3),
 		Size = UDim2.new(1, -42, 1, -6),

@@ -953,6 +953,7 @@ safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",
 	icon = "✨",
+	image = Config.Icons.Trails,
 	headerTop = Color3.fromRGB(255, 215, 50),
 	headerBottom = Color3.fromRGB(255, 110, 30),
 	panelColor = Color3.fromRGB(75, 32, 22),
@@ -969,6 +970,7 @@ local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 local aurasPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Auras",
 	icon = "🔮",
+	image = Config.Icons.Auras,
 	headerTop = Color3.fromRGB(190, 80, 255),
 	headerBottom = Color3.fromRGB(125, 40, 205),
 	panelColor = Color3.fromRGB(45, 25, 70),

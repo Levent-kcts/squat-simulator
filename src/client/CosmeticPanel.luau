@@ -70,7 +70,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 		BackgroundColor3 = options.headerTop,
 	}, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	makeText(header, { Position = UDim2.fromOffset(14, 8), Size = UDim2.fromOffset(40, 40), Text = options.icon }, 0)
+	UIStyle.headerIcon(header, options.image, options.icon, { Position = UDim2.fromOffset(12, 5), Size = UDim2.fromOffset(46, 46) }) -- image: menüdeki düğmeyle aynı görsel (Config.Icons), yoksa icon emojisi
 	makeText(header, {
 		Position = UDim2.fromOffset(60, 8),
 		Size = UDim2.new(0.5, 0, 1, -16),

@@ -80,9 +80,10 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		BackgroundColor3 = Color3.fromRGB(255, 170, 30),
 	}, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	UIStyle.headerIcon(header, Config.Icons.Gifts, "🎁", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
 	makeText(header, {
-		Position = UDim2.fromOffset(16, 8),
-		Size = UDim2.new(0.7, 0, 1, -16),
+		Position = UDim2.fromOffset(68, 8),
+		Size = UDim2.new(0.7, -50, 1, -16),
 		Text = "Playtime Rewards",
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.new(1, 1, 1),
