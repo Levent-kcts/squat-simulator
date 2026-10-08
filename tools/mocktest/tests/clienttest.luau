@@ -206,5 +206,22 @@ assert(Config.Icons.LegMuscle ~= "" and countImages(Config.Icons.LegMuscle) >= 1
 for _, key in { "Vip", "PetSpace", "WinPack", "WinPackBig" } do
 	assert(Config.Icons[key] ~= nil, "Config.Icons." .. key .. " tanımlı olmalı (boş olabilir)")
 end
+-- Pet Space kartında simgenin sağ altında büyük '+' rozeti (yükseltme belli olsun)
+local function findNamed(name)
+	local found
+	local function walk(instance)
+		for _, child in rawget(instance, "_children") do
+			if rawget(child, "Name") == name then
+				found = child
+			end
+			walk(child)
+		end
+	end
+	walk(S.localPlayer)
+	return found
+end
+local badge = findNamed("UpgradeBadge")
+assert(badge, "Pet Space kartında '+' rozeti olmalı")
+assert(rawget(findNamed("BadgeText"), "Text") == "+", "rozet yazısı '+' olmalı")
 print("shop card images ok")
 print("DONE")

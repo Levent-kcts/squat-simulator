@@ -238,7 +238,8 @@ function ShopPanel.init(screenGui, showToast)
 
 	-- Tek kart: renkli kutu, simge, ad, açıklama ve fiyat/satın alma butonu
 	-- icon: emoji (yedek), imageId: Config.Icons'taki görsel (varsa emoji yerine büyük resim görünür)
-	local function addCard(order, color, icon, imageId, name, detail, priceText, onBuy)
+	-- badge: simgenin sağ altına konan büyük yeşil rozetin yazısı (örn. '+': yükseltme olduğu belli olsun)
+	local function addCard(order, color, icon, imageId, name, detail, priceText, onBuy, badge)
 		local card = create("Frame", { LayoutOrder = order, BackgroundColor3 = color }, packGrid)
 		create("UICorner", { CornerRadius = UDim.new(0, 10) }, card)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
@@ -256,6 +257,21 @@ function ShopPanel.init(screenGui, showToast)
 			}, card)
 		else
 			text(card, { Name = "Icon", Position = UDim2.fromScale(0.1, 0.03), Size = UDim2.fromOffset(144, 70), Text = icon }, 0)
+		end
+		if badge then
+			local disc = create("Frame", {
+				Name = "UpgradeBadge",
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, CARD_ICON * 0.4, 0, CARD_ICON * 0.88),
+				Size = UDim2.fromOffset(38, 38),
+				BackgroundColor3 = BUY_GREEN,
+				ZIndex = 5,
+			}, card)
+			create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
+			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, disc)
+			UIStyle.soften(disc, { radius = 19, strength = 0.3 })
+			local mark = text(disc, { Position = UDim2.fromScale(0.05, 0), Size = UDim2.fromScale(0.9, 0.92), Text = badge, TextColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, 2)
+			mark.Name = "BadgeText"
 		end
 		text(card, { Position = UDim2.fromScale(0.04, 0.45), Size = UDim2.fromScale(0.92, 0.14), Text = name, TextColor3 = Color3.new(1, 1, 1) }, 2)
 		text(card, { Position = UDim2.fromScale(0.04, 0.6), Size = UDim2.fromScale(0.92, 0.1), Text = detail, TextColor3 = Color3.fromRGB(255, 245, 200) }, 1.5)
@@ -293,7 +309,7 @@ function ShopPanel.init(screenGui, showToast)
 			else
 				showToast(false, `{product.name} is coming soon!`)
 			end
-		end)
+		end, product.badge)
 	end
 
 	close.MouseButton1Click:Connect(function()
