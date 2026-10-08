@@ -187,4 +187,24 @@ assert(hasText("USE  x2"), "envanterdeki iksirde 'USE x2' yazmalı")
 S.localPlayer:SetAttribute("PotionItems", "")
 assert(not hasText("USE  x"), "envanter boşalınca fiyat dönmeli")
 print("shop potions ok")
+
+-- Shop PACKS kartları: Config.Icons'ta görsel varsa (Power kartları LegMuscle) emoji yerine ImageLabel görünür
+local function countImages(image)
+	local count = 0
+	local function walk(instance)
+		for _, child in rawget(instance, "_children") do
+			if rawget(child, "ClassName") == "ImageLabel" and rawget(child, "Name") == "Icon" and rawget(child, "Image") == image then
+				count += 1
+			end
+			walk(child)
+		end
+	end
+	walk(S.localPlayer)
+	return count
+end
+assert(Config.Icons.LegMuscle ~= "" and countImages(Config.Icons.LegMuscle) >= 1, "Power kartlarında bacak görseli (ImageLabel) olmalı")
+for _, key in { "Vip", "PetSpace", "WinPack", "WinPackBig" } do
+	assert(Config.Icons[key] ~= nil, "Config.Icons." .. key .. " tanımlı olmalı (boş olabilir)")
+end
+print("shop card images ok")
 print("DONE")

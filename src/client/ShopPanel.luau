@@ -19,6 +19,7 @@ local FONT = Enum.Font.FredokaOne
 local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel karakter)
 local BUY_GREEN = Color3.fromRGB(72, 205, 40)
 local USE_BLUE = Color3.fromRGB(60, 160, 255)
+local CARD_ICON = 80 -- PACKS kartlarındaki simge kenarı (piksel)
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -230,24 +231,38 @@ function ShopPanel.init(screenGui, showToast)
 		BackgroundTransparency = 1,
 	}, list)
 	create("UIGridLayout", {
-		CellSize = UDim2.fromOffset(180, 168),
+		CellSize = UDim2.fromOffset(180, 192),
 		CellPadding = UDim2.fromOffset(10, 10),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, packGrid)
 
 	-- Tek kart: renkli kutu, simge, ad, açıklama ve fiyat/satın alma butonu
-	local function addCard(order, color, icon, name, detail, priceText, onBuy)
+	-- icon: emoji (yedek), imageId: Config.Icons'taki görsel (varsa emoji yerine büyük resim görünür)
+	local function addCard(order, color, icon, imageId, name, detail, priceText, onBuy)
 		local card = create("Frame", { LayoutOrder = order, BackgroundColor3 = color }, packGrid)
 		create("UICorner", { CornerRadius = UDim.new(0, 10) }, card)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 		UIStyle.soften(card, { radius = 12, strength = 0.28 })
-		text(card, { Position = UDim2.fromScale(0.1, 0.03), Size = UDim2.fromScale(0.8, 0.3), Text = icon }, 0)
-		text(card, { Position = UDim2.fromScale(0.04, 0.34), Size = UDim2.fromScale(0.92, 0.17), Text = name, TextColor3 = Color3.new(1, 1, 1) }, 2)
-		text(card, { Position = UDim2.fromScale(0.04, 0.52), Size = UDim2.fromScale(0.92, 0.12), Text = detail, TextColor3 = Color3.fromRGB(255, 245, 200) }, 1.5)
+		if imageId and imageId ~= "" then
+			create("ImageLabel", {
+				Name = "Icon",
+				AnchorPoint = Vector2.new(0.5, 0),
+				Position = UDim2.new(0.5, 0, 0, 4),
+				Size = UDim2.fromOffset(CARD_ICON, CARD_ICON),
+				BackgroundTransparency = 1,
+				Image = imageId,
+				ScaleType = Enum.ScaleType.Fit,
+				ZIndex = 3,
+			}, card)
+		else
+			text(card, { Name = "Icon", Position = UDim2.fromScale(0.1, 0.03), Size = UDim2.fromOffset(144, 70), Text = icon }, 0)
+		end
+		text(card, { Position = UDim2.fromScale(0.04, 0.45), Size = UDim2.fromScale(0.92, 0.14), Text = name, TextColor3 = Color3.new(1, 1, 1) }, 2)
+		text(card, { Position = UDim2.fromScale(0.04, 0.6), Size = UDim2.fromScale(0.92, 0.1), Text = detail, TextColor3 = Color3.fromRGB(255, 245, 200) }, 1.5)
 		local buy = create("TextButton", {
 			AnchorPoint = Vector2.new(0.5, 1),
 			Position = UDim2.fromScale(0.5, 0.94),
-			Size = UDim2.fromScale(0.8, 0.24),
+			Size = UDim2.fromScale(0.8, 0.22),
 			Text = "",
 			BackgroundColor3 = BUY_GREEN,
 		}, card)
@@ -262,7 +277,7 @@ function ShopPanel.init(screenGui, showToast)
 
 	-- VIP game pass (Config.VipGamePassId): fiyatı game pass'in kendisi belirler (Creator Hub; en çok 150 Robux), kartta 'BUY' / 'SOON' yazar
 	order += 1
-	addCard(order, Color3.fromRGB(255, 80, 200), "👑", "VIP", "2x Wins pad", if Config.VipGamePassId > 0 then "BUY" else "SOON", function()
+	addCard(order, Color3.fromRGB(255, 80, 200), "👑", Config.Icons.Vip, "VIP", "2x Wins pad", if Config.VipGamePassId > 0 then "BUY" else "SOON", function()
 		if Config.VipGamePassId > 0 then
 			MarketplaceService:PromptGamePassPurchase(player, Config.VipGamePassId)
 		else
@@ -272,7 +287,7 @@ function ShopPanel.init(screenGui, showToast)
 
 	for _, product in Config.Shop.Products do
 		order += 1
-		addCard(order, product.color, product.icon, product.name, product.detail, `{ROBUX} {product.robux}`, function()
+		addCard(order, product.color, product.icon, product.imageKey and Config.Icons[product.imageKey], product.name, product.detail, `{ROBUX} {product.robux}`, function()
 			if product.productId > 0 then
 				MarketplaceService:PromptProductPurchase(player, product.productId)
 			else

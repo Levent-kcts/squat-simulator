@@ -108,13 +108,13 @@ return {
 	-- FİYAT KURALI (sahibi 2026-10-09: 'ucuz olsun, en pahalı şey 150 Robux'u geçmesin'): bütün Robux fiyatları (Shop ürünleri, iksirler, iz/aura, Rebirth SKIP, Offline DOUBLE, Gifts kilidi, VIP game pass) en çok 150'dir; tools/mocktest/tests/pricetest.luau denetler.
 	Shop = {
 		Products = {
-			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", kind = "petSpace", amount = 25, robux = 49, productId = 0, color = Color3.fromRGB(235, 70, 70) },
+			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", kind = "petSpace", amount = 25, robux = 49, productId = 0, color = Color3.fromRGB(235, 70, 70) },
 			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
-			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", kind = "moves", amount = 1000, robux = 15, productId = 0, quick = true, color = Color3.fromRGB(255, 45, 140) },
-			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", kind = "moves", amount = 10000, robux = 49, productId = 0, quick = true, color = Color3.fromRGB(232, 32, 112) },
-			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", kind = "moves", amount = 100000, robux = 149, productId = 0, quick = true, color = Color3.fromRGB(180, 20, 70) },
-			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 25, productId = 0, color = Color3.fromRGB(70, 210, 90) },
-			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
+			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 15, productId = 0, quick = true, color = Color3.fromRGB(255, 45, 140) },
+			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 10000, robux = 49, productId = 0, quick = true, color = Color3.fromRGB(232, 32, 112) },
+			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 100000, robux = 149, productId = 0, quick = true, color = Color3.fromRGB(180, 20, 70) },
+			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", imageKey = "WinPack", kind = "stageWins", stage = 8, robux = 25, productId = 0, color = Color3.fromRGB(70, 210, 90) },
+			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", imageKey = "WinPackBig", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
 		},
 		-- İKSİR ÜRÜNLERİ (Shop > Potions bölümü): her iksir (Config.Potions.List) x süre. id = iksir id + dakika (luck15, luck60, muscle15 ...).
 		-- Çarktan / Gifts'ten / günlük görev bonusundan çıkan iksirler ENVANTERE girer (kayıtlı) ve burada fiyat yerine 'USE xN' yazar; envanterde yoksa fiyat yazar,
@@ -241,7 +241,13 @@ return {
 		Stats = "", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
 		Trash = "rbxassetid://72909566398443", -- Pets menüsündeki çöp kutusu simgesi: sahibinin yüklediği gri çöp kutusu (assets/icons/trash.png, Image türü, doğrulandı). Boş bırakılırsa aynı görünümde Frame'lerden çizilir
 		WheelFace = "", -- günlük çarkın hazır yüzü (daire şeklinde, şeffaf köşeli PNG: tools/make_wheel_image.py -> assets/icons/wheel.png). Yüklenince Image ID yazılır; boşken yüz arayüz nesneleriyle çizilir
-		Wins = "", -- sol üstteki Win sayacının kupa simgesi (görsel yüklenince ID yazılır; boşken 🏆 emojisi)
+		Wins = "", -- sol üstteki Win sayacının kupa simgesi (assets/icons/trophy.png, tools/icons/make_icons.py; görsel yüklenince ID yazılır; boşken 🏆 emojisi)
+		-- Shop kartı simgeleri (tools/icons/make_icons.py -> assets/icons/shop_<ad>.png; sahibi Image olarak yükler, ID'ler buraya yazılır; boşken kartta emoji görünür).
+		-- Power kartları LegMuscle simgesini kullanır (aşağıdaki Products[].imageKey).
+		Vip = "", -- VIP kartı: altın taç (shop_vip.png)
+		PetSpace = "", -- Pet Space kartı: pati rozetli kırmızı sırt çantası (shop_petspace.png)
+		WinPack = "", -- Win Pack kartı: ağzından kupa fırlayan çuval (shop_winpack.png)
+		WinPackBig = "", -- Mega Win Pack kartı: altın ve kupa dolu açık sandık (shop_winpack_big.png)
 		Friends = "rbxassetid://139194631320002", -- sağ üstteki arkadaş bonusu simgesi: sahibinin yüklediği 'friends' görseli (Image türü, doğrulandı). Boş bırakılırsa 👥 emojisi
 		LegMuscle = "rbxassetid://81118324194991", -- Offline Earnings penceresindeki büyük bacak kası simgesi: sahibinin yüklediği "leg-emoji-clipart-xl" görseli (Image türü, doğrulandı). Boş bırakılırsa 🦵 emojisi görünür
 		Shop = "rbxassetid://88209777338839",
