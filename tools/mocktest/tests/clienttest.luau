@@ -174,4 +174,17 @@ for _, id in { "Quick_power1k", "Quick_power10k", "Quick_power100k", "PlusButton
 	rawget(button, "_handlers").MouseButton1Click() -- coming soon / Shop açma: hata vermemeli
 end
 print("quick buy buttons ok")
+
+-- Shop > POTIONS: her iksir x süre için bir kart; fiyat Robux simgesiyle yazar, envanterde varsa 'USE xN' yazar (mavi), tükenince fiyat döner
+local robuxSign = utf8.char(0xE002)
+assert(hasText("POTIONS") and hasText("PACKS"), "Shop bölüm başlıkları yok")
+for _, sku in Config.Shop.Potions do
+	assert(hasText(robuxSign .. " " .. sku.robux), "iksir fiyatı yok: " .. sku.id)
+end
+assert(hasText("15 min") and hasText("60 min"), "iksir süreleri yok")
+S.localPlayer:SetAttribute("PotionItems", "luck15:2")
+assert(hasText("USE  x2"), "envanterdeki iksirde 'USE x2' yazmalı")
+S.localPlayer:SetAttribute("PotionItems", "")
+assert(not hasText("USE  x"), "envanter boşalınca fiyat dönmeli")
+print("shop potions ok")
 print("DONE")

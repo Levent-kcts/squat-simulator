@@ -60,7 +60,21 @@ PlayerStats.questEvent(player, "walls", 5)
 PlayerStats.questEvent(player, "clicks", 10)
 print("QuestData after events:", player:GetAttribute("QuestData"))
 print("muscle", stat(Config.StatLegMuscle), "wins", stat(Config.StatWins), "level", stat(Config.StatLevel))
+-- İksirler kayda girer: envanterdeki iksir ve etkin iksirin kalan süresi çıkış-giriş sonrası geri gelir
+PlayerStats.dev(player, "PotionWins")
+PlayerStats.dev(player, "PotionMuscle")
+assert(PlayerStats.usePotion(player, "muscle15") == true, "iksir içilebilmeli")
 S.events.PlayerRemoving(player)
 local saved = S.datastore["Player_4242"]
 print("saved TutorialDone:", saved and saved.TutorialDone, "Quests day:", saved and saved.Quests and saved.Quests.day, "pets:", saved and #saved.Pets)
+assert(saved.PotionItems and saved.PotionItems.wins15 == 1, "envanterdeki iksir kaydedilmeli")
+assert(saved.BoostUntil and saved.BoostUntil.muscle > os.time(), "etkin iksirin bitiş zamanı kaydedilmeli")
+local again = S.newInstance("Player")
+again.Name = "Tester"
+again.UserId = 4242
+rawset(again, "Parent", {})
+S.events.PlayerAdded(again)
+assert(string.find(again:GetAttribute("PotionItems") or "", "wins15:1", 1, true), "iksir envanteri girişte geri gelmeli: " .. tostring(again:GetAttribute("PotionItems")))
+assert(again:GetAttribute("MuscleBoostUntil") > os.time(), "etkin iksir girişte sürmeli")
+print("potions persisted ok")
 print("DONE")

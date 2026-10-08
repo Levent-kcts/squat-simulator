@@ -11,6 +11,8 @@ local Catalog = {
 	SkinById = {},
 	TrainingAreaById = {},
 	PotionByKind = {}, -- iksirler (Config.Potions.List) ödül türüne göre
+	PotionById = {}, -- iksirler id'ye göre (luck, muscle, wins, rainbow)
+	PotionSkuById = {}, -- Shop'ta satılan iksir ürünleri (Config.Shop.Potions): luck15, luck60 ...; sku.def = iksir, sku.kind = ödül türü
 }
 
 for _, item in Config.Items do
@@ -18,6 +20,19 @@ for _, item in Config.Items do
 end
 for _, potion in Config.Potions.List do
 	Catalog.PotionByKind[potion.kind] = potion
+	Catalog.PotionById[potion.id] = potion
+end
+for _, sku in Config.Shop.Potions do
+	sku.def = Catalog.PotionById[sku.potion]
+	sku.kind = sku.def.kind
+	Catalog.PotionSkuById[sku.id] = sku
+end
+
+-- Bir iksir türü (kind: boostLuck...) ve süre (dakika) için Shop ürün kimliği ('luck15'); öyle bir ürün yoksa nil. Çark/Gifts/görev iksirleri envantere bu kimlikle girer.
+function Catalog.potionSkuFor(kind, minutes)
+	local potion = Catalog.PotionByKind[kind]
+	local id = potion and `{potion.id}{minutes}`
+	return if id and Catalog.PotionSkuById[id] then id else nil
 end
 
 -- Petler: ilk boy (Small) Config.Pets'ten gelir; birleştirilmiş (büyümüş) boylar 'id@boy' kimliğiyle burada üretilir (boy adı, çarpan ve boy Config.PetFusion'dan).

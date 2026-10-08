@@ -84,6 +84,24 @@ assert(player:GetAttribute("RainbowBoostUntil") > os.time(), "Rainbow Potion bit
 for _, kind in { "PotionLuck", "PotionMuscle", "PotionWins", "PotionRainbow" } do
 	try("dev " .. kind, PlayerStats.dev, player, kind)
 end
+-- İksir envanteri: DEV/çark/Gifts iksirleri ENVANTERE girer (Shop > Potions'ta 'USE xN'), kullanınca içilir ve adet düşer; envanterde yoksa kullanılamaz
+local function itemCount(sku)
+	return tonumber(string.match(player:GetAttribute("PotionItems") or "", sku .. ":(%d+)")) or 0
+end
+local luckItemsBefore = itemCount("luck15")
+try("dev PotionLuck inventory", PlayerStats.dev, player, "PotionLuck")
+try("dev PotionLuck inventory 2", PlayerStats.dev, player, "PotionLuck")
+assert(itemCount("luck15") == luckItemsBefore + 2, "envanterde luck15 iki artmalı: " .. tostring(player:GetAttribute("PotionItems")))
+local luckBeforeUse = player:GetAttribute("LuckBoostUntil")
+local usedOk = PlayerStats.usePotion(player, "luck15")
+assert(usedOk == true and player:GetAttribute("LuckBoostUntil") > luckBeforeUse, "iksir içilince süre başlamalı")
+assert(itemCount("luck15") == luckItemsBefore + 1, "kullanınca adet düşmeli")
+for _ = 1, luckItemsBefore + 1 do
+	assert(PlayerStats.usePotion(player, "luck15") == true)
+end
+assert(PlayerStats.usePotion(player, "luck15") == false, "envanterde kalmayan iksir kullanılamaz")
+assert(itemCount("luck15") == 0 and not string.find(player:GetAttribute("PotionItems") or "", "luck15", 1, true), "tükenen iksir envanterden silinmeli")
+assert(PlayerStats.usePotion(player, "yok-boyle-iksir") == false)
 -- Hızlı satın alma (+1K Power): kind 'moves' amount tıklamalık bacak kası verir
 local muscleBeforePurchase = PlayerStats.getMuscle(player)
 try("processPurchase power1k", PlayerStats.processPurchase, player, "p9", { kind = "moves", amount = 1000 })

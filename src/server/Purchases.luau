@@ -37,6 +37,10 @@ function Purchases.init(wallService, notifyEvent)
 	for _, product in Config.Shop.Products do
 		add(product.productId, product.name, product)
 	end
+	-- İksir ürünleri (Config.Shop.Potions): Robux ile alınan iksir HEMEN içilir (applyProduct: kind boostXxx + minutes)
+	for _, sku in Config.Shop.Potions do
+		add(sku.productId, `{sku.def.name} ({sku.minutes} min)`, { kind = sku.kind, minutes = sku.minutes })
+	end
 
 	MarketplaceService.ProcessReceipt = function(receipt)
 		local entry = products[receipt.ProductId]

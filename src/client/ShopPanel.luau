@@ -1,16 +1,24 @@
--- Shop penceresi: Robux ile alınan ürünler (Config.Shop.Products) ve VIP game pass. Kartlardaki buton Roblox'un satın alma penceresini açar;
--- ödülü sunucu ProcessReceipt ile verir (server/Purchases). productId 0 olan ürünlerde kart "SOON" gösterir ve satın alma açılmaz.
+-- Shop penceresi: Robux ile alınan ürünler. İki bölüm:
+--  * POTIONS (Config.Shop.Potions): iksir kartları (sol resim, ad, etki, süre, yeşil buton). Envanterde o iksirden varsa (çark / Gifts / görev bonusundan çıkanlar)
+--    butonda fiyat yerine 'USE xN' yazar ve basınca iksir içilir (sunucu 'UsePotion'); hiç yoksa Robux fiyatı yazar ve basınca Roblox satın alma penceresi açılır (alınan iksir hemen içilir).
+--  * PACKS & MORE: VIP game pass ve Config.Shop.Products (Power paketleri, Pet Space, Win paketleri).
+-- productId 0 olan ürünlerde fiyat yine görünür ama basınca 'coming soon' bildirimi çıkar (Robux aşamasında ID'ler girilir). Ödülü sunucu ProcessReceipt ile verir (server/Purchases).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config"))
+require(Shared:WaitForChild("Catalog")) -- iksir ürünlerine (Config.Shop.Potions) .def / .kind alanlarını ekler
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 
 local ShopPanel = {}
 
 local FONT = Enum.Font.FredokaOne
+local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel karakter)
+local BUY_GREEN = Color3.fromRGB(72, 205, 40)
+local USE_BLUE = Color3.fromRGB(60, 160, 255)
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -33,18 +41,19 @@ end
 -- Döner: pencereyi açıp kapatan fonksiyon
 function ShopPanel.init(screenGui, showToast)
 	local player = Players.LocalPlayer
+	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.48),
-		Size = UDim2.fromOffset(560, 420),
+		Size = UDim2.fromOffset(640, 470),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
 		Active = true, -- pencereye tıklamak hareket başlatmasın
 		Visible = false,
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
-	create("UISizeConstraint", { MaxSize = Vector2.new(560, 420), MinSize = Vector2.new(300, 260) }, panel)
+	create("UISizeConstraint", { MaxSize = Vector2.new(640, 470), MinSize = Vector2.new(300, 260) }, panel)
 	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
 	local header = create("Frame", {
@@ -82,16 +91,153 @@ function ShopPanel.init(screenGui, showToast)
 		CanvasSize = UDim2.new(),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 	}, panel)
-	create("UIGridLayout", {
-		CellSize = UDim2.fromOffset(160, 168),
-		CellPadding = UDim2.fromOffset(10, 10),
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		SortOrder = Enum.SortOrder.LayoutOrder,
+	create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, list)
+	create("UIPadding", { PaddingRight = UDim.new(0, 8) }, list)
+
+	local function addHeader(order, label)
+		local row = text(list, {
+			LayoutOrder = order,
+			Size = UDim2.new(1, 0, 0, 28),
+			Text = label,
+			TextColor3 = Color3.fromRGB(255, 225, 90),
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, 2)
+		return row
+	end
+
+	-- ------------------------------------------------------------ POTIONS
+	addHeader(1, "POTIONS")
+	local potionGrid = create("Frame", {
+		LayoutOrder = 2,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
 	}, list)
+	create("UIGridLayout", {
+		CellSize = UDim2.fromOffset(292, 104),
+		CellPadding = UDim2.fromOffset(10, 10),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, potionGrid)
+
+	-- Envanter özniteliği 'luck15:2,wins60:1' -> { luck15 = 2, wins60 = 1 }
+	local function parseItems()
+		local items = {}
+		for sku, count in string.gmatch(player:GetAttribute("PotionItems") or "", "(%w+):(%d+)") do
+			items[sku] = tonumber(count)
+		end
+		return items
+	end
+
+	local potionRows = {}
+	local function addPotionCard(order, sku)
+		local potion = sku.def
+		local card = create("Frame", { LayoutOrder = order, BackgroundColor3 = UIStyle.lighten(potion.color, 0.2) }, potionGrid)
+		create("UICorner", { CornerRadius = UDim.new(0, 10) }, card)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
+		UIStyle.soften(card, { radius = 12, strength = 0.35 })
+		UIStyle.brickSkin(card, 9, 3, 12, { light = 0.92 })
+		local icon = UIStyle.potionIcon(card, potion, { Position = UDim2.fromOffset(8, 12), Size = UDim2.fromOffset(80, 80) })
+		icon.ZIndex = 3
+		text(card, {
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -10, 0, 4),
+			Size = UDim2.fromOffset(190, 26),
+			Text = potion.name,
+			TextColor3 = Color3.new(1, 1, 1),
+			TextXAlignment = Enum.TextXAlignment.Right,
+			ZIndex = 5,
+		}, 2)
+		text(card, {
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -10, 0, 30),
+			Size = UDim2.fromOffset(190, 16),
+			Text = potion.effect,
+			TextColor3 = Color3.fromRGB(240, 248, 255),
+			TextXAlignment = Enum.TextXAlignment.Right,
+			ZIndex = 5,
+		}, 1.5)
+		text(card, {
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -10, 0, 46),
+			Size = UDim2.fromOffset(190, 24),
+			Text = `{sku.minutes} min`,
+			TextColor3 = Color3.fromRGB(255, 225, 70),
+			TextXAlignment = Enum.TextXAlignment.Right,
+			ZIndex = 5,
+		}, 2)
+		local button = create("TextButton", {
+			Name = "Buy_" .. sku.id,
+			AnchorPoint = Vector2.new(1, 1),
+			Position = UDim2.new(1, -10, 1, -6),
+			Size = UDim2.fromOffset(150, 30),
+			Text = "",
+			AutoButtonColor = true,
+			BackgroundColor3 = BUY_GREEN,
+			ZIndex = 5,
+		}, card)
+		create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 10, strength = 0.3 })
+		local label = text(button, {
+			Position = UDim2.fromOffset(4, 2),
+			Size = UDim2.new(1, -8, 1, -6),
+			Text = "",
+			TextColor3 = Color3.new(1, 1, 1),
+			ZIndex = 6,
+		}, 2)
+		table.insert(potionRows, { sku = sku, button = button, label = label })
+
+		button.MouseButton1Click:Connect(function()
+			if (parseItems()[sku.id] or 0) > 0 then
+				task.spawn(function()
+					local ok, message = shopFunction:InvokeServer("UsePotion", sku.id)
+					showToast(ok, message or "")
+				end)
+			elseif sku.productId > 0 then
+				MarketplaceService:PromptProductPurchase(player, sku.productId)
+			else
+				showToast(false, `{potion.name} ({sku.minutes} min) is coming soon!`)
+			end
+		end)
+	end
+	for index, sku in Config.Shop.Potions do
+		addPotionCard(index, sku)
+	end
+
+	-- Envanterde o iksirden varsa fiyat yerine 'USE xN' (mavi), yoksa Robux fiyatı (yeşil)
+	local function refreshPotions()
+		local items = parseItems()
+		for _, row in potionRows do
+			local owned = items[row.sku.id] or 0
+			if owned > 0 then
+				row.label.Text = `USE  x{owned}`
+				row.button.BackgroundColor3 = USE_BLUE
+			else
+				row.label.Text = `{ROBUX} {row.sku.robux}`
+				row.button.BackgroundColor3 = BUY_GREEN
+			end
+		end
+	end
+	player:GetAttributeChangedSignal("PotionItems"):Connect(refreshPotions)
+	refreshPotions()
+
+	-- ------------------------------------------------------------ PACKS & MORE
+	addHeader(3, "PACKS & MORE")
+	local packGrid = create("Frame", {
+		LayoutOrder = 4,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+	}, list)
+	create("UIGridLayout", {
+		CellSize = UDim2.fromOffset(180, 168),
+		CellPadding = UDim2.fromOffset(10, 10),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, packGrid)
 
 	-- Tek kart: renkli kutu, simge, ad, açıklama ve fiyat/satın alma butonu
 	local function addCard(order, color, icon, name, detail, priceText, onBuy)
-		local card = create("Frame", { LayoutOrder = order, BackgroundColor3 = color }, list)
+		local card = create("Frame", { LayoutOrder = order, BackgroundColor3 = color }, packGrid)
 		create("UICorner", { CornerRadius = UDim.new(0, 10) }, card)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 		UIStyle.soften(card, { radius = 12, strength = 0.28 })
@@ -103,7 +249,7 @@ function ShopPanel.init(screenGui, showToast)
 			Position = UDim2.fromScale(0.5, 0.94),
 			Size = UDim2.fromScale(0.8, 0.24),
 			Text = "",
-			BackgroundColor3 = Color3.fromRGB(50, 150, 255),
+			BackgroundColor3 = BUY_GREEN,
 		}, card)
 		create("UICorner", { CornerRadius = UDim.new(0, 8) }, buy)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, buy)
@@ -114,7 +260,7 @@ function ShopPanel.init(screenGui, showToast)
 
 	local order = 0
 
-	-- VIP game pass (Config.VipGamePassId): kartta fiyat yazmaz, Roblox penceresi fiyatı gösterir
+	-- VIP game pass (Config.VipGamePassId): fiyatı game pass'in kendisi belirler (Creator Hub; en çok 150 Robux), kartta 'BUY' / 'SOON' yazar
 	order += 1
 	addCard(order, Color3.fromRGB(255, 80, 200), "👑", "VIP", "2x Wins pad", if Config.VipGamePassId > 0 then "BUY" else "SOON", function()
 		if Config.VipGamePassId > 0 then
@@ -126,7 +272,7 @@ function ShopPanel.init(screenGui, showToast)
 
 	for _, product in Config.Shop.Products do
 		order += 1
-		addCard(order, product.color, product.icon, product.name, product.detail, if product.productId > 0 then `R$ {product.robux}` else "SOON", function()
+		addCard(order, product.color, product.icon, product.name, product.detail, `{ROBUX} {product.robux}`, function()
 			if product.productId > 0 then
 				MarketplaceService:PromptProductPurchase(player, product.productId)
 			else

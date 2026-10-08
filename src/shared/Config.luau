@@ -103,21 +103,31 @@ return {
 
 	-- Shop (sol menüdeki Shop butonu): Robux ile alınan Developer Product'lar. productId: Creator Hub > Monetization > Developer Products'ta
 	-- oluşturulan ürünün ID'si; 0 = henüz yok, kart "Coming soon" gösterir. Satın alma sunucuda ProcessReceipt ile doğrulanır
-	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostLuck / boostMuscle / boostWins / boostRainbow (iksirler, minutes dk; bkz. Config.Potions), petSpace (amount ek pet envanter yeri; Pets menüsündeki çanta + işareti bu pencereyi açar), wins (amount Win),
-	-- stageWins (stage. aşamanın Win ödülü kadar), moves (amount hareketlik kas). Fiyatlar (robux) geçicidir.
+	-- (server/Purchases): aynı satın alma iki kez ödül vermez. kind: boostLuck / boostMuscle / boostWins / boostRainbow (iksirler ARTIK Shop.Potions listesindedir), petSpace (amount ek pet envanter yeri; Pets menüsündeki çanta + işareti bu pencereyi açar), wins (amount Win),
+	-- stageWins (stage. aşamanın Win ödülü kadar), moves (amount hareketlik kas).
+	-- FİYAT KURALI (sahibi 2026-10-09: 'ucuz olsun, en pahalı şey 150 Robux'u geçmesin'): bütün Robux fiyatları (Shop ürünleri, iksirler, iz/aura, Rebirth SKIP, Offline DOUBLE, Gifts kilidi, VIP game pass) en çok 150'dir; tools/mocktest/tests/pricetest.luau denetler.
 	Shop = {
 		Products = {
-			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", kind = "petSpace", amount = 25, robux = 79, productId = 0, color = Color3.fromRGB(235, 70, 70) },
-			{ id = "luck30", name = "Luck Potion", detail = "2x egg luck, 30 min", icon = "🍀", kind = "boostLuck", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(70, 200, 90) },
-			{ id = "boostMuscle30", name = "Muscle Potion", detail = "2x muscle, 30 min", icon = "💪", kind = "boostMuscle", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 40) },
-			{ id = "boostWins30", name = "Wins Potion", detail = "2x wins, 30 min", icon = "🏆", kind = "boostWins", minutes = 30, robux = 49, productId = 0, color = Color3.fromRGB(255, 205, 50) },
-			{ id = "rainbow30", name = "Rainbow Potion", detail = "ALL 3 potions, 30 min", icon = "🌈", kind = "boostRainbow", minutes = 30, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
+			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", kind = "petSpace", amount = 25, robux = 49, productId = 0, color = Color3.fromRGB(235, 70, 70) },
 			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
-			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", kind = "moves", amount = 1000, robux = 19, productId = 0, quick = true, color = Color3.fromRGB(255, 45, 140) },
-			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", kind = "moves", amount = 10000, robux = 79, productId = 0, quick = true, color = Color3.fromRGB(232, 32, 112) },
-			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", kind = "moves", amount = 100000, robux = 399, productId = 0, quick = true, color = Color3.fromRGB(180, 20, 70) },
-			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 29, productId = 0, color = Color3.fromRGB(70, 210, 90) },
+			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", kind = "moves", amount = 1000, robux = 15, productId = 0, quick = true, color = Color3.fromRGB(255, 45, 140) },
+			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", kind = "moves", amount = 10000, robux = 49, productId = 0, quick = true, color = Color3.fromRGB(232, 32, 112) },
+			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", kind = "moves", amount = 100000, robux = 149, productId = 0, quick = true, color = Color3.fromRGB(180, 20, 70) },
+			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", kind = "stageWins", stage = 8, robux = 25, productId = 0, color = Color3.fromRGB(70, 210, 90) },
 			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", kind = "stageWins", stage = 12, robux = 99, productId = 0, color = Color3.fromRGB(190, 90, 255) },
+		},
+		-- İKSİR ÜRÜNLERİ (Shop > Potions bölümü): her iksir (Config.Potions.List) x süre. id = iksir id + dakika (luck15, luck60, muscle15 ...).
+		-- Çarktan / Gifts'ten / günlük görev bonusundan çıkan iksirler ENVANTERE girer (kayıtlı) ve burada fiyat yerine 'USE xN' yazar; envanterde yoksa fiyat yazar,
+		-- Robux ile alınan iksir hemen içilir. productId: Creator Hub'da oluşturulan Developer Product (0 = 'coming soon').
+		Potions = {
+			{ id = "luck15", potion = "luck", minutes = 15, robux = 29, productId = 0 },
+			{ id = "luck60", potion = "luck", minutes = 60, robux = 89, productId = 0 },
+			{ id = "muscle15", potion = "muscle", minutes = 15, robux = 19, productId = 0 },
+			{ id = "muscle60", potion = "muscle", minutes = 60, robux = 59, productId = 0 },
+			{ id = "wins15", potion = "wins", minutes = 15, robux = 19, productId = 0 },
+			{ id = "wins60", potion = "wins", minutes = 60, robux = 59, productId = 0 },
+			{ id = "rainbow15", potion = "rainbow", minutes = 15, robux = 49, productId = 0 },
+			{ id = "rainbow60", potion = "rainbow", minutes = 60, robux = 149, productId = 0 },
 		},
 	},
 
@@ -516,10 +526,10 @@ return {
 		Prizes = {
 			{ kind = "wins", mult = 2, weight = 24, icon = "🏆", label = "Wins", color = Color3.fromRGB(235, 80, 90) },
 			{ kind = "muscle", clicks = 500, weight = 24, icon = "💪", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
-			{ kind = "boostMuscle", minutes = 10, weight = 14, icon = "💪", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
+			{ kind = "boostMuscle", minutes = 15, weight = 14, icon = "💪", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
 			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
 			{ kind = "muscle", clicks = 2000, weight = 14, icon = "💪", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
-			{ kind = "boostWins", minutes = 10, weight = 8, icon = "🏆", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
+			{ kind = "boostWins", minutes = 15, weight = 8, icon = "🏆", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
 			{ kind = "pet", weight = 5, icon = "🐾", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
 			{ kind = "jackpot", mult = 20, clicks = 5000, weight = 1, icon = "💎", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
 		},
@@ -605,13 +615,14 @@ return {
 	-- Yumurta paneli: "T" tuşu bu seçenekler arasında geçiş yapar (bir seferde kaç yumurta açılacağı)
 	EggMultiOptions = { 1, 3, 10 },
 
-	-- İKSİRLER (süreli güçlendirmeler; oturum boyu sürer, kaydedilmez): sol altta geri sayımlı şişe simgesiyle görünür (client/BoostHud). Hepsi Mult (2) kat etki eder.
+	-- İKSİRLER (süreli güçlendirmeler; kalan süre kayda girer, oyundan çıkıp girince sürer): sol altta geri sayımlı şişe simgesiyle görünür (client/BoostHud). Hepsi Mult (2) kat etki eder.
 	-- Luck Potion: yumurta açarken nadir petlerin ağırlığı artar (Catalog.luckWeights: havuz sıklığa göre sıralanır, en sık pete x1, en nadir pete x2, arası düzgün artar).
 	-- Muscle Potion: tıklama başı bacak kazancı x2. Wins Potion: kazanılan Win x2.
 	-- Rainbow Potion: 'bütün iksirlerden almışsın gibi' sayılır, yani Luck + Muscle + Wins etkisi BİRLİKTE (tek şişe, tek geri sayım). Aynı etki üst üste çarpmaz (iki kaynak da olsa hep x2).
 	-- kind: ödül türü (Shop, Gifts, Wheel, DEV'de bu adla geçer); attribute: oyuncuya yayınlanan bitiş zamanı (sunucu saati).
 	Potions = {
 		Mult = 2,
+		Durations = { 15, 60 }, -- Shop'ta satılan süreler (dakika); çark/Gifts/görev bonusu iksirleri bunlardan birindedir (BoostMinutes)
 		List = {
 			{ id = "luck", kind = "boostLuck", attribute = "LuckBoostUntil", name = "Luck Potion", effect = "2x Egg Luck", description = "Rare pets hatch from eggs up to 2x more often.", emoji = "🍀", color = Color3.fromRGB(70, 210, 90) },
 			{ id = "muscle", kind = "boostMuscle", attribute = "MuscleBoostUntil", name = "Muscle Potion", effect = "2x Leg Muscle", description = "Doubles the Leg Muscle you get from every squat.", emoji = "💪", color = Color3.fromRGB(255, 120, 50) },
@@ -645,32 +656,32 @@ return {
 	-- MarketplaceService.ProcessReceipt'i bağlamak gerekir (henüz yok). Fiyatlar geçicidir.
 	BaseWalkSpeed = 16,
 	Trails = {
-		{ id = "red", name = "Red Trail", speed = 4, winPrice = 50, robuxPrice = 25, robuxProductId = 0, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 150, robuxPrice = 45, robuxProductId = 0, color = Color3.fromRGB(255, 150, 40) },
-		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 400, robuxPrice = 75, robuxProductId = 0, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "green", name = "Green Trail", speed = 10, winPrice = 1000, robuxPrice = 120, robuxProductId = 0, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 2500, robuxPrice = 180, robuxProductId = 0, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 6000, robuxPrice = 250, robuxProductId = 0, color = Color3.fromRGB(70, 110, 255) },
-		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 15000, robuxPrice = 350, robuxProductId = 0, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 40000, robuxPrice = 500, robuxProductId = 0, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 100000, robuxPrice = 800, robuxProductId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Trail", speed = 4, winPrice = 50, robuxPrice = 9, robuxProductId = 0, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 150, robuxPrice = 19, robuxProductId = 0, color = Color3.fromRGB(255, 150, 40) },
+		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 400, robuxPrice = 29, robuxProductId = 0, color = Color3.fromRGB(255, 230, 60) },
+		{ id = "green", name = "Green Trail", speed = 10, winPrice = 1000, robuxPrice = 39, robuxProductId = 0, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 2500, robuxPrice = 59, robuxProductId = 0, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 6000, robuxPrice = 79, robuxProductId = 0, color = Color3.fromRGB(70, 110, 255) },
+		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 15000, robuxPrice = 99, robuxProductId = 0, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 40000, robuxPrice = 129, robuxProductId = 0, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 100000, robuxPrice = 149, robuxProductId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
-		{ id = "red", name = "Red Aura", mult = 1.2, winPrice = 1500, robuxPrice = 25, robuxProductId = 0, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 1.4, winPrice = 5000, robuxPrice = 65, robuxProductId = 0, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 1.6, winPrice = 15000, robuxPrice = 105, robuxProductId = 0, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 1.8, winPrice = 40000, robuxPrice = 175, robuxProductId = 0, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 2.2, winPrice = 90000, robuxPrice = 275, robuxProductId = 0, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 200000, robuxPrice = 450, robuxProductId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Aura", mult = 1.2, winPrice = 1500, robuxPrice = 19, robuxProductId = 0, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "green", name = "Green Aura", mult = 1.4, winPrice = 5000, robuxPrice = 39, robuxProductId = 0, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 1.6, winPrice = 15000, robuxPrice = 59, robuxProductId = 0, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 1.8, winPrice = 40000, robuxPrice = 89, robuxProductId = 0, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 2.2, winPrice = 90000, robuxPrice = 119, robuxProductId = 0, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 200000, robuxPrice = 149, robuxProductId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.
 	-- kind: muscle (amount kadar bacak kası), wins (amount Win), pet (pet id), boostLuck / boostMuscle / boostWins / boostRainbow (iksirler, BoostMinutes dk 2x).
 	-- Ödüller her oyuna girişte yeniden başlar (kayıt edilmez). SkipRobux: "Unlock" butonları Robux yer tutucusu.
-	BoostMinutes = 10,
+	BoostMinutes = 15, -- Gifts / Çark / günlük bonus iksirlerinin süresi; Shop.Potions'taki SKU sürelerinden biri olmalı (15 ya da 60)
 	GiftRewards = {
 		{ time = 60, kind = "muscle", amount = 300 },
 		{ time = 150, kind = "wins", amount = 10 },
@@ -683,6 +694,6 @@ return {
 		{ time = 1800, kind = "boostWins" },
 		{ time = 2400, kind = "pet", pet = "phoenix" },
 	},
-	GiftUnlockAllRobux = 219,
-	GiftUnlockNextRobux = 29,
+	GiftUnlockAllRobux = 149,
+	GiftUnlockNextRobux = 19,
 }

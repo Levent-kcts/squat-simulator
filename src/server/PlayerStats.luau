@@ -194,7 +194,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -300,6 +300,22 @@ local function sanitize(raw)
 	end
 	if type(raw.PetSlots) == "number" then
 		data.PetSlots = math.clamp(math.floor(raw.PetSlots), 0, Config.MaxExtraPetSlots)
+	end
+	-- İksir envanteri (sku -> adet) ve etkin iksirlerin bitiş zamanları (os.time, iksir id -> saniye); bilinmeyen ürünler atılır
+	if type(raw.PotionItems) == "table" then
+		for sku, count in raw.PotionItems do
+			if type(sku) == "string" and Catalog.PotionSkuById[sku] and type(count) == "number" and count >= 1 then
+				data.PotionItems[sku] = math.min(math.floor(count), 9999)
+			end
+		end
+	end
+	if type(raw.BoostUntil) == "table" then
+		for _, potion in Config.Potions.List do
+			local untilTime = raw.BoostUntil[potion.id]
+			if type(untilTime) == "number" then
+				data.BoostUntil[potion.id] = untilTime
+			end
+		end
 	end
 	if type(raw.Pets) == "table" then
 		for _, id in raw.Pets do
@@ -495,6 +511,12 @@ local function refresh(player)
 	player:SetAttribute("WinBoostUntil", profile.boostWinsUntil)
 	player:SetAttribute("LuckBoostUntil", profile.boostLuckUntil)
 	player:SetAttribute("RainbowBoostUntil", profile.boostRainbowUntil)
+	local itemList = {}
+	for sku, count in profile.potionItems do
+		table.insert(itemList, `{sku}:{count}`)
+	end
+	table.sort(itemList)
+	player:SetAttribute("PotionItems", table.concat(itemList, ",")) -- Shop > Potions kartları sayıyı buradan okur
 	player:SetAttribute("EggLuck", if potionActive(profile, "boostLuckUntil") then Config.Potions.Mult else 1) -- yumurta panelindeki yüzdeler bunu kullanır (Catalog.luckWeights)
 	player:SetAttribute("EquippedTrail", profile.equippedTrail)
 	local autoDeleteList = {}
@@ -533,6 +555,13 @@ local function save(player)
 		Quests = profile.quests,
 		WheelDay = profile.wheelDay,
 		PetSlots = profile.petSlots,
+		PotionItems = profile.potionItems,
+		BoostUntil = {
+			luck = profile.boostLuckUntil,
+			muscle = profile.boostMuscleUntil,
+			wins = profile.boostWinsUntil,
+			rainbow = profile.boostRainbowUntil,
+		},
 		Discovered = (function()
 			local list = {}
 			for id in profile.discovered do
@@ -593,6 +622,45 @@ local function startBoost(player, profile, kind, minutes)
 			refresh(player)
 		end
 	end)
+end
+
+-- İksiri ENVANTERE ekler (çark, Gifts, günlük görev bonusu, DEV): Shop > Potions'ta 'USE xN' olarak görünür. Süre Config.Shop.Potions'taki ürünlerden biri olmalı (15 ya da 60 dk).
+-- Dönüş: oyuncuya gösterilecek mesaj. Ürün bulunamazsa (yapılandırma hatası) iksir hemen içilir.
+local function giveItem(player, profile, kind, minutes)
+	minutes = minutes or Config.BoostMinutes
+	local sku = Catalog.potionSkuFor(kind, minutes)
+	if not sku then
+		startBoost(player, profile, kind, minutes)
+		return potionMessage(kind, minutes)
+	end
+	profile.potionItems[sku] = math.min((profile.potionItems[sku] or 0) + 1, 9999)
+	local potion = Catalog.PotionByKind[kind]
+	return `{potion.name} ({minutes} min) added! Use it in Shop > Potions.`
+end
+
+-- Envanterdeki bir iksiri içer (Shop > Potions kartında USE). Dönüş: başarılı mı, mesaj
+function PlayerStats.usePotion(player, sku)
+	local profile = profiles[player]
+	local def = Catalog.PotionSkuById[sku]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	if not def then
+		return false, "That potion does not exist."
+	end
+	local count = profile.potionItems[sku] or 0
+	if count < 1 then
+		return false, "You do not have this potion."
+	end
+	if count == 1 then
+		profile.potionItems[sku] = nil
+	else
+		profile.potionItems[sku] = count - 1
+	end
+	startBoost(player, profile, def.kind, def.minutes)
+	refresh(player)
+	requestSave(player)
+	return true, potionMessage(def.kind, def.minutes)
 end
 
 -- Çevrimdışı kazanç: verilen süre (saniye) için bacak kası miktarı = (süre / squat süresi) x tıklama başı kazanç x Rate
@@ -665,6 +733,7 @@ local function setup(player)
 		tutorialDone = false, -- eğitim bitti mi (ilk skin alınınca true olur; kayıtlı)
 		quests = newQuestState(0), -- günlük görevler (gün, ilerleme, alınanlar, bonus); kayıttan yüklenir
 		petSlots = 0, -- Shop'tan alınan ek pet envanter yeri (Config.MaxOwnedPets'e eklenir; kayıtlı)
+		potionItems = {}, -- iksir envanteri [sku] = adet (çark / Gifts / görev bonusundan çıkanlar; Shop > Potions'ta 'USE xN' görünür; kayıtlı)
 		wheelDay = 0, -- günlük çarkın son çevrildiği UTC gün (os.time() / 86400); bugüne eşitse bugünkü hak kullanılmış demektir (kayıtlı)
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
@@ -692,6 +761,20 @@ local function setup(player)
 	profile.quests = data.Quests
 	profile.wheelDay = data.WheelDay
 	profile.petSlots = data.PetSlots
+	profile.potionItems = data.PotionItems
+	-- Etkin iksirlerin kalan süresi kayıtlıdır: oyundan çıkıp girince sürer, süresi dolanlar atılır
+	local loadNow = os.time()
+	for _, potion in Config.Potions.List do
+		local untilTime = data.BoostUntil[potion.id] or 0
+		if untilTime > loadNow then
+			profile[POTION_FIELD[potion.kind]] = untilTime
+			task.delay(untilTime - loadNow + 1, function()
+				if profiles[player] == profile then
+					refresh(player)
+				end
+			end)
+		end
+	end
 	profile.musicLevel = data.MusicLevel
 	player:SetAttribute("MusicLevel", data.MusicLevel) -- istemci DataLoaded gelince okur
 	for _, id in data.Discovered do
@@ -1036,10 +1119,10 @@ function PlayerStats.claimQuestBonus(player)
 		end
 	end
 	profile.quests.bonus = true
-	startBoost(player, profile, "boostRainbow", Config.Quests.BonusBoostMinutes)
+	local itemMessage = giveItem(player, profile, "boostRainbow", Config.Quests.BonusBoostMinutes)
 	refresh(player)
 	requestSave(player)
-	return true, `Bonus! {potionMessage("boostRainbow", Config.Quests.BonusBoostMinutes)}`
+	return true, `Bonus! {itemMessage}`
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
@@ -1640,8 +1723,7 @@ function PlayerStats.spinWheel(player)
 		syncLevel(player)
 		message = `+{Format.compact(amount)} Leg Muscle`
 	elseif POTION_FIELD[kind] then
-		startBoost(player, profile, kind, prize.minutes)
-		message = potionMessage(kind, prize.minutes)
+		message = giveItem(player, profile, kind, prize.minutes) -- iksir envantere girer
 	elseif kind == "pet" then
 		local pet = rollPet(Config.Eggs[Config.Wheel.PetEgg])
 		table.insert(profile.pets, pet.id)
@@ -1703,8 +1785,7 @@ function PlayerStats.claimGift(player, index)
 		end
 		message = `New pet: {pet.name}!`
 	elseif POTION_FIELD[reward.kind] then
-		startBoost(player, profile, reward.kind, reward.minutes)
-		message = potionMessage(reward.kind, reward.minutes)
+		message = giveItem(player, profile, reward.kind, reward.minutes) -- iksir envantere girer
 	else
 		return false, "Unknown reward."
 	end
@@ -1789,10 +1870,9 @@ function PlayerStats.dev(player, command, amount)
 		publishQuests(player)
 		message = "All of today's quests are complete: claim them!"
 	elseif command == "PotionLuck" or command == "PotionMuscle" or command == "PotionWins" or command == "PotionRainbow" then
-		-- İksirleri denemek için: 10 dakikalık iksir içirir (Luck, Muscle, Wins ya da Rainbow)
+		-- İksirleri denemek için: envantere 15 dakikalık 1 iksir ekler (Luck, Muscle, Wins ya da Rainbow); Shop > Potions'ta USE ile içilir
 		local kind = "boost" .. string.sub(command, 7)
-		startBoost(player, profile, kind, 10)
-		message = potionMessage(kind, 10)
+		message = giveItem(player, profile, kind, 15) -- envantere 1 adet (Shop > Potions'tan içilir)
 	elseif command == "WheelReset" then
 		profile.wheelDay = 0
 		publishWheel(player)
@@ -1869,6 +1949,7 @@ function PlayerStats.dev(player, command, amount)
 		profile.boostWinsUntil = 0
 		profile.boostLuckUntil = 0
 		profile.boostRainbowUntil = 0
+		profile.potionItems = {}
 		profile.discovered = {}
 		profile.tutorialDone = false -- eğitim yeniden başlar
 		profile.tutorialClicks = 0
