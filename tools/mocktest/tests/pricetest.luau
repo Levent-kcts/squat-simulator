@@ -92,7 +92,7 @@ assert(potionPrice.rainbow15 < potionPrice.luck15 + potionPrice.muscle15 + potio
 assert(potionPrice.rainbow60 < potionPrice.luck60 + potionPrice.muscle60 + potionPrice.wins60, "Rainbow 60 dk paket indirimi")
 
 -- WIN fiyat merdiveni (2026-10-10): izler ve aura'lar zayıftan güçlüye pahalılaşır, her biri oyunun bir aşamasının TEK sefer ödülüyle alınabilir ve en pahalısı bile 20. aşama ödülünün altındadır (alınabilir kalır);
--- aura'lar (kalıcı çarpan) aynı sıradaki izden pahalı ya da eşit hedef aşamaya konur ve rainbow aura son aşamalarda (>= 17) alınır
+-- aura'lar (kalıcı çarpan) oyunun BAŞINA çekildi (sahibi: 'oyunun çok ileri safhasında olmasın, ilki zayıf ve 1 saat gerektiriyor'): ilk aura 4. aşamada (~5 dk) ve en az x1.5, hepsi 15. aşamaya kadar, çarpanlar artar
 local Layout = require("./Layout")
 local function stageFor(price)
 	for stage = 1, Config.Wall.Count // Config.Wall.GroupSize do
@@ -111,10 +111,17 @@ for _, trail in Config.Trails do
 end
 assert(lastStage >= 17 and lastStage <= 19, "rainbow iz oyunun sonlarında alınmalı: aşama " .. lastStage)
 lastStage, lastPrice = 0, 0
-for _, aura in Config.Auras do
+local lastMult = 1
+for index, aura in Config.Auras do
 	assert(aura.winPrice > lastPrice, "aura Win fiyatları artmalı: " .. aura.id)
 	local stage = stageFor(aura.winPrice)
 	assert(stage and stage > lastStage, "aura hedef aşaması ilerlemeli (her aura farklı aşama): " .. aura.id)
-	lastStage, lastPrice = stage, aura.winPrice
+	assert(aura.mult > lastMult, "aura çarpanı artmalı: " .. aura.id)
+	if index == 1 then
+		assert(stage <= 4, "ilk aura oyunun başında (<= 4. aşama, ~5 dk) alınmalı: aşama " .. stage)
+		assert(aura.mult >= 1.5, "ilk aura belirgin güçlü olmalı (>= x1.5): " .. aura.mult)
+	end
+	lastStage, lastPrice, lastMult = stage, aura.winPrice, aura.mult
 end
-assert(lastStage >= 18 and lastStage <= 19, "rainbow aura 18-19. aşamada alınmalı (oyunun sonu 20): aşama " .. lastStage)
+assert(lastStage <= 16, "son aura oyunun ilk yarısında alınmalı (<= 16. aşama): aşama " .. lastStage)
+assert(lastMult == 3.0, "son aura çarpanı x3.0 kalmalı (oyunun tavanı)")
