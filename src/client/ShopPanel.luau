@@ -295,7 +295,7 @@ function ShopPanel.init(screenGui, showToast)
 
 	-- VIP game pass (Config.VipGamePassId): fiyatı game pass'in kendisi belirler (Creator Hub; en çok 150 Robux), kartta 'BUY' / 'SOON' yazar
 	order += 1
-	addCard(order, Color3.fromRGB(255, 80, 200), "👑", Config.Icons.Vip, "VIP", "2x Wins pad", if Config.VipGamePassId > 0 then "BUY" else "SOON", function()
+	addCard(order, Color3.fromRGB(255, 80, 200), "👑", Config.Icons.Vip, "VIP", "2x Wins pad", if Config.VipGamePassId > 0 then `{ROBUX} {Config.VipRobux}` else "SOON", function()
 		if Config.VipGamePassId > 0 then
 			MarketplaceService:PromptGamePassPurchase(player, Config.VipGamePassId)
 		else

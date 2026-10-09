@@ -22,6 +22,7 @@ end
 add("Rebirth skip", Config.Rebirth.SkipRobuxPrice)
 add("Offline double", Config.Offline.DoubleRobux)
 add("Auto Click pass", Config.AutoClick.Robux)
+add("VIP pass", Config.VipRobux)
 add("Gift unlock all", Config.GiftUnlockAllRobux)
 -- (Yumurta game pass'leri [Config.EggPasses] 150 kuralının İSTİSNASIDIR: sahibi 'bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi; sınırları eggpasstest.luau denetler: 150 < fiyat <= 400)
 add("Gift unlock next", Config.GiftUnlockNextRobux)
@@ -62,3 +63,30 @@ end
 assert(Catalog.potionSkuFor("boostRainbow", Config.Quests.BonusBoostMinutes), "görev bonusu iksiri ürün değil")
 print("prices ok, highest:", highest, "potion skus:", skuCount)
 print("DONE")
+
+-- Fiyat dengesi (2026-10-10, sahibi 'gereksiz ucuz olanları değiştirelim, yine çok pahalı olmasın' dedi): hiçbir Robux ürünü 25'in altında olmasın, aileler zayıftan güçlüye pahalılaşsın, uzun iksir dakika başına ucuz kalsın
+for _, price in prices do
+	assert(price.value >= 25 or string.find(price.name, "Gift unlock next", 1, true), `{price.name}: {price.value} Robux gereksiz ucuz (en az 25)`)
+end
+local previous = 0
+for _, trail in Config.Trails do
+	assert(trail.robuxPrice > previous, "iz fiyatları artmalı: " .. trail.id)
+	previous = trail.robuxPrice
+end
+previous = 0
+for _, aura in Config.Auras do
+	assert(aura.robuxPrice > previous, "aura fiyatları artmalı: " .. aura.id)
+	previous = aura.robuxPrice
+end
+local potionPrice = {}
+for _, sku in Config.Shop.Potions do
+	potionPrice[sku.id] = sku.robux
+end
+for _, potion in Config.Potions.List do
+	local short, long = potionPrice[potion.id .. 15], potionPrice[potion.id .. 60]
+	assert(short and long and long > short, potion.id .. ": 60 dk iksir 15 dk'dan pahalı olmalı")
+	assert(long / 60 < short / 15, potion.id .. ": 60 dk iksir dakika başına ucuz olmalı (indirim)")
+end
+-- Rainbow iksiri üç tekil iksirin toplamından ucuz olmalı (paket indirimi)
+assert(potionPrice.rainbow15 < potionPrice.luck15 + potionPrice.muscle15 + potionPrice.wins15, "Rainbow 15 dk paket indirimi")
+assert(potionPrice.rainbow60 < potionPrice.luck60 + potionPrice.muscle60 + potionPrice.wins60, "Rainbow 60 dk paket indirimi")
