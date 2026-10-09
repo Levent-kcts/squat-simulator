@@ -224,7 +224,7 @@ function ShopPanel.init(screenGui, showToast)
 	refreshPotions()
 
 	-- ------------------------------------------------------------ PACKS & MORE
-	addHeader(3, "PACKS & MORE")
+	local packsHeader = addHeader(3, "PACKS & MORE")
 	local packGrid = create("Frame", {
 		LayoutOrder = 4,
 		Size = UDim2.new(1, 0, 0, 0),
@@ -336,8 +336,21 @@ function ShopPanel.init(screenGui, showToast)
 		PanelManager.hide(panel)
 	end)
 
-	return function()
-		PanelManager.toggle(panel)
+	-- Döner: pencereyi açıp kapatan fonksiyon. section = 'packs' verilirse pencere AÇILIR ve 'PACKS & MORE' (Win paketleri) bölümüne kaydırılır
+	-- (yumurtada Win yetmeyince yönlendirme; sahibi istedi). Ölçek: arayüz UIScale ile büyütülüyor, ekran piksel farkı birime çevrilir.
+	return function(section)
+		if section ~= "packs" then
+			PanelManager.toggle(panel)
+			return
+		end
+		PanelManager.show(panel)
+		task.defer(function()
+			task.wait() -- yerleşim (canvas boyu) hesaplansın
+			local uiScale = screenGui:FindFirstChildOfClass("UIScale")
+			local factor = if uiScale and uiScale.Scale > 0 then uiScale.Scale else 1
+			local offset = (packsHeader.AbsolutePosition.Y - list.AbsolutePosition.Y) / factor + list.CanvasPosition.Y
+			list.CanvasPosition = Vector2.new(0, math.max(0, offset - 4))
+		end)
 	end
 end
 

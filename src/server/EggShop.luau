@@ -9,6 +9,7 @@ local Config = require(Shared:WaitForChild("Config"))
 local PlayerStats = require(script.Parent.PlayerStats)
 local Shelf = require(script.Parent.Shelf)
 local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
+local EggRules = require(Shared:WaitForChild("EggRules"))
 
 local EggShop = {}
 
@@ -92,6 +93,18 @@ local function buildEgg(parent, egg, frame, center)
 	model.Parent = parent
 end
 
+-- Açma isteğinin game pass kuralı: x2-x3 Triple Open'ı, x4-x10 Mega Open'ı, otomatik açma (auto = true) Auto Open'ı ister; tek yumurta ücretsizdir. Döner: izin var mı, mesaj
+function EggShop.checkPasses(player, count, auto)
+	local needed = EggRules.passForCount(count)
+	if needed and not EggRules.owns(player, needed) then
+		return false, `{needed.name} is a paid upgrade: unlock it in the egg panel.`
+	end
+	if auto == true and not EggRules.owns(player, EggRules.autoPass()) then
+		return false, "Auto Open is a paid upgrade: unlock it in the egg panel."
+	end
+	return true, nil
+end
+
 function EggShop.init(notifyEvent)
 	local _, pads = Shelf.build({
 		name = "EggShop",
@@ -114,9 +127,16 @@ function EggShop.init(notifyEvent)
 		lastOpen[player.UserId] = nil
 	end)
 
-	openFunction.OnServerInvoke = function(player, eggId, count)
+	-- auto: istemci otomatik açma döngüsünden mi çağırıyor (Auto Open pass'i ister). x2+ açma da ilgili pass'i ister (shared/EggRules). Tek yumurta (x1) elle açmak ücretsizdir.
+	openFunction.OnServerInvoke = function(player, eggId, count, auto)
 		if type(eggId) ~= "string" or type(count) ~= "number" then
 			return false, "Invalid request."
+		end
+		count = math.clamp(math.floor(count), 1, Config.EggMultiOptions[#Config.EggMultiOptions])
+		local allowed, denied = EggShop.checkPasses(player, count, auto)
+		if not allowed then
+			notifyEvent:FireClient(player, false, denied)
+			return false, denied
 		end
 		local pad = pads[eggId]
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")

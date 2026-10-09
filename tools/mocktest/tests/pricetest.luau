@@ -23,6 +23,7 @@ add("Rebirth skip", Config.Rebirth.SkipRobuxPrice)
 add("Offline double", Config.Offline.DoubleRobux)
 add("Auto Click pass", Config.AutoClick.Robux)
 add("Gift unlock all", Config.GiftUnlockAllRobux)
+-- (Yumurta game pass'leri [Config.EggPasses] 150 kuralının İSTİSNASIDIR: sahibi 'bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi; sınırları eggpasstest.luau denetler: 150 < fiyat <= 400)
 add("Gift unlock next", Config.GiftUnlockNextRobux)
 local highest = 0
 for _, price in prices do

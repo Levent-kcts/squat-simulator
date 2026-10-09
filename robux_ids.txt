@@ -1,5 +1,5 @@
 # Her satırda anahtar=ID. Boş bırakılan ürün 'coming soon' kalır. Doldurunca: python tools/set_robux_ids.py robux_ids.txt
-# Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. Game Pass'ler (VIP, Auto Click): Para Kazanma > Geçişler (Passes).
+# Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. Game Pass'ler (VIP, Auto Click, eggauto, eggtriple, eggten): Para Kazanma > Geçişler (Passes).
 shop:petSpace25=3717466379
 shop:power1k=3717466555
 shop:power10k=3717467017
@@ -33,3 +33,6 @@ skip=3717471329
 double=3717471441
 vip=2022488478
 autoclick=2022434461
+eggauto=
+eggtriple=
+eggten=

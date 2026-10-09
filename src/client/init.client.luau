@@ -697,7 +697,8 @@ TrainingClient.init()
 safeInit("Juice", loadOptional("Juice"), screenGui)
 safeInit("OverheadTags", loadOptional("OverheadTags"))
 safeInit("BoostHud", loadOptional("BoostHud"), screenGui)
-EggShop.init(screenGui)
+local eggHooks = {} -- showToast ve openShop aşağıda (bildirim ve Shop kurulunca) doldurulur: yumurta panelindeki 'Get Wins' yönlendirmesi ve ücretli düğmelerin 'coming soon' mesajı
+EggShop.init(screenGui, eggHooks)
 DevPanel.init(screenGui)
 PetFollowers.init()
 WallClient.init(onProgress)
@@ -1076,6 +1077,13 @@ shopButton.MouseButton1Click:Connect(function()
 		showToast(false, "Shop is coming soon!")
 	end
 end)
+-- Yumurta paneli: Win yetmeyince Shop'u Win paketleri bölümünde aç, ücretli düğmeler bildirim göstersin
+eggHooks.showToast = showToast
+eggHooks.openShop = function(section)
+	if toggleShop then
+		toggleShop(section)
+	end
+end
 
 -- Alt satırdaki hızlı satın alma düğmeleri: ürün ID'si varsa Roblox satın alma penceresi, yoksa 'coming soon' (Robux aşamasında ID'ler girilir); '+' Shop'u açar
 for _, entry in quickButtons do
