@@ -43,25 +43,4 @@ function EggRules.owns(player, pass)
 	return pass == nil or player:GetAttribute(pass.attribute) == true
 end
 
--- T tuşu: 'options' sırasında 'current'tan sonra gelen, AÇIK ilk çarpan. Hiç açık çarpan yoksa (sadece x1) nil ve satın alma önerilecek ilk kilitli pass döner.
--- owns(pass) -> bool
-function EggRules.nextMulti(options, current, owns)
-	local start = 1
-	for index, count in options do
-		if count == current then
-			start = index
-		end
-	end
-	local firstLocked = nil
-	for step = 1, #options - 1 do
-		local count = options[(start - 1 + step) % #options + 1]
-		local pass = EggRules.passForCount(count)
-		if owns(pass) then
-			return count, nil
-		end
-		firstLocked = firstLocked or pass
-	end
-	return nil, firstLocked
-end
-
 return EggRules

@@ -1,7 +1,8 @@
 -- Yumurta raflarının oyuncuya özel görünümü: etiketler, ped renkleri ve pede basınca (dokununca) açılan yumurta paneli.
 -- Panelde yumurtanın adı, fiyatı, petleri, çarpanları ve çıkma şansları görünür.
 -- Tuşlar: E = aç (ücretsiz), R = otomatik aç (ücretli: Auto Open), T = bir seferde açılacak sayı (1 / 3 / 10; x3 ve x10 ücretli: Triple / Mega Open).
--- Ücretli düğmelerin üstünde Robux fiyatı rozeti durur; basınca satın alma penceresi açılır (Config.EggPasses, sunucuda server/EggPasses). Win yetmiyorsa Open düğmesi 'Get Wins' olur ve Shop'un paket bölümünü açar.
+-- Ücretli özellikler panelde NORMAL görünür, fiyat YAZMAZ (sahibi 'fiyatları R'ye T'ye basmadan göremeyelim, biraz clickbait olsun, Shop'ta da olmasın' dedi): fiyat ancak oyuncu R'ye ya da kilitli bir çarpanı seçen T'ye basınca
+-- (ya da kilitli çarpanla E'ye basınca) görünür: pass satışa açıksa Roblox satın alma penceresi, değilse 'coming soon' bildirimi fiyatla birlikte. Win yetmiyorsa Open düğmesi 'Get Wins' olur ve Shop'un paket bölümünü açar.
 -- Burada yapılan renk/etiket değişiklikleri sadece bu oyuncunun ekranında görünür.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -34,11 +35,8 @@ local ENTER_GAP = 0.5
 local EXIT_GAP = 3
 local AUTO_INTERVAL = 1.2 -- otomatik açma aralığı (saniye)
 local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel karakter, ShopPanel'deki gibi)
-local LOCKED = Color3.fromRGB(88, 98, 128) -- kilitli (ücretli, henüz alınmamış) düğme
-local SELECTED = Color3.fromRGB(60, 200, 90) -- açık/seçili düğme
 local NORMAL = Color3.fromRGB(30, 190, 220)
 local WINS_ORANGE = Color3.fromRGB(255, 150, 40) -- Win yetmeyince Open düğmesi
-local BUY_GREEN = Color3.fromRGB(60, 200, 90)
 
 -- Panel kartlarının renkleri: en sık çıkandan en nadire doğru
 local CARD_COLORS = {
@@ -165,7 +163,7 @@ function EggShop.init(screenGui, hooks)
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 68),
-		Size = UDim2.fromOffset(580, 326), -- 5 pet kartı yan yana sığsın; altta fiyat rozetleri için pay
+		Size = UDim2.fromOffset(580, 310), -- 5 pet kartı yan yana sığsın
 		BackgroundColor3 = Color3.fromRGB(45, 48, 62),
 		BackgroundTransparency = 0.05,
 		Active = true, -- panele tıklamak hareket başlatmasın
@@ -209,36 +207,15 @@ function EggShop.init(screenGui, hooks)
 	-- Panelin altındaki tuş kutuları
 	local keys = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 226),
-		Size = UDim2.fromOffset(4 * 70 + 3 * 14, 70), -- E / R / x3 / x10
+		Position = UDim2.new(0.5, 0, 0, 228),
+		Size = UDim2.fromOffset(250, 70), -- E / R / T
 		BackgroundTransparency = 1,
 	}, panel)
 	create("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		Padding = UDim.new(0, 14),
+		Padding = UDim.new(0, 12),
 	}, keys)
-
-	-- Düğmenin altına taşan yeşil Robux fiyatı rozeti (ücretli düğmelerde, kilitliyken görünür)
-	local function makeBadge(button)
-		local badge = create("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.5, 0, 1, 2),
-			Size = UDim2.fromOffset(74, 22),
-			BackgroundColor3 = BUY_GREEN,
-			Visible = false,
-			ZIndex = 8,
-		}, button)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, badge)
-		UIStyle.soften(badge, { radius = 8, strength = 0.3 })
-		local label = makeText(badge, {
-			Position = UDim2.fromScale(0.04, 0.05),
-			Size = UDim2.fromScale(0.92, 0.9),
-			TextColor3 = Color3.new(1, 1, 1),
-			ZIndex = 9,
-		}, 2)
-		return badge, label
-	end
 
 	local function makeKey(order, key)
 		local button = create("TextButton", {
@@ -265,16 +242,8 @@ function EggShop.init(screenGui, hooks)
 	end
 	local openButton, openCaption = makeKey(1, "E")
 	local autoButton, autoCaption = makeKey(2, "R")
-	local tripleButton, tripleCaption = makeKey(3, "x3")
-	local megaButton, megaCaption = makeKey(4, "x10")
-	local autoBadge, autoBadgeLabel = makeBadge(autoButton)
-	local tripleBadge, tripleBadgeLabel = makeBadge(tripleButton)
-	local megaBadge, megaBadgeLabel = makeBadge(megaButton)
-	tripleCaption.Text = "Triple"
-	megaCaption.Text = "Mega"
+	local multiButton, multiCaption = makeKey(3, "T")
 	local autoPass = EggRules.autoPass()
-	local triplePass = EggRules.passForCount(3)
-	local megaPass = EggRules.passForCount(10)
 	local passAttributes = {}
 	for _, pass in Config.EggPasses do
 		table.insert(passAttributes, pass.attribute)
@@ -282,7 +251,7 @@ function EggShop.init(screenGui, hooks)
 
 	-- ---------- Durum ----------
 	local currentEgg = nil -- panelde gösterilen yumurta
-	local multiCount = 1 -- bir seferde açılacak yumurta sayısı (1 / 3 / 10)
+	local multiIndex = 1 -- Config.EggMultiOptions sırası (1 / 3 / 10): T serbestçe döner, KİLİTLİ çarpan seçilince fiyat/satın alma görünür
 	local autoOn = false
 	local opening = false
 
@@ -290,7 +259,12 @@ function EggShop.init(screenGui, hooks)
 		return EggRules.owns(player, pass)
 	end
 
-	-- Pass satın alma penceresi; satışa açık değilse (GamePassId 0) 'coming soon'
+	-- Seçili çarpanın pass'i (x1 için nil)
+	local function multiPass()
+		return EggRules.passForCount(Config.EggMultiOptions[multiIndex])
+	end
+
+	-- Ücretli özelliğe basılınca: pass satışa açıksa Roblox satın alma penceresi (fiyatı o gösterir), değilse fiyatlı 'coming soon' bildirimi
 	local function buyPass(pass)
 		if not pass then
 			return
@@ -298,7 +272,7 @@ function EggShop.init(screenGui, hooks)
 		if (pass.GamePassId or 0) > 0 then
 			pcall(MarketplaceService.PromptGamePassPurchase, MarketplaceService, player, pass.GamePassId)
 		elseif hooks.showToast then
-			hooks.showToast(false, `{pass.name} is coming soon!`)
+			hooks.showToast(false, `{pass.name} ({ROBUX} {pass.Robux}) is coming soon!`)
 		end
 	end
 
@@ -312,34 +286,22 @@ function EggShop.init(screenGui, hooks)
 		end
 	end
 
-	local function refreshKey(button, caption, badge, badgeLabel, pass, selected)
-		local locked = not owns(pass)
-		badge.Visible = locked
-		if locked then
-			badgeLabel.Text = `{ROBUX} {pass.Robux}`
-		end
-		button.BackgroundColor3 = if locked then LOCKED elseif selected then SELECTED else NORMAL
-	end
-
 	local function refreshButtons()
-		-- Pass elden gittiyse (DEV kilidi) seçili çarpan ve otomatik açma kapanır
-		if multiCount > 1 and not owns(EggRules.passForCount(multiCount)) then
-			multiCount = 1
-		end
+		-- Pass elden gittiyse (DEV kilidi) otomatik açma kapanır
 		if autoOn and not owns(autoPass) then
 			autoOn = false
 		end
 		autoCaption.Text = if autoOn then "Auto ON" else "Auto"
-		refreshKey(autoButton, autoCaption, autoBadge, autoBadgeLabel, autoPass, autoOn)
-		refreshKey(tripleButton, tripleCaption, tripleBadge, tripleBadgeLabel, triplePass, multiCount == 3)
-		refreshKey(megaButton, megaCaption, megaBadge, megaBadgeLabel, megaPass, multiCount == 10)
+		autoButton.BackgroundColor3 = if autoOn then Color3.fromRGB(60, 200, 90) else NORMAL
+		local count = Config.EggMultiOptions[multiIndex]
+		multiCaption.Text = `Multi x{count}`
 		-- Win yetmiyorsa Open 'Get Wins' olur (turuncu) ve Shop'un paket bölümünü açar
 		local short = currentEgg ~= nil and winValue.Value < currentEgg.price
 		openCaption.Text = if short then "Get Wins" else "Open"
 		openButton.BackgroundColor3 = if short then WINS_ORANGE else NORMAL
 		if currentEgg then
-			eggPrice.Text = if multiCount > 1
-				then `{Format.number(currentEgg.price * multiCount)} Wins`
+			eggPrice.Text = if count > 1
+				then `{Format.number(currentEgg.price * count)} Wins`
 				else `{Format.number(currentEgg.price)} Wins`
 		end
 	end
@@ -484,6 +446,15 @@ function EggShop.init(screenGui, hooks)
 		if not currentEgg or opening then
 			return false
 		end
+		-- Kilitli çarpan (x3 / x10) seçiliyken açılmaz: satın alma görünür (otomatik döngü sessizce durur)
+		if not owns(multiPass()) then
+			autoOn = false
+			refreshButtons()
+			if manual then
+				buyPass(multiPass())
+			end
+			return false
+		end
 		if winValue.Value < currentEgg.price then
 			autoOn = false
 			refreshButtons()
@@ -498,7 +469,7 @@ function EggShop.init(screenGui, hooks)
 		for id in string.gmatch(player:GetAttribute("OwnedPets") or "", "[^,]+") do
 			ownedBefore[id] = true
 		end
-		local ok, message, results = openFunction:InvokeServer(currentEgg.id, multiCount, autoOn and not manual)
+		local ok, message, results = openFunction:InvokeServer(currentEgg.id, Config.EggMultiOptions[multiIndex], autoOn and not manual)
 		opening = false
 		if ok and results and okReveal then
 			local shown, err = pcall(Reveal.show, screenGui, results, ownedBefore)
@@ -518,7 +489,7 @@ function EggShop.init(screenGui, hooks)
 		return ok
 	end
 
-	-- Otomatik açma: ücretli (Auto Open). Kilitliyse satın alma penceresi açılır
+	-- Otomatik açma: ücretli (Auto Open). Kilitliyse satın alma görünür (fiyat ancak buna basınca çıkar)
 	local function toggleAuto()
 		if not currentEgg then
 			return
@@ -531,25 +502,13 @@ function EggShop.init(screenGui, hooks)
 		refreshButtons()
 	end
 
-	-- x3 / x10 düğmesi: kilitliyse satın alma, açıksa seçer (seçiliyken tekrar basınca x1'e döner)
-	local function selectMulti(count)
-		local pass = EggRules.passForCount(count)
+	-- T: bir seferde açılacak sayı x1 > x3 > x10 döner (eskisi gibi serbestçe); kilitli bir çarpana gelince satın alma/fiyat görünür
+	local function cycleMulti()
+		multiIndex = multiIndex % #Config.EggMultiOptions + 1
+		refreshButtons()
+		local pass = multiPass()
 		if not owns(pass) then
 			buyPass(pass)
-			return
-		end
-		multiCount = if multiCount == count then 1 else count
-		refreshButtons()
-	end
-
-	-- T tuşu: açık çarpanlar arasında döner (x1 > x3 > x10); hiç açık çarpan yoksa ilk ücretli çarpanın satın alma penceresini açar
-	local function cycleMulti()
-		local nextCount, lockedPass = EggRules.nextMulti(Config.EggMultiOptions, multiCount, owns)
-		if nextCount then
-			multiCount = nextCount
-			refreshButtons()
-		else
-			buyPass(lockedPass)
 		end
 	end
 
@@ -557,12 +516,7 @@ function EggShop.init(screenGui, hooks)
 		task.spawn(openEgg, true)
 	end)
 	autoButton.MouseButton1Click:Connect(toggleAuto)
-	tripleButton.MouseButton1Click:Connect(function()
-		selectMulti(3)
-	end)
-	megaButton.MouseButton1Click:Connect(function()
-		selectMulti(10)
-	end)
+	multiButton.MouseButton1Click:Connect(cycleMulti)
 
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed or not currentEgg then

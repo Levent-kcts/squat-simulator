@@ -49,30 +49,6 @@ assert(EggRules.passForCount(2) == triple and EggRules.passForCount(3) == triple
 assert(EggRules.passForCount(4) == ten and EggRules.passForCount(10) == ten and EggRules.passForCount(99) == ten, "x4 ve üstü Mega ister")
 assert(EggRules.autoPass() == auto, "autoPass")
 
--- T tuşu: açık çarpanlar arasında döner; hiç açık yoksa ilk kilitli pass döner (satın alma önerisi)
-local options = Config.EggMultiOptions
-local function ownsOnly(...)
-	local set = {}
-	for _, pass in { ... } do
-		set[pass] = true
-	end
-	return function(pass)
-		return pass == nil or set[pass] == true
-	end
-end
-local nextCount, locked = EggRules.nextMulti(options, 1, ownsOnly())
-assert(nextCount == nil and locked == triple, "hiçbir pass yokken T ilk kilitli pass'i önerir")
-nextCount = EggRules.nextMulti(options, 1, ownsOnly(triple))
-assert(nextCount == 3, "Triple varken x1 > x3")
-nextCount = EggRules.nextMulti(options, 3, ownsOnly(triple))
-assert(nextCount == 1, "yalnız Triple varken x3 > x1 (x10 kilitli atlanır)")
-nextCount = EggRules.nextMulti(options, 3, ownsOnly(triple, ten))
-assert(nextCount == 10, "ikisi de varken x3 > x10")
-nextCount = EggRules.nextMulti(options, 10, ownsOnly(triple, ten))
-assert(nextCount == 1, "x10 > x1")
-nextCount = EggRules.nextMulti(options, 1, ownsOnly(ten))
-assert(nextCount == 10, "yalnız Mega varken x1 > x10 (x3 kilitli atlanır)")
-
 -- ---- Fiyatlar: 150'nin üstünde ama makul (sahibi bu üç ürün için sınırı kaldırdı)
 for _, pass in Config.EggPasses do
 	assert(pass.Robux > 150 and pass.Robux <= 400, `{pass.id}: fiyat 150 ile 400 arasında olmalı: {pass.Robux}`)
