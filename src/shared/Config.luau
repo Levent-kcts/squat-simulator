@@ -298,6 +298,7 @@ return {
 		-- Daha parlak istersen PanelColor'ı beyaza doğru aç, göz alırsa tavan rengine (150,160,215) doğru kapat. LightBrightness = nokta ışığı gücü.
 		PanelColor = Color3.fromRGB(205, 212, 240),
 		PanelLightBrightness = 0.25,
+		PanelSize = { 10, 5 }, -- tavan panelinin boyutu (x, z; referanstaki gibi dikdörtgen; alan eski 7x7'ye yakın, parlaklık artmasın)
 		PanelGlow = { Enabled = true, Size = 14, Layers = 6, Alpha = 0.03 },
 		Bloom = { Enabled = false, Intensity = 0.2, Size = 16, Threshold = 1.5 },
 		Color = { Saturation = 0.1, Contrast = 0.06 }, -- hafif canlı renk (ColorCorrection); Saturation = 0 ve Contrast = 0 ise etkisiz
@@ -332,6 +333,26 @@ return {
 		WheelFaceX = 0,
 		WheelFaceZ = 0,
 		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı (merkez z): koridor tarafına doğru kaydırıldı; alan z = -55 ile 31 arasını kaplar, duvarın arka ucu (z > 31, çarkın yanı) yeni şeyler için boş
+		-- Lobi süsleri (server/LobbyDetail; sahibi başka bir oyunun lobisini gösterip 'harita düzenine benzet' dedi, duvar + tavan + zemin): sadece görünüm, oyun mantığı yok. Kapatmak için Enabled = false.
+		Detail = {
+			Enabled = true,
+			BaseHeight = 2.4, -- duvarın altındaki koyu şerit
+			CourseHeight = 3, -- tuğla katı yüksekliği (yatay derzler arası)
+			BrickLength = 10, -- dikey derzlerin aralığı (her kat yarım tuğla kayık)
+			BandCourse = 4, -- duvarın ortasındaki koyu bant: 0'dan sayılan kat (y = 14.4 - 17.4)
+			PilasterWidth = 3, -- studlu sütunların genişliği ve duvardan çıkıntısı
+			PilasterDepth = 1.4,
+			BackPilasters = { -33, 34 }, -- arka duvardaki ara sütunların x konumları (yumurta standı +-26.75'te biter; sağ arka köşe ayrıca eklenir)
+			RightPilasters = { -61.5, 36, 58 }, -- sağ duvardaki sütunların z konumları (antrenman alanı z = -55 ile 31 arasında, orada sütun yok)
+			BeamHeight = 2.2, -- tavandaki çevre kirişinin aşağı sarkma miktarı
+			BeamWidth = 5,
+			InnerBeamHeight = 1.4, -- ışık panelleri arasındaki kirişler
+			InnerBeamWidth = 2.2,
+			PathCurb = true, -- koridor ağzından yumurta standına giden yolun kenar çıkıntıları
+			PathHalfWidth = 16, -- koridorun yarı genişliği (koridor 32 geniş)
+			PathCurbWidth = 1.2,
+			PathCurbHeight = 0.5,
+		},
 	},
 
 	-- WORLDS GEÇİDİ (2026-10-09): sahibi 'yumurtaların arkasını bir kat daha uzat, arkadaki gibi Worlds yazan bir geçit koy, üstüne coming soon yazsın' dedi (referans: parlak taş kemer, üstünde cyan 'Worlds' yazısı).

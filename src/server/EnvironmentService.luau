@@ -174,13 +174,15 @@ function EnvironmentService.init()
 		table.insert(lightColumns, centerX + lightOffset)
 		lightOffset += 28
 	end
+	local lightRows = {}
 	local z = back - 18
 	while z > zFront + 8 do
+		table.insert(lightRows, z)
 		for _, x in lightColumns do
 			Build.ceilingLight(
 				folder,
 				"LobbyLight",
-				Vector3.new(7, 0.5, 7),
+				Vector3.new(light.PanelSize[1], 0.5, light.PanelSize[2]),
 				Vector3.new(x, ceiling - 0.25, z),
 				40,
 				light.PanelColor,
@@ -267,6 +269,29 @@ function EnvironmentService.init()
 	stroke.Thickness = 4
 	stroke.Color = Color3.fromRGB(40, 25, 0)
 	stroke.Parent = text
+
+	-- Duvar derzleri, sütunlar, kirişli tavan, yol kenarları (sadece görünüm): hata verirse lobi yine kurulu kalır
+	local okDetail, LobbyDetail = pcall(require, script.Parent.LobbyDetail)
+	if okDetail then
+		local built, err = pcall(LobbyDetail.init, {
+			folder = folder,
+			widthLeft = widthLeft,
+			widthRight = widthRight,
+			back = back,
+			zFront = zFront,
+			ceiling = ceiling,
+			corridorCeiling = corridorCeiling,
+			openingHalf = openingHalf,
+			floorTop = floorTop,
+			lightColumns = lightColumns,
+			lightRows = lightRows,
+		})
+		if not built then
+			warn(`[Environment] LobbyDetail failed: {err}`)
+		end
+	else
+		warn(`[Environment] Could not load LobbyDetail: {LobbyDetail}`)
+	end
 end
 
 return EnvironmentService
