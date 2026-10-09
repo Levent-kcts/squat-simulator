@@ -152,7 +152,7 @@ local quickCount = 0
 for _, product in Config.Shop.Products do
 	if product.quick then
 		quickCount += 1
-		assert(product.kind == "moves" and product.amount > 0 and product.productId == 0, "hızlı ürün 'moves' türünde ve ID'si henüz 0 olmalı: " .. product.id)
+		assert(product.kind == "moves" and product.amount > 0 and type(product.productId) == "number" and product.productId >= 0, "hızlı ürün 'moves' türünde olmalı ve ID sayı olmalı (0 = henüz yok): " .. product.id)
 	end
 end
 assert(quickCount == 3, "3 hızlı satın alma ürünü olmalı: " .. quickCount)
