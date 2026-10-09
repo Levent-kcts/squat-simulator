@@ -305,9 +305,13 @@ return {
 
 	-- Başlangıç lobisi: spawn'ın bulunduğu geniş kapalı salon
 	Lobby = {
-		-- 2026-10-09: sahibi 'antrenman alanı çok küçük, 3-5 kişi toplanınca iyice küçük durur, haritayı da büyütüp koç alanlarını büyüt' dedi: salon 124 -> 192 stud genişledi (HalfWidth 62 -> 96) ve antrenman pedleri ~1.75 kat büyüdü
+		-- 2026-10-09: sahibi 'antrenman alanı çok küçük, 3-5 kişi toplanınca iyice küçük durur, haritayı da büyütüp koç alanlarını büyüt' dedi: salon sağa doğru genişledi (sağ duvar 62 -> 96) ve antrenman pedleri ~1.75 kat büyüdü
 		-- (Training.RowPadSizes); raflar/çark/sıralama panosu duvara göre durur, ortadaki geniş alan spawn plazası olur.
-		HalfWidth = 96, -- salonun yarı genişliği (stud; salon 192 x 130). Sol duvar ayakkabılar, sağ duvar antrenman alanı, arka duvar yumurtalar, ön duvar koridor
+		-- 2026-10-09 (ikinci tur): sol duvar çok uzak kaldı ('ayakkabı ve skinler çok uzakta, o taraftaki duvarı yakınlaştır' dedi): salon ARTIK SİMETRİK DEĞİL, sol duvar eski yerinde (x = -62), sağ duvar antrenman alanı için geniş (x = 96).
+		-- Koridor ve spawn x = 0'da kalır. Raflar sol duvara, antrenman alanı/çark/lego köşesi sağ duvara göre durur.
+		WidthLeft = 62, -- spawn'dan SOL duvara uzaklık (stud): ayakkabı ve skin rafları burada
+		WidthRight = 96, -- spawn'dan SAĞ duvara uzaklık (stud): antrenman alanı (64.5 stud derin) burada; salon toplam 158 x 130
+		-- (Eski tek anahtar HalfWidth kaldırıldı; WidthLeft/WidthRight kullan.)
 		BackZ = 65, -- salonun arka duvarının Z'si (ön duvar koridor girişidir; spawn tam ortadadır)
 		Height = 36, -- salonun yüksekliği (koridordan yüksek)
 		SpawnPadSize = 8, -- klasik Roblox doğma yeri (beyaz zemin, siyah patlama deseni) kenar uzunluğu; klasiği 6, salon geniş olduğu için 8
@@ -316,7 +320,7 @@ return {
 		SkinShelfZ = 15.75, -- skin rafı: ayakkabı rafının hemen yanında (aralarında 2 stud). Sol duvarın arka ucu (z > 41) yeni şeyler için boş
 		-- Sıralama panoları sol arka köşede DUVARA YASLI DEĞİL, bağımsız stand olarak durur (sahibi referans görselle 'duvarda olmasın' dedi): stand merkezi (LeaderboardX, LeaderboardZ),
 		-- LeaderboardAngle: standın lobi ortasına doğru kaç derece döndüğü. Skin rafı z = 41'de biter, arka duvar z = 65; sütunlarla birlikte stand z 43 - 64 arasını kaplar.
-		LeaderboardX = -84, -- sol duvardan 12 stud içeride (eskiden sol duvar -62 iken -50)
+		LeaderboardX = -50, -- sol duvardan 12 stud içeride (sol duvar WidthLeft = -62)
 		LeaderboardZ = 53.5,
 		LeaderboardAngle = 28,
 		-- Günlük çark: arka duvara yakın, YUMURTA STANDININ yanında (x = 27'de biter) ve antrenman alanının (z = 31'de biter) arkasında. Eskiden sağ arka köşedeydi (x = 81); salon genişleyince çok uzakta kaldı,
@@ -485,7 +489,7 @@ return {
 		RowCounts = { 4, 3, 3 }, -- basamaklardaki ped sayıları (alttan üste)
 		-- Üst basamaklara çıktıkça ped, antrenör ve şerit büyür (referans fotoğraftaki gibi); her şeridin ped dizisi RowLength'i doldurur
 		-- 2026-10-09: pedler ~1.75 kat büyüdü (eskiden 8.5 / 11 / 13.5 stud, derinlik 12 / 14.5 / 17, uzunluk 48, antrenör 1 / 1.25 / 1.5): 3-5 kişi (büyümüş, ~4 stud geniş karakterler) rahat sığsın.
-		-- Alan sağ duvardan 64.5 stud içeri uzanır (Lobby.HalfWidth 96 olduğu için spawn plazasına girmez).
+		-- Alan sağ duvardan 64.5 stud içeri uzanır (Lobby.WidthRight 96 olduğu için spawn plazasına girmez).
 		RowPadSizes = { 15, 18, 21 }, -- ped boyutu (stud)
 		RowDepths = { 18.5, 21.5, 24.5 }, -- şerit derinliği (stud): ped + 3.5
 		RowLength = 68, -- her şeridin ped dizisinin uzunluğu

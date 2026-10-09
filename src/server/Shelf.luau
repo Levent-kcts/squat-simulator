@@ -47,7 +47,7 @@ local RIM_COLOR = Color3.fromRGB(178, 186, 228) -- şeritleri çevreleyen açık
 
 -- Sol duvara yaslı raf çerçevesi. zOffset: rafın duvar boyunca kayması (stud, + arka duvara/yumurtalara doğru).
 function Shelf.leftWallFrame(zOffset)
-	return CFrame.new(-Config.Lobby.HalfWidth, 0, zOffset) * CFrame.Angles(0, -math.pi / 2, 0)
+	return CFrame.new(-Config.Lobby.WidthLeft, 0, zOffset) * CFrame.Angles(0, -math.pi / 2, 0)
 end
 
 -- Arka duvara yaslı raf çerçevesi (yumurtalar): salonun ortasında, yerel -Z salonun ortasına bakar.
@@ -57,7 +57,7 @@ end
 
 -- Sağ duvara yaslı raf çerçevesi (yerel -Z yine salonun ortasına bakar).
 function Shelf.rightWallFrame(zOffset)
-	return CFrame.new(Config.Lobby.HalfWidth, 0, zOffset) * CFrame.Angles(0, math.pi / 2, 0)
+	return CFrame.new(Config.Lobby.WidthRight, 0, zOffset) * CFrame.Angles(0, math.pi / 2, 0)
 end
 
 -- Raf kurar. spec:

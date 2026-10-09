@@ -63,7 +63,10 @@ function EnvironmentService.init()
 	folder.Name = "Lobby"
 	folder.Parent = Workspace
 
-	local halfWidth = Config.Lobby.HalfWidth
+	local widthLeft = Config.Lobby.WidthLeft -- spawn'dan sol duvara
+	local widthRight = Config.Lobby.WidthRight -- spawn'dan sağ duvara (antrenman alanı için geniş; salon simetrik değil)
+	local hallWidth = widthLeft + widthRight
+	local centerX = (widthRight - widthLeft) / 2 -- salonun orta noktası (spawn x = 0'da)
 	local back = Config.Lobby.BackZ
 	local zFront = Layout.ZFront
 	local length = back - zFront
@@ -78,15 +81,15 @@ function EnvironmentService.init()
 	Build.block(
 		folder,
 		"LobbyFloor",
-		Vector3.new(halfWidth * 2, 1, length),
-		Vector3.new(0, floorTop - 0.6, centerZ),
+		Vector3.new(hallWidth, 1, length),
+		Vector3.new(centerX, floorTop - 0.6, centerZ),
 		SEAM_COLOR,
 		Enum.Material.SmoothPlastic
 	)
 
-	local columns = math.max(12, math.floor(halfWidth * 2 / 10.33 + 0.5)) -- plaka boyu salon genişlese de ~10.3 stud kalır (eskiden 124 / 12)
+	local columns = math.max(12, math.floor(hallWidth / 10.33 + 0.5)) -- plaka boyu salon genişlese de ~10.3 stud kalır (eskiden 124 / 12)
 	local rows = 13
-	local cellWidth = (halfWidth * 2) / columns
+	local cellWidth = hallWidth / columns
 	local cellLength = length / rows
 	local shadeRandom = Random.new(11)
 	for row = 0, rows - 1 do
@@ -97,7 +100,7 @@ function EnvironmentService.init()
 				folder,
 				"Plate",
 				Vector3.new(cellWidth - 0.3, 0.6, cellLength - 0.3),
-				Vector3.new(-halfWidth + cellWidth * (column + 0.5), floorTop - 0.3, back - cellLength * (row + 0.5)),
+				Vector3.new(-widthLeft + cellWidth * (column + 0.5), floorTop - 0.3, back - cellLength * (row + 0.5)),
 				Color3.new(math.clamp(base.R * shade, 0, 1), math.clamp(base.G * shade, 0, 1), math.clamp(base.B * shade, 0, 1)),
 				Enum.Material.Plastic
 			)
@@ -111,7 +114,7 @@ function EnvironmentService.init()
 			folder,
 			"LobbySide",
 			Vector3.new(1, ceiling, length),
-			Vector3.new(side * (halfWidth + 0.5), ceiling / 2, centerZ),
+			Vector3.new(if side < 0 then -widthLeft - 0.5 else widthRight + 0.5, ceiling / 2, centerZ),
 			WALL_COLOR,
 			Enum.Material.Plastic,
 			true
@@ -120,8 +123,8 @@ function EnvironmentService.init()
 	Build.block(
 		folder,
 		"LobbyBack",
-		Vector3.new(halfWidth * 2 + 2, ceiling, 1),
-		Vector3.new(0, ceiling / 2, back + 0.5),
+		Vector3.new(hallWidth + 2, ceiling, 1),
+		Vector3.new(centerX, ceiling / 2, back + 0.5),
 		WALL_COLOR,
 		Enum.Material.Plastic,
 		true
@@ -129,8 +132,8 @@ function EnvironmentService.init()
 
 	-- Koridor girişi olan duvar: ortada koridor genişliğinde boşluk bırakılır
 	local openingHalf = (cfg.Width + 2) / 2
-	local segmentWidth = halfWidth - openingHalf
 	for _, side in { -1, 1 } do
+		local segmentWidth = (if side < 0 then widthLeft else widthRight) - openingHalf
 		Build.block(
 			folder,
 			"LobbyEntranceWall",
@@ -157,19 +160,19 @@ function EnvironmentService.init()
 	Build.block(
 		folder,
 		"LobbyCeiling",
-		Vector3.new(halfWidth * 2 + 2, 1, length + 1),
-		Vector3.new(0, ceiling + 0.5, centerZ),
+		Vector3.new(hallWidth + 2, 1, length + 1),
+		Vector3.new(centerX, ceiling + 0.5, centerZ),
 		WALL_COLOR,
 		Enum.Material.Plastic,
 		true
 	)
 	-- Tavan ışık panelleri: salona oranla küçük (7x7), seyrek ızgara (salon 124 geniş iken 4 sütun x 4 sıra = 16 adet; genişleyince yanlara sütun eklenir, 28 stud aralık)
-	local lightColumns = {}
-	local lightX = 14
-	while lightX < halfWidth - 14 do
-		table.insert(lightColumns, -lightX)
-		table.insert(lightColumns, lightX)
-		lightX += 28
+	local lightColumns = {} -- salonun orta noktasının (centerX) iki yanında 28 stud aralıklı sütunlar
+	local lightOffset = 14
+	while lightOffset < hallWidth / 2 - 14 do
+		table.insert(lightColumns, centerX - lightOffset)
+		table.insert(lightColumns, centerX + lightOffset)
+		lightOffset += 28
 	end
 	local z = back - 18
 	while z > zFront + 8 do
@@ -217,13 +220,13 @@ function EnvironmentService.init()
 	end
 
 	-- SAĞ ARKA KÖŞE (x > 66, z 36-64): çarkın eski yeri. Çark yumurta standının yanına taşındı (sahibi 'uzak kısma legolar falan olsun' dedi): köşe lego kuleleri ve tek parçalarla dolar.
-	-- Antrenman alanı z = 31'de biter, çark x <= 60 olduğu için çakışma yok. Konumlar sağ duvara göre ayarlanır (halfWidth).
-	tower(halfWidth - 13, 56, 5, 2, 0.5)
-	tower(halfWidth - 24, 60, 3, 5, -0.4)
-	tower(halfWidth - 9, 44, 2, 7, 0.3)
-	brick(halfWidth - 20, floorTop, 47, 4, 3, 4, BRICK_COLORS[(5) % #BRICK_COLORS + 1], 0.5)
-	brick(halfWidth - 29, floorTop, 52, 4, 3, 4, BRICK_COLORS[(1) % #BRICK_COLORS + 1], -0.3)
-	brick(halfWidth - 6, floorTop, 37, 4, 3, 4, BRICK_COLORS[(3) % #BRICK_COLORS + 1], 0.2)
+	-- Antrenman alanı z = 31'de biter, çark x <= 60 olduğu için çakışma yok. Konumlar sağ duvara göre ayarlanır (widthRight).
+	tower(widthRight - 13, 56, 5, 2, 0.5)
+	tower(widthRight - 24, 60, 3, 5, -0.4)
+	tower(widthRight - 9, 44, 2, 7, 0.3)
+	brick(widthRight - 20, floorTop, 47, 4, 3, 4, BRICK_COLORS[(5) % #BRICK_COLORS + 1], 0.5)
+	brick(widthRight - 29, floorTop, 52, 4, 3, 4, BRICK_COLORS[(1) % #BRICK_COLORS + 1], -0.3)
+	brick(widthRight - 6, floorTop, 37, 4, 3, 4, BRICK_COLORS[(3) % #BRICK_COLORS + 1], 0.2)
 
 	-- Koridor girişinin üstünde yönlendirme tabelası (lobi içinden okunur)
 	local sign = Build.block(
