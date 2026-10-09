@@ -319,8 +319,10 @@ return {
 		Height = 36, -- salonun yüksekliği (koridordan yüksek)
 		SpawnPadSize = 8, -- klasik Roblox doğma yeri (beyaz zemin, siyah patlama deseni) kenar uzunluğu; klasiği 6, salon geniş olduğu için 8
 		-- Sol duvardaki raflar: duvar boyunca Z konumu (+ arka duvara/yumurtalara doğru). Her raf rampalarıyla ~51 stud yer kaplar.
-		ShoeShelfZ = -36.75, -- ayakkabı rafı: koridor girişi tarafına yaslı (her raf rampalarıyla 50.5 stud, giriş duvarına 3 stud boşluk)
-		SkinShelfZ = 15.75, -- skin rafı: ayakkabı rafının hemen yanında (aralarında 2 stud). Sol duvarın arka ucu (z > 41) yeni şeyler için boş
+		-- 2026-10-09: sahibi rampaların arasındaki dar yarığı gösterip 'şu aradaki boşluğu kapat' dedi: iki raf arasında 2 stud, ayakkabı rafıyla giriş duvarı arasında 1 stud koyu yarık kalıyordu (rampalar 6.4 yüksek, yarık duvara kadar derindi).
+		-- Raflar artık uç uca ve giriş duvarına BİTİŞİK: her raf rampalarıyla 50.5 stud (merkezi uçlardan 25.25 içeride). Aralarına boşluk bırakma.
+		ShoeShelfZ = -37.75, -- ayakkabı rafı: z -63 (giriş duvarının iç yüzü) ile -12.5 arası
+		SkinShelfZ = 12.75, -- skin rafı: ayakkabı rafına bitişik, z -12.5 ile 38 arası. Sol duvarın arka ucu (z > 38) yeni şeyler için boş (sıralama panoları standı z 43'ten başlar)
 		-- Sıralama panoları sol arka köşede DUVARA YASLI DEĞİL, bağımsız stand olarak durur (sahibi referans görselle 'duvarda olmasın' dedi): stand merkezi (LeaderboardX, LeaderboardZ),
 		-- LeaderboardAngle: standın lobi ortasına doğru kaç derece döndüğü. Skin rafı z = 41'de biter, arka duvar z = 65; sütunlarla birlikte stand z 43 - 64 arasını kaplar.
 		LeaderboardX = -50, -- sol duvardan 12 stud içeride (sol duvar WidthLeft = -62)
