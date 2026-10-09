@@ -41,15 +41,15 @@ local EggRules = require("./EggRules")
 local EggPasses = require("./EggPasses")
 local EggShop = require("./EggShop")
 
--- ---- EggRules: kural tablosu
-local auto, triple, ten = EggRules.pass("auto"), EggRules.pass("triple"), EggRules.pass("multi")
-assert(auto and triple and ten and triple.count == 3 and ten.count == 10, "Config.EggPasses: auto, triple (3), ten (10) olmalı")
+-- ---- EggRules: kural tablosu (İKİ pass: Auto Open ve Multi Open; Multi hem x3 hem x10 modunu açar)
+local auto, multi = EggRules.pass("auto"), EggRules.pass("multi")
+assert(auto and multi and multi.count == 10 and #Config.EggPasses == 2, "Config.EggPasses: yalnız auto ve multi (count 10) olmalı")
 assert(EggRules.passForCount(1) == nil and EggRules.passForCount(0) == nil, "tek yumurta ücretsiz")
-assert(EggRules.passForCount(2) == triple and EggRules.passForCount(3) == triple, "x2-x3 Triple ister")
-assert(EggRules.passForCount(4) == ten and EggRules.passForCount(10) == ten and EggRules.passForCount(99) == ten, "x4 ve üstü Multi ister")
+assert(EggRules.passForCount(2) == multi and EggRules.passForCount(3) == multi, "x2-x3 Multi ister")
+assert(EggRules.passForCount(4) == multi and EggRules.passForCount(10) == multi and EggRules.passForCount(99) == multi, "x4 ve üstü de Multi ister")
 assert(EggRules.autoPass() == auto, "autoPass")
 
--- T tuşu (EggRules.step): imleç x1 > x3 > x10 > x1 gezer; kilitli seçenekte seçim DEĞİŞMEZ ama o pass döner; açıkta seçilir
+-- T tuşu (EggRules.step): imleç x1 > x3 > x10 > x1 gezer; kilitli seçenekte seçim DEĞİŞMEZ ama Multi pass'i döner; açıkta seçilir
 local options = Config.EggMultiOptions
 local function ownsOnly(...)
 	local set = {}
@@ -61,19 +61,17 @@ local function ownsOnly(...)
 	end
 end
 local cursorAfter, selectedCount, lockedPass = EggRules.step(options, 1, ownsOnly())
-assert(cursorAfter == 2 and selectedCount == nil and lockedPass == triple, "pass yokken T x3'e gelir ama SEÇMEZ ve Triple'ı önerir")
+assert(cursorAfter == 2 and selectedCount == nil and lockedPass == multi, "pass yokken T x3'e gelir ama SEÇMEZ ve Multi'yi önerir")
 cursorAfter, selectedCount, lockedPass = EggRules.step(options, 2, ownsOnly())
-assert(cursorAfter == 3 and selectedCount == nil and lockedPass == ten, "imleç x10'a gelir, seçmez, Multi'yi önerir")
+assert(cursorAfter == 3 and selectedCount == nil and lockedPass == multi, "imleç x10'a gelir, seçmez, yine Multi'yi önerir")
 cursorAfter, selectedCount, lockedPass = EggRules.step(options, 3, ownsOnly())
 assert(cursorAfter == 1 and selectedCount == 1 and lockedPass == nil, "imleç x1'e dönünce x1 her zaman seçilir")
-cursorAfter, selectedCount, lockedPass = EggRules.step(options, 1, ownsOnly(triple))
-assert(cursorAfter == 2 and selectedCount == 3 and lockedPass == nil, "Triple varken x3 seçilir")
-cursorAfter, selectedCount, lockedPass = EggRules.step(options, 2, ownsOnly(triple))
-assert(cursorAfter == 3 and selectedCount == nil and lockedPass == ten, "Triple varken x10 kilitli: seçilmez")
-cursorAfter, selectedCount = EggRules.step(options, 2, ownsOnly(triple, ten))
-assert(cursorAfter == 3 and selectedCount == 10, "ikisi de varken x10 seçilir")
+cursorAfter, selectedCount, lockedPass = EggRules.step(options, 1, ownsOnly(multi))
+assert(cursorAfter == 2 and selectedCount == 3 and lockedPass == nil, "Multi varken x3 seçilir")
+cursorAfter, selectedCount, lockedPass = EggRules.step(options, 2, ownsOnly(multi))
+assert(cursorAfter == 3 and selectedCount == 10 and lockedPass == nil, "Multi varken x10 seçilir (T ile modlar arasında gezilir)")
 
--- ---- Fiyatlar: 150'nin üstünde ama makul (sahibi bu üç ürün için sınırı kaldırdı)
+-- ---- Fiyatlar: 150'nin üstünde ama makul (sahibi bu iki ürün için sınırı kaldırdı)
 for _, pass in Config.EggPasses do
 	assert(pass.Robux > 150 and pass.Robux <= 400, `{pass.id}: fiyat 150 ile 400 arasında olmalı: {pass.Robux}`)
 	assert(type(pass.attribute) == "string" and pass.attribute ~= "", pass.id .. ": öznitelik adı")
@@ -112,10 +110,9 @@ for _, pass in Config.EggPasses do
 end
 local okOne = EggShop.checkPasses(p1, 1, false)
 assert(okOne, "tek yumurta elle açmak hep serbest")
-local okTriple, whyTriple = EggShop.checkPasses(p1, 3, false)
-assert(not okTriple and string.find(whyTriple, "Triple Open", 1, true), "x3 kilitliyken reddedilmeli: " .. tostring(whyTriple))
-local okTen = EggShop.checkPasses(p1, 10, false)
-assert(not okTen, "x10 kilitliyken reddedilmeli")
+local okThree, whyThree = EggShop.checkPasses(p1, 3, false)
+assert(not okThree and string.find(whyThree, "Multi Open", 1, true), "x3 kilitliyken reddedilmeli: " .. tostring(whyThree))
+assert(not EggShop.checkPasses(p1, 10, false), "x10 kilitliyken reddedilmeli")
 local okAuto, whyAuto = EggShop.checkPasses(p1, 1, true)
 assert(not okAuto and string.find(whyAuto, "Auto Open", 1, true), "otomatik açma kilitliyken reddedilmeli: " .. tostring(whyAuto))
 
@@ -131,42 +128,31 @@ EggPasses.recheck(p1)
 assert(p1:GetAttribute(auto.attribute) == false, "DEV kapanınca tekrar kilitli")
 
 -- 3) Satışa açık pass: sahiplik sunucuda sorulur; satın alma anında açar ve mesaj yollar
-triple.GamePassId = 1111
-ten.GamePassId = 2222
+multi.GamePassId = 2222
 auto.GamePassId = 3333
-owners[2] = { [1111] = true } -- sadece Triple'a sahip
+owners[2] = { [2222] = true } -- sadece Multi'ye sahip
 local p2 = fakePlayer(2)
 EggPasses.recheck(p2)
-assert(p2:GetAttribute(triple.attribute) == true, "sahip olunan pass açık")
-assert(p2:GetAttribute(ten.attribute) == false and p2:GetAttribute(auto.attribute) == false, "sahip olunmayan pass kilitli")
-assert(EggShop.checkPasses(p2, 3, false), "Triple sahibi x3 açabilir")
-assert(not EggShop.checkPasses(p2, 10, false), "Triple sahibi x10 açamaz")
-assert(not EggShop.checkPasses(p2, 3, true), "Triple sahibi otomatik açamaz")
--- Multi Open (x10) sahibi x3'ü de açabilir (büyük pass küçüğünü kapsar), Triple sahibi x10 açamaz
-owners[3] = { [2222] = true }
-local p3 = fakePlayer(3)
-EggPasses.recheck(p3)
-assert(p3:GetAttribute(triple.attribute) == false and p3:GetAttribute(ten.attribute) == true, "yalnız Multi sahibi")
-assert(EggShop.checkPasses(p3, 10, false), "Multi sahibi x10 açar")
-assert(EggShop.checkPasses(p3, 3, false), "Multi sahibi x3'ü de açar (büyük pass küçüğünü kapsar)")
-assert(not EggShop.checkPasses(p3, 1, true), "Multi sahibi otomatik açamaz (ayrı pass)")
-assert(not EggRules.owns(p2, ten), "Triple sahibi Multi'ye sahip sayılmaz")
+assert(p2:GetAttribute(multi.attribute) == true, "sahip olunan pass açık")
+assert(p2:GetAttribute(auto.attribute) == false, "sahip olunmayan pass kilitli")
+assert(EggShop.checkPasses(p2, 3, false) and EggShop.checkPasses(p2, 10, false), "Multi sahibi hem x3 hem x10 açabilir")
+assert(not EggShop.checkPasses(p2, 1, true), "Multi sahibi otomatik açamaz (Auto ayrı pass)")
 -- DEV 'Passes Lock': sahip olsa bile kilitli
 p2:SetAttribute("DevPassLock", true)
 EggPasses.recheck(p2)
-assert(p2:GetAttribute(triple.attribute) == false, "Passes Lock: kilitli görünür")
+assert(p2:GetAttribute(multi.attribute) == false, "Passes Lock: kilitli görünür")
 p2:SetAttribute("DevPassLock", nil)
 EggPasses.recheck(p2)
-assert(p2:GetAttribute(triple.attribute) == true, "kilit kalkınca tekrar açık")
+assert(p2:GetAttribute(multi.attribute) == true, "kilit kalkınca tekrar açık")
 
--- Satın alma: Multi alınınca anında açılır ve mesaj gider; iptal edilirse değişmez
+-- Satın alma: Auto alınınca anında açılır ve mesaj gider; iptal edilirse değişmez
 assert(#purchaseHandlers >= 1, "satın alma dinleyicisi kurulmalı")
 local handler = purchaseHandlers[#purchaseHandlers]
 messages = {}
-handler(p2, 2222, false)
-assert(p2:GetAttribute(ten.attribute) == false, "iptal edilen satın alma açmamalı")
-handler(p2, 2222, true)
-assert(p2:GetAttribute(ten.attribute) == true, "satın alınca anında açılmalı")
-assert(#messages == 1 and messages[1].ok == true and string.find(messages[1].message, "Multi Open", 1, true), "satın alma mesajı: " .. tostring(messages[1] and messages[1].message))
+handler(p2, 3333, false)
+assert(p2:GetAttribute(auto.attribute) == false, "iptal edilen satın alma açmamalı")
+handler(p2, 3333, true)
+assert(p2:GetAttribute(auto.attribute) == true, "satın alınca anında açılmalı")
+assert(#messages == 1 and messages[1].ok == true and string.find(messages[1].message, "Auto Open", 1, true), "satın alma mesajı: " .. tostring(messages[1] and messages[1].message))
 handler(p2, 9999, true) -- tanınmayan pass
 print("EggPasses ok")

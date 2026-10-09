@@ -93,7 +93,7 @@ local function buildEgg(parent, egg, frame, center)
 	model.Parent = parent
 end
 
--- Açma isteğinin game pass kuralı: x2-x3 Triple Open'ı, x4-x10 Multi Open'ı, otomatik açma (auto = true) Auto Open'ı ister; tek yumurta ücretsizdir. Döner: izin var mı, mesaj
+-- Açma isteğinin game pass kuralı: x2-x10 Multi Open'ı, otomatik açma (auto = true) Auto Open'ı ister; tek yumurta ücretsizdir. Döner: izin var mı, mesaj
 function EggShop.checkPasses(player, count, auto)
 	local needed = EggRules.passForCount(count)
 	if needed and not EggRules.owns(player, needed) then

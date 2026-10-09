@@ -3,7 +3,7 @@ Kullanım (proje klasöründe):
     python tools/set_robux_ids.py --init           robux_ids.txt (boş şablon) ve ROBUX_URUNLERI.md (Creator Hub'da açılacak ürünler tablosu) üretir
     python tools/set_robux_ids.py robux_ids.txt    dosyadaki 'anahtar=ID' satırlarını Config.luau'ya yazar (boş ID'ler atlanır, ID 0 kalır)
 Anahtarlar: shop:<id> (Shop ürünleri), potion:<id> (iksirler), trail:<id>, aura:<id>, skip (Rebirth SKIP), double (Offline DOUBLE IT!), vip (VIP game pass), autoclick (Auto Click game pass),
-eggauto / eggtriple / eggmulti (yumurta paneli game pass'leri: Auto Open, Triple Open x3, Multi Open x10; fiyatları 150'yi geçer, bunlar kuralın istisnasıdır).
+eggauto / eggmulti (yumurta paneli game pass'leri: Auto Open, Multi Open x3/x10; fiyatları 150'yi geçer, bunlar kuralın istisnasıdır).
 Yazmadan önce: ID'ler sayı olmalı, aynı ID iki yerde kullanılamaz (Purchases.init uyarı verir); VIP game pass ID'si çevrimiçi doğrulanmaya çalışılır (olmazsa uyarı).
 Config.luau'daki fiyatlar (robux = ...) sadece arayüzde GÖSTERİLEN fiyattır; asıl fiyatı Creator Hub'daki ürün belirler: tabloyu aynı fiyatlarla aç.
 """
@@ -73,10 +73,9 @@ def read_products():
     # Yumurta paneli game pass'leri (Config.EggPasses)
     egg_details = {
         "auto": "Auto Open: eggs open automatically, hands-free. Permanent.",
-        "triple": "Triple Open: hatch 3 eggs at once. Permanent.",
-        "multi": "Multi Open: hatch 10 eggs at once. Permanent.",
+        "multi": "Multi Open: hatch 3 or 10 eggs at once (switch with T). Permanent.",
     }
-    for m in re.finditer(r'\{ id = "(auto|triple|multi)", name = "([^"]+)", GamePassId = \d+, Robux = (\d+)', text):
+    for m in re.finditer(r'\{ id = "(auto|multi)", name = "([^"]+)", GamePassId = \d+, Robux = (\d+)', text):
         items.append((f"egg{m.group(1)}", m.group(2), egg_details[m.group(1)], int(m.group(3)), "Game Pass"))
     return items
 
@@ -92,12 +91,12 @@ def write_template():
                 existing[name.strip()] = value.strip()
     with io.open(path, "w", encoding="utf-8", newline="") as f:
         f.write("# Her satırda anahtar=ID. Boş bırakılan ürün 'coming soon' kalır. Doldurunca: python tools/set_robux_ids.py robux_ids.txt\n")
-        f.write("# Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. Game Pass'ler (VIP, Auto Click, eggauto, eggtriple, eggmulti): Para Kazanma > Geçişler (Passes).\n")
+        f.write("# Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. Game Pass'ler (VIP, Auto Click, eggauto, eggmulti): Para Kazanma > Geçişler (Passes).\n")
         for key, *_ in items:
             f.write(f"{key}={existing.get(key, '')}\n")
     lines = ["# Robux ürünleri: Creator Hub'da açılacaklar", "",
              "Her satır için Creator Hub'da (create.roblox.com) oyunun > **Para Kazanma (Monetization) > Geliştirici Ürünleri (Developer Products)** sayfasında bir ürün aç (VIP için **Geçişler / Passes**).",
-             "Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; yumurta pass'leri hariç hiçbir fiyat 150 Robux'u geçmez; eggauto/eggtriple/eggmulti bilerek daha pahalıdır). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz",
+             "Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; yumurta pass'leri hariç hiçbir fiyat 150 Robux'u geçmez; eggauto/eggmulti bilerek daha pahalıdır). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz",
              "(ya da bana yapıştır), sonra `python tools/set_robux_ids.py robux_ids.txt` Config'e işler. Oyun Studio'da yayınlanmış olmalı, ürünler o oyuna (deneyime) ait olmalı.", "",
              f"Toplam: {len(items)} ürün ({sum(1 for i in items if i[4] == 'Developer Product')} Developer Product + {sum(1 for i in items if i[4] == 'Game Pass')} Game Pass).", "",
              "| # | Anahtar | Tür | Ad | Fiyat (Robux) | Açıklama |", "|---|---|---|---|---|---|"]
@@ -168,11 +167,11 @@ def apply_ids(path):
             replace_line(r"[^\n]*VipGamePassId = \d+[^\n]*", "VipGamePassId", value)
         elif key == "autoclick":
             replace_line(r"[^\n]*AutoClick = \{[^\n]*GamePassId = \d+[^\n]*", "GamePassId", value)
-        elif key in ("eggauto", "eggtriple", "eggmulti"):
+        elif key in ("eggauto", "eggmulti"):
             replace_line(rf'[^\n]*\{{ id = "{key[3:]}", name = [^\n]*GamePassId = \d+[^\n]*', "GamePassId", value)
     io.open(CONFIG, "w", encoding="utf-8", newline="").write(text)
     print(f"{done} ID Config.luau'ya yazıldı")
-    for pass_key in ("vip", "autoclick", "eggauto", "eggtriple", "eggmulti"):
+    for pass_key in ("vip", "autoclick", "eggauto", "eggmulti"):
         if pass_key not in mapping:
             continue
         try:

@@ -1,6 +1,6 @@
 -- Yumurta raflarının oyuncuya özel görünümü: etiketler, ped renkleri ve pede basınca (dokununca) açılan yumurta paneli.
 -- Panelde yumurtanın adı, fiyatı, petleri, çarpanları ve çıkma şansları görünür.
--- Tuşlar: E = aç (ücretsiz), R = otomatik aç (ücretli: Auto Open), T = bir seferde açılacak sayı (1 / 3 / 10; x3 ve x10 ücretli: Triple / Multi Open).
+-- Tuşlar: E = aç (ücretsiz), R = otomatik aç (ücretli: Auto Open), T = bir seferde açılacak sayı (1 / 3 / 10; x3 ve x10 modları ücretli: Multi Open).
 -- Ücretli özellikler panelde NORMAL görünür, fiyat YAZMAZ (sahibi 'fiyatları R'ye T'ye basmadan göremeyelim, biraz clickbait olsun, Shop'ta da olmasın' dedi): fiyat ancak oyuncu R'ye ya da T'nin kilitli bir çarpana gelmesine basınca
 -- görünür: pass satışa açıksa Roblox satın alma penceresi, değilse 'coming soon' bildirimi fiyatla birlikte. Kilitli çarpan SEÇİLMEZ (sahibi 'satın almadan o düğme çalışmasın' dedi): başlıktaki toplam fiyat ve Multi yazısı değişmez. Win yetmiyorsa Open düğmesi 'Get Wins' olur ve Shop'un paket bölümünü açar.
 -- Burada yapılan renk/etiket değişiklikleri sadece bu oyuncunun ekranında görünür.

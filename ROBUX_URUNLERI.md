@@ -1,10 +1,10 @@
 # Robux ürünleri: Creator Hub'da açılacaklar
 
 Her satır için Creator Hub'da (create.roblox.com) oyunun > **Para Kazanma (Monetization) > Geliştirici Ürünleri (Developer Products)** sayfasında bir ürün aç (VIP için **Geçişler / Passes**).
-Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; yumurta pass'leri hariç hiçbir fiyat 150 Robux'u geçmez; eggauto/eggtriple/eggmulti bilerek daha pahalıdır). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz
+Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; yumurta pass'leri hariç hiçbir fiyat 150 Robux'u geçmez; eggauto/eggmulti bilerek daha pahalıdır). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz
 (ya da bana yapıştır), sonra `python tools/set_robux_ids.py robux_ids.txt` Config'e işler. Oyun Studio'da yayınlanmış olmalı, ürünler o oyuna (deneyime) ait olmalı.
 
-Toplam: 36 ürün (31 Developer Product + 5 Game Pass).
+Toplam: 35 ürün (31 Developer Product + 4 Game Pass).
 
 | # | Anahtar | Tür | Ad | Fiyat (Robux) | Açıklama |
 |---|---|---|---|---|---|
@@ -42,7 +42,6 @@ Toplam: 36 ürün (31 Developer Product + 5 Game Pass).
 | 32 | `vip` | Game Pass | VIP | 149 | VIP pad: the Win button gives 2x Wins every stage. Permanent. |
 | 33 | `autoclick` | Game Pass | Auto Click | 149 | Auto Click: your character squats and kicks for you, up to 10 clicks per second. Permanent. |
 | 34 | `eggauto` | Game Pass | Auto Open | 199 | Auto Open: eggs open automatically, hands-free. Permanent. |
-| 35 | `eggtriple` | Game Pass | Triple Open | 179 | Triple Open: hatch 3 eggs at once. Permanent. |
-| 36 | `eggmulti` | Game Pass | Multi Open | 249 | Multi Open: hatch 10 eggs at once. Permanent. |
+| 35 | `eggmulti` | Game Pass | Multi Open | 249 | Multi Open: hatch 3 or 10 eggs at once (switch with T). Permanent. |
 
 Not: en önemli ürünler (ilk açılacaklar): Pet Space, +1K / +10K / +100K Power, Win Pack, Mega Win Pack, iksirler, VIP. İz ve aura ürünleri sonra eklenebilir; ID'si boş olan ürün oyunda 'coming soon' der ve hata vermez.

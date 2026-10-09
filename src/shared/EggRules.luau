@@ -1,5 +1,5 @@
 -- Yumurta açma kuralları (sunucu ve istemci ortak): hangi açma biçimi hangi game pass'i ister (Config.EggPasses). Saf hesaplardır, durum tutmaz.
---   x1 açmak her zaman ücretsizdir. x2-x3 'Triple Open' (count = 3), x4-x10 'Multi Open' (count = 10) ister; otomatik açma 'Auto Open' ister.
+--   x1 açmak her zaman ücretsizdir. x2-x10 (T ile seçilen x3 ve x10 modları) 'Multi Open' pass'ini (count = 10) ister; otomatik açma 'Auto Open' ister.
 local Config = require(script.Parent.Config)
 
 local EggRules = {}
@@ -38,23 +38,9 @@ function EggRules.autoPass()
 	return EggRules.pass("auto")
 end
 
--- Oyuncu pass'e sahip mi: öznitelik sunucuda yazılır ('HasEggAuto' vb.); pass yoksa (nil: x1) hep serbest. Daha büyük çarpanın pass'i küçüğünü de KAPSAR
--- (Multi Open x10 alan Triple Open x3'ü de kullanır: sahibi 'isteyen 3 isteyen 10 bassın, T ile mod değiştirsin' dedi; büyüğü alıp küçüğünden mahrum kalmasın).
+-- Oyuncu pass'e sahip mi: öznitelik sunucuda yazılır ('HasEggAuto' vb.); pass yoksa (nil: x1) hep serbest
 function EggRules.owns(player, pass)
-	if pass == nil then
-		return true
-	end
-	if player:GetAttribute(pass.attribute) == true then
-		return true
-	end
-	if pass.count then
-		for _, other in Config.EggPasses do
-			if other.count and other.count > pass.count and player:GetAttribute(other.attribute) == true then
-				return true
-			end
-		end
-	end
-	return false
+	return pass == nil or player:GetAttribute(pass.attribute) == true
 end
 
 -- T tuşu (sahibi 'satın almasan dahi T'ye basınca fiyat değişiyor, satın almadan o düğme çalışmasın' dedi): bir İMLEÇ x1 > x3 > x10 > x1 diye gezer. Imlecin geldiği seçenek AÇIKSA (x1 her zaman, x3/x10 ilgili pass varsa) SEÇİLİR;

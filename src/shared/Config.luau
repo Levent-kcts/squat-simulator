@@ -102,15 +102,15 @@ return {
 	-- Robux = düğmede ve Shop kartında GÖSTERİLEN fiyat (en çok 150; asıl fiyatı Creator Hub'daki pass belirler, aynı yaz). Sahiplik sunucuda sorulur (server/AutoClickPass, 'HasAutoClick' özniteliği);
 	-- pass olmayan oyuncu elle tıklar (sunucu hız sınırı ClickLimit herkese aynı) ya da antrenman pedinin kendi squat'ını kullanır. Tempo (tools/simulate.py): Auto Click'li oyun sonu ~11 sa, elle 5/sn ~19 sa, pasif ped ~41 sa.
 	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 149 },
-	-- YUMURTA GAME PASS'LERİ (sahibi 'yumurtada R auto ve T multi ücretli olsun, üzerlerinde Robux fiyatları olsun, bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi): yumurta panelindeki
-	-- Auto (R), Triple (x3) ve Multi (x10) açma ÜCRETLİDİR; E ile tek yumurta açmak her zaman ücretsizdir. Her biri BİR game pass'tir (kalıcı). GamePassId = 0 iken pass henüz satışa açılmamıştır: özellik KİLİTLİ kalır,
-	-- düğmede fiyat rozeti görünür, basınca 'coming soon' der (VIP gibi). Creator Hub > Para Kazanma > Geçişler'de aç, ID'yi robux_ids.txt'te eggauto= / eggtriple= / eggmulti= satırlarına yaz, tools/set_robux_ids.py işler.
-	-- Robux = GÖSTERİLEN fiyat (asıl fiyatı Creator Hub'daki pass belirler, aynı yaz). Bu üç ürün '150 Robux'u geçmesin' kuralının İSTİSNASIDIR (sahibi izin verdi; pricetest üst sınırı 400). Diğer her şeyde sınır 150 kalır.
-	-- Sahiplik sunucuda sorulur (server/EggPasses; 'HasEggAuto' / 'HasEggTriple' / 'HasEggMulti') ve EggOpen'da SUNUCUDA zorlanır (shared/EggRules): x2-x3 açmak Triple'ı, x4-x10 Multi'yi, otomatik açma Auto'yu ister.
+	-- YUMURTA GAME PASS'LERİ (sahibi 'yumurtada R auto ve T multi ücretli olsun, üzerlerinde Robux fiyatları olsun, bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi): yumurta panelinde İKİ ücretli özellik vardır:
+	-- Auto Open (R tuşu: otomatik açma) ve Multi Open (T tuşu: x3 ve x10 modları; oyuncu T ile modu değiştirip açar). E ile tek yumurta açmak her zaman ücretsizdir. Her biri BİR game pass'tir (kalıcı).
+	-- (Önce üç pass'ti: Auto, Triple x3, Multi/Mega x10; sahibi Triple'ı Multi'ye çevirdi, 'eggtriple' kodunu eggmulti olarak kullan dedi: tek Multi pass'i HEM x3 HEM x10 modunu açar.)
+	-- GamePassId = 0 iken pass henüz satışa açılmamıştır: özellik KİLİTLİ kalır, basınca fiyatlı 'coming soon' der (VIP gibi). Creator Hub > Para Kazanma > Geçişler'de aç, ID'yi robux_ids.txt'te eggauto= / eggmulti= satırlarına yaz, tools/set_robux_ids.py işler.
+	-- Robux = GÖSTERİLEN fiyat (asıl fiyatı Creator Hub'daki pass belirler, aynı yaz). Bu iki ürün '150 Robux'u geçmesin' kuralının İSTİSNASIDIR (sahibi izin verdi; pricetest/eggpasstest üst sınırı 400). Diğer her şeyde sınır 150 kalır.
+	-- Sahiplik sunucuda sorulur (server/EggPasses; 'HasEggAuto' / 'HasEggMulti') ve EggOpen'da SUNUCUDA zorlanır (shared/EggRules): x2-x10 açmak Multi'yi, otomatik açma Auto'yu ister. count = pass'in izin verdiği EN BÜYÜK sayı.
 	EggPasses = {
 		{ id = "auto", name = "Auto Open", GamePassId = 2025428297, Robux = 199, attribute = "HasEggAuto", detail = "Opens eggs for you" },
-		{ id = "triple", name = "Triple Open", GamePassId = 2026754291, Robux = 179, attribute = "HasEggTriple", count = 3, detail = "Open 3 eggs at once" },
-		{ id = "multi", name = "Multi Open", GamePassId = 0, Robux = 249, attribute = "HasEggMulti", count = 10, detail = "Open 10 eggs at once" },
+		{ id = "multi", name = "Multi Open", GamePassId = 2026754291, Robux = 249, attribute = "HasEggMulti", count = 10, detail = "Open 3 or 10 eggs at once" },
 	},
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
