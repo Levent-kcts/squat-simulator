@@ -119,7 +119,7 @@ return {
 	ShopLimit = { PerSecond = 40, Burst = 100 },
 
 	Save = {
-		StoreName = "PlayerData_v1", -- ismi değiştirirsen herkesin kaydı sıfırlanır!
+		StoreName = "PlayerData_v2", -- ismi değiştirirsen herkesin kaydı sıfırlanır! (2026-10-10: yayın öncesi temiz başlangıç için v1 -> v2; YAYINDAN SONRA ASLA DEĞİŞTİRME)
 		AutosaveInterval = 30, -- saniye (ayrıca Win/satın alma/pet sonrası da hemen kaydedilir)
 	},
 

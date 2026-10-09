@@ -116,7 +116,7 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 1. Studio: Dosya > Roblox'a Yayınla; Ana Sayfa > Oyun Ayarları > Güvenlik > 'Studio'nun API Hizmetlerine Erişimini Etkinleştir' (kayıtlar için ZORUNLU). Avatar tipi: Oyun Ayarları > Avatar > R15.
 2. Oyun ayarları: ad 'Squat Simulator', açıklama, simge ve küçük resimler (Creator Hub > Deneyim > Genel), tür, cihazlar (bilgisayar/telefon/tablet), sunucu boyutu, 'Herkese açık' gizlilik.
 3. Yaş/içerik anketi (Creator Hub > Deneyim > Hedef kitle): çocuklara yönelik, dikkatli doldur; satın alınabilir içerik (rastgele ödüllü yumurtalar) için ilgili soruları doğru işaretle.
-4. Yayından hemen önce kayıt kararı: test sırasında DEV komutlarıyla verilen şeyler kalıcı kayıtta kalır; temiz başlangıç için `Config.Save.StoreName` değiştirilir (herkesin kaydı sıfırlanır!). SADECE yayından ÖNCE yap, yayından sonra ASLA.
+4. ~~Kayıt sıfırlama~~ **YAPILDI (2026-10-10, sahibi onayladı):** `Config.Save.StoreName` PlayerData_v1 -> **PlayerData_v2** (test verisi canlıya karışmasın). Bu isim YAYINDAN SONRA ASLA değiştirilmez (herkesin kaydı sıfırlanır).
 5. Yayın sonrası: Output'ta `[Save]` uyarısı çıkıyor mu, satın alma ve Robux testi, 2 hesapla hızlı giriş-çıkış (oturum kilidi), mobil ekran ölçeği.
 
 **A) Sahibinin yapacakları (Roblox tarafı, kodla yapılamaz)**
