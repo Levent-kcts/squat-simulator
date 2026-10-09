@@ -562,8 +562,8 @@ return {
 			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", outfit = "frost", mult = 18, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
 			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", outfit = "volt", mult = 36, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
 			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", outfit = "nova", mult = 100, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
-			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, robux = 199, gamePassId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
-			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, robuxOnly = true, robux = 299, gamePassId = 0, color = Color3.fromRGB(35, 35, 48) },
+			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, robux = 199, gamePassId = 2027204299, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, robuxOnly = true, robux = 299, gamePassId = 2026280297, color = Color3.fromRGB(35, 35, 48) },
 		},
 	},
 

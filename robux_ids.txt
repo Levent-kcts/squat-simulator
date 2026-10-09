@@ -37,5 +37,5 @@ vip=2022488478
 autoclick=2022434461
 eggauto=2025428297
 eggmulti=2026754291
-coachprism=
-coachshadow=
+coachprism=2027204299
+coachshadow=2026280297
