@@ -13,11 +13,13 @@ local Shelf = require(script.Parent.Shelf)
 
 local WorldsGate = {}
 
-local STONE_LIGHT = Color3.fromRGB(238, 242, 252) -- taş çerçevenin açık tonu
-local STONE_SHADE = Color3.fromRGB(212, 219, 238) -- bir koyu ton (taşlar dönüşümlü, referanstaki kemer taşları gibi)
-local GLOW_COLOR = Color3.fromRGB(215, 232, 255) -- parlayan yüz: saf beyaz Neon göz alır (sahibi ışıkta uyardı), hafif mavi beyaz
+-- PARLAKLIK (2026-10-09): ilk sürümde yüz neredeyse beyaz Neon, taşlar açık beyazdı ve ışık geniş yayılıyordu: kemer ekranı boğdu, sahibi 'çok parlak' dedi. Yüz artık orta tonda mavi Neon (rengi koyu = az parlak),
+-- taşlar bir kademe koyu, ışık zayıf ve kısa menzilli. Tekrar açma: önce sahibine sor.
+local STONE_LIGHT = Color3.fromRGB(205, 213, 236) -- taş çerçevenin açık tonu
+local STONE_SHADE = Color3.fromRGB(176, 187, 220) -- bir koyu ton (taşlar dönüşümlü, referanstaki kemer taşları gibi)
+local GLOW_COLOR = Color3.fromRGB(105, 150, 225) -- parlayan yüz: orta ton mavi (Neon parlak görünür, açık renk göz alır)
 local TITLE_COLOR = Color3.fromRGB(0, 205, 255) -- 'WORLDS' yazısı, referanstaki gibi cyan
-local SOON_COLOR = Color3.fromRGB(255, 190, 40)
+local SOON_COLOR = Color3.fromRGB(255, 205, 60)
 local OUTLINE_COLOR = Color3.fromRGB(20, 25, 50)
 
 local ARC_STONES = 15 -- yarım dairedeki taş sayısı
@@ -69,18 +71,18 @@ function WorldsGate.init()
 
 	-- Parlayan yüzün ışığı ve yukarı süzülen parıltılar: geçit 'canlı' görünür
 	local light = Instance.new("PointLight")
-	light.Color = Color3.fromRGB(190, 220, 255)
-	light.Range = 26
-	light.Brightness = 1.2
+	light.Color = Color3.fromRGB(150, 185, 245)
+	light.Range = 14
+	light.Brightness = 0.35
 	light.Shadows = false
 	light.Parent = glow
 	local sparkles = Instance.new("ParticleEmitter")
 	sparkles.Color = ColorSequence.new(Color3.fromRGB(190, 235, 255))
-	sparkles.LightEmission = 0.9
+	sparkles.LightEmission = 0.5
 	sparkles.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(1, 0) })
 	sparkles.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) })
 	sparkles.Lifetime = NumberRange.new(1.5, 2.6)
-	sparkles.Rate = 6
+	sparkles.Rate = 4
 	sparkles.Speed = NumberRange.new(1, 2.5)
 	sparkles.SpreadAngle = Vector2.new(30, 30)
 	sparkles.Parent = glow

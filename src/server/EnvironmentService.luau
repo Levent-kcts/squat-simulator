@@ -237,6 +237,8 @@ function EnvironmentService.init()
 	brick(59, floorTop, 37, 4, 3, 4, BRICK_COLORS[(2) % #BRICK_COLORS + 1], -0.25)
 	brick(53.5, floorTop, 50, 4, 3, 4, BRICK_COLORS[(4) % #BRICK_COLORS + 1], 0.4)
 
+	-- (Arka duvardaki 'SQUAT SIMULATOR' oyun adı tabelası sahibinin isteğiyle KALDIRILDI: Worlds kemerinin üstünde kalabalık duruyordu, geri ekleme.)
+
 	-- Koridor girişinin üstünde yönlendirme tabelası (lobi içinden okunur)
 	local sign = Build.block(
 		folder,
@@ -265,35 +267,6 @@ function EnvironmentService.init()
 	stroke.Thickness = 4
 	stroke.Color = Color3.fromRGB(40, 25, 0)
 	stroke.Parent = text
-
-	-- Oyunun adı: arka duvarda, yumurtaların üstünde büyük tabela (spawn'dan kırılan duvarlara bakarken arkada kalır)
-	local title = Build.block(
-		folder,
-		"TitleSign",
-		Vector3.new(70, 8, 0.5),
-		Vector3.new(0, 28, back - 0.3),
-		Color3.fromRGB(255, 205, 40),
-		Enum.Material.SmoothPlastic
-	)
-	local titleGui = Instance.new("SurfaceGui")
-	titleGui.Face = Enum.NormalId.Front
-	titleGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	titleGui.PixelsPerStud = 20
-	titleGui.Parent = title
-
-	local titleText = Instance.new("TextLabel")
-	titleText.Size = UDim2.fromScale(1, 1)
-	titleText.BackgroundTransparency = 1
-	titleText.Font = Enum.Font.FredokaOne
-	titleText.TextScaled = true
-	titleText.Text = string.upper(Config.GameName)
-	titleText.TextColor3 = Color3.new(1, 1, 1)
-	titleText.Parent = titleGui
-
-	local titleStroke = Instance.new("UIStroke")
-	titleStroke.Thickness = 5
-	titleStroke.Color = Color3.fromRGB(40, 25, 0)
-	titleStroke.Parent = titleText
 end
 
 return EnvironmentService
