@@ -27,6 +27,9 @@ LoadingScreen.GameTitle = "SQUAT SIMULATOR" -- başlık (Config.GameName ile ayn
 LoadingScreen.ShowTitle = true
 LoadingScreen.MinSeconds = 3 -- her koşulda en az bu kadar görünür (yanıp sönmesin). Süre ekranın İLK ÇİZİLDİĞİ kareden sayılır: Studio'da pencere geç açılırsa ekran kaçmasın
 LoadingScreen.MaxSeconds = 30 -- en geç bu kadar sonra kapanır
+LoadingScreen.Pattern = { "brick", "muscle", "brick", "barbell" } -- süs örüntüsü (tuğlalar yarısı, kas ve barbell dörtte biri)
+LoadingScreen.Grid = { Columns = 8, Rows = 5 } -- süs deseni: tüm ekranı kaplar (çift sıralarda 8, tek sıralarda 9 süs = 42)
+LoadingScreen.TextZoneTransparency = 0.55 -- başlık/LOADING/çubuk arkasındaki süslerin saydamlığı (yazılar okunsun)
 LoadingScreen.DisplayOrder = 1000 -- hiçbir arayüz bunun üstüne çıkmaz (en yükseği WheelPanel 20)
 
 -- Aşamalar ve ağırlıkları (toplam 1)
@@ -142,7 +145,7 @@ function LoadingScreen.build(parentGui, images)
 	root.ZIndex = 2
 	root.Parent = gui
 
-	-- Dekor: ekranın kenarlarında süzülüp sallanan 2D resimler (ortayı ve başlığı boş bırakır): üstte, ortada ikişer tuğla; altta sırayla tuğla, bacak kası, AĞIRLIK BARI, bacak kası, tuğla.
+	-- Dekor: süzülüp sallanan 2D resimler (tuğla, bacak kası, AĞIRLIK BARI).
 	-- Her resim kendi hareketiyle oynar: tuğla süzülür, barbell kaldırılır gibi yukarı aşağı gider, bacak kası kasılıp gevşer (büyüyüp küçülür). Resim kimliği yoksa o süs çizilmez.
 	images = images or {
 		brick = LoadingScreen.iconImage("LoadingBrick"),
@@ -183,24 +186,56 @@ function LoadingScreen.build(parentGui, images)
 		table.insert(decor, item)
 		return item
 	end
-	if images.brick then
-		local layout = {
-			{ 0.08, 0.13, 0.14, 1, 0.0, -12 }, { 0.92, 0.12, 0.13, 2, 1.7, 10 }, { 0.07, 0.56, 0.11, 5, 3.1, 14 },
-			{ 0.93, 0.58, 0.12, 6, 4.4, -14 }, { 0.08, 0.89, 0.115, 3, 5.2, 8 }, { 0.92, 0.89, 0.115, 4, 2.4, -9 },
-		}
-		for _, def in layout do
-			table.insert(bricks, addDecor({
-				x = def[1], y = def[2], width = def[3], aspect = 1, image = images.brick, color = BRICK_COLORS[def[4]],
-				phase = def[5], tilt = def[6], bob = 0.014, speed = 1.3, sway = 6,
-			}, "Brick"))
+	-- TÜM EKRAN dolar (sahibi 'tüm ekranı onlarla doldur' dedi): her ikinci sıra yarım hücre kaydırılmış (duvar kâğıdı gibi) 8 sütun x 5 sıra desen; sıralı örüntü
+	-- tuğla, kas, tuğla, barbell (her sırada örüntü 2 hücre kayar: aynı tür alt alta gelmez). Konum, eğim, boy ve faz sabit bir sahte-rastgele sayıyla değişir (her açılışta aynı görünür).
+	-- Resmi olmayan tür örüntüden çıkar (örneğin sadece bacak kası yüklüyse tüm ekran kaslarla dolar); hiç resim yoksa süs çizilmez.
+	-- Metin bölgesindeki (başlık, LOADING, çubuk) süsler yarı saydamdır ki yazılar okunsun.
+	local kinds = {}
+	for _, kind in LoadingScreen.Pattern do
+		if images[kind] then
+			table.insert(kinds, kind)
 		end
 	end
-	if images.barbell then
-		addDecor({ x = 0.5, y = 0.85, width = 0.33, aspect = 2, image = images.barbell, phase = 0.5, tilt = 0, bob = 0.024, speed = 1.7, sway = 2.5 }, "Barbell")
+	local function noise(n) -- 0-1 arası sabit sahte-rastgele sayı
+		local v = math.sin(n * 12.9898) * 43758.5453
+		return v - math.floor(v)
 	end
-	if images.muscle then
-		addDecor({ x = 0.2, y = 0.855, width = 0.105, aspect = 1, image = images.muscle, phase = 0.0, tilt = -8, bob = 0.01, speed = 1.4, sway = 5, pulse = 0.09 }, "Muscle")
-		addDecor({ x = 0.8, y = 0.855, width = 0.105, aspect = 1, image = images.muscle, phase = 1.9, tilt = 8, bob = 0.01, speed = 1.4, sway = 5, pulse = 0.09 }, "Muscle")
+	if #kinds > 0 then
+		local cols, rows = LoadingScreen.Grid.Columns, LoadingScreen.Grid.Rows
+		local count = 0
+		for row = 0, rows - 1 do
+			local odd = row % 2 == 1
+			for col = 0, (if odd then cols else cols - 1) do
+				count += 1
+				local kind = kinds[(col + row * 2) % #kinds + 1]
+				local x = ((if odd then col else col + 0.5) / cols) + (noise(count) - 0.5) * 0.03
+				local y = (row + 0.5) / rows + (noise(count + 100) - 0.5) * 0.05
+				local def = {
+					x = x, y = y, image = images[kind], phase = noise(count + 200) * 6.28, tilt = (noise(count + 300) - 0.5) * 40,
+					aspect = 1, bob = 0.012, speed = 1.1 + noise(count + 400) * 0.8, sway = 4 + noise(count + 500) * 4,
+				}
+				local size = 0.9 + noise(count + 600) * 0.25 -- boy farkı
+				if kind == "brick" then
+					def.width = 0.105 * size
+					def.color = BRICK_COLORS[count % #BRICK_COLORS + 1]
+				elseif kind == "barbell" then
+					def.width = 0.2 * size
+					def.aspect = 2
+					def.bob = 0.016
+				else
+					def.width = 0.1 * size
+					def.pulse = 0.09
+				end
+				local item = addDecor(def, if kind == "brick" then "Brick" elseif kind == "barbell" then "Barbell" else "Muscle")
+				if kind == "brick" then
+					table.insert(bricks, item)
+				end
+				-- Metin bölgesinde (başlık, LOADING, çubuk) yarı saydam
+				if x > 0.14 and x < 0.86 and y > 0.2 and y < 0.72 then
+					item.frame.ImageTransparency = LoadingScreen.TextZoneTransparency
+				end
+			end
+		end
 	end
 
 	if LoadingScreen.ShowTitle then

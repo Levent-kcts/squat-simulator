@@ -47,38 +47,56 @@ local screen = LoadingScreen.build(gui, { brick = "rbxassetid://123", barbell = 
 assert(screen.gui and screen.root and screen.backdrop and screen.fill and screen.percent and screen.label, "arayüz parçaları yok")
 assert(rawget(screen.gui, "DisplayOrder") == LoadingScreen.DisplayOrder, "DisplayOrder ayarlanmalı")
 assert(rawget(screen.backdrop, "Active") == true, "zemin Active olmalı (arkadaki tıklamalar sayılmasın)")
--- 2D tuğlalar: 6 adet ImageLabel, hepsi aynı resim ama farklı renge boyanmış; 3B (ViewportFrame) yok
-assert(#screen.bricks == 6, "6 tuğla olmalı: " .. #screen.bricks)
-local colors = {}
-for index, item in screen.bricks do
-	assert(rawget(item.frame, "ClassName") == "ImageLabel", "tuğla ImageLabel olmalı")
-	assert(rawget(item.frame, "Image") == "rbxassetid://123", "tuğla resmi verilen kimlik olmalı")
-	local color = rawget(item.frame, "ImageColor3")
-	colors[string.format("%.2f/%.2f/%.2f", color.R, color.G, color.B)] = true
+-- Tüm ekran dolar: 8 sütun x 5 sıra, çift sıralarda 8, tek sıralarda 9 süs = 42; üç tür de bulunur
+local expected = 0
+for row = 0, LoadingScreen.Grid.Rows - 1 do
+	expected += if row % 2 == 1 then LoadingScreen.Grid.Columns + 1 else LoadingScreen.Grid.Columns
 end
-local distinct = 0
-for _ in colors do
-	distinct += 1
-end
-assert(distinct == 6, "6 tuğla 6 farklı renkte olmalı: " .. distinct)
-assert(not rawget(screen, "viewport"), "3B ViewportFrame kalmamalı")
--- Ağırlık barı (1 adet, boyanmaz, 2:1) ve bacak kası (2 adet, kasılma ölçeği olan): toplam 9 süs
-assert(#screen.decor == 9, "6 tuğla + 1 barbell + 2 kas = 9 süs olmalı: " .. #screen.decor)
-local barbells, muscles = 0, 0
+assert(#screen.decor == expected and expected == 42, "tüm ekranı dolduran desen " .. expected .. " süs olmalı: " .. #screen.decor)
+local counts = { Brick = 0, Barbell = 0, Muscle = 0 }
+local colors, spreadMinX, spreadMaxX, spreadMinY, spreadMaxY = {}, 1, 0, 1, 0
 for _, item in screen.decor do
-	if item.kind == "Barbell" then
-		barbells += 1
+	assert(rawget(item.frame, "ClassName") == "ImageLabel", "süs ImageLabel olmalı")
+	counts[item.kind] += 1
+	spreadMinX, spreadMaxX = math.min(spreadMinX, item.x), math.max(spreadMaxX, item.x)
+	spreadMinY, spreadMaxY = math.min(spreadMinY, item.y), math.max(spreadMaxY, item.y)
+	if item.kind == "Brick" then
+		assert(rawget(item.frame, "Image") == "rbxassetid://123", "tuğla resmi")
+		local color = rawget(item.frame, "ImageColor3")
+		colors[string.format("%.2f/%.2f/%.2f", color.R, color.G, color.B)] = true
+	elseif item.kind == "Barbell" then
 		assert(rawget(item.frame, "Image") == "rbxassetid://456", "barbell resmi")
 		assert(rawget(item.frame, "ImageColor3") == nil, "barbell boyanmamalı (olduğu gibi gösterilir)")
 		assert(item.scale == nil, "barbell kasılmaz")
-	elseif item.kind == "Muscle" then
-		muscles += 1
+	else
 		assert(rawget(item.frame, "Image") == "rbxassetid://789", "kas resmi")
 		assert(item.scale and item.pulse and item.pulse > 0 and item.pulse < 0.3, "kas kasılıp gevşemeli (UIScale)")
 	end
 end
-assert(barbells == 1 and muscles == 2, "1 barbell ve 2 kas olmalı: " .. barbells .. "/" .. muscles)
--- Kasılma ölçeği her zaman pozitif kalmalı (negatif/sıfır ölçek resmi bozar)
+assert(counts.Brick > 15 and counts.Barbell > 5 and counts.Muscle > 5, "üç tür de bol olmalı: " .. counts.Brick .. "/" .. counts.Barbell .. "/" .. counts.Muscle)
+assert(#screen.bricks == counts.Brick, "bricks listesi tuğlaları içermeli")
+local distinct = 0
+for _ in colors do
+	distinct += 1
+end
+assert(distinct == 6, "tuğlalar 6 farklı renkte olmalı: " .. distinct)
+assert(spreadMinX < 0.1 and spreadMaxX > 0.9 and spreadMinY < 0.15 and spreadMaxY > 0.85, "süsler ekranın her yerine yayılmalı")
+assert(not rawget(screen, "viewport"), "3B ViewportFrame kalmamalı")
+-- Metin bölgesindeki süsler yarı saydam, dışındakiler opak
+local ghosted, solid = 0, 0
+for _, item in screen.decor do
+	local inside = item.x > 0.14 and item.x < 0.86 and item.y > 0.2 and item.y < 0.72
+	local transparency = rawget(item.frame, "ImageTransparency")
+	if inside then
+		assert(transparency == LoadingScreen.TextZoneTransparency, "metin bölgesindeki süs yarı saydam olmalı")
+		ghosted += 1
+	else
+		assert(transparency == nil, "metin bölgesi dışındaki süs opak olmalı")
+		solid += 1
+	end
+end
+assert(ghosted > 5 and solid > 10, "hem yarı saydam hem opak süs olmalı: " .. ghosted .. "/" .. solid)
+-- Kasılma ölçeği her zaman pozitif ve makul kalmalı (negatif/sıfır ölçek resmi bozar)
 for _, clock in { 0, 0.4, 1.3, 2.9, 7.7 } do
 	screen.animate(clock)
 	for _, item in screen.decor do
@@ -92,9 +110,12 @@ end
 local plain = LoadingScreen.build(S.newInstance("PlayerGui"), {})
 assert(#plain.bricks == 0 and #plain.decor == 0, "resim kimliği yokken süs çizilmemeli")
 plain.animate(2)
--- Sadece bacak kası varsa (barbell/tuğla yüklenmemişken) kaslar çizilir
+-- Sadece bacak kası yüklüyse (barbell/tuğla henüz yüklenmemişken) tüm ekran kaslarla dolar
 local onlyMuscle = LoadingScreen.build(S.newInstance("PlayerGui"), { muscle = "rbxassetid://5" })
-assert(#onlyMuscle.decor == 2 and #onlyMuscle.bricks == 0, "sadece kas: 2 süs")
+assert(#onlyMuscle.decor == expected and #onlyMuscle.bricks == 0, "sadece kas: tüm desen kaslarla dolmalı: " .. #onlyMuscle.decor)
+for _, item in onlyMuscle.decor do
+	assert(item.kind == "Muscle", "sadece kas yüklüyse hepsi kas olmalı")
+end
 screen.setProgress(0.5)
 assert(rawget(screen.percent, "Text") == "50%", "yüzde yazısı: " .. tostring(rawget(screen.percent, "Text")))
 screen.setProgress(2)
