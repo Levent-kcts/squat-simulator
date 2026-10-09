@@ -47,30 +47,36 @@ assert(plain and not plain:FindFirstChild("Coach"), "kıyafetsiz manken Blender 
 print("coach models ok:", withFx, withoutFx)
 print("DONE")
 
--- Coach Shadow'a EK EFEKT (sahibi 'birazcık daha efekt ekle' dedi): mor kıvılcım + koyu sis parçacıkları ve mor ışık, diğer koçlarda bu ekler YOK. Hem Blender koçunda (yukarıda kuruldu) hem kod mankeninde
-local function countEmitters(model)
-	local emitters, lights = 0, 0
+-- Coach Shadow'a EK EFEKT (sahibi 'en pahalı olmasına yaraşır bir efekt ver, ÇOK ABARTMA' dedi): zeminde mor büyü halkası (28 ince neon parça), halka içinde yükselen mor tozlar, ince sis ve mor ışık;
+-- diğer koçlarda bu ekler YOK. Hem Blender koçunda (aşağıdaki GameModels kurulumuyla) hem kod mankeninde aynı kurulur
+local function countFx(model)
+	local emitters, lights, ringSegments = 0, 0, 0
 	local function walk(instance)
 		for _, child in instance:GetChildren() do
-			if rawget(child, "ClassName") == "ParticleEmitter" then
+			local className = rawget(child, "ClassName")
+			if className == "ParticleEmitter" then
 				emitters += 1
-			elseif rawget(child, "ClassName") == "PointLight" then
+			elseif className == "PointLight" then
 				lights += 1
+			elseif string.match(rawget(child, "Name") or "", "^ShadowRing%d+$") then
+				ringSegments += 1
+				assert(rawget(child, "Transparency") < 1 and rawget(child, "Transparency") > 0, "halka parçası görünür olmalı")
 			end
 			walk(child)
 		end
 	end
 	walk(model)
-	return emitters, lights
+	return emitters, lights, ringSegments
 end
 for _, area in Config.Training.Areas do
-	local blender = Mannequin.build(folder, "ExtraCheck_" .. area.id, S.CFrame.new(), S.Vector3.new(0, 0, 0), 2.1, area.color, nil, area.outfit)
-	local emitters, lights = countEmitters(blender)
+	local built = Mannequin.build(folder, "ExtraCheck_" .. area.id, S.CFrame.new(), S.Vector3.new(0, 0, 0), 2.1, area.color, nil, area.outfit)
+	local emitters, lights, ringSegments = countFx(built)
 	if area.outfit == "shadow" then
-		assert(emitters >= 3 and lights == 1, `Shadow'da ana + 2 ek parçacık ve 1 ışık olmalı: {emitters} parçacık, {lights} ışık`)
-		assert(blender:FindFirstChild("ShadowSparks") and blender:FindFirstChild("ShadowFog") and blender:FindFirstChild("ShadowGlow"), "Shadow ek ev sahipleri")
+		assert(emitters >= 3 and lights == 1, `Shadow'da ana + toz + sis parçacığı ve 1 ışık olmalı: {emitters} parçacık, {lights} ışık`)
+		assert(ringSegments == 28, "Shadow'un zemin halkası 28 parçadan oluşmalı: " .. ringSegments)
+		assert(built:FindFirstChild("ShadowMotes") and built:FindFirstChild("ShadowFog") and built:FindFirstChild("ShadowGlow"), "Shadow ek ev sahipleri")
 	else
-		assert(lights == 0 and not blender:FindFirstChild("ShadowSparks"), "diğer koçlarda Shadow ekleri olmamalı: " .. area.id)
+		assert(lights == 0 and ringSegments == 0 and not built:FindFirstChild("ShadowMotes"), "diğer koçlarda Shadow ekleri olmamalı: " .. area.id)
 	end
 end
 print("shadow extra fx ok")

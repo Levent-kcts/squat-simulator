@@ -36,6 +36,11 @@ local function emitter(host, props)
 	if props.texture then
 		e.Texture = props.texture
 	end
+	if props.shape then
+		-- geniş bir ev sahibi parçanın alanından yayılır (Disc: yassı daire); küçük noktadan değil
+		e.Shape = Enum.ParticleEmitterShape[props.shape]
+		e.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	end
 	e.Parent = host
 	return e
 end
@@ -53,34 +58,51 @@ local FX = {
 	shadow = { from = Color3.fromRGB(60, 40, 90), to = Color3.fromRGB(20, 15, 30), texture = SMOKE, size = 1.4, rate = 7, speed = 0.8, rise = 1.5, spread = 40, life = 1.4, light = 0, hostAt = Vector3.new(0, 5.2, -0.5) },
 }
 
--- EK EFEKTLER (sahibi 'Shadow'a birazcık daha efekt ekle' dedi): ana parçacığın yanında ek parçacık kümeleri ve ışık. at: taban merkezine göre yer (birimler ölçeksiz, hostAt gibi).
--- Shadow: vücuttan yükselen parlayan mor kıvılcımlar, zeminde yayılan koyu sis ve etrafına hafif mor ışık. Hem Blender koçunda hem kod mankeninde aynı kurulur.
+-- EK EFEKTLER: ana parçacığın yanında ek parçacık kümeleri, ışık ve halka. at: taban merkezine göre yer, size: ev sahibi parça boyutu (birimler ölçeksiz, hostAt gibi; koçun boyutuyla çarpılır).
+-- SHADOW (en pahalı koç; sahibi önce 'birazcık daha efekt', sonra 'bir değişiklik yok, en pahalı olmasına yaraşır bir efekt ver, ÇOK ABARTMA' dedi): zeminde parlayan mor BÜYÜ HALKASI (sahibin ekranında hafifçe nabız atar:
+-- client/TrainingClient), halkanın içinde yükselen mor tozlar, ince zemin sisi ve hafif mor ışık. Halka ve tozlar koçun etrafındadır (içinden değil), bu yüzden gövdenin arkasında kaybolmaz. Hem Blender koçunda hem kod mankeninde aynı kurulur.
 local EXTRA_FX = {
 	shadow = {
-		{ name = "ShadowSparks", at = Vector3.new(0, 2.6, 0), fx = { from = Color3.fromRGB(215, 120, 255), to = Color3.fromRGB(90, 30, 170), size = 0.42, rate = 13, speed = 1.2, rise = 4.5, spread = 55, life = 1.3, light = 1 } },
-		{ name = "ShadowFog", at = Vector3.new(0, 0.5, 0), fx = { from = Color3.fromRGB(45, 25, 80), to = Color3.fromRGB(12, 8, 22), texture = SMOKE, size = 2.6, rate = 5, speed = 0.9, spread = 180, life = 2.2, light = 0 } },
-		{ name = "ShadowGlow", at = Vector3.new(0, 3.2, 0), light = { color = Color3.fromRGB(170, 80, 255), brightness = 1.4, range = 11 } },
+		{ name = "ShadowRing", at = Vector3.new(0, 0.06, 0), ring = { radius = 3.4, segments = 28, width = 0.17, height = 0.05, color = Color3.fromRGB(165, 85, 255), transparency = 0.3 } },
+		{ name = "ShadowMotes", at = Vector3.new(0, 0.2, 0), size = Vector3.new(6.2, 0.1, 6.2), fx = { from = Color3.fromRGB(220, 130, 255), to = Color3.fromRGB(95, 35, 175), size = 0.34, rate = 10, speed = 0.6, rise = 3.2, spread = 12, life = 1.6, light = 1, shape = "Disc" } },
+		{ name = "ShadowFog", at = Vector3.new(0, 0.5, 0), fx = { from = Color3.fromRGB(55, 32, 100), to = Color3.fromRGB(18, 12, 32), texture = SMOKE, size = 2.6, rate = 3, speed = 0.9, spread = 180, life = 2.2, light = 0 } },
+		{ name = "ShadowGlow", at = Vector3.new(0, 3.2, 0), light = { color = Color3.fromRGB(170, 80, 255), brightness = 1, range = 9 } },
 	},
 }
 
--- outfit'in ek efektlerini kurar. makeHost(ad, konum): görünmez bir ev sahibi parça döndürür (konum taban merkezine göre, ölçeksiz); scale: koçun boyutu (büyük koçta parçacık ve ışık da büyür)
+-- outfit'in ek efektlerini kurar. makeHost(ad, konum, boyut, dönüş): görünmez bir ev sahibi parça döndürür (konum taban merkezine göre, ölçeksiz; boyut verilmezse küçük nokta);
+-- scale: koçun boyutu (büyük koçta parçacık, ışık ve halka da büyür)
 local function addExtraFx(outfit, makeHost, scale)
 	for _, extra in EXTRA_FX[outfit] or {} do
-		local host = makeHost(extra.name, extra.at)
-		if extra.fx then
-			local fx = table.clone(extra.fx)
-			fx.size = (fx.size or 0.6) * scale
-			fx.speed = (fx.speed or 1) * scale
-			fx.rise = (fx.rise or 0) * scale
-			emitter(host, fx)
-		end
-		if extra.light then
-			local glow = Instance.new("PointLight")
-			glow.Color = extra.light.color
-			glow.Brightness = extra.light.brightness
-			glow.Range = extra.light.range * scale
-			glow.Shadows = false
-			glow.Parent = host
+		if extra.ring then
+			-- Zemin halkası: dairede dizilmiş ince neon parçalar (teğet yönde); zeminle aynı düzlemde değil, hafif üstte (titreme yapmaz)
+			local ring = extra.ring
+			local segmentLength = 2 * math.pi * ring.radius / ring.segments * 1.1
+			for index = 0, ring.segments - 1 do
+				local angle = index / ring.segments * 2 * math.pi
+				local at = extra.at + Vector3.new(math.cos(angle) * ring.radius, 0, math.sin(angle) * ring.radius)
+				local segment = makeHost(`{extra.name}{index}`, at, Vector3.new(ring.width, ring.height, segmentLength), CFrame.Angles(0, -angle, 0))
+				segment.Color = ring.color
+				segment.Material = NEON
+				segment.Transparency = ring.transparency
+			end
+		else
+			local host = makeHost(extra.name, extra.at, extra.size)
+			if extra.fx then
+				local fx = table.clone(extra.fx)
+				fx.size = (fx.size or 0.6) * scale
+				fx.speed = (fx.speed or 1) * scale
+				fx.rise = (fx.rise or 0) * scale
+				emitter(host, fx)
+			end
+			if extra.light then
+				local glow = Instance.new("PointLight")
+				glow.Color = extra.light.color
+				glow.Brightness = extra.light.brightness
+				glow.Range = extra.light.range * scale
+				glow.Shadows = false
+				glow.Parent = host
+			end
 		end
 	end
 end
@@ -204,15 +226,15 @@ function Mannequin.build(parent, name, frame, center, scale, skin, shorts, outfi
 			host.Parent = model
 			emitter(host, fx)
 		end
-		addExtraFx(outfit, function(hostName, at)
+		addExtraFx(outfit, function(hostName, at, size, rotation)
 			local extraHost = Instance.new("Part")
 			extraHost.Name = hostName
 			extraHost.Anchored = true
 			extraHost.CanCollide = false
 			extraHost.CanQuery = false
 			extraHost.CanTouch = false
-			extraHost.Size = Vector3.new(0.3, 0.3, 0.3) * scale
-			extraHost.CFrame = frame * CFrame.new(center + at * scale)
+			extraHost.Size = (size or Vector3.new(0.3, 0.3, 0.3)) * scale
+			extraHost.CFrame = frame * CFrame.new(center + at * scale) * (rotation or CFrame.new())
 			extraHost.Transparency = 1
 			extraHost.Parent = model
 			return extraHost
@@ -253,8 +275,8 @@ function Mannequin.build(parent, name, frame, center, scale, skin, shorts, outfi
 
 	if outfit and OUTFITS[outfit] then
 		OUTFITS[outfit](part, skin)
-		addExtraFx(outfit, function(hostName, at)
-			local extraHost = part(hostName, Vector3.new(0.3, 0.3, 0.3), at, Color3.new(0, 0, 0), BALL)
+		addExtraFx(outfit, function(hostName, at, size, rotation)
+			local extraHost = part(hostName, size or Vector3.new(0.3, 0.3, 0.3), at, Color3.new(0, 0, 0), nil, nil, rotation)
 			extraHost.Transparency = 1
 			return extraHost
 		end, scale)

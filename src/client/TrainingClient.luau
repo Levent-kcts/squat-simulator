@@ -109,8 +109,31 @@ function TrainingClient.init()
 	player:GetAttributeChangedSignal("TrainingArea"):Connect(refresh)
 	refresh()
 
+	-- Coach Shadow'un zemin halkası (server/Mannequin 'ShadowRing<n>' parçaları) yavaşça nabız atar (sadece bu oyuncunun ekranında); parçalar geç gelirse birkaç kez aranır
+	local ringParts = {}
+	local ringSearches = 0
+	local pulseTime = 0
+	local nextRingSearch = 0
+
 	-- Rainbow Zone'un rengi yavaşça döner (sadece bu oyuncunun ekranında)
 	RunService.RenderStepped:Connect(function(deltaTime)
+		pulseTime += deltaTime
+		if #ringParts == 0 and ringSearches < 8 and pulseTime >= nextRingSearch then
+			ringSearches += 1
+			nextRingSearch = pulseTime + 2
+			for _, descendant in folder:GetDescendants() do
+				if string.match(descendant.Name, "^ShadowRing%d+$") then
+					table.insert(ringParts, descendant)
+				end
+			end
+		end
+		if #ringParts > 0 then
+			local transparency = 0.3 + 0.2 * math.sin(pulseTime * 1.5)
+			for _, part in ringParts do
+				part.Transparency = transparency
+			end
+		end
+
 		rainbowHue = (rainbowHue + deltaTime * 0.15) % 1
 		for _, entry in entries do
 			if entry.area.rainbow then
