@@ -49,6 +49,30 @@ assert(EggRules.passForCount(2) == triple and EggRules.passForCount(3) == triple
 assert(EggRules.passForCount(4) == ten and EggRules.passForCount(10) == ten and EggRules.passForCount(99) == ten, "x4 ve üstü Mega ister")
 assert(EggRules.autoPass() == auto, "autoPass")
 
+-- T tuşu (EggRules.step): imleç x1 > x3 > x10 > x1 gezer; kilitli seçenekte seçim DEĞİŞMEZ ama o pass döner; açıkta seçilir
+local options = Config.EggMultiOptions
+local function ownsOnly(...)
+	local set = {}
+	for _, pass in { ... } do
+		set[pass] = true
+	end
+	return function(pass)
+		return pass == nil or set[pass] == true
+	end
+end
+local cursorAfter, selectedCount, lockedPass = EggRules.step(options, 1, ownsOnly())
+assert(cursorAfter == 2 and selectedCount == nil and lockedPass == triple, "pass yokken T x3'e gelir ama SEÇMEZ ve Triple'ı önerir")
+cursorAfter, selectedCount, lockedPass = EggRules.step(options, 2, ownsOnly())
+assert(cursorAfter == 3 and selectedCount == nil and lockedPass == ten, "imleç x10'a gelir, seçmez, Mega'yı önerir")
+cursorAfter, selectedCount, lockedPass = EggRules.step(options, 3, ownsOnly())
+assert(cursorAfter == 1 and selectedCount == 1 and lockedPass == nil, "imleç x1'e dönünce x1 her zaman seçilir")
+cursorAfter, selectedCount, lockedPass = EggRules.step(options, 1, ownsOnly(triple))
+assert(cursorAfter == 2 and selectedCount == 3 and lockedPass == nil, "Triple varken x3 seçilir")
+cursorAfter, selectedCount, lockedPass = EggRules.step(options, 2, ownsOnly(triple))
+assert(cursorAfter == 3 and selectedCount == nil and lockedPass == ten, "Triple varken x10 kilitli: seçilmez")
+cursorAfter, selectedCount = EggRules.step(options, 2, ownsOnly(triple, ten))
+assert(cursorAfter == 3 and selectedCount == 10, "ikisi de varken x10 seçilir")
+
 -- ---- Fiyatlar: 150'nin üstünde ama makul (sahibi bu üç ürün için sınırı kaldırdı)
 for _, pass in Config.EggPasses do
 	assert(pass.Robux > 150 and pass.Robux <= 400, `{pass.id}: fiyat 150 ile 400 arasında olmalı: {pass.Robux}`)

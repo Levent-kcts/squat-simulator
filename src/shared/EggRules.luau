@@ -43,4 +43,16 @@ function EggRules.owns(player, pass)
 	return pass == nil or player:GetAttribute(pass.attribute) == true
 end
 
+-- T tuşu (sahibi 'satın almasan dahi T'ye basınca fiyat değişiyor, satın almadan o düğme çalışmasın' dedi): bir İMLEÇ x1 > x3 > x10 > x1 diye gezer. Imlecin geldiği seçenek AÇIKSA (x1 her zaman, x3/x10 ilgili pass varsa) SEÇİLİR;
+-- KİLİTLİYSE seçim ve başlıktaki toplam fiyat DEĞİŞMEZ, sadece o pass'in satın alma penceresi/fiyatı görünür. Döner: yeni imleç, seçilen çarpan (kilitliyse nil), satın alınacak pass (açıksa nil). owns(pass) -> bool
+function EggRules.step(options, cursor, owns)
+	local nextCursor = cursor % #options + 1
+	local count = options[nextCursor]
+	local pass = EggRules.passForCount(count)
+	if owns(pass) then
+		return nextCursor, count, nil
+	end
+	return nextCursor, nil, pass
+end
+
 return EggRules

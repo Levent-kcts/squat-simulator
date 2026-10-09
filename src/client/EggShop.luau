@@ -1,8 +1,8 @@
 -- Yumurta raflarının oyuncuya özel görünümü: etiketler, ped renkleri ve pede basınca (dokununca) açılan yumurta paneli.
 -- Panelde yumurtanın adı, fiyatı, petleri, çarpanları ve çıkma şansları görünür.
 -- Tuşlar: E = aç (ücretsiz), R = otomatik aç (ücretli: Auto Open), T = bir seferde açılacak sayı (1 / 3 / 10; x3 ve x10 ücretli: Triple / Mega Open).
--- Ücretli özellikler panelde NORMAL görünür, fiyat YAZMAZ (sahibi 'fiyatları R'ye T'ye basmadan göremeyelim, biraz clickbait olsun, Shop'ta da olmasın' dedi): fiyat ancak oyuncu R'ye ya da kilitli bir çarpanı seçen T'ye basınca
--- (ya da kilitli çarpanla E'ye basınca) görünür: pass satışa açıksa Roblox satın alma penceresi, değilse 'coming soon' bildirimi fiyatla birlikte. Win yetmiyorsa Open düğmesi 'Get Wins' olur ve Shop'un paket bölümünü açar.
+-- Ücretli özellikler panelde NORMAL görünür, fiyat YAZMAZ (sahibi 'fiyatları R'ye T'ye basmadan göremeyelim, biraz clickbait olsun, Shop'ta da olmasın' dedi): fiyat ancak oyuncu R'ye ya da T'nin kilitli bir çarpana gelmesine basınca
+-- görünür: pass satışa açıksa Roblox satın alma penceresi, değilse 'coming soon' bildirimi fiyatla birlikte. Kilitli çarpan SEÇİLMEZ (sahibi 'satın almadan o düğme çalışmasın' dedi): başlıktaki toplam fiyat ve Multi yazısı değişmez. Win yetmiyorsa Open düğmesi 'Get Wins' olur ve Shop'un paket bölümünü açar.
 -- Burada yapılan renk/etiket değişiklikleri sadece bu oyuncunun ekranında görünür.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -251,7 +251,8 @@ function EggShop.init(screenGui, hooks)
 
 	-- ---------- Durum ----------
 	local currentEgg = nil -- panelde gösterilen yumurta
-	local multiIndex = 1 -- Config.EggMultiOptions sırası (1 / 3 / 10): T serbestçe döner, KİLİTLİ çarpan seçilince fiyat/satın alma görünür
+	local multiIndex = 1 -- SEÇİLİ çarpan (Config.EggMultiOptions sırası: 1 / 3 / 10): hep AÇIK bir çarpandır, kilitli çarpan seçilemez (başlıktaki toplam fiyat da ancak açık çarpanla değişir)
+	local cursor = 1 -- T'nin imleci: kilitli seçeneklere de uğrar (satın alma/fiyat görünsün diye), seçimi değiştirmez
 	local autoOn = false
 	local opening = false
 
@@ -287,9 +288,12 @@ function EggShop.init(screenGui, hooks)
 	end
 
 	local function refreshButtons()
-		-- Pass elden gittiyse (DEV kilidi) otomatik açma kapanır
+		-- Pass elden gittiyse (DEV kilidi) otomatik açma kapanır ve seçili çarpan x1'e döner
 		if autoOn and not owns(autoPass) then
 			autoOn = false
+		end
+		if not owns(multiPass()) then
+			multiIndex, cursor = 1, 1
 		end
 		autoCaption.Text = if autoOn then "Auto ON" else "Auto"
 		autoButton.BackgroundColor3 = if autoOn then Color3.fromRGB(60, 200, 90) else NORMAL
@@ -446,13 +450,9 @@ function EggShop.init(screenGui, hooks)
 		if not currentEgg or opening then
 			return false
 		end
-		-- Kilitli çarpan (x3 / x10) seçiliyken açılmaz: satın alma görünür (otomatik döngü sessizce durur)
+		-- (Seçili çarpan hep açıktır: refreshButtons kilitli çarpanı x1'e çevirir; sunucu da pass'siz x3/x10'u reddeder)
 		if not owns(multiPass()) then
-			autoOn = false
 			refreshButtons()
-			if manual then
-				buyPass(multiPass())
-			end
 			return false
 		end
 		if winValue.Value < currentEgg.price then
@@ -502,13 +502,27 @@ function EggShop.init(screenGui, hooks)
 		refreshButtons()
 	end
 
-	-- T: bir seferde açılacak sayı x1 > x3 > x10 döner (eskisi gibi serbestçe); kilitli bir çarpana gelince satın alma/fiyat görünür
+	-- T: imleç x1 > x3 > x10 gezer. Açık seçenekte seçim değişir; KİLİTLİ seçenekte hiçbir şey değişmez (başlıktaki fiyat da), sadece o pass'in satın alma penceresi/fiyatı görünür (shared/EggRules.step)
 	local function cycleMulti()
-		multiIndex = multiIndex % #Config.EggMultiOptions + 1
-		refreshButtons()
-		local pass = multiPass()
-		if not owns(pass) then
-			buyPass(pass)
+		local newCursor, selected, lockedPass = EggRules.step(Config.EggMultiOptions, cursor, owns)
+		cursor = newCursor
+		if selected then
+			multiIndex = newCursor
+			refreshButtons()
+		else
+			buyPass(lockedPass)
+		end
+	end
+
+	-- Bir çarpan pass'i satın alınınca (öznitelik true olunca) imlecin üstündeki o çarpan hemen seçilir
+	for _, pass in Config.EggPasses do
+		if pass.count then
+			player:GetAttributeChangedSignal(pass.attribute):Connect(function()
+				if owns(pass) and Config.EggMultiOptions[cursor] == pass.count then
+					multiIndex = cursor
+					refreshButtons()
+				end
+			end)
 		end
 	end
 
