@@ -979,6 +979,15 @@ local function publishClaimedGifts(player, profile)
 	player:SetAttribute("ClaimedGifts", table.concat(list, ","))
 end
 
+-- 10 ödülün HEPSİ alınınca tur BAŞTAN başlar (sahibi 'playtime rewards fullendikten sonra baştan başlasın' dedi): sayaç o andan sıfırlanır, ödüller yeniden kilitlenir.
+-- 'GiftCycle' özniteliği her yeni turda artar: istemci kendi 'Claimed' bilgisini yarış durumunda yanlış turda işaretlemesin diye bunu karşılaştırır
+local function restartGifts(player, profile)
+	profile.claimedGifts = {}
+	profile.sessionStart = workspace:GetServerTimeNow()
+	player:SetAttribute("SessionStart", profile.sessionStart)
+	player:SetAttribute("GiftCycle", (player:GetAttribute("GiftCycle") or 0) + 1)
+end
+
 -- index. ödülü verir. force = true süre kontrolünü atlar (Robux 'Unlock' ürünleri: oyuncu beklemeyi satın aldı). Dönüş: başarılı mı, mesaj
 local function giveGift(player, profile, index, force)
 	local muscle = getStat(player, Config.StatLegMuscle)
@@ -1021,6 +1030,14 @@ local function giveGift(player, profile, index, force)
 	end
 
 	profile.claimedGifts[index] = true
+	local claimedCount = 0
+	for _ in profile.claimedGifts do
+		claimedCount += 1
+	end
+	if claimedCount >= #Config.GiftRewards then
+		restartGifts(player, profile)
+		message ..= " All rewards restart!"
+	end
 	publishClaimedGifts(player, profile)
 	refresh(player)
 	requestSave(player)
@@ -1032,13 +1049,18 @@ end
 local function unlockGifts(player, profile, mode)
 	local elapsed = workspace:GetServerTimeNow() - profile.sessionStart
 	local opened = 0
+	-- Hedefler ÖNCEDEN toplanır: son ödül verilince tur başa sarar (claimedGifts sıfırlanır), döngü yeni turdan ödül dağıtmasın
+	local targets = {}
 	for index, reward in Config.GiftRewards do
 		if not profile.claimedGifts[index] and (mode == "all" or elapsed < reward.time) then
-			if giveGift(player, profile, index, true) then
-				opened += 1
-				if mode == "next" then
-					break
-				end
+			table.insert(targets, index)
+		end
+	end
+	for _, index in targets do
+		if giveGift(player, profile, index, true) then
+			opened += 1
+			if mode == "next" then
+				break
 			end
 		end
 	end

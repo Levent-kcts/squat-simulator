@@ -15,7 +15,9 @@ local player = Players.LocalPlayer
 GiftState.claimed = {}
 
 -- Sunucu alınan ödüllerin sırasını 'ClaimedGifts' özniteliğiyle ('1,3,4') bildirir: Robux 'Unlock' ürünleriyle sunucunun verdiği ödüller de 'Claimed' görünsün
+-- Tablo YERİNDE yenilenir (GiftsPanel aynı tabloyu tutar); tur baştan başlayınca ('' gelir) eski 'Claimed'lar silinir
 local function syncClaimed()
+	table.clear(GiftState.claimed)
 	for index in string.gmatch(player:GetAttribute("ClaimedGifts") or "", "%d+") do
 		GiftState.claimed[tonumber(index)] = true
 	end

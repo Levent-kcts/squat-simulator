@@ -174,8 +174,10 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 				return
 			end
 			task.spawn(function()
+				-- Son ödülü almak turu baştan başlatır (sunucu ClaimedGifts'i boşaltır): cevap yeni tur bildiriminden SONRA gelirse eski turun 'Claimed'ını yeni tura işaretleme
+				local cycle = player:GetAttribute("GiftCycle") or 0
 				local ok, message = shopFunction:InvokeServer("ClaimGift", index)
-				if ok then
+				if ok and (player:GetAttribute("GiftCycle") or 0) == cycle then
 					claimed[index] = true
 				end
 				showToast(ok, message or "")
