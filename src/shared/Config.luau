@@ -742,18 +742,19 @@ return {
 	-- WIN FİYATI MERDİVENİ (2026-10-10, sahibi 'trail ve aura fiyatları dengelemede değiştirilmemiş, onları da dengele' dedi): fiyat = HEDEF AŞAMANIN ÖDÜLÜNE yakın (Layout.reward: 1, 3, 7, 15, 31 ... 2^aşama - 1), yani oyuncu o aşamayı bitirip Win'e basınca TEK SEFERDE alabilir
 	-- (biriktirerek daha erken de alınır). İzler oyunun tamamına yayılır. AURA'LAR OYUNUN BAŞINA ÇEKİLDİ (sahibi 'auralar oyunun çok ileri safhasında, daha başlarında alınabilsin, ilki hem çok zayıf hem 1 saat oynamak gerekiyor' dedi): ilk aura 15 Win (ilk rebirth, ~5 dk) ve x1.5,
 	-- hepsi oyunun ilk ~4 saatinde alınır, çarpanlar öne yüklü (1.5, 1.75, 2.0, 2.3, 2.6, 3.0). Erken güçlenme oyunu 7.6 saate indirdiği için Wall.HealthGrowthAfter 3.5 -> 3.75 yapılıp oyunun sonu ~10.2 saatte tutuldu (tools/simulate.py).
-	-- İzler (hedef aşama): red 5, orange 7, yellow 9, green 11, cyan 12, blue 13, purple 15, pink 16, rainbow 18. Aura'lar: red 4, green 7, blue 9, purple 11, gold 13, rainbow 15 (oyunun sonu 20. aşama).
+	-- İzler de OYUNUN BAŞINA çekildi (sahibi 'fiyatları tekrar belirle' dedi; ilk turda rainbow iz 8 saatteydi): hedef aşamalar red 5, orange 6, yellow 8, green 10, cyan 11, blue 12, purple 13, pink 14, rainbow 15 (hepsi ilk ~4 saatte).
+	-- Aura'lar: red 4, green 7, blue 9, purple 11, gold 13, rainbow 15 (oyunun sonu 20. aşama).
 	-- tools/simulate.py son satırlarındaki 'Fiyat merdiveni' bunu zamanla gösterir; fiyat ya da çarpan değiştirirsen o tabloyu ve aşama kilometre taşlarını (5: 5-8 dk, 10: ~1 sa, 15: ~4-5 sa, 20: ~10 sa) yeniden kontrol et. Robux fiyatları ayrıdır (robuxPrice).
 	Trails = {
 		{ id = "red", name = "Red Trail", speed = 4, winPrice = 30, robuxPrice = 25, robuxProductId = 3717469051, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 120, robuxPrice = 35, robuxProductId = 3717469165, color = Color3.fromRGB(255, 150, 40) },
-		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 500, robuxPrice = 49, robuxProductId = 3717469247, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "green", name = "Green Trail", speed = 10, winPrice = 2000, robuxPrice = 65, robuxProductId = 3717469350, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 4000, robuxPrice = 85, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 8000, robuxPrice = 99, robuxProductId = 3717469540, color = Color3.fromRGB(70, 110, 255) },
-		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 32000, robuxPrice = 119, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 64000, robuxPrice = 139, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 250000, robuxPrice = 149, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 60, robuxPrice = 35, robuxProductId = 3717469165, color = Color3.fromRGB(255, 150, 40) },
+		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 250, robuxPrice = 49, robuxProductId = 3717469247, color = Color3.fromRGB(255, 230, 60) },
+		{ id = "green", name = "Green Trail", speed = 10, winPrice = 1000, robuxPrice = 65, robuxProductId = 3717469350, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 2000, robuxPrice = 85, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 4000, robuxPrice = 99, robuxProductId = 3717469540, color = Color3.fromRGB(70, 110, 255) },
+		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 8000, robuxPrice = 119, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 16000, robuxPrice = 139, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 32000, robuxPrice = 149, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.

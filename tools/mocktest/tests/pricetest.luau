@@ -107,9 +107,12 @@ for _, trail in Config.Trails do
 	assert(trail.winPrice > lastPrice, "iz Win fiyatları artmalı: " .. trail.id)
 	local stage = stageFor(trail.winPrice)
 	assert(stage and stage >= lastStage, "iz hedef aşaması azalmamalı: " .. trail.id)
+	if lastPrice == 0 then
+		assert(stage <= 5, "ilk iz oyunun başında (<= 5. aşama, ~6 dk) alınmalı: aşama " .. stage)
+	end
 	lastStage, lastPrice = stage, trail.winPrice
 end
-assert(lastStage >= 17 and lastStage <= 19, "rainbow iz oyunun sonlarında alınmalı: aşama " .. lastStage)
+assert(lastStage <= 16, "rainbow iz de oyunun ilk yarısında alınmalı (<= 16. aşama, sahibi izleri de erkene istedi): aşama " .. lastStage)
 lastStage, lastPrice = 0, 0
 local lastMult = 1
 for index, aura in Config.Auras do
