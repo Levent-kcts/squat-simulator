@@ -1,4 +1,4 @@
--- Oyun başlamadan önceki YÜKLEME EKRANI (ReplicatedFirst; sahibi 'oyuna uygun renkte, üzerinde loading yazsın ve bar olsun' dedi).
+-- Oyun başlamadan önceki YÜKLEME EKRANI (ReplicatedFirst/Loading betiği başlatır, ReplicatedStorage.Shared'da durur; init.client'ta yedek çağrı vardır; sahibi 'oyuna uygun renkte, üzerinde loading yazsın ve bar olsun' dedi).
 -- Zemin salonun lavanta mavisi, başlık ve çubuk tabelalardaki sarı, dekor olarak süzülen lego tuğlalar. Çubuk GERÇEK ilerlemeyi gösterir:
 -- oyunun yüklenmesi (game.Loaded), sunucunun dünyayı kurması (Workspace 'WorldReady'), simgelerin önden yüklenmesi (ContentProvider),
 -- karakterin gelmesi, istemci arayüzünün hazır olması (oyuncuda 'ClientReady'). Hepsi bitince ya da en geç MaxSeconds sonra kendiliğinden kapanır:
@@ -258,15 +258,21 @@ function LoadingScreen.run()
 	local Workspace = game:GetService("Workspace")
 	local ContentProvider = game:GetService("ContentProvider")
 
-	pcall(function()
-		ReplicatedFirst:RemoveDefaultLoadingScreen() -- Roblox'un kendi yükleme ekranı yerine bizimki
-	end)
-
 	local player = Players.LocalPlayer
 	while not player do -- ReplicatedFirst çok erken çalışırsa oyuncu henüz gelmemiş olabilir
 		task.wait()
 		player = Players.LocalPlayer
 	end
+	-- Tek örnek: ReplicatedFirst betiği ve init.client yedeği ikisi de çağırır, ilk gelen kazanır (kontrol ile işaretleme arasında bekleme yok)
+	if player:GetAttribute("LoadingActive") then
+		return
+	end
+	player:SetAttribute("LoadingActive", true)
+
+	pcall(function()
+		ReplicatedFirst:RemoveDefaultLoadingScreen() -- Roblox'un kendi yükleme ekranı yerine bizimki
+	end)
+
 	local playerGui = player:WaitForChild("PlayerGui")
 	local okBuild, screen = pcall(LoadingScreen.build, playerGui)
 	if not okBuild then

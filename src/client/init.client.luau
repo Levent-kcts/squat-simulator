@@ -9,6 +9,18 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Format = require(Shared:WaitForChild("Format"))
 local Layout = require(Shared:WaitForChild("Layout"))
+
+-- Yükleme ekranı YEDEĞİ: normalde ReplicatedFirst/Loading betiği başlatır (oyundan önce); o senkronlanmadıysa (Rojo yeniden başlatılmadı vb.) ya da geç kaldıysa burada başlar.
+-- run() tek örnek korumalıdır: ekran zaten açıksa hemen çıkar. Hata verirse oyun yine açılır.
+task.spawn(function()
+	local okLoading, errLoading = pcall(function()
+		require(Shared:WaitForChild("LoadingScreen")).run()
+	end)
+	if not okLoading then
+		warn(`[Client] Loading screen fallback failed: {errLoading}`)
+	end
+end)
+
 local PetFollowers = require(script.PetFollowers)
 local PetsPanel = require(script.PetsPanel)
 local GiftsPanel = require(script.GiftsPanel)

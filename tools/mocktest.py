@@ -54,10 +54,10 @@ CLIENT_TESTS = ("ctest.luau", "clienttest.luau", "loadingtest.luau")  # istemci 
 SHARED = module_names("shared", "")
 SERVER = module_names("server", "init.server.luau")  # init.server 'serverMain' olarak ayrıca kurulur
 CLIENT = module_names("client", "init.client.luau")  # init.client 'clientMain' olarak ayrıca kurulur
-LOADING = module_names("loading", "Loading.client.luau")  # ReplicatedFirst yükleme ekranı modülü (istemci taklidiyle)
 
 # init.client: 'script:FindFirstChild(isim)' ve 'require(modül örneği)' kalıpları için küçük bir kabuk
 CLIENT_SHIM = (
+    "S.localPlayer:SetAttribute('LoadingActive', true)\n"  # yükleme ekranı yedeği testte çalışmasın (gerçek bekleme döngüleri taklitte sonsuza dek döner)
     "local KNOWN = { " + ", ".join(f"{name} = true" for name in CLIENT) + " }\n"
     "local script = { FindFirstChild = function(_, name) if KNOWN[name] then return { _modname = name } end return nil end }\n"
     "local realRequire = require\n"
@@ -97,7 +97,6 @@ def build(target):
         ("server", SERVER, SERVER_PRELUDE, ""),
         ("shared", SHARED, CLIENT_PRELUDE, "c"),
         ("client", CLIENT, CLIENT_PRELUDE, "c"),
-        ("loading", LOADING, CLIENT_PRELUDE, "c"),
     ):
         for name in names:
             write(os.path.join(target, subdir, name + ".luau"), prelude + convert(read("src", folder, name + ".luau")))
