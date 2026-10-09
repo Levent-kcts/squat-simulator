@@ -431,7 +431,7 @@ return {
 		Size = { 0.55, 0.65, 0.8, 1.0 },
 	},
 	Items = {
-		{ id = "oldsneakers", name = "Old Sneakers", price = 5, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
+		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
 		{ id = "canvas", name = "Canvas Shoes", price = 15, damage = 2, color = Color3.fromRGB(120, 170, 255) },
 		{ id = "running", name = "Running Shoes", price = 40, damage = 3, color = Color3.fromRGB(255, 140, 60) },
 		{ id = "trail", name = "Trail Boots", price = 90, damage = 4, color = Color3.fromRGB(0, 230, 170) },
@@ -454,7 +454,7 @@ return {
 	-- oyun ilerledikçe (çarpanlar büyüdükçe) etkisi azalır; rebirth skinleri zaten sıfırlar, her turda yeniden alınır. Değerler fiyatın ~0.7. kuvvetine göre seçildi.
 	-- Rebirth ayakkabılar gibi skinleri de sıfırlar. Sadece fantezi renkler var (gerçek ten tonları fiyat/güç sıralamasına girmesin diye).
 	Skins = {
-		{ id = "mint", name = "Mint", price = 5, bonus = 1, color = Color3.fromRGB(150, 235, 190) },
+		{ id = "mint", name = "Mint", price = 3, bonus = 1, color = Color3.fromRGB(150, 235, 190) },
 		{ id = "lemon", name = "Lemon", price = 15, bonus = 3, color = Color3.fromRGB(255, 240, 110) },
 		{ id = "coral", name = "Coral", price = 40, bonus = 6, color = Color3.fromRGB(255, 127, 110) },
 		{ id = "bubblegum", name = "Bubblegum", price = 90, bonus = 10, color = Color3.fromRGB(255, 150, 200) },
