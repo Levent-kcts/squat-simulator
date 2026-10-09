@@ -92,6 +92,19 @@ SkinShop.init(notifyEvent)
 EggShop.init(notifyEvent)
 TrainingArea.init(notifyEvent)
 
+-- Worlds geçidi (yumurta standının arkasındaki kemer, 'COMING SOON') isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
+do
+	local okGate, WorldsGate = pcall(require, script.WorldsGate)
+	if okGate then
+		local started, err = pcall(WorldsGate.init)
+		if not started then
+			warn(`[Server] WorldsGate init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load WorldsGate: {WorldsGate}`)
+	end
+end
+
 -- Robux satın almaları (ProcessReceipt) isteğe bağlı modüldür: hata verirse oyunun geri kalanı çalışır
 do
 	local ok, Purchases = pcall(require, script.Purchases)

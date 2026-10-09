@@ -34,6 +34,7 @@ local DEFAULT_LAYOUT = {
 	rampWidth = 6,
 	signSize = Vector3.new(32, 5, 0.5),
 	signY = 15,
+	signXs = nil, -- tabelanın yerel X konumları { -15, 15 }: verilirse başlık her konuma bir kez asılır (varsayılan: tek tabela ortada)
 	displayLift = 0.5, -- eşyanın postament tepesinden yüksekliği
 	padZOffset = 0.5, -- postamentin şerit ortasına göre yerel Z kayması (eksi: izleyiciye doğru)
 	displayZ = 0, -- eşyanın postamente göre yerel Z kayması (artı: duvara doğru, yumurta pedin arkasında durur)
@@ -191,25 +192,27 @@ function Shelf.build(spec)
 		end
 	end
 
-	-- Duvardaki başlık
-	local sign = block("Sign", L.signSize, Vector3.new(0, L.signY, -0.3), spec.signColor, Enum.Material.SmoothPlastic)
-	local gui = Instance.new("SurfaceGui")
-	gui.Face = Enum.NormalId.Front
-	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	gui.PixelsPerStud = 30
-	gui.Parent = sign
-	local title = Instance.new("TextLabel")
-	title.Size = UDim2.fromScale(1, 1)
-	title.BackgroundTransparency = 1
-	title.Font = Enum.Font.FredokaOne
-	title.TextScaled = true
-	title.Text = spec.title
-	title.TextColor3 = Color3.new(1, 1, 1)
-	title.Parent = gui
-	local stroke = Instance.new("UIStroke")
-	stroke.Thickness = 4
-	stroke.Color = Color3.fromRGB(40, 25, 0)
-	stroke.Parent = title
+	-- Duvardaki başlık (signXs verilirse her konuma bir tane: yumurta standında ortayı Worlds geçidi kapladığı için iki yanda durur)
+	for signIndex, signX in L.signXs or { 0 } do
+		local sign = block(if signIndex == 1 then "Sign" else `Sign_{signIndex}`, L.signSize, Vector3.new(signX, L.signY, -0.3), spec.signColor, Enum.Material.SmoothPlastic)
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = Enum.NormalId.Front
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 30
+		gui.Parent = sign
+		local title = Instance.new("TextLabel")
+		title.Size = UDim2.fromScale(1, 1)
+		title.BackgroundTransparency = 1
+		title.Font = Enum.Font.FredokaOne
+		title.TextScaled = true
+		title.Text = spec.title
+		title.TextColor3 = Color3.new(1, 1, 1)
+		title.Parent = gui
+		local stroke = Instance.new("UIStroke")
+		stroke.Thickness = 4
+		stroke.Color = Color3.fromRGB(40, 25, 0)
+		stroke.Parent = title
+	end
 
 	-- Postamentler ve eşyalar
 	local lastTry = {} -- [userId] = { [itemId] = zaman }

@@ -17,21 +17,28 @@ local MIN_OPEN_INTERVAL = 0.3 -- iki açma isteği arası en az süre (saniye)
 
 local EGG_SCALE = 0.86 -- yumurta boyutu (referans fotoğrafta yumurta boyu karakter boyundan biraz büyük)
 
--- Stand ölçüleri: yumurta pedin arkasında durur (referans fotoğraftaki gibi küçük ped önde), şeritler kısa
+-- Stand ölçüleri: yumurta pedin arkasında durur (referans fotoğraftaki gibi küçük ped önde), şeritler kısa.
+-- 3. şerit (en arkada, duvara yaslı, en yüksek) PEDSİZ bir teras: Worlds geçidinin (server/WorldsGate) önündeki düzlük. Config.Worlds.TerraceDepth/TerraceHeight.
+-- Yumurtaların 'PET EGGS' tabelası geçidin iki yanında asılıdır (ortayı kemer kaplar).
+local WORLDS = Config.Worlds
 local LAYOUT = {
-	rowCounts = { 3, 3 },
+	rowCounts = { 3, 3, 0 },
+	laneDepths = { 11, 11, WORLDS.TerraceDepth },
 	padSize = 5,
 	padHeight = 1,
 	padSpacing = 12.5,
 	laneDepth = 11,
-	tierHeights = { 0.4, 3.4 },
+	tierHeights = { 0.4, 3.4, WORLDS.TerraceHeight },
 	rampWidth = 5,
-	signSize = Vector3.new(30, 4.5, 0.5),
+	signSize = Vector3.new(12, 4.5, 0.5),
+	signXs = { -15, 15 },
 	signY = 19, -- yumurta etiketleriyle (en üst yumurta ~11 stud) çakışmasın diye yüksekte
 	displayLift = 3.1 * EGG_SCALE + 0.6, -- yumurta merkezi: ped tepesi + yumurta yarı boyu + biraz boşluk
 	padZOffset = -2.2, -- ped şeridin ortasının önünde
 	displayZ = 4.2, -- yumurta pedin arkasında
 }
+
+EggShop.Layout = LAYOUT -- (testler için)
 
 -- Yumurta modeli: elips gövde + yüzeyine serpilmiş benekler. Yerel -Z izleyiciye bakar.
 local function buildEgg(parent, egg, frame, center)

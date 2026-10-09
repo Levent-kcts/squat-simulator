@@ -334,6 +334,20 @@ return {
 		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı (merkez z): koridor tarafına doğru kaydırıldı; alan z = -55 ile 31 arasını kaplar, duvarın arka ucu (z > 31, çarkın yanı) yeni şeyler için boş
 	},
 
+	-- WORLDS GEÇİDİ (2026-10-09): sahibi 'yumurtaların arkasını bir kat daha uzat, arkadaki gibi Worlds yazan bir geçit koy, üstüne coming soon yazsın' dedi (referans: parlak taş kemer, üstünde cyan 'Worlds' yazısı).
+	-- Yumurta standına üçüncü, daha yüksek ve derin bir TERAS katı eklenir (server/EggShop LAYOUT; yumurtalar bu derinlik kadar öne kayar, rampalar teraslara çıkar) ve arka duvarın ortasına, terasın üstüne kemer kurulur (server/WorldsGate).
+	-- Yeni dünya gelince geçit açılır; şimdilik içi kapalıdır (duvar). Kapatmak için Enabled = false (teras kalır).
+	Worlds = {
+		Enabled = true,
+		Title = "WORLDS", -- kemerin üstündeki cyan yazı
+		SoonText = "COMING SOON", -- kemerin parlayan yüzündeki yazı
+		TerraceDepth = 14, -- yumurta standının 3. katının (en arkadaki teras) derinliği (stud); 11 + 11 + 14 = standın toplam derinliği 36
+		TerraceHeight = 6.4, -- terasın yüksekliği (2. kat 3.4, 1. kat 0.4); rampalar buraya kadar çıkar
+		ArchWidth = 12, -- kemer açıklığının genişliği (stud)
+		ArchStraight = 8, -- açıklığın düz kısmının yüksekliği (üstüne yarım daire biner: yarıçap ArchWidth / 2)
+		FrameThickness = 2.2, -- kemeri saran taş çerçevenin kalınlığı
+	},
+
 	-- Tek sıra halinde ard arda duvarlar. En düşük canlı duvardan başlanır, can giderek artar.
 	Wall = {
 		Count = 100, -- toplam duvar sayısı
