@@ -82,8 +82,11 @@ local function newPanel(toasts)
 	return frame
 end
 
-assert(Config.GiftUnlockNextProductId == 0 and Config.GiftUnlockAllProductId == 0, "ürün kimlikleri henüz boş olmalı (sahibi Creator Hub'da açınca yazılır)")
--- 1) Kimlik 0: fiyatlı 'coming soon', satın alma penceresi yok
+local realNext, realAll = Config.GiftUnlockNextProductId, Config.GiftUnlockAllProductId
+assert(type(realNext) == "number" and type(realAll) == "number" and realNext ~= realAll or realNext == 0, "ürün kimlikleri sayı olmalı ve farklı olmalı")
+-- 1) Kimlik 0 (ürün henüz açılmamışsa): fiyatlı 'coming soon', satın alma penceresi yok
+Config.GiftUnlockNextProductId = 0
+Config.GiftUnlockAllProductId = 0
 local toasts = {}
 local panel = newPanel(toasts)
 click(panel, "Unlock Next")

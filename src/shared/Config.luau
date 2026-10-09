@@ -796,6 +796,6 @@ return {
 	-- kas ve Win de gelir ve 10 x Next'ten (490) çok ucuzdur: toplu alım indirimi). pricetest.luau ikisini de denetler. ProductId 0 iken buton fiyatlı 'coming soon' der. ID'ler: robux_ids.txt giftnext= / giftall=, tools/set_robux_ids.py işler.
 	GiftUnlockAllRobux = 149,
 	GiftUnlockNextRobux = 49,
-	GiftUnlockAllProductId = 0,
-	GiftUnlockNextProductId = 0,
+	GiftUnlockAllProductId = 3717539298,
+	GiftUnlockNextProductId = 3717539247,
 }
