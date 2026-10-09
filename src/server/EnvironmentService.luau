@@ -227,14 +227,15 @@ function EnvironmentService.init()
 	brick(widthRight - 20, floorTop, 47, 4, 3, 4, BRICK_COLORS[(5) % #BRICK_COLORS + 1], 0.5)
 	brick(widthRight - 29, floorTop, 52, 4, 3, 4, BRICK_COLORS[(1) % #BRICK_COLORS + 1], -0.3)
 	brick(widthRight - 6, floorTop, 37, 4, 3, 4, BRICK_COLORS[(3) % #BRICK_COLORS + 1], 0.2)
-	-- Çarkın ARKASI ve yanı ('köşeye arkasını doldur'): çark x 36.5-55.5, z 35.5-54.5'tedir; arka duvarla çark arasındaki şerit (z 56-64; dönen katlar 8 stud derin olduğundan kuleler z = 60'ta, arka duvara (z 65) girmez) ve çarkın sağı (x 58-70) legoyla dolar
+	-- Çarkın ARKASI ve yanı ('köşeye arkasını doldur'): çark (46, 45), kaidesi 20 stud geniş ve merkeze doğru 45 derece döner. Parçalar birbirine ve çarka GİRMEZ (sahibi 'kesişmesin' dedi): her parça 8x4 (dönen katlar 4x8),
+	-- aralarında en az 1.5 stud boşluk var (konumlar `python tools/lego_overlap.py` denetimiyle seçildi, parça eklersen/taşırsan orayı da güncelle; yeni parça eklersen kule katlarının dönünce 8 stud derinleştiğini ve çark kaidesini unutma). Kuleler arka duvara (z 65) girmez.
 	tower(62, 59, 4, 3, -0.3)
-	tower(55, 60, 3, 1, 0.4)
-	tower(44, 60, 2, 6, -0.2)
+	tower(51.5, 60, 3, 1, 0.4)
+	tower(42.5, 60, 2, 6, -0.2)
 	tower(66, 41, 2, 4, 0.2)
 	brick(61, floorTop, 48, 4, 3, 4, BRICK_COLORS[(0) % #BRICK_COLORS + 1], 0.3)
-	brick(59, floorTop, 38, 4, 3, 4, BRICK_COLORS[(2) % #BRICK_COLORS + 1], -0.25)
-	brick(35, floorTop, 58, 4, 3, 4, BRICK_COLORS[(4) % #BRICK_COLORS + 1], 0.4)
+	brick(59, floorTop, 37, 4, 3, 4, BRICK_COLORS[(2) % #BRICK_COLORS + 1], -0.25)
+	brick(53.5, floorTop, 50, 4, 3, 4, BRICK_COLORS[(4) % #BRICK_COLORS + 1], 0.4)
 
 	-- Koridor girişinin üstünde yönlendirme tabelası (lobi içinden okunur)
 	local sign = Build.block(
