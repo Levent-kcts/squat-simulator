@@ -94,10 +94,11 @@ end
 -- 2D LEGO TUĞLA (sahibi 3B tuğlayı beğenmedi: 'çok yukarda gözüküyor ve 3 boyutlu yapmışsın, 2d fotoğrafını çek o hareket etsin'): 2x2 (4 çıkıntılı) tuğlanın Blender'da çekilmiş
 -- şeffaf PNG fotoğrafı (tools/loading/make_brick.py -> assets/loading/brick.png) ImageLabel olarak durur. Resim BEYAZA yakın griyle çekildiği için ImageColor3 ile her tuğla farklı renge boyanır
 -- (gölge ve parlak vurgu korunur): Roblox'a SADECE BU TEK RESİM yüklenir, kimliği Config.Icons.LoadingBrick'e yazılır. Kimlik boşken tuğla çizilmez (düz Frame ile çizmeye DÖNME, 3B'ye de).
-function LoadingScreen.brickImageId()
+-- Config.Icons[key] doluysa rbxassetid adresi, değilse nil (Config yüklenemezse de nil: o süs çizilmez)
+function LoadingScreen.iconImage(key)
 	local ok, config = pcall(require, script.Parent.Config)
 	if ok and type(config) == "table" and type(config.Icons) == "table" then
-		local id = config.Icons.LoadingBrick
+		local id = config.Icons[key]
 		if type(id) == "string" and id ~= "" then
 			return id
 		end
@@ -105,8 +106,12 @@ function LoadingScreen.brickImageId()
 	return nil
 end
 
--- Ekranı kurar (brickImage verilmezse Config.Icons.LoadingBrick). Dönen nesne: gui, backdrop, root, bricks, setProgress(0..1), setDots(clock), animate(clock), fadeOut(seconds)
-function LoadingScreen.build(parentGui, brickImage)
+-- AĞIRLIK BARI (sahibi 'ağırlık barı ve bacak kası da olsun yükleme ekranında, ağırlık barını çizip yükle, özen göster' dedi): koyu plakalı, sarı halkalı, krom milli barbell'in Blender'da çekilmiş şeffaf 2D fotoğrafı
+-- (tools/loading/make_barbell.py -> assets/loading/barbell.png, 1024x512, boyanmaz). Kimliği Config.Icons.LoadingBarbell; boşken çizilmez. BACAK KASI: sahibinin yüklediği Config.Icons.LegMuscle simgesi (yeniden yüklemek gerekmez).
+
+-- Ekranı kurar. images = { brick, barbell, muscle } resim adresleri (verilmezse Config.Icons.LoadingBrick / LoadingBarbell / LegMuscle; testler kendi tablosunu verir).
+-- Dönen nesne: gui, backdrop, root, bricks, decor (tuğla + barbell + kas), setProgress(0..1), setDots(clock), animate(clock), fadeOut(seconds)
+function LoadingScreen.build(parentGui, images)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "LoadingScreen"
 	gui.DisplayOrder = LoadingScreen.DisplayOrder
@@ -137,33 +142,65 @@ function LoadingScreen.build(parentGui, brickImage)
 	root.ZIndex = 2
 	root.Parent = gui
 
-	-- Dekor: ekranın kenarlarında süzülüp sallanan 2D tuğla resimleri (ortayı ve başlığı boş bırakır; üstte, ortada, altta ikişer tane).
-	-- { ekran x, ekran y (0-1), genişlik (ekran genişliğinin oranı), renk sırası, başlangıç fazı, eğim (derece) }
+	-- Dekor: ekranın kenarlarında süzülüp sallanan 2D resimler (ortayı ve başlığı boş bırakır): üstte, ortada ikişer tuğla; altta sırayla tuğla, bacak kası, AĞIRLIK BARI, bacak kası, tuğla.
+	-- Her resim kendi hareketiyle oynar: tuğla süzülür, barbell kaldırılır gibi yukarı aşağı gider, bacak kası kasılıp gevşer (büyüyüp küçülür). Resim kimliği yoksa o süs çizilmez.
+	images = images or {
+		brick = LoadingScreen.iconImage("LoadingBrick"),
+		barbell = LoadingScreen.iconImage("LoadingBarbell"),
+		muscle = LoadingScreen.iconImage("LegMuscle"),
+	}
 	local bricks = {}
-	local brickImage = brickImage or LoadingScreen.brickImageId()
-	if brickImage then
+	local decor = {}
+	-- { ekran x, ekran y (0-1), genişlik (ekran genişliğinin oranı), en/boy oranı, resim, renk (nil = boyanmaz), başlangıç fazı, eğim (derece),
+	--   süzülme genliği, süzülme hızı, sallanma genliği (derece), kasılma oranı (nil = yok) }
+	local function addDecor(def, kind)
+		local label = Instance.new("ImageLabel")
+		label.Name = `{kind}{#decor + 1}`
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		label.Position = UDim2.fromScale(def.x, def.y)
+		label.Size = UDim2.fromScale(def.width, def.width) -- yükseklik aşağıdaki oran sınırından gelir (ekran oranı ne olursa olsun resim bozulmaz)
+		label.BackgroundTransparency = 1
+		label.Image = def.image
+		if def.color then
+			label.ImageColor3 = def.color
+		end
+		label.Rotation = def.tilt
+		label.ZIndex = 1
+		label.Parent = root
+		local ratio = Instance.new("UIAspectRatioConstraint")
+		ratio.AspectRatio = def.aspect
+		ratio.DominantAxis = Enum.DominantAxis.Width
+		ratio.Parent = label
+		local scale
+		if def.pulse then
+			scale = Instance.new("UIScale")
+			scale.Parent = label
+		end
+		local item = {
+			frame = label, scale = scale, kind = kind, x = def.x, y = def.y, phase = def.phase, tilt = def.tilt,
+			bob = def.bob, speed = def.speed, sway = def.sway, pulse = def.pulse,
+		}
+		table.insert(decor, item)
+		return item
+	end
+	if images.brick then
 		local layout = {
 			{ 0.08, 0.13, 0.14, 1, 0.0, -12 }, { 0.92, 0.12, 0.13, 2, 1.7, 10 }, { 0.07, 0.56, 0.11, 5, 3.1, 14 },
-			{ 0.93, 0.58, 0.12, 6, 4.4, -14 }, { 0.17, 0.85, 0.135, 3, 5.2, 8 }, { 0.83, 0.84, 0.15, 4, 2.4, -9 },
+			{ 0.93, 0.58, 0.12, 6, 4.4, -14 }, { 0.08, 0.89, 0.115, 3, 5.2, 8 }, { 0.92, 0.89, 0.115, 4, 2.4, -9 },
 		}
-		for index, def in layout do
-			local brick = Instance.new("ImageLabel")
-			brick.Name = `Brick{index}`
-			brick.AnchorPoint = Vector2.new(0.5, 0.5)
-			brick.Position = UDim2.fromScale(def[1], def[2])
-			brick.Size = UDim2.fromScale(def[3], def[3]) -- kare resim: yükseklik aşağıdaki oran sınırından gelir (ekran oranı ne olursa olsun bozulmaz)
-			brick.BackgroundTransparency = 1
-			brick.Image = brickImage
-			brick.ImageColor3 = BRICK_COLORS[def[4]]
-			brick.Rotation = def[6]
-			brick.ZIndex = 1
-			brick.Parent = root
-			local ratio = Instance.new("UIAspectRatioConstraint")
-			ratio.AspectRatio = 1
-			ratio.DominantAxis = Enum.DominantAxis.Width
-			ratio.Parent = brick
-			bricks[index] = { frame = brick, x = def[1], y = def[2], phase = def[5], tilt = def[6] }
+		for _, def in layout do
+			table.insert(bricks, addDecor({
+				x = def[1], y = def[2], width = def[3], aspect = 1, image = images.brick, color = BRICK_COLORS[def[4]],
+				phase = def[5], tilt = def[6], bob = 0.014, speed = 1.3, sway = 6,
+			}, "Brick"))
 		end
+	end
+	if images.barbell then
+		addDecor({ x = 0.5, y = 0.85, width = 0.33, aspect = 2, image = images.barbell, phase = 0.5, tilt = 0, bob = 0.024, speed = 1.7, sway = 2.5 }, "Barbell")
+	end
+	if images.muscle then
+		addDecor({ x = 0.2, y = 0.855, width = 0.105, aspect = 1, image = images.muscle, phase = 0.0, tilt = -8, bob = 0.01, speed = 1.4, sway = 5, pulse = 0.09 }, "Muscle")
+		addDecor({ x = 0.8, y = 0.855, width = 0.105, aspect = 1, image = images.muscle, phase = 1.9, tilt = 8, bob = 0.01, speed = 1.4, sway = 5, pulse = 0.09 }, "Muscle")
 	end
 
 	if LoadingScreen.ShowTitle then
@@ -222,6 +259,7 @@ function LoadingScreen.build(parentGui, brickImage)
 	screen.gui = gui
 	screen.backdrop = backdrop
 	screen.bricks = bricks
+	screen.decor = decor
 	screen.root = root
 	screen.fill = fill
 	screen.percent = percent
@@ -235,11 +273,15 @@ function LoadingScreen.build(parentGui, brickImage)
 	function screen.setDots(clock)
 		loadingLabel.Text = LoadingScreen.dots(clock)
 	end
-	-- Tuğlalar yavaşça süzülür (yukarı aşağı) ve eğimlerinin etrafında sallanır
+	-- Her resim kendi ritmiyle oynar: süzülme (yukarı aşağı), eğimi etrafında sallanma ve (kas için) kasılıp gevşeme
 	function screen.animate(clock)
-		for _, item in bricks do
-			item.frame.Position = UDim2.fromScale(item.x, item.y + math.sin(clock * 1.3 + item.phase) * 0.014)
-			item.frame.Rotation = item.tilt + math.sin(clock * 0.9 + item.phase * 2) * 6
+		for _, item in decor do
+			local wave = math.sin(clock * item.speed + item.phase)
+			item.frame.Position = UDim2.fromScale(item.x, item.y + wave * item.bob)
+			item.frame.Rotation = item.tilt + math.sin(clock * 0.9 + item.phase * 2) * item.sway
+			if item.scale then
+				item.scale.Scale = 1 + item.pulse * math.sin(clock * 2.6 + item.phase) -- kas kasılır (büyür) ve gevşer (küçülür)
+			end
 		end
 	end
 	function screen.fadeOut(seconds)

@@ -43,7 +43,7 @@ assert(#LoadingScreen.collectAssets(nil) == 0, "tablo yoksa liste boş olmalı")
 
 -- Arayüz: kurulur, ilerleme ve yüzde yazısı güncellenir, hata vermeden animasyon ve solma çalışır
 local gui = S.newInstance("PlayerGui")
-local screen = LoadingScreen.build(gui, "rbxassetid://123")
+local screen = LoadingScreen.build(gui, { brick = "rbxassetid://123", barbell = "rbxassetid://456", muscle = "rbxassetid://789" })
 assert(screen.gui and screen.root and screen.backdrop and screen.fill and screen.percent and screen.label, "arayüz parçaları yok")
 assert(rawget(screen.gui, "DisplayOrder") == LoadingScreen.DisplayOrder, "DisplayOrder ayarlanmalı")
 assert(rawget(screen.backdrop, "Active") == true, "zemin Active olmalı (arkadaki tıklamalar sayılmasın)")
@@ -62,10 +62,39 @@ for _ in colors do
 end
 assert(distinct == 6, "6 tuğla 6 farklı renkte olmalı: " .. distinct)
 assert(not rawget(screen, "viewport"), "3B ViewportFrame kalmamalı")
--- Kimlik yokken (Config.Icons.LoadingBrick boş) tuğla çizilmez ama ekran hatasız kurulur
-local plain = LoadingScreen.build(S.newInstance("PlayerGui"), nil)
-assert(#plain.bricks == 0, "resim kimliği yokken tuğla çizilmemeli")
+-- Ağırlık barı (1 adet, boyanmaz, 2:1) ve bacak kası (2 adet, kasılma ölçeği olan): toplam 9 süs
+assert(#screen.decor == 9, "6 tuğla + 1 barbell + 2 kas = 9 süs olmalı: " .. #screen.decor)
+local barbells, muscles = 0, 0
+for _, item in screen.decor do
+	if item.kind == "Barbell" then
+		barbells += 1
+		assert(rawget(item.frame, "Image") == "rbxassetid://456", "barbell resmi")
+		assert(rawget(item.frame, "ImageColor3") == nil, "barbell boyanmamalı (olduğu gibi gösterilir)")
+		assert(item.scale == nil, "barbell kasılmaz")
+	elseif item.kind == "Muscle" then
+		muscles += 1
+		assert(rawget(item.frame, "Image") == "rbxassetid://789", "kas resmi")
+		assert(item.scale and item.pulse and item.pulse > 0 and item.pulse < 0.3, "kas kasılıp gevşemeli (UIScale)")
+	end
+end
+assert(barbells == 1 and muscles == 2, "1 barbell ve 2 kas olmalı: " .. barbells .. "/" .. muscles)
+-- Kasılma ölçeği her zaman pozitif kalmalı (negatif/sıfır ölçek resmi bozar)
+for _, clock in { 0, 0.4, 1.3, 2.9, 7.7 } do
+	screen.animate(clock)
+	for _, item in screen.decor do
+		if item.scale then
+			local value = rawget(item.scale, "Scale")
+			assert(value > 0.7 and value < 1.3, "kas ölçeği makul aralıkta olmalı: " .. value)
+		end
+	end
+end
+-- Resim kimlikleri yokken ({} = hiçbiri) hiçbir süs çizilmez ama ekran hatasız kurulur
+local plain = LoadingScreen.build(S.newInstance("PlayerGui"), {})
+assert(#plain.bricks == 0 and #plain.decor == 0, "resim kimliği yokken süs çizilmemeli")
 plain.animate(2)
+-- Sadece bacak kası varsa (barbell/tuğla yüklenmemişken) kaslar çizilir
+local onlyMuscle = LoadingScreen.build(S.newInstance("PlayerGui"), { muscle = "rbxassetid://5" })
+assert(#onlyMuscle.decor == 2 and #onlyMuscle.bricks == 0, "sadece kas: 2 süs")
 screen.setProgress(0.5)
 assert(rawget(screen.percent, "Text") == "50%", "yüzde yazısı: " .. tostring(rawget(screen.percent, "Text")))
 screen.setProgress(2)

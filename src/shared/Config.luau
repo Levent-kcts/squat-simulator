@@ -249,6 +249,7 @@ return {
 		Index = "rbxassetid://86290456757551", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "rbxassetid://128930779424288", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
 		Trash = "rbxassetid://72909566398443", -- Pets menüsündeki çöp kutusu simgesi: sahibinin yüklediği gri çöp kutusu (assets/icons/trash.png, Image türü, doğrulandı). Boş bırakılırsa aynı görünümde Frame'lerden çizilir
+		LoadingBarbell = "", -- yükleme ekranındaki ağırlık barı resmi (assets/loading/barbell.png, Blender çekimi, 1024x512, olduğu gibi gösterilir). Sahibi Studio'da Image olarak yükler, ID buraya yazılır; boşken çizilmez
 		LoadingBrick = "", -- yükleme ekranındaki 2x2 lego tuğla resmi (assets/loading/brick.png: beyaza yakın gri, Blender çekimi; oyunda ImageColor3 ile 6 renge boyanır). Sahibi Studio'da Image olarak yükler, ID buraya yazılır; boşken tuğla çizilmez
 		WheelFace = "", -- günlük çarkın hazır yüzü (daire şeklinde, şeffaf köşeli PNG: tools/make_wheel_image.py -> assets/icons/wheel.png). Yüklenince Image ID yazılır; boşken yüz arayüz nesneleriyle çizilir
 		Wins = "rbxassetid://133100241786570", -- sol üstteki Win sayacının kupa simgesi (assets/icons/trophy.png, tools/icons/make_icons.py; görsel yüklenince ID yazılır; boşken 🏆 emojisi)
