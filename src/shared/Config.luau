@@ -51,7 +51,7 @@ return {
 	-- MaxLevel'den sonra görüntü değişmez; karakter sadece daha güçlü olmaya devam eder (çarpanlar).
 	-- Rebirth level'ı 1'e döndürdüğü için karakter yine ince hâline döner.
 	Body = {
-		MaxLevel = 1000, -- bu levelde en büyük boyuta ulaşılır ve orada durur
+		MaxLevel = 200, -- bu levelde en büyük boyuta ulaşılır ve orada durur (oyunun sonuna doğru, 18. rebirth civarında; son kas aşamasıyla aynı level: Legs.StageLevels'in sonu)
 		GrowthCurve = 0.5, -- 1 = düz artış, 0.5 = başta hızlı sonra yavaş (ilk levellerde fark görünsün diye)
 		StartWidth = 0.9,
 		MaxWidth = 2.0,
@@ -60,10 +60,12 @@ return {
 	},
 
 	-- Bacak kasları: oyun başında HİÇ kas yoktur (ince bacaklar). Kaslar aşağıdaki levellerde belirir ve irileşir:
-	-- StageLevels[1] = ilk kaslanma, sonrakiler daha da iri. Son level (1000) aynı zamanda büyümenin durduğu seviyedir.
-	-- Aralıklar seyrekleşir: 5, 20, 100, ... Rebirth level'ı 1'e döndürdüğü için kaslar da kaybolur.
+	-- StageLevels[1] = ilk kaslanma, sonrakiler daha da iri. Son level (200) aynı zamanda büyümenin durduğu seviyedir (Body.MaxLevel).
+	-- Level sınırı 25 + 10 x rebirth olduğu için: 3. aşama (50) 3. rebirthte, 4. (90) 7-8., 5. (140) 12-14., 6. = EN KASLI hâl (200) 18. rebirthte açılır (oyunun sonu 20-22. rebirth civarı,
+	-- yani en kaslı hâl oyunun son ~2 saatinde görülür; sahibi 'insanlar en kaslı halini de görebilsin' dedi). Eskiden 5, 20, 100, 250, 500, 1000 idi: oyun sonunda sadece 4. aşamaya varılıyordu.
+	-- Aralıklar seyrekleşir. Rebirth level'ı 1'e döndürdüğü için kaslar da kaybolur.
 	Legs = {
-		StageLevels = { 5, 20, 100, 250, 500, 1000 },
+		StageLevels = { 5, 20, 50, 90, 140, 200 },
 		MuscleColor = nil, -- nil: kaslar standart pantolon rengini (veya bacak rengini) alır
 		MuscleGrowth = 1, -- kas parçalarının büyüme hızı çarpanı (1 normal, 1.5 daha iri, 0.5 daha küçük)
 	},
@@ -333,8 +335,10 @@ return {
 		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
 		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
 		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
-		HealthGrowthAfter = 3.2, -- 4. grup 3000 x 3.2 = 9600, 5. grup 30720 ... 20. grup ~1.1 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
-		-- Simülasyon (aktif Auto Click'li oyuncu): 5. aşama 8 dk, 10. aşama 1.2 sa, 15. aşama 4.8 sa, 20. aşama 9.9 sa (20. rebirth); %70 verimli oyuncu ~14 sa, iksirli ~8 sa, Auto Click kapalı pasif ped ~2 gün. Eskiden 5 idi (20. aşama 83 saat), ondan önce 12; tools/simulate.py hp_growth=
+		HealthGrowthAfter = 3.5, -- 4. grup 3000 x 3.5 = 10500, 5. grup 36750 ... 20. grup ~5.3 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
+		-- 2026-10-09 ('duvarlar çok zayıf geldi'): simülasyon artık oyuncunun bir aşamayı en çok 40 tekmede (duvar başına ~8) kırmayı göze aldığını varsayar (eskiden 12: sınırdaki 5 duvar ~5 tekmede, yani duvar başına 1 tekmede düşüyordu);
+		-- 3.2'den 3.5'e çıkınca duvarlar 10. aşamada 1.8, 20. aşamada 4.8 kat dayanıklı olur ve oyunun sonu yine ~10 saatte kalır. Aşağıdaki süreler bu ayarla simülasyondan: 5. aşama 4.6-8 dk, 10. aşama ~50 dk, 15. aşama 4.8 sa, 20. aşama 10.6 sa (22. rebirth);
+		-- Eskiden 5 idi (20. aşama 83 saat), ondan önce 12; tools/simulate.py hp_growth= max_hits=
 
 		Width = 32, -- koridorun ve duvarın genişliği (stud)
 		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır

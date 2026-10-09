@@ -7,7 +7,8 @@ Auto Click KAPALI ve antrenman pedindeyken pedin kendi otomatik squat'ı hareket
 `cps=2` pasif ped oyuncusu, `cps=12` elle hızlı tıklayan. Duvar seferinde tekme hareket başına bir kez kas verir. `boost=1.3` ortalama iksir/2x güçlendirme etkisi (zaman ortalaması) demektir.
 HARCAMA (2026-10-09): oyuncu önce en iyi ayakkabıyı (Win'in %60'ına kadar; duvar hasarı), sonra yumurtayı (Win'in yarısını geçmeyen en pahalı) ve skini alır, aura'yı fiyatı yetince alır (`spend=old` eski sıra: ayakkabıyı neredeyse hiç almazdı,
 `shoe_share=`, `egg_share=`). Çıktının son satırları aşama KİLOMETRE TAŞLARIDIR (5/10/15/20. aşamaya ilk ulaşılan zaman ve rebirth sayısı): 20. aşama = oyunun sonu.
-Hedef (aktif oyuncu = Auto Click'li): oyunun sonu (20. aşama) günde 1 saat oynayan için 10-15 günde, yani ~10-14 saat; 5. aşama ~8 dk, 10. ~1.2 sa, 15. ~5 sa, 20. ~10 sa; 1. rebirth ~5 dk, 5. ~1.4 sa, 20. ~10 sa.
+Hedef (aktif oyuncu = Auto Click'li): oyunun sonu (20. aşama) günde 1 saat oynayan için 10-15 günde, yani ~10-14 saat; 5. aşama ~5-8 dk, 10. ~1 sa, 15. ~5 sa, 20. ~10 sa; 1. rebirth ~5 dk, 5. ~1.4 sa, 20. ~10 sa.
+`max_hits=` oyuncunun bir aşamayı kırmak için katlanacağı en çok tekme sayısıdır (varsayılan 40: sınırdaki duvar başına ~8 tekme); küçük değer duvarları 'zayıf' hissettirir.
 """
 import math
 import random
@@ -87,6 +88,7 @@ CPS_DEFAULT = num(block("AutoClick"), "PerSecond", 10)
 args = sys.argv[1:]
 HOURS = float(args[0]) if args and "=" not in args[0] else 12.0
 OVERRIDES = dict(a.split("=") for a in args if "=" in a)
+MAX_HITS = float(OVERRIDES.get("max_hits", 40))  # oyuncunun bir aşama (5 duvar) için katlanacağı en çok tekme sayısı (duvar başına ~8): sınırdaki duvarın 'zorluğu'; eskiden 12 idi, duvarlar 1 tekmede düşüyordu
 SPEND_STRATEGY = OVERRIDES.get("spend", "new")
 SHOE_SHARE = float(OVERRIDES.get("shoe_share", 0.6))  # ayakkabıya harcanabilecek Win oranı
 EGG_SHARE = float(OVERRIDES.get("egg_share", 0.5))
@@ -162,6 +164,9 @@ class Player:
         self.earned = 0.0
         self._pet_cache = 1.0
         self.best_stage = 0
+        self.last_hits = 0  # ulaşılan en yüksek aşamayı kırmak için gereken tekme (5 duvar toplam)
+        self.next_hits = 0
+        self.fronts = {}  # rebirth -> (aşama, o aşama için tekme, sonraki aşama için tekme)
         self.milestones = {}  # aşama -> (ilk ulaşma zamanı sn, o anki rebirth sayısı)
 
     def cap(self):
@@ -286,14 +291,18 @@ class Player:
         """Duvarlara bir sefer: spawn'dan koşar, gücün yettiği en yüksek aşamaya kadar vurur, Win pedine basar. Süre ve kazancı uygular."""
         damage = self.muscle * self.shoe
         stage = 0
+        self.last_hits = 0
+        self.next_hits = 0
         trip_time = 4.0  # lobiden ilk duvara yürüme
         hits_total = 0
         for s in range(1, STAGE_COUNT + 1):
             total_hp = sum(GROUP_STEPS) * stage_hp(s)  # aşamadaki 5 duvarın toplam canı (duvarlar kendi içinde de artar)
             hits = max(1, math.ceil(total_hp / max(damage, 1)))
-            if hits > 12:
+            if hits > MAX_HITS:
+                self.next_hits = hits  # ulaşılamayan sonraki aşama için gereken tekme
                 break
             stage = s
+            self.last_hits = hits
             hits_total += hits
             trip_time += (4 * SPACING + BUTTON_GAP) / 16 + hits * MOVE["Kick"]
         self.last_stage = stage
@@ -336,6 +345,7 @@ def run(hours):
         if at_cap:
             if first_cap is None:
                 first_cap = p.t
+            p.fronts[p.rebirths + 1] = (p.last_stage, p.last_hits, p.next_hits)
             log.append((p.t, p.rebirths + 1, p.zone(), p.pet_mult(), p.aura, p.wins, p.muscle, p.shoe, p.skin, p.last_stage, p.last_won, p.earned))
             p.earned = 0.0
             p.rebirth()
@@ -359,5 +369,6 @@ if __name__ == "__main__":
     for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won, earned in log:
         if r <= 12 or r % 5 == 0:
             print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | +{skin:<5g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
+    print("Sınırdaki duvar (rebirth anı: aşama, o aşamayı kırmak için tekme [5 duvar, duvar başına ~/5], sonraki aşama için tekme): " + "; ".join(f"r{r}: S{st}, {h}, {nh:,.0f}" for r, (st, h, nh) in sorted(p.fronts.items()) if r in (1, 3, 5, 8, 12, 16, 20, 25)))
     print("Aşama kilometre taşları (ilk ulaşılan zaman, rebirth sayısı): " + ", ".join(f"{s}: {fmt(t).strip()} (r{r})" for s, (t, r) in sorted(p.milestones.items()) if s % 5 == 0 or s == STAGE_COUNT))
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")
