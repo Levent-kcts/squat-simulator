@@ -39,6 +39,10 @@ for name in egg do
 	end
 end
 assert(pads == #Config.Eggs, "ped sayısı yumurta sayısı olmalı: " .. pads)
+-- Raf köşelerinde çıkıntılar birbirine girmez: ön çıkıntı iki yan çıkıntının arasında biter (köşede aynı yükseklikte iki studlu üst yüz çakışıp titreşiyordu)
+for _, row in { 1, 2, 3 } do
+	assert(egg["Rim_" .. row].Size.X == egg["Lane_" .. row].Size.X - 2 * egg["SideRim_" .. row .. "_1"].Size.X, "ön çıkıntı yan çıkıntıların arasında bitmeli: şerit " .. row)
+end
 local terrace = egg.Lane_3
 assert(terrace.Size.Z == Config.Worlds.TerraceDepth, "teras derinliği Config.Worlds.TerraceDepth olmalı")
 assert(math.abs(terrace.Size.Y - Config.Worlds.TerraceHeight) < 1e-6, "teras yüksekliği Config.Worlds.TerraceHeight olmalı")

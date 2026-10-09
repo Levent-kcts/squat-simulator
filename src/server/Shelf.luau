@@ -134,10 +134,11 @@ function Shelf.build(spec)
 			Enum.Material.Plastic,
 			true
 		)
-		-- Ön kenar çıkıntısı
+		-- Ön kenar çıkıntısı: iki yan çıkıntının ARASINDA biter (shelfLength - 2 x kalınlık). Eskiden tam uzunluktaydı ve her köşede yan çıkıntıyla 1x1 üst üste biniyordu:
+		-- iki aynı yükseklikte studlu üst yüz çakışıp titreşiyordu ('köşede kesişme var', sahibi gösterdi). Parçaları köşede birbirine GİRDİRME.
 		block(
 			`Rim_{rowIndex}`,
-			Vector3.new(shelfLength, L.rimHeight, L.rimThickness),
+			Vector3.new(shelfLength - 2 * L.rimThickness, L.rimHeight, L.rimThickness),
 			Vector3.new(0, floorTop + height + L.rimHeight / 2, z - depth / 2 + L.rimThickness / 2),
 			RIM_COLOR,
 			Enum.Material.Plastic,
