@@ -32,4 +32,4 @@ aura:rainbow=3717471243
 skip=3717471329
 double=3717471441
 vip=2022488478
-autoclick=
+autoclick=2022434461

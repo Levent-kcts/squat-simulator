@@ -2,6 +2,7 @@
 -- Özellik/enum adı geçerliliğini ve görünümü DOĞRULAMAZ.
 local S = require("../cstubs")
 local Config = require("./Config")
+Config.AutoClick.GamePassId = 0 -- testler Auto Click pass'i OLMADAN başlar (gerçek pass ID'si Config'te; kilit testi en sonda ID'yi geçici verir)
 -- Yerel oyuncunun leaderstats'ı (istemci bunları bekler)
 local leaderstats = S.newInstance("Folder")
 leaderstats.Name = "leaderstats"

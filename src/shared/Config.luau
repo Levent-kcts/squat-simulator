@@ -101,7 +101,7 @@ return {
 	-- (Creator Hub > Monetization > Passes'te 'Auto Click' geçişi aç, ID'yi robux_ids.txt'te autoclick= satırına yaz, tools/set_robux_ids.py işler). GamePassId = 0 iken herkese serbesttir.
 	-- Robux = düğmede ve Shop kartında GÖSTERİLEN fiyat (en çok 150; asıl fiyatı Creator Hub'daki pass belirler, aynı yaz). Sahiplik sunucuda sorulur (server/AutoClickPass, 'HasAutoClick' özniteliği);
 	-- pass olmayan oyuncu elle tıklar (sunucu hız sınırı ClickLimit herkese aynı) ya da antrenman pedinin kendi squat'ını kullanır. Tempo (tools/simulate.py): Auto Click'li oyun sonu ~11 sa, elle 5/sn ~19 sa, pasif ped ~41 sa.
-	AutoClick = { PerSecond = 10, GamePassId = 0, Robux = 99 },
+	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 99 },
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
 	-- Kayıt sistemi

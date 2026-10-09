@@ -160,18 +160,18 @@ def apply_ids(path):
             replace_line(r"[^\n]*AutoClick = \{[^\n]*GamePassId = \d+[^\n]*", "GamePassId", value)
     io.open(CONFIG, "w", encoding="utf-8", newline="").write(text)
     print(f"{done} ID Config.luau'ya yazıldı")
-    if "vip" in mapping or "autoclick" in mapping:
+    for pass_key in ("vip", "autoclick"):
+        if pass_key not in mapping:
+            continue
         try:
             import json
             import urllib.request
 
-            pass_id = mapping.get("vip") or mapping["autoclick"]
-            url = f"https://apis.roblox.com/game-passes/v1/game-passes/{pass_id}/product-info"
+            url = f"https://apis.roblox.com/game-passes/v1/game-passes/{mapping[pass_key]}/product-info"
             data = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=15))
-            print(f"Game pass doğrulandı: {data.get('Name')} ({data.get('PriceInRobux')} Robux)")
+            print(f"{pass_key} game pass doğrulandı: {data.get('Name')} ({data.get('PriceInRobux')} Robux)")
         except Exception as error:  # noqa: BLE001
-            print(f"uyarı: game pass çevrimiçi doğrulanamadı ({error}); ID'yi Creator Hub'dan kontrol et")
-
+            print(f"uyarı: {pass_key} game pass çevrimiçi doğrulanamadı ({error}); ID'yi Creator Hub'dan kontrol et")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
