@@ -12,8 +12,8 @@ Toplam: 36 ürün (31 Developer Product + 5 Game Pass).
 | 2 | `shop:power1k` | Developer Product | +1K Power | 25 | Instantly gives 1,000 squats worth of leg muscle. |
 | 3 | `shop:power10k` | Developer Product | +10K Power | 75 | Instantly gives 10,000 squats worth of leg muscle. |
 | 4 | `shop:power100k` | Developer Product | +100K Power | 149 | Instantly gives 100,000 squats worth of leg muscle. |
-| 5 | `shop:winsSmall` | Developer Product | Win Pack | 39 | Instantly gives the Wins you earn for clearing stage 8. |
-| 6 | `shop:winsBig` | Developer Product | Mega Win Pack | 129 | Instantly gives the Wins you earn for clearing stage 12. |
+| 5 | `shop:winsSmall` | Developer Product | Win Pack | 59 | Instantly gives the Wins you earn for clearing stage 8. |
+| 6 | `shop:winsBig` | Developer Product | Mega Win Pack | 149 | Instantly gives the Wins you earn for clearing stage 12. |
 | 7 | `potion:luck15` | Developer Product | Luck Potion (15 min) | 49 | 2x egg luck: rare pets hatch more often. Lasts 15 minutes. |
 | 8 | `potion:luck60` | Developer Product | Luck Potion (60 min) | 129 | 2x egg luck: rare pets hatch more often. Lasts 60 minutes. |
 | 9 | `potion:muscle15` | Developer Product | Muscle Potion (15 min) | 39 | 2x leg muscle from every squat. Lasts 15 minutes. |
@@ -22,21 +22,21 @@ Toplam: 36 ürün (31 Developer Product + 5 Game Pass).
 | 12 | `potion:wins60` | Developer Product | Wins Potion (60 min) | 99 | Doubles every Win you earn. Lasts 60 minutes. |
 | 13 | `potion:rainbow15` | Developer Product | Rainbow Potion (15 min) | 79 | Counts as ALL potions: 2x luck, 2x muscle and 2x Wins. Lasts 15 minutes. |
 | 14 | `potion:rainbow60` | Developer Product | Rainbow Potion (60 min) | 149 | Counts as ALL potions: 2x luck, 2x muscle and 2x Wins. Lasts 60 minutes. |
-| 15 | `trail:red` | Developer Product | Red Trail | 25 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 16 | `trail:orange` | Developer Product | Orange Trail | 35 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 17 | `trail:yellow` | Developer Product | Yellow Trail | 49 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 18 | `trail:green` | Developer Product | Green Trail | 65 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 19 | `trail:cyan` | Developer Product | Cyan Trail | 85 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 20 | `trail:blue` | Developer Product | Blue Trail | 99 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 21 | `trail:purple` | Developer Product | Purple Trail | 119 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 22 | `trail:pink` | Developer Product | Pink Trail | 139 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 23 | `trail:rainbow` | Developer Product | Rainbow Trail | 149 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 24 | `aura:red` | Developer Product | Red Aura | 39 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 25 | `aura:green` | Developer Product | Green Aura | 59 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 26 | `aura:blue` | Developer Product | Blue Aura | 79 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 27 | `aura:purple` | Developer Product | Purple Aura | 99 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 28 | `aura:gold` | Developer Product | Gold Aura | 129 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 29 | `aura:rainbow` | Developer Product | Rainbow Aura | 149 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 15 | `trail:red` | Developer Product | Red Trail | 15 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 16 | `trail:orange` | Developer Product | Orange Trail | 20 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 17 | `trail:yellow` | Developer Product | Yellow Trail | 25 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 18 | `trail:green` | Developer Product | Green Trail | 30 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 19 | `trail:cyan` | Developer Product | Cyan Trail | 35 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 20 | `trail:blue` | Developer Product | Blue Trail | 45 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 21 | `trail:purple` | Developer Product | Purple Trail | 60 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 22 | `trail:pink` | Developer Product | Pink Trail | 75 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 23 | `trail:rainbow` | Developer Product | Rainbow Trail | 110 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 24 | `aura:red` | Developer Product | Red Aura | 15 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 25 | `aura:green` | Developer Product | Green Aura | 20 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 26 | `aura:blue` | Developer Product | Blue Aura | 25 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 27 | `aura:purple` | Developer Product | Purple Aura | 40 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 28 | `aura:gold` | Developer Product | Gold Aura | 85 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 29 | `aura:rainbow` | Developer Product | Rainbow Aura | 145 | Unlocks this aura forever: multiplies your leg muscle gain. |
 | 30 | `skip` | Developer Product | Rebirth Skip | 119 | Skip the level requirement and rebirth right now. |
 | 31 | `double` | Developer Product | Double Offline Earnings | 29 | Doubles the offline earnings waiting for you. |
 | 32 | `vip` | Game Pass | VIP | 149 | VIP pad: the Win button gives 2x Wins every stage. Permanent. |

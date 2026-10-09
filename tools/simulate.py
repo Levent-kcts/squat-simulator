@@ -59,6 +59,9 @@ AURAS = [(num(l, "winPrice"), num(l, "mult")) for l in block("Auras").splitlines
 # Fiyat merdiveni çıktısı için (id, fiyat): iz ve aura'lar
 TRAIL_PRICES = [(re.search(r'id = "(\w+)"', l).group(1), num(l, "winPrice")) for l in block("Trails").splitlines() if "winPrice =" in l]
 AURA_PRICES = [(re.search(r'id = "(\w+)"', l).group(1), num(l, "winPrice")) for l in block("Auras").splitlines() if "winPrice =" in l]
+TRAIL_ROBUX = {re.search(r'id = "(\w+)"', l).group(1): num(l, "robuxPrice") for l in block("Trails").splitlines() if "winPrice =" in l}
+AURA_ROBUX = {re.search(r'id = "(\w+)"', l).group(1): num(l, "robuxPrice") for l in block("Auras").splitlines() if "winPrice =" in l}
+WIN_VALUE = block("WinValue")  # Win'in Robux değeri: dakika başı kur ve taban
 
 # Pet birleştirme (Config.PetFusion): Cost aynı pet (aynı çarpan ve boy) tek bir üst boya dönüşür, çarpan PowerFactor katına çıkar
 FUSION = block("PetFusion")
@@ -387,3 +390,16 @@ if __name__ == "__main__":
 
     ladder("Fiyat merdiveni, izler", TRAIL_PRICES)
     ladder("Fiyat merdiveni, aura'lar", AURA_PRICES)
+
+    # Win'in Robux değeri: onu kazanma süresi (dk) x dakika başı kur (en az Floor); yanında Config'teki gerçek Robux fiyatı. Fark büyükse (ya da süre değiştiyse) fiyatları yeniden yuvarla
+    def robux_value(name, prices, robux, rate_key):
+        rate, floor = num(WIN_VALUE, rate_key), num(WIN_VALUE, "Floor")
+        parts = []
+        for item_id, price in prices:
+            stage = next((s for s in range(1, STAGE_COUNT + 1) if reward(s) >= price), None)
+            minutes = p.milestones[stage][0] / 60 if stage in p.milestones else float("nan")
+            parts.append(f"{item_id} {max(floor, minutes * rate):.0f} (şimdi {robux[item_id]:.0f})")
+        print(f"Robux değeri, {name}: " + "; ".join(parts))
+
+    robux_value("izler", TRAIL_PRICES, TRAIL_ROBUX, "RobuxPerMinuteTrail")
+    robux_value("aura'lar", AURA_PRICES, AURA_ROBUX, "RobuxPerMinuteAura")

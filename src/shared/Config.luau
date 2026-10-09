@@ -132,8 +132,8 @@ return {
 			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 25, productId = 3717466555, quick = true, color = Color3.fromRGB(255, 45, 140) },
 			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 10000, robux = 75, productId = 3717467017, quick = true, color = Color3.fromRGB(232, 32, 112) },
 			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 100000, robux = 149, productId = 3717467182, quick = true, color = Color3.fromRGB(180, 20, 70) },
-			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", imageKey = "WinPack", kind = "stageWins", stage = 8, robux = 39, productId = 3717467320, color = Color3.fromRGB(70, 210, 90) },
-			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", imageKey = "WinPackBig", kind = "stageWins", stage = 12, robux = 129, productId = 3717467423, color = Color3.fromRGB(190, 90, 255) },
+			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", imageKey = "WinPack", kind = "stageWins", stage = 8, robux = 59, productId = 3717467320, color = Color3.fromRGB(70, 210, 90) },
+			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", imageKey = "WinPackBig", kind = "stageWins", stage = 12, robux = 149, productId = 3717467423, color = Color3.fromRGB(190, 90, 255) },
 		},
 		-- İKSİR ÜRÜNLERİ (Shop > Potions bölümü): her iksir (Config.Potions.List) x süre. id = iksir id + dakika (luck15, luck60, muscle15 ...).
 		-- Çarktan / Gifts'ten / günlük görev bonusundan çıkan iksirler ENVANTERE girer (kayıtlı) ve burada fiyat yerine 'USE xN' yazar; envanterde yoksa fiyat yazar,
@@ -739,6 +739,12 @@ return {
 	-- Gerçek satış için Creator Hub'da Developer Product oluşturup ID'sini robuxProductId'ye yazmak ve sunucuda
 	-- MarketplaceService.ProcessReceipt'i bağlamak gerekir (henüz yok). Fiyatlar geçicidir.
 	BaseWalkSpeed = 22, -- 2026-10-09: sahibi 'karakterin base hızını da arttır' dedi (salon 192 stud genişledi, karakter 2 kat büyüyor); Roblox varsayılanı 16. Üstüne iz hızı (Trails[].speed) eklenir.
+	-- WIN'İN ROBUX DEĞERİ (2026-10-10, sahibi 'oyuncu sadece Win paketi alıp çok daha ucuza istediğini alamasın, her Win'in bir Robux hesaplaması olsun, fiyatı ona göre koyalım' dedi): bir Win'in değeri onu KAZANMA SÜRESİdir. İz/aura'nın Robux fiyatı = onu Win ile almak için
+	-- gereken oyun süresi (tools/simulate.py 'Fiyat merdiveni' dakikası) x dakika başı Robux (aura 0.6, iz 0.45; aura kalıcı çarpan olduğu için daha pahalı), en az Floor. Dakika başı kur ve taban BURADA yazılıdır; fiyatlar bu kura göre yuvarlanmış sabit sayıdır.
+	-- Win paketleri (Shop: winsSmall 255 Win, winsBig 4095 Win) bu fiyatlarla tutarlıdır: paketin içindeki Win ile bir seferde alınabilecek en pahalı iz/aura sepeti paket fiyatının en çok 1.3 katıdır (pricetest.luau denetler), yani paket yoldan almak
+	-- doğrudan Robux ile almaktan 'çok daha ucuz' DEĞİLDİR. Süre ya da Win fiyatı ya da paket değişirse simulate.py'yi çalıştır ve fiyatları yeniden hesapla.
+	WinValue = { RobuxPerMinuteAura = 0.6, RobuxPerMinuteTrail = 0.45, Floor = 15, MaxBasketRatio = 1.3 },
+
 	-- WIN FİYATI MERDİVENİ (2026-10-10, sahibi 'trail ve aura fiyatları dengelemede değiştirilmemiş, onları da dengele' dedi): fiyat = HEDEF AŞAMANIN ÖDÜLÜNE yakın (Layout.reward: 1, 3, 7, 15, 31 ... 2^aşama - 1), yani oyuncu o aşamayı bitirip Win'e basınca TEK SEFERDE alabilir
 	-- (biriktirerek daha erken de alınır). İzler oyunun tamamına yayılır. AURA'LAR OYUNUN BAŞINA ÇEKİLDİ (sahibi 'auralar oyunun çok ileri safhasında, daha başlarında alınabilsin, ilki hem çok zayıf hem 1 saat oynamak gerekiyor' dedi): ilk aura 15 Win (ilk rebirth, ~5 dk) ve x1.5,
 	-- hepsi oyunun ilk ~4 saatinde alınır, çarpanlar öne yüklü (1.5, 1.75, 2.0, 2.3, 2.6, 3.0). Erken güçlenme oyunu 7.6 saate indirdiği için Wall.HealthGrowthAfter 3.5 -> 3.75 yapılıp oyunun sonu ~10.2 saatte tutuldu (tools/simulate.py).
@@ -746,26 +752,26 @@ return {
 	-- Aura'lar: red 4, green 7, blue 9, purple 11, gold 13, rainbow 15 (oyunun sonu 20. aşama).
 	-- tools/simulate.py son satırlarındaki 'Fiyat merdiveni' bunu zamanla gösterir; fiyat ya da çarpan değiştirirsen o tabloyu ve aşama kilometre taşlarını (5: 5-8 dk, 10: ~1 sa, 15: ~4-5 sa, 20: ~10 sa) yeniden kontrol et. Robux fiyatları ayrıdır (robuxPrice).
 	Trails = {
-		{ id = "red", name = "Red Trail", speed = 4, winPrice = 30, robuxPrice = 25, robuxProductId = 3717469051, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 60, robuxPrice = 35, robuxProductId = 3717469165, color = Color3.fromRGB(255, 150, 40) },
-		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 250, robuxPrice = 49, robuxProductId = 3717469247, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "green", name = "Green Trail", speed = 10, winPrice = 1000, robuxPrice = 65, robuxProductId = 3717469350, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 2000, robuxPrice = 85, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 4000, robuxPrice = 99, robuxProductId = 3717469540, color = Color3.fromRGB(70, 110, 255) },
-		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 8000, robuxPrice = 119, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 16000, robuxPrice = 139, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 32000, robuxPrice = 149, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Trail", speed = 4, winPrice = 30, robuxPrice = 15, robuxProductId = 3717469051, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 60, robuxPrice = 20, robuxProductId = 3717469165, color = Color3.fromRGB(255, 150, 40) },
+		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 250, robuxPrice = 25, robuxProductId = 3717469247, color = Color3.fromRGB(255, 230, 60) },
+		{ id = "green", name = "Green Trail", speed = 10, winPrice = 1000, robuxPrice = 30, robuxProductId = 3717469350, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 2000, robuxPrice = 35, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 4000, robuxPrice = 45, robuxProductId = 3717469540, color = Color3.fromRGB(70, 110, 255) },
+		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 8000, robuxPrice = 60, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 16000, robuxPrice = 75, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 32000, robuxPrice = 110, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
-		{ id = "red", name = "Red Aura", mult = 1.5, winPrice = 15, robuxPrice = 39, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 1.75, winPrice = 100, robuxPrice = 59, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 2.0, winPrice = 400, robuxPrice = 79, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 2.3, winPrice = 1600, robuxPrice = 99, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 2.6, winPrice = 6500, robuxPrice = 129, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 26000, robuxPrice = 149, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Aura", mult = 1.5, winPrice = 15, robuxPrice = 15, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "green", name = "Green Aura", mult = 1.75, winPrice = 100, robuxPrice = 20, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 2.0, winPrice = 400, robuxPrice = 25, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 2.3, winPrice = 1600, robuxPrice = 40, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 2.6, winPrice = 6500, robuxPrice = 85, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 26000, robuxPrice = 145, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.

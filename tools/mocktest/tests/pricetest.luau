@@ -66,7 +66,9 @@ print("DONE")
 
 -- Fiyat dengesi (2026-10-10, sahibi 'gereksiz ucuz olanları değiştirelim, yine çok pahalı olmasın' dedi): hiçbir Robux ürünü 25'in altında olmasın, aileler zayıftan güçlüye pahalılaşsın, uzun iksir dakika başına ucuz kalsın
 for _, price in prices do
-	assert(price.value >= 25 or string.find(price.name, "Gift unlock next", 1, true), `{price.name}: {price.value} Robux gereksiz ucuz (en az 25)`)
+	local cosmetic = string.sub(price.name, 1, 6) == "Trail " or string.sub(price.name, 1, 5) == "Aura "
+	local floor = if cosmetic then Config.WinValue.Floor else 25 -- iz ve aura'lar Win'in Robux değerine göre (WinValue), erken olanlar en az Floor
+	assert(price.value >= floor or string.find(price.name, "Gift unlock next", 1, true), `{price.name}: {price.value} Robux gereksiz ucuz (en az {floor})`)
 end
 local previous = 0
 for _, trail in Config.Trails do
@@ -128,3 +130,42 @@ for index, aura in Config.Auras do
 end
 assert(lastStage <= 16, "son aura oyunun ilk yarısında alınmalı (<= 16. aşama): aşama " .. lastStage)
 assert(lastMult == 3.0, "son aura çarpanı x3.0 kalmalı (oyunun tavanı)")
+
+-- WIN'İN ROBUX DEĞERİ (2026-10-10, sahibi 'oyuncu sadece Win paketi alıp çok daha ucuza istediğini alamasın' dedi): Win paketinin içindeki Win ile BİR SEFERDE alınabilecek iz/aura sepetinin doğrudan Robux toplamı,
+-- paket fiyatının MaxBasketRatio katını geçmemeli (yoksa paket yoldan almak doğrudan Robux'tan çok daha ucuz olur). Sepet = en pahalı alt küme (15 ürün: 2^15 olası sepet, kaba kuvvetle).
+local cosmetics = {}
+for _, trail in Config.Trails do
+	table.insert(cosmetics, { wins = trail.winPrice, robux = trail.robuxPrice, name = "Trail " .. trail.id })
+end
+for _, aura in Config.Auras do
+	table.insert(cosmetics, { wins = aura.winPrice, robux = aura.robuxPrice, name = "Aura " .. aura.id })
+end
+local packs = 0
+for _, product in Config.Shop.Products do
+	if product.kind == "stageWins" then
+		packs += 1
+		local packWins = Layout.reward(product.stage)
+		local best, bestMask = 0, 0
+		for mask = 0, 2 ^ #cosmetics - 1 do
+			local wins, robux, bits = 0, 0, mask
+			for index = 1, #cosmetics do
+				if bits % 2 == 1 then
+					wins += cosmetics[index].wins
+					robux += cosmetics[index].robux
+				end
+				bits = bits // 2
+			end
+			if wins <= packWins and robux > best then
+				best, bestMask = robux, mask
+			end
+		end
+		assert(best <= product.robux * Config.WinValue.MaxBasketRatio, `{product.name} ({packWins} Win, {product.robux} Robux): içindeki Win ile {best} Robux'luk iz/aura sepeti alınabiliyor (sınır x{Config.WinValue.MaxBasketRatio})`)
+		-- Tek tek de: pakete sığan hiçbir ürünün doğrudan fiyatı paket fiyatından yüksek olmamalı
+		for _, item in cosmetics do
+			if item.wins <= packWins then
+				assert(item.robux <= product.robux, `{item.name}: doğrudan {item.robux} Robux, ama {product.name} {product.robux} Robux ve içine sığıyor`)
+			end
+		end
+	end
+end
+assert(packs == 2, "iki Win paketi olmalı (Win Pack ve Mega Win Pack): " .. packs)
