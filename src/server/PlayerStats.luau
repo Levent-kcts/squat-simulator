@@ -2,6 +2,7 @@ local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -13,6 +14,18 @@ local Format = require(Shared:WaitForChild("Format"))
 local PlayerStats = {}
 
 local store = DataStoreService:GetDataStore(Config.Save.StoreName)
+
+-- OTURUM KİLİDİ (yayın öncesi veri güvenliği): oyuncu bir sunucudan çıkıp hızla başkasına girince eski sunucunun son kaydı yeni sunucunun ilerlemesinin (ya da satın alınan şeyin) üstüne yazmasın.
+-- Kayıtta 'Lock = { id, t }' tutulur (id = bu sunucunun rastgele kimliği, t = son kayıt zamanı). Başka sunucunun TAZE kilidi (LOCK_STALE saniyeden yeni) varsa yüklemede LOCK_WAIT saniye beklenir (o sunucu çıkış kaydında kilidi bırakır),
+-- sonra kilit çökmüş sunucudan kalmış sayılıp devralınır. Kilidi kaybeden sunucu o oyuncu için KAYDETMEYİ bırakır (yeni sunucunun verisini ezmesin). Çıkış/kapanış kaydı kilidi bırakır.
+local SERVER_ID = HttpService:GenerateGUID(false)
+local LOCK_STALE = 120 -- saniye: bu kadar süredir kayıt yapmayan sunucunun kilidi artık geçersizdir (otomatik kayıt 30 sn'de bir kilidi yeniler)
+local LOCK_WAIT = if RunService:IsStudio() then 0 else 24 -- saniye: başka sunucunun taze kilidi için en çok bu kadar beklenir (Studio'da beklenmez: Stop ile kapatılan test oturumları kilidi bırakamayabilir)
+
+local function lockedByOther(record)
+	local lock = type(record) == "table" and record.Lock
+	return type(lock) == "table" and lock.id ~= SERVER_ID and os.time() - (tonumber(lock.t) or 0) < LOCK_STALE
+end
 local rng = Random.new()
 
 -- profiles[player] = { loaded, canSave, items = {id}, pets = {id}, gain }
@@ -366,19 +379,40 @@ end
 
 local function loadData(player)
 	local key = `Player_{player.UserId}`
-	for attempt = 1, 3 do
-		local ok, result = pcall(store.GetAsync, store, key)
-		if ok then
+	local failures, waited = 0, 0
+	while true do
+		-- Okuma ve KİLİT ALMA tek atomik işlemdir (UpdateAsync): kayıt bu sunucuya kilitlenir, veri olduğu gibi korunur
+		local blocked = false
+		local ok, result = pcall(store.UpdateAsync, store, key, function(old)
+			blocked = false -- (UpdateAsync işlevi yeniden denenebilir: her seferinde sıfırla)
+			if lockedByOther(old) and waited < LOCK_WAIT then
+				blocked = true
+				return nil -- iptal: başka sunucu hâlâ kullanıyor
+			end
+			local record = if type(old) == "table" then old else {}
+			record.Lock = { id = SERVER_ID, t = os.time() }
+			return record
+		end)
+		if ok and not blocked then
 			return true, result
 		end
-		warn(`[Save] Load failed (attempt {attempt}): {result}`)
-		-- Studio'da API erişimi kapalıysa tekrar denemek boşuna (her Play'de 12 sn beklemeye yol açıyordu)
-		if string.find(tostring(result), "Studio access to API", 1, true) then
-			break
+		if blocked then
+			if not player.Parent then
+				return false, nil -- beklerken oyundan çıktı
+			end
+			warn(`[Save] {player.Name}'s data is still locked by another server, waiting...`)
+			task.wait(3)
+			waited += 3
+		else
+			failures += 1
+			warn(`[Save] Load failed (attempt {failures}): {result}`)
+			-- Studio'da API erişimi kapalıysa tekrar denemek boşuna (her Play'de 12 sn beklemeye yol açıyordu)
+			if failures >= 3 or string.find(tostring(result), "Studio access to API", 1, true) then
+				return false, nil
+			end
+			task.wait(2 * failures)
 		end
-		task.wait(2 * attempt)
 	end
-	return false, nil
 end
 
 -- Level, TOPLAM bacak kasından hesaplanır (rebirth üst sınırı geçilmez). Dönüş: level atladı mı, yeni level
@@ -533,13 +567,15 @@ local function refresh(player)
 	player:SetAttribute("AutoDeletePets", table.concat(autoDeleteList, ","))
 end
 
-local function save(player)
+-- mode: nil = otomatik kayıt (tek deneme, bir sonraki otomatik kayıt zaten yakın), 'now' = hemen kaydet (satın alma sonrası; 3 deneme), 'final' = çıkış/kapanış (4 deneme, kilidi bırakır).
+-- Dönüş: kaydedildi mi (kilit başka sunucuya geçtiyse false: o oyuncu için bir daha kaydedilmez)
+local function save(player, mode)
 	local profile = profiles[player]
 	local muscle = getStat(player, Config.StatLegMuscle)
 	local wins = getStat(player, Config.StatWins)
 	-- Yükleme başarısız olduysa asla kaydetme, yoksa eski ilerleme silinir
 	if not profile or not profile.canSave or not muscle or not wins then
-		return
+		return false
 	end
 
 	local data = {
@@ -592,12 +628,37 @@ local function save(player)
 		end)(),
 	}
 	profile.lastSave = os.clock()
-	local ok, err = pcall(store.UpdateAsync, store, `Player_{player.UserId}`, function()
-		return data
-	end)
-	if not ok then
-		warn(`[Save] Could not save ({player.Name}): {err}`)
+	local attempts = if mode == "final" then 4 elseif mode == "now" then 3 else 1
+	for attempt = 1, attempts do
+		local lost = false
+		local ok, err = pcall(store.UpdateAsync, store, `Player_{player.UserId}`, function(old)
+			lost = false
+			if lockedByOther(old) then
+				lost = true
+				return nil -- kilit başka sunucuya geçti: onun verisinin üstüne yazma
+			end
+			data.Lock = if mode == "final" then nil else { id = SERVER_ID, t = os.time() }
+			return data
+		end)
+		if ok and not lost then
+			return true
+		end
+		if lost then
+			profile.canSave = false
+			warn(`[Save] {player.Name}'s data was taken over by another server: this server will not save it anymore.`)
+			return false
+		end
+		warn(`[Save] Could not save ({player.Name}, attempt {attempt}/{attempts}): {err}`)
+		if attempt < attempts then
+			task.wait(attempt * 1.5)
+		end
 	end
+	return false
+end
+
+-- Hemen kaydeder (Robux satın alması sonrası: ödül kayda geçmeden Roblox'a 'verildi' denmesin). Dönüş: kaydedildi mi
+function PlayerStats.saveNow(player)
+	return save(player, "now")
 end
 
 -- Önemli bir olaydan (Win, satın alma, pet) sonra kısa süre içinde kaydeder.
@@ -856,7 +917,7 @@ function PlayerStats.init()
 	end
 
 	Players.PlayerRemoving:Connect(function(player)
-		save(player)
+		save(player, "final")
 		profiles[player] = nil
 		friendCounts[player] = nil
 	end)
@@ -867,7 +928,7 @@ function PlayerStats.init()
 		for _, player in Players:GetPlayers() do
 			pending += 1
 			task.spawn(function()
-				save(player)
+				save(player, "final")
 				pending -= 1
 			end)
 		end

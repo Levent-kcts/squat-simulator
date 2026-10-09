@@ -123,7 +123,9 @@ def main():
             result = subprocess.run([LUAU, name], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=cwd, timeout=120)
             # UIStyle.soften UDim değerlerini taklitte tanıyamaz (typeof): bu bilinen taklit boşluğu, oyunda UIStyle zaten hata verirse düz kalır
             lines = (result.stdout + result.stderr).splitlines()
-            gaps = ("[UIStyle]", "task.spawn error:\t./Sfx.luau", "task.spawn error:\t./GiftsPanel.luau", "task.spawn error:\t./EggShop.luau", "task.spawn error:\t./MusicPlayer.luau", "mock gap")
+            gaps = ("[UIStyle]", "task.spawn error:\t./Sfx.luau", "task.spawn error:\t./GiftsPanel.luau", "task.spawn error:\t./EggShop.luau", "task.spawn error:\t./MusicPlayer.luau", "mock gap",
+                    # sessionlocktest.luau'nun BEKLENEN uyarıları (kilit bekleme/devralma ve sahte DataStore hatası)
+                    "still locked by another server", "taken over by another server", "mock datastore failure")
             output = chr(10).join(line for line in lines if not any(gap in line for gap in gaps))
             bad = result.returncode != 0 or re.search(r"ERROR|WARN\b|attempt to|stacktrace|Error opening|failures:\s+[1-9]", output)
             print(f"{'HATA ' if bad else 'tamam'}  {name}")

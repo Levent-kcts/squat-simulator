@@ -155,6 +155,19 @@ assert(spun == true and type(spinMessage) == "string" and spinIndex >= 1 and spi
 assert(player:GetAttribute("WheelReady") == false, "çevirdikten sonra hak kullanılmış görünmeli")
 local spunAgain, againMessage = shop(player, "SpinWheel", "")
 assert(spunAgain == false and string.find(againMessage, "Next free spin"), "aynı gün ikinci çevirme reddedilmeli")
+-- Mağaza hız sınırı: saniyede binlerce çağrı kısılır ('too fast'), normal kullanım etkilenmez (taze kovalı ayrı bir oyuncuyla denenir)
+local hammer = S.newInstance("Player")
+local rejected, accepted = 0, 0
+for _ = 1, Config.ShopLimit.Burst * 3 do
+	local _, message = shop(hammer, "ClaimOffline")
+	if message == "You are going too fast, slow down." then
+		rejected += 1
+	else
+		accepted += 1
+	end
+end
+assert(rejected >= Config.ShopLimit.Burst and accepted >= Config.ShopLimit.Burst * 0.9, `hız sınırı fazla çağrıyı reddetmeli: {rejected} reddedildi, {accepted} kabul`)
+Config.ShopLimit.PerSecond, Config.ShopLimit.Burst = 1e9, 1e9 -- (aşağıdaki 3000'lik çark döngüsü için sınırı fiilen kaldır)
 -- Her dilim en az bir kez çıkmalı, ödüller sunucuda verilmeli (Win/kas/boost/pet), hata olmamalı
 local seen, kinds = {}, {}
 local winsBefore, muscleBefore = stat(Config.StatWins), stat(Config.StatLegMuscle)

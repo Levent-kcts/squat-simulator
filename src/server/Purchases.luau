@@ -64,6 +64,13 @@ function Purchases.init(wallService, notifyEvent)
 			return Enum.ProductPurchaseDecision.NotProcessedYet
 		end
 
+		-- Ödül KAYDA geçmeden Roblox'a 'verildi' denmez: sunucu çökerse oyuncu parasını verip ödülü kaybederdi. Kayıt başarısızsa makbuz sonra yeniden gelir (aynı makbuz ikinci kez ödül vermez, sadece kayıt tekrarlanır)
+		local saved = PlayerStats.saveNow(player)
+		if not saved then
+			warn(`[Purchases] Could not save the purchase for {player.Name}; will retry the receipt.`)
+			return Enum.ProductPurchaseDecision.NotProcessedYet
+		end
+
 		if entry.product.kind == "skip" then
 			wallService.resetPlayer(player)
 		end

@@ -262,7 +262,7 @@ local services = {
 	Players = { LocalPlayer = localPlayer, PlayerAdded = { Connect = function(_, f) table.insert(M.playerAdded, f) return proxy() end }, PlayerRemoving = { Connect = function(_, f) table.insert(M.playerRemoving, f) return proxy() end }, GetPlayers = function() return {} end, GetPlayerFromCharacter = function(_, character) return M.characterOwners[character] end },
 	DataStoreService = { GetDataStore = function() return {
 		GetAsync = function(_, key) return M.datastore[key] end,
-		UpdateAsync = function(_, key, fn) M.datastore[key] = fn(M.datastore[key]) return M.datastore[key] end,
+		UpdateAsync = function(_, key, fn) local updated = fn(M.datastore[key]) if updated ~= nil then M.datastore[key] = updated end return M.datastore[key] end,
 	} end },
 	ReplicatedStorage = ReplicatedStorage,
 	Workspace = (function()
@@ -275,6 +275,7 @@ local services = {
 		return ws
 	end)(),
 	HttpService = {
+		GenerateGUID = function() return "mock-server-guid" end,
 		JSONDecode = function()
 			return M.jsonData
 		end,

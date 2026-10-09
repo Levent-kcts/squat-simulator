@@ -81,7 +81,7 @@ return {
 
 	-- Test araçları (sol üstteki DEV paneli): level, rebirth, Win, kas verme gibi. Sadece Studio'da ve oyunun sahibi
 	-- için çalışır, başka oyuncular kullanamaz. Oyunu herkese açmadan önce Enabled = false yapman önerilir.
-	DevTools = { Enabled = true },
+	DevTools = { Enabled = false }, -- YAYIN HÂLİ: false = yayındaki oyunda DEV paneli kimseye açılmaz (Studio test oturumlarında HER ZAMAN çalışır); canlı oyunda kendin denemek istersen geçici true yap (sadece oyunun sahibi kullanır)
 
 	-- Oyunun başlangıç alanı. Spawn burası, Win alınca oyuncu buraya ışınlanır.
 	SpawnPosition = Vector3.new(0, 5, 0),
@@ -115,6 +115,9 @@ return {
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
 	-- Kayıt sistemi
+	-- Mağaza RemoteFunction'ına (server/init.server 'Shop') hız sınırı: saniyede PerSecond çağrı, ani seri için Burst. Normal kullanım çok altındadır; Pets menüsü onlarca pet silerken çağrıları art arda yapar (bu yüzden cömert)
+	ShopLimit = { PerSecond = 40, Burst = 100 },
+
 	Save = {
 		StoreName = "PlayerData_v1", -- ismi değiştirirsen herkesin kaydı sıfırlanır!
 		AutosaveInterval = 30, -- saniye (ayrıca Win/satın alma/pet sonrası da hemen kaydedilir)
@@ -124,7 +127,7 @@ return {
 	-- oluşturulan ürünün ID'si; 0 = henüz yok, kart "Coming soon" gösterir. Satın alma sunucuda ProcessReceipt ile doğrulanır
 	-- (server/Purchases): aynı satın alma iki kez ödül vermez. badge (isteğe bağlı): simgenin sağ altına konan büyük yeşil rozetin yazısı ('+' = yükseltme; Pet Space için), kind: boostLuck / boostMuscle / boostWins / boostRainbow (iksirler ARTIK Shop.Potions listesindedir), petSpace (amount ek pet envanter yeri; Pets menüsündeki çanta + işareti bu pencereyi açar), wins (amount Win),
 	-- stageWins (stage. aşamanın Win ödülü kadar), moves (amount hareketlik kas).
-	-- FİYAT KURALI (sahibi 2026-10-09: 'ucuz olsun, en pahalı şey 150 Robux'u geçmesin'): bütün Robux fiyatları (Shop ürünleri, iksirler, iz/aura, Rebirth SKIP, Offline DOUBLE, Gifts kilidi, VIP game pass) en çok 150'dir; tools/mocktest/tests/pricetest.luau denetler.
+	-- FİYAT KURALI (sahibi 2026-10-09: 'ucuz olsun, en pahalı şey 150 Robux'u geçmesin'): bütün Robux fiyatları (Shop ürünleri, iksirler, iz/aura, Rebirth SKIP, Offline DOUBLE, Gifts kilidi, VIP game pass) en çok 150'dir; İSTİSNALAR: yumurta pass'leri (EggPasses) ve Robux'lu antrenör pedleri (Training.Areas robux), 150 < fiyat <= 400; tools/mocktest/tests/pricetest.luau denetler.
 	Shop = {
 		Products = {
 			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", badge = "+", kind = "petSpace", amount = 25, robux = 79, productId = 3717466379, color = Color3.fromRGB(235, 70, 70) },

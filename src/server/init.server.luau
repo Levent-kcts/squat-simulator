@@ -255,7 +255,29 @@ local shopFunction = Instance.new("RemoteFunction")
 shopFunction.Name = "Shop"
 shopFunction.Parent = ReplicatedStorage
 
+-- Mağaza çağrılarına hız sınırı (yayın öncesi sertleştirme, Config.ShopLimit): tek oyuncu saniyede binlerce çağrıyla sunucuyu yormasın. Jeton kovası; Pets menüsü çok pet silerken çağrıları art arda yapar, bu yüzden sınır cömerttir
+local shopBuckets = {} -- [oyuncu] = { tokens, last }
+local function allowShop(player)
+	local limit = Config.ShopLimit
+	local bucket = shopBuckets[player]
+	local now = os.clock()
+	if not bucket then
+		bucket = { tokens = limit.Burst, last = now }
+		shopBuckets[player] = bucket
+	end
+	bucket.tokens = math.min(limit.Burst, bucket.tokens + (now - bucket.last) * limit.PerSecond)
+	bucket.last = now
+	if bucket.tokens < 1 then
+		return false
+	end
+	bucket.tokens -= 1
+	return true
+end
+
 shopFunction.OnServerInvoke = function(player, action, id, value)
+	if not allowShop(player) then
+		return false, "You are going too fast, slow down."
+	end
 	if action == "BuyItem" and type(id) == "string" then
 		return PlayerStats.buyItem(player, id)
 	elseif action == "UsePotion" and type(id) == "string" then
@@ -310,6 +332,7 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
 	busyUntil[player] = nil
+	shopBuckets[player] = nil
 end)
 
 -- Dünya kuruldu: istemcideki yükleme ekranı (ReplicatedFirst/Loading) bu işareti bekleyip kapanır

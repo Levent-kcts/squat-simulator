@@ -110,6 +110,15 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 
 ## 5. Yapılacaklar
 
+### YAYIN KONTROL LİSTESİ (2026-10-10, sahibi 'oyunu çıkarmak için son detayları yapalım' dedi)
+**Claude tarafında YAPILDI:** (1) `Config.DevTools.Enabled = false` (yayında DEV paneli kapalı; Studio'da hep açık). (2) Veri güvenliği: oturum kilidi, kayıt yeniden denemeleri, satın almada 'önce kaydet', Shop hız sınırı (bkz. CLAUDE.md > DataStore maddesi; test sessionlocktest). (3) Config'teki 50 Roblox varlığı (28 simge, 12 ses, 10 müzik) doğrulandı: hepsi var ve doğru türde (müzikler Creator Store/Distrokid). (4) Robux ürünleri: 39 ürünün ID'si bağlı; game pass'lerin (VIP, Auto Click, yumurta x2, antrenör x2) adı ve fiyatı Roblox'ta doğrulandı; Developer Product fiyatlarını sahibi güncelledi (API ile okunamaz).
+**SAHİBİ YAPACAK (Studio / Creator Hub):**
+1. Studio: Dosya > Roblox'a Yayınla; Ana Sayfa > Oyun Ayarları > Güvenlik > 'Studio'nun API Hizmetlerine Erişimini Etkinleştir' (kayıtlar için ZORUNLU). Avatar tipi: Oyun Ayarları > Avatar > R15.
+2. Oyun ayarları: ad 'Squat Simulator', açıklama, simge ve küçük resimler (Creator Hub > Deneyim > Genel), tür, cihazlar (bilgisayar/telefon/tablet), sunucu boyutu, 'Herkese açık' gizlilik.
+3. Yaş/içerik anketi (Creator Hub > Deneyim > Hedef kitle): çocuklara yönelik, dikkatli doldur; satın alınabilir içerik (rastgele ödüllü yumurtalar) için ilgili soruları doğru işaretle.
+4. Yayından hemen önce kayıt kararı: test sırasında DEV komutlarıyla verilen şeyler kalıcı kayıtta kalır; temiz başlangıç için `Config.Save.StoreName` değiştirilir (herkesin kaydı sıfırlanır!). SADECE yayından ÖNCE yap, yayından sonra ASLA.
+5. Yayın sonrası: Output'ta `[Save]` uyarısı çıkıyor mu, satın alma ve Robux testi, 2 hesapla hızlı giriş-çıkış (oturum kilidi), mobil ekran ölçeği.
+
 **A) Sahibinin yapacakları (Roblox tarafı, kodla yapılamaz)**
 1. **Studio'da dene, en önce:** oyun açılıyor mu, Output'ta `[Client]` / `[Server]` uyarısı var mı? Yeni modüller korumalı yüklenir: hata verirse uyarı yazar, oyun çalışmaya devam eder. Hata olursa Output satırını ya da ekran görüntüsünü Claude'a ilet (Claude Studio log dosyasından da okuyabilir).
 2. **Oyunu yayınla ve API erişimini aç** (File > Publish to Roblox; Game Settings > Security > "Enable Studio Access to API Services"). Kayıt, sıralama panoları, çevrimdışı kazançın kalıcılığı buna bağlı.

@@ -14,10 +14,11 @@ local AreaPasses = require(script.Parent.AreaPasses)
 local DevTools = {}
 
 local function isAllowed(player)
-	if not Config.DevTools.Enabled then
-		return false
+	if RunService:IsStudio() then
+		return true -- Studio test oturumları her zaman (yayında bu kod çalışmaz)
 	end
-	return RunService:IsStudio() or player.UserId == game.CreatorId
+	-- Yayındaki oyun: Config.DevTools.Enabled = false iken (yayın hâli) kimse kullanamaz; true iken sadece oyunun sahibi
+	return Config.DevTools.Enabled and player.UserId == game.CreatorId
 end
 
 function DevTools.init(notifyEvent)

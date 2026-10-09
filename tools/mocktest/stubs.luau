@@ -140,6 +140,7 @@ local function signal(name)
 end
 local datastore = {}
 M.datastore = datastore
+M.datastoreFailures = 0
 local function encode(x)
 	local t = type(x)
 	if t == "table" then
@@ -167,7 +168,14 @@ local services = {
 					return datastore[key]
 				end,
 				UpdateAsync = function(_, key, fn)
-					datastore[key] = fn(datastore[key])
+					if M.datastoreFailures > 0 then -- test: DataStore geçici hatası
+						M.datastoreFailures -= 1
+						error("mock datastore failure")
+					end
+					local updated = fn(datastore[key])
+					if updated ~= nil then -- Roblox'ta işlev nil dönerse güncelleme İPTAL olur, eski değer kalır
+						datastore[key] = updated
+					end
 					return datastore[key]
 				end,
 			}
@@ -186,6 +194,9 @@ local services = {
 	HttpService = {
 		JSONEncode = function(_, v)
 			return encode(v)
+		end,
+		GenerateGUID = function()
+			return "mock-server-guid"
 		end,
 	},
 	ReplicatedStorage = setmetatable({}, {
