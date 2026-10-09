@@ -3,6 +3,7 @@
 --   * Config.Trails[].robuxProductId, Config.Auras[].robuxProductId (Backpack > Trails/Auras'taki R$ butonları)
 --   * Config.Rebirth.SkipProductId (Rebirth penceresindeki SKIP? butonu)
 --   * Config.Offline.DoubleProductId (Offline Earnings penceresindeki DOUBLE IT! butonu)
+--   * Config.GiftUnlockNextProductId / GiftUnlockAllProductId (Gifts penceresindeki Unlock Next / Unlock All butonları)
 -- Ödülü PlayerStats.processPurchase verir: aynı satın alma iki kez ödül vermez, verisi kaydedilemeyen oyuncuya verilmez (Roblox daha sonra tekrar dener).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
@@ -34,6 +35,8 @@ function Purchases.init(wallService, notifyEvent)
 	end
 	add(Config.Rebirth.SkipProductId, "Rebirth Skip", { kind = "skip" })
 	add(Config.Offline.DoubleProductId, "Double Offline Earnings", { kind = "offlineDouble" })
+	add(Config.GiftUnlockNextProductId, "Unlock Next Gift", { kind = "giftNext" })
+	add(Config.GiftUnlockAllProductId, "Unlock All Gifts", { kind = "giftAll" })
 	for _, product in Config.Shop.Products do
 		add(product.productId, product.name, product)
 	end

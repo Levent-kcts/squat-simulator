@@ -790,6 +790,12 @@ return {
 		{ time = 1800, kind = "boostWins" },
 		{ time = 2400, kind = "pet", pet = "phoenix" },
 	},
+	-- ROBUX İLE KİLİT AÇMA (Gifts > Playtime Rewards altındaki 'Unlock Next' / 'Unlock All'; sahibi 'bunları eklemeyi unutmuşuz, fiyatları adil düzenle' dedi): iki Developer Product.
+	-- Unlock Next = ilk KİLİTLİ ödülü HEMEN verir (sırayla, hedeflenemez); Unlock All = alınmamış bütün ödülleri HEMEN verir (pet envanteri doluysa pet atlanır). Ödüller her oturum ücretsizdir, satılan şey BEKLEME süresidir.
+	-- ADİL FİYAT: hiçbir ödül Shop'tan UCUZA alınamasın. Tek bir ödülün Shop karşılığı en çok 15 dk Luck iksiri (49 R$) => Unlock Next >= 49; Unlock All içindeki üç iksirin Shop toplamı 127 R$ (Luck 49 + Muscle 39 + Wins 39) => Unlock All >= 127 (149; üstüne iki pet,
+	-- kas ve Win de gelir ve 10 x Next'ten (490) çok ucuzdur: toplu alım indirimi). pricetest.luau ikisini de denetler. ProductId 0 iken buton fiyatlı 'coming soon' der. ID'ler: robux_ids.txt giftnext= / giftall=, tools/set_robux_ids.py işler.
 	GiftUnlockAllRobux = 149,
-	GiftUnlockNextRobux = 29,
+	GiftUnlockNextRobux = 49,
+	GiftUnlockAllProductId = 0,
+	GiftUnlockNextProductId = 0,
 }

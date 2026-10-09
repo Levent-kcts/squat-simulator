@@ -4,7 +4,7 @@ Her satır için Creator Hub'da (create.roblox.com) oyunun > **Para Kazanma (Mon
 Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; yumurta pass'leri hariç hiçbir fiyat 150 Robux'u geçmez; eggauto/eggmulti bilerek daha pahalıdır). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz
 (ya da bana yapıştır), sonra `python tools/set_robux_ids.py robux_ids.txt` Config'e işler. Oyun Studio'da yayınlanmış olmalı, ürünler o oyuna (deneyime) ait olmalı.
 
-Toplam: 35 ürün (31 Developer Product + 4 Game Pass).
+Toplam: 37 ürün (33 Developer Product + 4 Game Pass).
 
 | # | Anahtar | Tür | Ad | Fiyat (Robux) | Açıklama |
 |---|---|---|---|---|---|
@@ -39,9 +39,11 @@ Toplam: 35 ürün (31 Developer Product + 4 Game Pass).
 | 29 | `aura:rainbow` | Developer Product | Rainbow Aura | 145 | Unlocks this aura forever: multiplies your leg muscle gain. |
 | 30 | `skip` | Developer Product | Rebirth Skip | 119 | Skip the level requirement and rebirth right now. |
 | 31 | `double` | Developer Product | Double Offline Earnings | 29 | Doubles the offline earnings waiting for you. |
-| 32 | `vip` | Game Pass | VIP | 149 | VIP pad: the Win button gives 2x Wins every stage. Permanent. |
-| 33 | `autoclick` | Game Pass | Auto Click | 149 | Auto Click: your character squats and kicks for you, up to 10 clicks per second. Permanent. |
-| 34 | `eggauto` | Game Pass | Auto Open | 199 | Auto Open: eggs open automatically, hands-free. Permanent. |
-| 35 | `eggmulti` | Game Pass | Multi Open | 249 | Multi Open: hatch 3 or 10 eggs at once (switch with T). Permanent. |
+| 32 | `giftnext` | Developer Product | Unlock Next Gift | 49 | Instantly unlocks and claims the next locked Playtime Reward. |
+| 33 | `giftall` | Developer Product | Unlock All Gifts | 149 | Instantly unlocks and claims every Playtime Reward you have not claimed yet. |
+| 34 | `vip` | Game Pass | VIP | 149 | VIP pad: the Win button gives 2x Wins every stage. Permanent. |
+| 35 | `autoclick` | Game Pass | Auto Click | 149 | Auto Click: your character squats and kicks for you, up to 10 clicks per second. Permanent. |
+| 36 | `eggauto` | Game Pass | Auto Open | 199 | Auto Open: eggs open automatically, hands-free. Permanent. |
+| 37 | `eggmulti` | Game Pass | Multi Open | 249 | Multi Open: hatch 3 or 10 eggs at once (switch with T). Permanent. |
 
 Not: en önemli ürünler (ilk açılacaklar): Pet Space, +1K / +10K / +100K Power, Win Pack, Mega Win Pack, iksirler, VIP. İz ve aura ürünleri sonra eklenebilir; ID'si boş olan ürün oyunda 'coming soon' der ve hata vermez.

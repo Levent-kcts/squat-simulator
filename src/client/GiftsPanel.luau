@@ -1,8 +1,9 @@
 -- Gifts menüsü (Playtime Rewards): oyuna girdikten belli süre sonra alınabilen 10 ödül.
--- Süre sayaçları sunucu saatine göre çalışır. Ödülü sunucu verir. "Unlock" butonları Robux yer tutucusudur.
+-- Süre sayaçları sunucu saatine göre çalışır. Ödülü sunucu verir. "Unlock Next / Unlock All" butonları Developer Product satın alma penceresi açar (ödülleri satın alma sonrası sunucu verir).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -182,8 +183,9 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		end)
 	end
 
-	-- Alt butonlar: Robux ile kilit açma (yer tutucu)
-	local function robuxButton(side, color, title, price, message)
+	-- Alt butonlar: Robux ile kilit açma (Developer Product; ödülü sunucu verir: server/Purchases > PlayerStats unlockGifts)
+	-- productId 0 ise fiyatlı 'coming soon'. Kilitli (süresi dolmamış, alınmamış) ödül yokken satın alma penceresi AÇILMAZ (Robux boşa gitmesin)
+	local function robuxButton(side, color, title, price, productId)
 		local button = create("TextButton", {
 			AnchorPoint = Vector2.new(if side == "right" then 1 else 0, 1),
 			Position = UDim2.new(if side == "right" then 0.98 else 0.52, 0, 1, -8),
@@ -206,11 +208,30 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			TextColor3 = Color3.fromRGB(255, 240, 150),
 		}, 2)
 		button.MouseButton1Click:Connect(function()
-			showToast(false, message)
+			local elapsed = Workspace:GetServerTimeNow() - (player:GetAttribute("SessionStart") or Workspace:GetServerTimeNow())
+			local locked, unclaimed = 0, 0
+			for index, reward in Config.GiftRewards do
+				if not claimed[index] then
+					unclaimed += 1
+					if elapsed < reward.time then
+						locked += 1
+					end
+				end
+			end
+			if locked == 0 then
+				-- Satın alınacak (kilitli) ödül yok: hazır olanlar ücretsiz alınır; Robux harcatma
+				showToast(false, if unclaimed > 0 then "Nothing is locked: claim your ready rewards!" else "You already claimed every reward!")
+				return
+			end
+			if productId > 0 then
+				MarketplaceService:PromptProductPurchase(player, productId)
+			else
+				showToast(false, `{title} (R$ {price}) is coming soon!`)
+			end
 		end)
 	end
-	robuxButton("left", Color3.fromRGB(190, 50, 240), "Unlock All", Config.GiftUnlockAllRobux, "Unlocking with Robux is coming soon!")
-	robuxButton("right", Color3.fromRGB(60, 200, 40), "Unlock Next", Config.GiftUnlockNextRobux, "Unlocking with Robux is coming soon!")
+	robuxButton("left", Color3.fromRGB(190, 50, 240), "Unlock All", Config.GiftUnlockAllRobux, Config.GiftUnlockAllProductId)
+	robuxButton("right", Color3.fromRGB(60, 200, 40), "Unlock Next", Config.GiftUnlockNextRobux, Config.GiftUnlockNextProductId)
 
 	-- Her saniye: sayaçları güncelle, alınabilir ödül sayısını bildir
 	local lastClaimable = -1

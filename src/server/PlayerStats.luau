@@ -967,6 +967,90 @@ end
 
 -- Robux ürününün ödülünü verir (product: Config.Shop.Products satırı ya da { kind = "trail"/"aura", id } / { kind = "skip" }).
 -- Dönüş: verildi mi
+-- ---------- Oyun süresi ödülleri: verme (hem süresi dolunca elle alma hem Robux 'Unlock' ürünleri kullanır) ----------
+
+-- Alınan ödüllerin sırası istemciye öznitelik olarak gider ('1,3,4'): Gifts penceresi ve FREE REWARD kutusu sunucunun verdiği ödülleri (Robux ile açılanlar dahil) 'Claimed' gösterir
+local function publishClaimedGifts(player, profile)
+	local list = {}
+	for index in profile.claimedGifts do
+		table.insert(list, index)
+	end
+	table.sort(list)
+	player:SetAttribute("ClaimedGifts", table.concat(list, ","))
+end
+
+-- index. ödülü verir. force = true süre kontrolünü atlar (Robux 'Unlock' ürünleri: oyuncu beklemeyi satın aldı). Dönüş: başarılı mı, mesaj
+local function giveGift(player, profile, index, force)
+	local muscle = getStat(player, Config.StatLegMuscle)
+	local wins = getStat(player, Config.StatWins)
+	if not muscle or not wins then
+		return false, "Loading your data, please wait."
+	end
+	local reward = Config.GiftRewards[index]
+	if type(index) ~= "number" or not reward then
+		return false, "That reward does not exist."
+	end
+	if profile.claimedGifts[index] then
+		return false, "You already claimed this reward."
+	end
+	if not force and workspace:GetServerTimeNow() - profile.sessionStart < reward.time then
+		return false, "This reward is not ready yet."
+	end
+
+	local message
+	if reward.kind == "muscle" then
+		muscle.Value += reward.amount
+		message = `+{reward.amount} Leg Muscle`
+	elseif reward.kind == "wins" then
+		wins.Value += reward.amount
+		message = `+{reward.amount} Wins`
+	elseif reward.kind == "pet" then
+		local pet = Catalog.PetById[reward.pet]
+		if #profile.pets >= petCapacity(profile) then
+			return false, "Your pet inventory is full."
+		end
+		table.insert(profile.pets, pet.id)
+		if #profile.equipped < Config.MaxEquippedPets then
+			table.insert(profile.equipped, pet.id)
+		end
+		message = `New pet: {pet.name}!`
+	elseif POTION_FIELD[reward.kind] then
+		message = giveItem(player, profile, reward.kind, reward.minutes) -- iksir envantere girer
+	else
+		return false, "Unknown reward."
+	end
+
+	profile.claimedGifts[index] = true
+	publishClaimedGifts(player, profile)
+	refresh(player)
+	requestSave(player)
+	return true, message
+end
+
+-- Robux 'Unlock' ürünleri: mode = 'next' (sıradaki KİLİTLİ ödül; hazır ama alınmamış ödüller oyuncuya kalır) ya da 'all' (alınmamış hepsi). Pet envanteri doluysa o pet atlanır (sonra elle alınır).
+-- Hiçbir şey açılamazsa (hepsi alınmış) satın alma boşa gitmesin diye bir aşamanın Win ödülü verilir. Dönüş: açılan ödül sayısı
+local function unlockGifts(player, profile, mode)
+	local elapsed = workspace:GetServerTimeNow() - profile.sessionStart
+	local opened = 0
+	for index, reward in Config.GiftRewards do
+		if not profile.claimedGifts[index] and (mode == "all" or elapsed < reward.time) then
+			if giveGift(player, profile, index, true) then
+				opened += 1
+				if mode == "next" then
+					break
+				end
+			end
+		end
+	end
+	if opened == 0 then
+		local wins = getStat(player, Config.StatWins)
+		if wins then
+			wins.Value += estimatedStageReward(player)
+		end
+	end
+	return opened
+end
+
 local function applyProduct(player, profile, product)
 	local muscle = getStat(player, Config.StatLegMuscle)
 	local wins = getStat(player, Config.StatWins)
@@ -1003,6 +1087,8 @@ local function applyProduct(player, profile, product)
 	elseif product.kind == "moves" then
 		muscle.Value += product.amount * profile.gain
 		syncLevel(player)
+	elseif product.kind == "giftNext" or product.kind == "giftAll" then
+		unlockGifts(player, profile, if product.kind == "giftAll" then "all" else "next")
 	elseif product.kind == "offlineDouble" then
 		-- 'DOUBLE IT!': bekleyen çevrimdışı kazancın 2 katını verir (bekleyen yoksa, örneğin başka yoldan alınmışsa, 4 saatlik kazanç)
 		local pending = profile.offlinePending
@@ -1751,49 +1837,10 @@ end
 -- index. ödülü alır: süresi dolmuş ve bu oturumda alınmamış olmalı. Dönüş: başarılı mı, mesaj
 function PlayerStats.claimGift(player, index)
 	local profile = profiles[player]
-	local muscle = getStat(player, Config.StatLegMuscle)
-	local wins = getStat(player, Config.StatWins)
-	if not profile or not profile.loaded or not muscle or not wins then
+	if not profile or not profile.loaded then
 		return false, "Loading your data, please wait."
 	end
-	local reward = Config.GiftRewards[index]
-	if type(index) ~= "number" or not reward then
-		return false, "That reward does not exist."
-	end
-	if profile.claimedGifts[index] then
-		return false, "You already claimed this reward."
-	end
-	if workspace:GetServerTimeNow() - profile.sessionStart < reward.time then
-		return false, "This reward is not ready yet."
-	end
-
-	local message
-	if reward.kind == "muscle" then
-		muscle.Value += reward.amount
-		message = `+{reward.amount} Leg Muscle`
-	elseif reward.kind == "wins" then
-		wins.Value += reward.amount
-		message = `+{reward.amount} Wins`
-	elseif reward.kind == "pet" then
-		local pet = Catalog.PetById[reward.pet]
-		if #profile.pets >= petCapacity(profile) then
-			return false, "Your pet inventory is full."
-		end
-		table.insert(profile.pets, pet.id)
-		if #profile.equipped < Config.MaxEquippedPets then
-			table.insert(profile.equipped, pet.id)
-		end
-		message = `New pet: {pet.name}!`
-	elseif POTION_FIELD[reward.kind] then
-		message = giveItem(player, profile, reward.kind, reward.minutes) -- iksir envantere girer
-	else
-		return false, "Unknown reward."
-	end
-
-	profile.claimedGifts[index] = true
-	refresh(player)
-	requestSave(player)
-	return true, message
+	return giveGift(player, profile, index, false)
 end
 
 -- TEST ARAÇLARI: sadece DevTools modülü, sahiplik kontrolünden sonra çağırır.

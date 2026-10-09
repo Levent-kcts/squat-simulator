@@ -68,7 +68,7 @@ print("DONE")
 for _, price in prices do
 	local cosmetic = string.sub(price.name, 1, 6) == "Trail " or string.sub(price.name, 1, 5) == "Aura "
 	local floor = if cosmetic then Config.WinValue.Floor else 25 -- iz ve aura'lar Win'in Robux değerine göre (WinValue), erken olanlar en az Floor
-	assert(price.value >= floor or string.find(price.name, "Gift unlock next", 1, true), `{price.name}: {price.value} Robux gereksiz ucuz (en az {floor})`)
+	assert(price.value >= floor, `{price.name}: {price.value} Robux gereksiz ucuz (en az {floor})`)
 end
 local previous = 0
 for _, trail in Config.Trails do
@@ -169,3 +169,24 @@ for _, product in Config.Shop.Products do
 	end
 end
 assert(packs == 2, "iki Win paketi olmalı (Win Pack ve Mega Win Pack): " .. packs)
+
+-- GIFTS ROBUX KİLİT AÇMA ADİL FİYATI (2026-10-10, sahibi 'Unlock All / Unlock Next fiyatlarını adil düzenle' dedi): ödüllerin Shop karşılığından UCUZA alınamasın.
+-- Unlock Next = tek bir (en pahalı) iksir ödülünün Shop fiyatından az olmasın; Unlock All = içindeki iksirlerin Shop toplamından az olmasın ama 10 x Next'ten (toplu alım) ucuz kalsın
+local potionShop = {}
+for _, sku in Config.Shop.Potions do
+	potionShop[sku.id] = sku.robux
+end
+local dearestGift, potionSum = 0, 0
+for _, reward in Config.GiftRewards do
+	if Catalog.PotionByKind[reward.kind] then
+		local value = potionShop[Catalog.potionSkuFor(reward.kind, reward.minutes or Config.BoostMinutes)]
+		assert(value, "Gifts iksirinin Shop fiyatı yok: " .. reward.kind)
+		dearestGift = math.max(dearestGift, value)
+		potionSum += value
+	end
+end
+assert(Config.GiftUnlockNextRobux >= dearestGift, `Unlock Next ({Config.GiftUnlockNextRobux}) en pahalı iksir ödülünün Shop fiyatından ({dearestGift}) ucuz`)
+assert(Config.GiftUnlockAllRobux >= potionSum, `Unlock All ({Config.GiftUnlockAllRobux}) iksir ödüllerinin Shop toplamından ({potionSum}) ucuz`)
+assert(Config.GiftUnlockAllRobux < Config.GiftUnlockNextRobux * #Config.GiftRewards, "Unlock All, 10 kez Unlock Next'ten ucuz olmalı (toplu alım indirimi)")
+assert(Config.GiftUnlockAllRobux > Config.GiftUnlockNextRobux, "Unlock All, Unlock Next'ten pahalı olmalı")
+print("gift unlock prices ok:", Config.GiftUnlockNextRobux, Config.GiftUnlockAllRobux, "potion sum", potionSum)

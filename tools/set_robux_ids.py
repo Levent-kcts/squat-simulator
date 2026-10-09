@@ -2,7 +2,7 @@
 Kullanım (proje klasöründe):
     python tools/set_robux_ids.py --init           robux_ids.txt (boş şablon) ve ROBUX_URUNLERI.md (Creator Hub'da açılacak ürünler tablosu) üretir
     python tools/set_robux_ids.py robux_ids.txt    dosyadaki 'anahtar=ID' satırlarını Config.luau'ya yazar (boş ID'ler atlanır, ID 0 kalır)
-Anahtarlar: shop:<id> (Shop ürünleri), potion:<id> (iksirler), trail:<id>, aura:<id>, skip (Rebirth SKIP), double (Offline DOUBLE IT!), vip (VIP game pass), autoclick (Auto Click game pass),
+Anahtarlar: shop:<id> (Shop ürünleri), potion:<id> (iksirler), trail:<id>, aura:<id>, skip (Rebirth SKIP), double (Offline DOUBLE IT!), giftnext / giftall (Gifts > Unlock Next / Unlock All), vip (VIP game pass), autoclick (Auto Click game pass),
 eggauto / eggmulti (yumurta paneli game pass'leri: Auto Open, Multi Open x3/x10; fiyatları 150'yi geçer, bunlar kuralın istisnasıdır).
 Yazmadan önce: ID'ler sayı olmalı, aynı ID iki yerde kullanılamaz (Purchases.init uyarı verir); VIP game pass ID'si çevrimiçi doğrulanmaya çalışılır (olmazsa uyarı).
 Config.luau'daki fiyatlar (robux = ...) sadece arayüzde GÖSTERİLEN fiyattır; asıl fiyatı Creator Hub'daki ürün belirler: tabloyu aynı fiyatlarla aç.
@@ -66,6 +66,10 @@ def read_products():
     double = int(re.search(r"DoubleRobux = (\d+)", text).group(1))
     items.append(("skip", "Rebirth Skip", "Skip the level requirement and rebirth right now.", skip, "Developer Product"))
     items.append(("double", "Double Offline Earnings", "Doubles the offline earnings waiting for you.", double, "Developer Product"))
+    gift_next = int(re.search(r"GiftUnlockNextRobux = (\d+)", text).group(1))
+    gift_all = int(re.search(r"GiftUnlockAllRobux = (\d+)", text).group(1))
+    items.append(("giftnext", "Unlock Next Gift", "Instantly unlocks and claims the next locked Playtime Reward.", gift_next, "Developer Product"))
+    items.append(("giftall", "Unlock All Gifts", "Instantly unlocks and claims every Playtime Reward you have not claimed yet.", gift_all, "Developer Product"))
     vip = int(re.search(r"VipRobux = (\d+)", text).group(1))
     items.append(("vip", "VIP", "VIP pad: the Win button gives 2x Wins every stage. Permanent.", vip, "Game Pass"))
     auto = int(re.search(r"AutoClick = \{[^}]*Robux = (\d+)", text).group(1))
@@ -163,6 +167,10 @@ def apply_ids(path):
             replace_line(r"[^\n]*SkipProductId = \d+[^\n]*", "SkipProductId", value)
         elif key == "double":
             replace_line(r"[^\n]*DoubleProductId = \d+[^\n]*", "DoubleProductId", value)
+        elif key == "giftnext":
+            replace_line(r"[^\n]*GiftUnlockNextProductId = \d+[^\n]*", "GiftUnlockNextProductId", value)
+        elif key == "giftall":
+            replace_line(r"[^\n]*GiftUnlockAllProductId = \d+[^\n]*", "GiftUnlockAllProductId", value)
         elif key == "vip":
             replace_line(r"[^\n]*VipGamePassId = \d+[^\n]*", "VipGamePassId", value)
         elif key == "autoclick":

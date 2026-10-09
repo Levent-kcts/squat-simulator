@@ -14,6 +14,15 @@ local player = Players.LocalPlayer
 -- [ödül sırası] = true: bu oturumda alınanlar (GiftsPanel de bu tabloyu doğrudan kullanır)
 GiftState.claimed = {}
 
+-- Sunucu alınan ödüllerin sırasını 'ClaimedGifts' özniteliğiyle ('1,3,4') bildirir: Robux 'Unlock' ürünleriyle sunucunun verdiği ödüller de 'Claimed' görünsün
+local function syncClaimed()
+	for index in string.gmatch(player:GetAttribute("ClaimedGifts") or "", "%d+") do
+		GiftState.claimed[tonumber(index)] = true
+	end
+end
+player:GetAttributeChangedSignal("ClaimedGifts"):Connect(syncClaimed)
+syncClaimed()
+
 -- Oyuna girişten bu yana geçen süre (sunucu saatiyle; SessionStart veri yüklenince gelir)
 function GiftState.elapsed()
 	local start = player:GetAttribute("SessionStart")
