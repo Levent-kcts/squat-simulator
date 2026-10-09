@@ -35,7 +35,7 @@ local function makeText(parent, props, strokeThickness)
 	return label
 end
 
--- Ödül türüne göre kart rengi, simgesi (emoji yedeği), yazısı ve görseli (Config.Icons yüklüyse; yoksa '')
+-- Ödül türüne göre kart rengi, simgesi (emoji yedeği), yazısı ve görseli (Config.Icons yüklüyse; yoksa ''). Pet ödülünde 5. değer petin kendisidir: kartta genel pati simgesi yerine PETİN RESMİ çizilir (sahibi 'bunlar yerine pet resmi olsun' dedi)
 local function describe(reward)
 	if reward.kind == "muscle" then
 		return Color3.fromRGB(240, 50, 140), "🦵", `+{Format.compact(reward.amount)} Muscle`, Catalog.iconImage("LegMuscle")
@@ -43,7 +43,7 @@ local function describe(reward)
 		return Color3.fromRGB(250, 190, 40), "🏆", `+{Format.number(reward.amount)} Wins`, Catalog.iconImage("Wins")
 	elseif reward.kind == "pet" then
 		local pet = Catalog.PetById[reward.pet]
-		return Color3.fromRGB(170, 60, 230), "🐾", `{pet.name} Pet`, Catalog.iconImage("Pet")
+		return Color3.fromRGB(170, 60, 230), "🐾", `{pet.name} Pet`, Catalog.iconImage("Pet"), pet
 	end
 	local potion = Catalog.PotionByKind[reward.kind]
 	if potion then
@@ -119,13 +119,21 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 
 	local cells = {} -- [index] = { statusButton, statusLabel }
 	for index, reward in Config.GiftRewards do
-		local color, icon, text, image = describe(reward)
+		local color, icon, text, image, rewardPet = describe(reward)
 
 		local cell = create("Frame", { LayoutOrder = index, BackgroundTransparency = 1 }, area)
 		local card = create("Frame", { Size = UDim2.new(1, 0, 0, 108), BackgroundColor3 = color }, cell)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 		UIStyle.soften(card, { radius = 12, strength = 0.28 })
-		if image ~= "" then
+		if rewardPet then
+			-- Pet ödülü: petin kendi resmi (Blender modeli varsa 3B, yoksa sevimli yüz; UIStyle.safePetIcon)
+			UIStyle.safePetIcon(card, rewardPet, {
+				Name = "RewardPet",
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0, 38),
+				Size = UDim2.fromOffset(66, 66),
+			})
+		elseif image ~= "" then
 			create("ImageLabel", {
 				Name = "RewardIcon",
 				Position = UDim2.fromScale(0.15, 0.04),
