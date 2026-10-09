@@ -32,9 +32,9 @@ end
 assert(count("Pilaster_") >= 4, "sütun adları en az 4 farklı duvar için kurulmalı")
 
 local detail = Config.Lobby.Detail
--- Sütunlar rafların durduğu yerde olmamalı: sağ duvar sütunları antrenman alanının (z -55..31) dışında, arka duvar sütunları yumurta standının (|x| <= 26.75) dışında
+-- Sütunlar rafların durduğu yerde olmamalı: sağ duvar sütunları antrenman alanının (z -63..29) dışında, arka duvar sütunları yumurta standının (|x| <= 26.75) dışında
 for _, z in detail.RightPilasters do
-	assert(z < -58 or z > 33, "sağ duvar sütunu antrenman alanına denk geliyor: z = " .. z)
+	assert(z > 31, "sağ duvar sütunu antrenman alanına denk geliyor: z = " .. z)
 end
 for _, x in detail.BackPilasters do
 	assert(math.abs(x) > 30, "arka duvar sütunu yumurta standına denk geliyor: x = " .. x)

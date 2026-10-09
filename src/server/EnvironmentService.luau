@@ -216,9 +216,13 @@ function EnvironmentService.init()
 	for side = -1, 1, 2 do
 		local colorShift = if side < 0 then 0 else 3
 		tower(side * 23.5, -58, 4, colorShift + 1, 0.4 * side)
-		tower(side * 33, -59, 2, colorShift + 3, -0.3 * side)
-		-- yerdeki tek parça
-		brick(side * 29, floorTop, -51.5, 4, 3, 4, BRICK_COLORS[(colorShift + 4) % #BRICK_COLORS + 1], 0.45 * side)
+		-- Sağ taraftaki ikinci kule ve yerdeki tuğla KALDIRILDI (sahibi 'şurdaki legoları kaldır/azalt' dedi): antrenman alanı artık giriş duvarına dayanıyor (x >= 31.5, z >= -63), bu parçalar rampanın içine/önüne giriyordu.
+		-- Soldaki raf tarafında (ayakkabı rafı x <= -38) kalırlar.
+		if side < 0 then
+			tower(side * 33, -59, 2, colorShift + 3, -0.3 * side)
+			-- yerdeki tek parça
+			brick(side * 29, floorTop, -51.5, 4, 3, 4, BRICK_COLORS[(colorShift + 4) % #BRICK_COLORS + 1], 0.45 * side)
+		end
 	end
 
 	-- SAĞ ARKA KÖŞE (x > 56, z 36-64) ve çarkın arkası: çarkın eski yeri. Çark yumurta standının yanına taşındı (sahibi 'uzak kısma legolar falan olsun' dedi): köşe lego kuleleri ve tek parçalarla dolar.

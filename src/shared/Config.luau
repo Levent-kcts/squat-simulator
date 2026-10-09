@@ -336,7 +336,9 @@ return {
 		WheelZ = 45,
 		WheelFaceX = 0,
 		WheelFaceZ = 0,
-		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı (merkez z): koridor tarafına doğru kaydırıldı; alan z = -55 ile 31 arasını kaplar, duvarın arka ucu (z > 31, çarkın yanı) yeni şeyler için boş
+		-- SAĞ duvardaki antrenman alanı (merkez z). 2026-10-09: sahibi 'merdivenleri biraz büyütüp en sola yanaştır, soldaki duvara kadar daya' dedi: uç rampaları 6 -> 9 stud (TrainingArea.LAYOUT.rampWidth) ve alan giriş duvarına (z -63) DAYANDI:
+		-- şeritler z = -54 ile 20 arası (merkez -17 +- rowLength/2 + 6), rampalarla alan z -63 ile 29 arasını kaplar; ön rampa duvara değer, arka uç (z > 29, çarkın yanı) yeni şeyler için boş. Merkezi ya da rampa genişliğini değiştirirsen ön ucu -63'te tut: -63 = merkez - 37 - rampa genişliği.
+		TrainingShelfZ = -17,
 		-- Lobi süsleri (server/LobbyDetail; sahibi başka bir oyunun lobisini gösterip 'harita düzenine benzet' dedi, duvar + tavan + zemin): sadece görünüm, oyun mantığı yok. Kapatmak için Enabled = false.
 		Detail = {
 			Enabled = true,
@@ -347,7 +349,7 @@ return {
 			PilasterWidth = 3, -- studlu sütunların genişliği ve duvardan çıkıntısı
 			PilasterDepth = 1.4,
 			BackPilasters = { -33, 34 }, -- arka duvardaki ara sütunların x konumları (yumurta standı +-26.75'te biter; sağ arka köşe ayrıca eklenir)
-			RightPilasters = { -61.5, 36, 58 }, -- sağ duvardaki sütunların z konumları (antrenman alanı z = -55 ile 31 arasında, orada sütun yok)
+			RightPilasters = { 36, 58 }, -- sağ duvardaki sütunların z konumları (antrenman alanı z = -63 ile 29 arasında, orada sütun yok; ön köşe sütunu alan duvara dayandığı için kalktı)
 			BeamHeight = 2.2, -- tavandaki çevre kirişinin aşağı sarkma miktarı
 			BeamWidth = 5,
 			InnerBeamHeight = 1.4, -- ışık panelleri arasındaki kirişler
