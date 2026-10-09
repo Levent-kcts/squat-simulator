@@ -2,7 +2,7 @@
 # Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. VIP: Para Kazanma > Geçişler (Game Pass).
 shop:petSpace25=3717466379
 shop:power1k=3717466555
-shop:power10k=
+shop:power10k=3717467017
 shop:power100k=
 shop:winsSmall=
 shop:winsBig=
