@@ -50,9 +50,11 @@ def module_names(folder, skip):
     return sorted(names)
 
 
+CLIENT_TESTS = ("ctest.luau", "clienttest.luau", "loadingtest.luau")  # istemci taklidiyle (c klasöründe) koşan testler
 SHARED = module_names("shared", "")
 SERVER = module_names("server", "init.server.luau")  # init.server 'serverMain' olarak ayrıca kurulur
 CLIENT = module_names("client", "init.client.luau")  # init.client 'clientMain' olarak ayrıca kurulur
+LOADING = module_names("loading", "Loading.client.luau")  # ReplicatedFirst yükleme ekranı modülü (istemci taklidiyle)
 
 # init.client: 'script:FindFirstChild(isim)' ve 'require(modül örneği)' kalıpları için küçük bir kabuk
 CLIENT_SHIM = (
@@ -95,6 +97,7 @@ def build(target):
         ("server", SERVER, SERVER_PRELUDE, ""),
         ("shared", SHARED, CLIENT_PRELUDE, "c"),
         ("client", CLIENT, CLIENT_PRELUDE, "c"),
+        ("loading", LOADING, CLIENT_PRELUDE, "c"),
     ):
         for name in names:
             write(os.path.join(target, subdir, name + ".luau"), prelude + convert(read("src", folder, name + ".luau")))
@@ -103,7 +106,7 @@ def build(target):
     write(os.path.join(target, "c", "clientMain.luau"), CLIENT_PRELUDE + CLIENT_SHIM + convert(read("src", "client", "init.client.luau")) + "\nreturn true\n")
     tests = os.path.join(MOCK, "tests")
     for name in os.listdir(tests):
-        destination = os.path.join(target, "c" if name in ("ctest.luau", "clienttest.luau") else "", name)
+        destination = os.path.join(target, "c" if name in CLIENT_TESTS else "", name)
         shutil.copy(os.path.join(tests, name), destination)
 
 
@@ -117,7 +120,7 @@ def main():
     try:
         build(target)
         for name in sorted(os.listdir(os.path.join(MOCK, "tests"))):
-            cwd = os.path.join(target, "c") if name in ("ctest.luau", "clienttest.luau") else target
+            cwd = os.path.join(target, "c") if name in CLIENT_TESTS else target
             result = subprocess.run([LUAU, name], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=cwd, timeout=120)
             # UIStyle.soften UDim değerlerini taklitte tanıyamaz (typeof): bu bilinen taklit boşluğu, oyunda UIStyle zaten hata verirse düz kalır
             lines = (result.stdout + result.stderr).splitlines()

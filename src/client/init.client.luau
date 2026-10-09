@@ -1104,3 +1104,6 @@ end)
 
 -- Çevrimdışı kazanç penceresi (girişte bekleyen kazanç varsa CLAIM ile alınır; korumalı yüklenir)
 safeInit("OfflinePanel", loadOptional("OfflinePanel"), screenGui, showToast)
+
+-- Arayüz kuruldu: yükleme ekranı (ReplicatedFirst/Loading) bu işareti bekleyip kapanır
+player:SetAttribute("ClientReady", true)

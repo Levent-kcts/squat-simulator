@@ -307,3 +307,6 @@ end
 Players.PlayerRemoving:Connect(function(player)
 	busyUntil[player] = nil
 end)
+
+-- Dünya kuruldu: istemcideki yükleme ekranı (ReplicatedFirst/Loading) bu işareti bekleyip kapanır
+Workspace:SetAttribute("WorldReady", true)
