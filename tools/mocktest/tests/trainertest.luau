@@ -46,3 +46,31 @@ local plain = Mannequin.build(folder, "Skin", S.CFrame.new(), S.Vector3.new(0, 0
 assert(plain and not plain:FindFirstChild("Coach"), "kıyafetsiz manken Blender koçu olmamalı")
 print("coach models ok:", withFx, withoutFx)
 print("DONE")
+
+-- Coach Shadow'a EK EFEKT (sahibi 'birazcık daha efekt ekle' dedi): mor kıvılcım + koyu sis parçacıkları ve mor ışık, diğer koçlarda bu ekler YOK. Hem Blender koçunda (yukarıda kuruldu) hem kod mankeninde
+local function countEmitters(model)
+	local emitters, lights = 0, 0
+	local function walk(instance)
+		for _, child in instance:GetChildren() do
+			if rawget(child, "ClassName") == "ParticleEmitter" then
+				emitters += 1
+			elseif rawget(child, "ClassName") == "PointLight" then
+				lights += 1
+			end
+			walk(child)
+		end
+	end
+	walk(model)
+	return emitters, lights
+end
+for _, area in Config.Training.Areas do
+	local blender = Mannequin.build(folder, "ExtraCheck_" .. area.id, S.CFrame.new(), S.Vector3.new(0, 0, 0), 2.1, area.color, nil, area.outfit)
+	local emitters, lights = countEmitters(blender)
+	if area.outfit == "shadow" then
+		assert(emitters >= 3 and lights == 1, `Shadow'da ana + 2 ek parçacık ve 1 ışık olmalı: {emitters} parçacık, {lights} ışık`)
+		assert(blender:FindFirstChild("ShadowSparks") and blender:FindFirstChild("ShadowFog") and blender:FindFirstChild("ShadowGlow"), "Shadow ek ev sahipleri")
+	else
+		assert(lights == 0 and not blender:FindFirstChild("ShadowSparks"), "diğer koçlarda Shadow ekleri olmamalı: " .. area.id)
+	end
+end
+print("shadow extra fx ok")

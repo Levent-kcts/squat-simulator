@@ -53,6 +53,38 @@ local FX = {
 	shadow = { from = Color3.fromRGB(60, 40, 90), to = Color3.fromRGB(20, 15, 30), texture = SMOKE, size = 1.4, rate = 7, speed = 0.8, rise = 1.5, spread = 40, life = 1.4, light = 0, hostAt = Vector3.new(0, 5.2, -0.5) },
 }
 
+-- EK EFEKTLER (sahibi 'Shadow'a birazcık daha efekt ekle' dedi): ana parçacığın yanında ek parçacık kümeleri ve ışık. at: taban merkezine göre yer (birimler ölçeksiz, hostAt gibi).
+-- Shadow: vücuttan yükselen parlayan mor kıvılcımlar, zeminde yayılan koyu sis ve etrafına hafif mor ışık. Hem Blender koçunda hem kod mankeninde aynı kurulur.
+local EXTRA_FX = {
+	shadow = {
+		{ name = "ShadowSparks", at = Vector3.new(0, 2.6, 0), fx = { from = Color3.fromRGB(215, 120, 255), to = Color3.fromRGB(90, 30, 170), size = 0.42, rate = 13, speed = 1.2, rise = 4.5, spread = 55, life = 1.3, light = 1 } },
+		{ name = "ShadowFog", at = Vector3.new(0, 0.5, 0), fx = { from = Color3.fromRGB(45, 25, 80), to = Color3.fromRGB(12, 8, 22), texture = SMOKE, size = 2.6, rate = 5, speed = 0.9, spread = 180, life = 2.2, light = 0 } },
+		{ name = "ShadowGlow", at = Vector3.new(0, 3.2, 0), light = { color = Color3.fromRGB(170, 80, 255), brightness = 1.4, range = 11 } },
+	},
+}
+
+-- outfit'in ek efektlerini kurar. makeHost(ad, konum): görünmez bir ev sahibi parça döndürür (konum taban merkezine göre, ölçeksiz); scale: koçun boyutu (büyük koçta parçacık ve ışık da büyür)
+local function addExtraFx(outfit, makeHost, scale)
+	for _, extra in EXTRA_FX[outfit] or {} do
+		local host = makeHost(extra.name, extra.at)
+		if extra.fx then
+			local fx = table.clone(extra.fx)
+			fx.size = (fx.size or 0.6) * scale
+			fx.speed = (fx.speed or 1) * scale
+			fx.rise = (fx.rise or 0) * scale
+			emitter(host, fx)
+		end
+		if extra.light then
+			local glow = Instance.new("PointLight")
+			glow.Color = extra.light.color
+			glow.Brightness = extra.light.brightness
+			glow.Range = extra.light.range * scale
+			glow.Shadows = false
+			glow.Parent = host
+		end
+	end
+end
+
 -- Kafayı saran renkli bant
 local function band(part, color)
 	return part("Headband", Vector3.new(0.22, 1.4, 1.4), Vector3.new(0, 4.95, 0), color, CYLINDER, nil, SIDEWAYS)
@@ -172,6 +204,19 @@ function Mannequin.build(parent, name, frame, center, scale, skin, shorts, outfi
 			host.Parent = model
 			emitter(host, fx)
 		end
+		addExtraFx(outfit, function(hostName, at)
+			local extraHost = Instance.new("Part")
+			extraHost.Name = hostName
+			extraHost.Anchored = true
+			extraHost.CanCollide = false
+			extraHost.CanQuery = false
+			extraHost.CanTouch = false
+			extraHost.Size = Vector3.new(0.3, 0.3, 0.3) * scale
+			extraHost.CFrame = frame * CFrame.new(center + at * scale)
+			extraHost.Transparency = 1
+			extraHost.Parent = model
+			return extraHost
+		end, scale)
 		model.Parent = parent
 		return model
 	end
@@ -208,6 +253,11 @@ function Mannequin.build(parent, name, frame, center, scale, skin, shorts, outfi
 
 	if outfit and OUTFITS[outfit] then
 		OUTFITS[outfit](part, skin)
+		addExtraFx(outfit, function(hostName, at)
+			local extraHost = part(hostName, Vector3.new(0.3, 0.3, 0.3), at, Color3.new(0, 0, 0), BALL)
+			extraHost.Transparency = 1
+			return extraHost
+		end, scale)
 	end
 
 	model.Parent = parent

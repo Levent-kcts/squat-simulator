@@ -10,6 +10,7 @@ local Config = require(Shared:WaitForChild("Config"))
 local PlayerStats = require(script.Parent.PlayerStats)
 local Shelf = require(script.Parent.Shelf)
 local Mannequin = require(script.Parent.Mannequin)
+local AreaPasses = require(script.Parent.AreaPasses)
 
 local TrainingArea = {}
 
@@ -28,11 +29,14 @@ local LAYOUT = {
 	frameColor = Color3.fromRGB(25, 25, 32),
 }
 local CHECK_INTERVAL = 0.2 -- oyuncunun hangi pedde durduğu bu aralıkla kontrol edilir (saniye)
+local PROMPT_DELAY = 0.8 -- kilitli Robux'lu pedde bu kadar durulunca satın alma penceresi açılır (pedin üstünden yürüyüp geçen rahatsız edilmesin)
 local EXIT_GRACE = 1.2 -- pedden kısa süre çıkmış görünmek (level atlayınca karakter büyür, kök parça bir an kayar) otomatik squat'ı kesmez: bu kadar süre beklenir
 
 local active = {} -- [oyuncu] = alan: içinde durduğu ve AÇIK olan alan (otomatik squat)
 local standing = {} -- [oyuncu] = alan: içinde durduğu alan (kilitli de olabilir)
 local lastUsable = {} -- [oyuncu] = pedde son kez açık alan olarak görüldüğü an (os.clock)
+local standingSince = {} -- [oyuncu] = şu anki pede girdiği an (os.clock)
+local prompted = {} -- [oyuncu] = bu pedde kalışı sırasında satın alma penceresi açıldı mı
 
 -- Oyuncunun şu an antrenman yaptığı alan (yoksa nil). Tıklama işleyicisi çarpanı buradan alır.
 function TrainingArea.getArea(player)
@@ -82,6 +86,8 @@ function TrainingArea.init(notifyEvent)
 		active[player] = nil
 		standing[player] = nil
 		lastUsable[player] = nil
+		standingSince[player] = nil
+		prompted[player] = nil
 	end)
 
 	task.spawn(function()
@@ -99,9 +105,23 @@ function TrainingArea.init(notifyEvent)
 				-- Yeni bir pede girildi: kilitliyse satın alma denenir ya da neden kilitli olduğu söylenir
 				if area ~= standing[player] then
 					standing[player] = area
+					standingSince[player] = os.clock()
+					prompted[player] = false
 					if area and not PlayerStats.isAreaUnlocked(player, area) then
-						notifyEvent:FireClient(player, false, `{area.trainer} unlocks at {area.rebirths} Rebirths.`)
+						if area.robuxOnly then
+							notifyEvent:FireClient(player, false, `{area.trainer} is Robux only: R$ {area.robux}.`)
+						elseif area.robux then
+							notifyEvent:FireClient(player, false, `{area.trainer} unlocks at {area.rebirths} Rebirths or with Robux (R$ {area.robux}).`)
+						else
+							notifyEvent:FireClient(player, false, `{area.trainer} unlocks at {area.rebirths} Rebirths.`)
+						end
 					end
+				end
+
+				-- Kilitli Robux'lu pedde (Prism, Shadow) durulursa satın alma penceresi açılır
+				if area and area.robux and not prompted[player] and os.clock() - (standingSince[player] or 0) >= PROMPT_DELAY and not PlayerStats.isAreaUnlocked(player, area) then
+					prompted[player] = true
+					AreaPasses.prompt(player, area)
 				end
 
 				local usable = nil

@@ -75,7 +75,7 @@ for m in re.finditer(r'\{ id = "(\w+)", name = "[^"]+", price = (\d+),.*?pets = 
     EGGS.append((float(m.group(2)), pets))
 
 TRAINING = block("Training")
-ZONES = [(num(l, "rebirths", 0), num(l, "mult")) for l in TRAINING.splitlines() if "mult =" in l and "id =" in l]
+ZONES = [(num(l, "rebirths", 0), num(l, "mult")) for l in TRAINING.splitlines() if "mult =" in l and "id =" in l and "robuxOnly" not in l]  # robuxOnly (Coach Shadow) pedi rebirth ile açılmaz: simülasyona girmez
 
 WALL = block("Wall")
 GROUP_HEALTH = [float(x) for x in re.search(r"GroupHealth = \{([^}]*)\}", WALL).group(1).split(",") if x.strip()]

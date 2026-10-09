@@ -9,6 +9,7 @@ local PlayerStats = require(script.Parent.PlayerStats)
 local WallService = require(script.Parent.WallService)
 local AutoClickPass = require(script.Parent.AutoClickPass)
 local EggPasses = require(script.Parent.EggPasses)
+local AreaPasses = require(script.Parent.AreaPasses)
 
 local DevTools = {}
 
@@ -51,13 +52,20 @@ function DevTools.init(notifyEvent)
 			player:SetAttribute("DevPassLock", if locked then true else nil)
 			AutoClickPass.recheck(player)
 			EggPasses.recheck(player)
-			ok, message = true, if locked then "Passes LOCKED (test): VIP, Auto Click and egg upgrades act as not owned" else "Passes back to normal"
+			AreaPasses.recheck(player)
+			ok, message = true, if locked then "Passes LOCKED (test): VIP, Auto Click, egg upgrades and coach pads act as not owned" else "Passes back to normal"
 		elseif command == "ToggleEggPasses" then
 			-- Yumurta game pass'leri (Auto, x3, x10) henüz satışa açık değilken de çoklu/otomatik açmayı denemek için üçünü birden açar/kapatır
 			local on = player:GetAttribute("DevEggPasses") ~= true
 			player:SetAttribute("DevEggPasses", if on then true else nil)
 			EggPasses.recheck(player)
 			ok, message = true, if on then "Egg upgrades UNLOCKED (test): Auto, x3 and x10 work" else "Egg upgrades back to normal"
+		elseif command == "ToggleAreaPasses" then
+			-- Robux'lu antrenman pedlerini (Coach Prism, Coach Shadow) pass'leri satışa açılmadan denemek için ikisini birden açar/kapatır
+			local on = player:GetAttribute("DevAreaPasses") ~= true
+			player:SetAttribute("DevAreaPasses", if on then true else nil)
+			AreaPasses.recheck(player)
+			ok, message = true, if on then "Coach pads UNLOCKED (test): Prism and Shadow work" else "Coach pads back to normal"
 		else
 			ok, message = PlayerStats.dev(player, command, amount)
 			-- Rebirth ve sıfırlama duvarları da baştan kurmalı

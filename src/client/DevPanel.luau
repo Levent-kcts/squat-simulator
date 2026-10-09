@@ -33,6 +33,7 @@ local BUTTONS = {
 	{ "Rainbow Potion", "PotionRainbow" },
 	{ "Passes Lock (test)", "TogglePassLock" },
 	{ "Egg Upgrades (test)", "ToggleEggPasses" },
+	{ "Coach Pads (test)", "ToggleAreaPasses" },
 	{ "Break Stage", "BreakStage" },
 	{ "TP to Walls", "TeleportToWalls" },
 	{ "Gifts +10 min", "GiftTime", 10 },

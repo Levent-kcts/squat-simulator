@@ -18,6 +18,7 @@ local DevTools = require(script.DevTools)
 local AppearanceCleaner = require(script.AppearanceCleaner)
 local AutoClickPass = require(script.AutoClickPass)
 local EggPasses = require(script.EggPasses)
+local AreaPasses = require(script.AreaPasses)
 
 -- Oyuncuya kısa mesaj (satın alma sonucu vb.) göstermek için
 local notifyEvent = Instance.new("RemoteEvent")
@@ -138,6 +139,7 @@ DevTools.init(notifyEvent)
 AppearanceCleaner.init()
 AutoClickPass.init(notifyEvent)
 EggPasses.init(notifyEvent)
+AreaPasses.init(notifyEvent)
 
 -- İstemci her tıklamada bu olayı tetikler. Tüm hesaplamalar sunucuda yapılır.
 local clickEvent = Instance.new("RemoteEvent")

@@ -411,8 +411,15 @@ local function pickEquipped(owned, current, byId, field)
 	return best
 end
 
--- Antrenman alanı bu oyuncu için açık mı? Sadece rebirth sayısına bağlı (rebirths = N: N rebirth'te açılır, 0: ücretsiz)
-local function areaUnlocked(area, rebirths)
+-- Antrenman alanı bu oyuncu için açık mı? rebirths = N: N rebirth'te açılır (0: ücretsiz); robux'lu pedler (Prism, Shadow) game pass'e sahip oyuncuda da açıktır
+-- (server/AreaPasses 'HasArea_<id>' özniteliğini koyar); robuxOnly (Shadow) pedin rebirth yolu YOKTUR, sadece pass
+local function areaUnlocked(player, area, rebirths)
+	if area.robux and player:GetAttribute(`HasArea_{area.id}`) == true then
+		return true
+	end
+	if area.robuxOnly then
+		return false
+	end
 	return rebirths >= (area.rebirths or 0)
 end
 
@@ -493,7 +500,7 @@ local function refresh(player)
 	player:SetAttribute("EquippedShoe", profile.equippedShoe)
 	local unlockedAreas = {}
 	for _, area in Config.Training.Areas do
-		if areaUnlocked(area, rebirths) then
+		if areaUnlocked(player, area, rebirths) then
 			table.insert(unlockedAreas, area.id)
 		end
 	end
@@ -916,7 +923,15 @@ function PlayerStats.isAreaUnlocked(player, area)
 	if not profile or not profile.loaded or not rebirths then
 		return false
 	end
-	return areaUnlocked(area, rebirths.Value)
+	return areaUnlocked(player, area, rebirths.Value)
+end
+
+-- Bir ped game pass'i satın alınınca / DEV anahtarı değişince: açık pedler listesini ('UnlockedAreas') yeniden yayınlar (veri yüklenmediyse bir şey yapmaz; yüklenince zaten hesaplanır)
+function PlayerStats.refreshAreas(player)
+	local profile = profiles[player]
+	if profile and profile.loaded then
+		refresh(player)
+	end
 end
 
 -- Level toplam bacak kasından hesaplanır; bu fonksiyon yeni kasa göre leveli günceller. Dönüş: level atladı mı, level

@@ -14,6 +14,7 @@ local TrainingClient = {}
 local GREEN = Color3.fromRGB(60, 255, 100)
 local YELLOW = Color3.fromRGB(255, 235, 40)
 local PINK = Color3.fromRGB(255, 110, 150)
+local ROBUX = Color3.fromRGB(110, 255, 190) -- Robux fiyatı yazısı (pedin üstünde)
 local LOCKED_DARKNESS = 0.6 -- kilitli ped bu oranda karartılır
 
 -- Başlık rengi: koyu pedlerde (Black Zone) siyah kenarlıkla bile okunsun diye beyaza doğru açılır
@@ -89,8 +90,14 @@ function TrainingClient.init()
 				entry.info.Text = "Training..."
 				entry.info.TextColor3 = YELLOW
 			elseif unlocked then
-				entry.info.Text = if (area.rebirths or 0) == 0 then "FREE" else "Unlocked"
+				entry.info.Text = if not area.robux and (area.rebirths or 0) == 0 then "FREE" else "Unlocked"
 				entry.info.TextColor3 = GREEN
+			elseif area.robuxOnly then
+				entry.info.Text = `ONLY R$ {area.robux}` -- sadece Robux ile (Shadow); üstüne basınca satın alma penceresi açılır
+				entry.info.TextColor3 = ROBUX
+			elseif area.robux then
+				entry.info.Text = `Rebirth {area.rebirths} or R$ {area.robux}` -- rebirth ile ya da Robux ile (Prism)
+				entry.info.TextColor3 = ROBUX
 			else
 				entry.info.Text = `Rebirth {area.rebirths}`
 				entry.info.TextColor3 = PINK

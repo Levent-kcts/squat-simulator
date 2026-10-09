@@ -548,6 +548,11 @@ return {
 		RowDepths = { 18.5, 21.5, 24.5 }, -- şerit derinliği (stud): ped + 3.5
 		RowLength = 68, -- her şeridin ped dizisinin uzunluğu
 		TrainerScales = { 1.4, 1.75, 2.1 }, -- antrenör boyutu (1 = ~5.3 stud boy); etiketler (client/TrainingClient) buna göre büyür
+		-- ROBUX'LU PEDLER (2026-10-10; sahibi 'Shadow sadece Robux ile kullanılsın, Prism rebirth ile ya da Robux ile, fiyatı üzerinde yazsın, markete ekleme, üstüne basınca satın alma ekranı çıksın' dedi):
+		-- robux = pedin game pass fiyatı (GÖSTERİLEN; asıl fiyatı Creator Hub'daki pass belirler), gamePassId = pass kimliği (0 iken satışta değil: 'coming soon'), robuxOnly = true ise pedin rebirth ile açılması YOK (sadece pass).
+		-- robux olan pedde rebirth yolu da varsa (Prism) ikisinden biri yeter. Pass kalıcıdır (server/AreaPasses). Shop'ta kartı YOK: pedin üstünde durunca satın alma penceresi açılır.
+		-- FİYAT (tools/padsim.py mantığı): pedi en baştan açmak oyunun sonunu 10.2 saatten Prism ile 2.7, Shadow ile 1.6 saate indirir; kazanılan süre x 0.45-0.6 R$/dk (Win'in Robux değeri gibi)
+		-- Prism ~200-270, Shadow ~235-310 eder; Prism rebirth ile de açılabildiği için daha ucuz: 199 ve 299. Bu iki pass '150 Robux'u geçmesin' kuralının (egg pass'leri gibi) İSTİSNASIDIR (pricetest 150 < fiyat <= 400 denetler).
 		Areas = {
 			{ id = "green", name = "Green Zone", trainer = "Coach Sprout", outfit = "leaf", mult = 1, rebirths = 0, color = Color3.fromRGB(60, 220, 90) },
 			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 1.5, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
@@ -557,8 +562,8 @@ return {
 			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", outfit = "frost", mult = 18, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
 			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", outfit = "volt", mult = 36, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
 			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", outfit = "nova", mult = 100, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
-			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, color = Color3.fromRGB(255, 255, 255), rainbow = true },
-			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, rebirths = 45, color = Color3.fromRGB(35, 35, 48) },
+			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, robux = 199, gamePassId = 0, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, robuxOnly = true, robux = 299, gamePassId = 0, color = Color3.fromRGB(35, 35, 48) },
 		},
 	},
 

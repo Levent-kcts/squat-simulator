@@ -190,3 +190,19 @@ assert(Config.GiftUnlockAllRobux >= potionSum, `Unlock All ({Config.GiftUnlockAl
 assert(Config.GiftUnlockAllRobux < Config.GiftUnlockNextRobux * #Config.GiftRewards, "Unlock All, 10 kez Unlock Next'ten ucuz olmalı (toplu alım indirimi)")
 assert(Config.GiftUnlockAllRobux > Config.GiftUnlockNextRobux, "Unlock All, Unlock Next'ten pahalı olmalı")
 print("gift unlock prices ok:", Config.GiftUnlockNextRobux, Config.GiftUnlockAllRobux, "potion sum", potionSum)
+
+-- ROBUX'LU ANTRENMAN PEDLERİ (2026-10-10, sahibi 'Shadow sadece Robux, Prism rebirth ya da Robux, fiyat adil olsun' dedi): game pass'ler; '150 Robux'u geçmesin' kuralının (yumurta pass'leri gibi) İSTİSNASI, çünkü pedi en baştan açmak oyunun sonunu
+-- 10.2 saatten Prism ile ~2.7, Shadow ile ~1.6 saate indirir (tools/padsim.py); fiyat = kazanılan süre x 0.45-0.6 R$/dk. Prism rebirth ile de açıldığı için Shadow'dan ucuz, ikisi de makul bir üst sınırın altında.
+local prismArea, shadowArea
+for _, area in Config.Training.Areas do
+	if area.id == "rainbow" then
+		prismArea = area
+	elseif area.id == "black" then
+		shadowArea = area
+	end
+end
+assert(prismArea.robux > MAX_ROBUX and prismArea.robux <= 400, "Coach Prism: fiyat 150 ile 400 arasında olmalı: " .. prismArea.robux)
+assert(shadowArea.robux > MAX_ROBUX and shadowArea.robux <= 400, "Coach Shadow: fiyat 150 ile 400 arasında olmalı: " .. shadowArea.robux)
+assert(shadowArea.robux > prismArea.robux, "Shadow (en güçlü, sadece Robux) Prism'den (rebirth ile de açılır) pahalı olmalı")
+assert(shadowArea.mult > prismArea.mult, "Shadow çarpanı Prism'den büyük olmalı")
+print("coach pad prices ok:", prismArea.robux, shadowArea.robux)
