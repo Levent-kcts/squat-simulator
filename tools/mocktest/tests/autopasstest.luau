@@ -15,8 +15,12 @@ local players = {
 		return {}
 	end,
 }
+local state = { fail = false } -- true: UserOwnsGamePassAsync hata verir (servis kesintisi taklidi)
 local market = {
 	UserOwnsGamePassAsync = function(_, userId, passId)
+		if state.fail then
+			error("HTTP 500")
+		end
 		return owners[userId] == passId
 	end,
 	PromptGamePassPurchaseFinished = {
@@ -87,6 +91,14 @@ assert(buyer:GetAttribute("HasAutoClick") == false, "iptal edilen satın alma a�
 purchaseHandlers[1](buyer, 777, true)
 assert(buyer:GetAttribute("HasAutoClick") == true, "satın alınca anında açılmalı")
 assert(#messages == 1 and string.find(messages[1], "Auto Click unlocked", 1, true), "satın alınca mesaj gitmeli")
+-- 3b) Sorgu başarısız olduysa (servis hatası) sahip oyuncu kilitli kalmamalı: prompt iptal/'zaten sahipsin' ile kapanınca sahiplik yeniden sorulur
+owners[12] = 777
+state.fail = true
+local flaky = join(12)
+assert(flaky:GetAttribute("HasAutoClick") == false, "sorgu başarısızken kilitli görünür")
+state.fail = false
+purchaseHandlers[#purchaseHandlers](flaky, 777, false)
+assert(flaky:GetAttribute("HasAutoClick") == true, "pass kapanınca sahiplik yeniden sorulmalı (zaten sahip oyuncu açılır)")
 -- 4) DEV 'Passes Lock': sahip olsa bile false (kilit denemesi); DEV kilidi kalkınca gerçek sahiplik; satın alma DEV kilidini de kaldırır
 local owner = join(10)
 assert(owner:GetAttribute("HasAutoClick") == true, "sahip: true")

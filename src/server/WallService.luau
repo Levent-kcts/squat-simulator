@@ -66,7 +66,10 @@ local function isVip(player)
 	end
 	if vipCache[player.UserId] == nil then
 		local ok, owns = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, passId)
-		vipCache[player.UserId] = ok and owns or false
+		if not ok then
+			return false -- sorgu başarısız: önbelleğe 'sahip değil' yazma, bir sonraki basışta yeniden sorulur
+		end
+		vipCache[player.UserId] = owns == true
 	end
 	return vipCache[player.UserId]
 end

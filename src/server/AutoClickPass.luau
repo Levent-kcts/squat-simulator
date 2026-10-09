@@ -22,7 +22,9 @@ end
 function AutoClickPass.init(notifyEvent)
 	local passId = Config.AutoClick.GamePassId or 0
 
-	local function check(player)
+	-- attempt: sorgu başarısız olursa (Roblox servisi) birkaç kez yeniden denenir; sahip olan oyuncu yanlışlıkla kilitli kalmasın
+	local function check(player, attempt)
+		attempt = attempt or 1
 		if passId <= 0 then
 			publish(player, true) -- satış yok: Auto Click serbest
 			return
@@ -34,6 +36,9 @@ function AutoClickPass.init(notifyEvent)
 		end
 		local ok, owns = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, passId)
 		publish(player, ok and owns == true)
+		if not ok and attempt < 4 then
+			task.delay(5, check, player, attempt + 1)
+		end
 	end
 	checkPlayer = check
 
@@ -50,6 +55,9 @@ function AutoClickPass.init(notifyEvent)
 				player:SetAttribute("DevPassLock", nil) -- satın alma tamamlandı: DEV kilidi kalkar
 				publish(player, true)
 				notifyEvent:FireClient(player, true, "Auto Click unlocked! It is ON now.")
+			elseif gamePassId == passId then
+				-- Satın alma iptal edildi ya da Roblox 'You already own this item' dedi (oyuncu zaten sahip ama ilk sorgu başarısız olmuştu): sahipliği yeniden sor
+				task.spawn(check, player)
 			end
 		end)
 	end
