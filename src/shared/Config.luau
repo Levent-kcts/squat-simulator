@@ -319,10 +319,11 @@ return {
 		LeaderboardX = -84, -- sol duvardan 12 stud içeride (eskiden sol duvar -62 iken -50)
 		LeaderboardZ = 53.5,
 		LeaderboardAngle = 28,
-		-- Günlük çark: SAĞ ARKA köşede (arka duvar ile antrenman alanının arasındaki boş köşe; sahibi Studio görüntüsünde 'bu köşeye koy' dedi). Sağ duvar x = 62, arka duvar z = 65,
-		-- yumurta standı x = 27'de biter, antrenman alanı z = 23'te biter; çark (kapı çerçevesiyle ~9 stud yarıçaplı) buraya sığar. WheelFaceX/Z: çarkın baktığı nokta (lobinin ortası).
-		WheelX = 81, -- sağ duvardan 15 stud içeride (eskiden sağ duvar 62 iken 47)
-		WheelZ = 46,
+		-- Günlük çark: arka duvara yakın, YUMURTA STANDININ yanında (x = 27'de biter) ve antrenman alanının (z = 31'de biter) arkasında. Eskiden sağ arka köşedeydi (x = 81); salon genişleyince çok uzakta kaldı,
+		-- sahibi 'çok uzakta, şu araya koy yakın dursun, uzak kısma legolar falan olsun' dedi. Çark (kapı çerçevesiyle ~9.5 stud yarıçaplı) x 40-60, z 38-58 arasını kaplar; sağ arka köşe (x > 66) lego kulelerine kaldı (EnvironmentService).
+		-- WheelFaceX/Z: çarkın baktığı nokta (lobinin ortası).
+		WheelX = 50,
+		WheelZ = 48,
 		WheelFaceX = 0,
 		WheelFaceZ = 0,
 		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı (merkez z): koridor tarafına doğru kaydırıldı; alan z = -55 ile 31 arasını kaplar, duvarın arka ucu (z > 31, çarkın yanı) yeni şeyler için boş
@@ -679,7 +680,7 @@ return {
 	-- Win ile alınır (winPrice). robuxPrice + robuxProductId: Robux butonu; robuxProductId 0 ise buton "yakında" olarak kalır.
 	-- Gerçek satış için Creator Hub'da Developer Product oluşturup ID'sini robuxProductId'ye yazmak ve sunucuda
 	-- MarketplaceService.ProcessReceipt'i bağlamak gerekir (henüz yok). Fiyatlar geçicidir.
-	BaseWalkSpeed = 16,
+	BaseWalkSpeed = 22, -- 2026-10-09: sahibi 'karakterin base hızını da arttır' dedi (salon 192 stud genişledi, karakter 2 kat büyüyor); Roblox varsayılanı 16. Üstüne iz hızı (Trails[].speed) eklenir.
 	Trails = {
 		{ id = "red", name = "Red Trail", speed = 4, winPrice = 50, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(255, 60, 60) },
 		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 150, robuxPrice = 19, robuxProductId = 3717469165, color = Color3.fromRGB(255, 150, 40) },

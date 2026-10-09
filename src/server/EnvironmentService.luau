@@ -216,6 +216,15 @@ function EnvironmentService.init()
 		brick(side * 29, floorTop, -51.5, 4, 3, 4, BRICK_COLORS[(colorShift + 4) % #BRICK_COLORS + 1], 0.45 * side)
 	end
 
+	-- SAĞ ARKA KÖŞE (x > 66, z 36-64): çarkın eski yeri. Çark yumurta standının yanına taşındı (sahibi 'uzak kısma legolar falan olsun' dedi): köşe lego kuleleri ve tek parçalarla dolar.
+	-- Antrenman alanı z = 31'de biter, çark x <= 60 olduğu için çakışma yok. Konumlar sağ duvara göre ayarlanır (halfWidth).
+	tower(halfWidth - 13, 56, 5, 2, 0.5)
+	tower(halfWidth - 24, 60, 3, 5, -0.4)
+	tower(halfWidth - 9, 44, 2, 7, 0.3)
+	brick(halfWidth - 20, floorTop, 47, 4, 3, 4, BRICK_COLORS[(5) % #BRICK_COLORS + 1], 0.5)
+	brick(halfWidth - 29, floorTop, 52, 4, 3, 4, BRICK_COLORS[(1) % #BRICK_COLORS + 1], -0.3)
+	brick(halfWidth - 6, floorTop, 37, 4, 3, 4, BRICK_COLORS[(3) % #BRICK_COLORS + 1], 0.2)
+
 	-- Koridor girişinin üstünde yönlendirme tabelası (lobi içinden okunur)
 	local sign = Build.block(
 		folder,
