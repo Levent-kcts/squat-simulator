@@ -17,9 +17,10 @@ return {
 		BaseTaps = 10, -- 1. level 10 kas ister
 		-- Bir sonraki levele geçmek için gereken kas KUVVET YASASIYLA büyür: 10 + (TapsAtLevel10 - 10) / 9^CostPower x (level - 1)^CostPower
 		-- (level 1 = 10, level 10 = 22 sahibinin verdiği iki nokta, sabit; sonrası hızla artar). Üstel (1.09^level) yerine kuvvet yasası seçildi: rebirth başına süre düzgün uzasın,
-		-- tools/simulate.py ile ölçüldü (aktif oyuncu = Auto Click açık, saniyede 10 tıklama: 1. rebirth ~5 dk, 5. ~1.6 sa, 12. ~11 sa, 20. ~1.1 gün, 45. ~3.6 gün).
+		-- tools/simulate.py ile ölçüldü (aktif oyuncu = Auto Click açık, saniyede 10 tıklama, ayakkabıyı ve yumurtayı alan: 1. rebirth ~5 dk, 5. ~1.4 sa, 10. ~4.3 sa, 20. ~9.6 sa, 45. ~16 sa).
 		-- 2026-10-09: her tıklama kası anında verdiği ve Auto Click saniyede 10 tıklama attığı için (eskiden saniyede ~2 varsayılırdı) CostPower 4.2 -> 4.9 ve BaseMaxLevel 20 -> 25 yapıldı
-		-- (eski ayarla 12. rebirth 2.5 saatte, 45. 14 saatte geliyordu). Tempoyu değiştirirsen önce `python tools/simulate.py 100 poly=... base_max=...` ile dene.
+		-- (eski ayarla 12. rebirth 2.5 saatte geliyordu). OYUNUN SONU (20. aşama, 100. duvar) günde 1 saat oynayan için 10-15 günde gelsin diye duvar canı büyümesi 5 -> 3.2 yapıldı (Wall.HealthGrowthAfter).
+		-- Tempoyu değiştirirsen önce `python tools/simulate.py 14 poly=... base_max=... hp_growth=...` ile dene (çıktının sonunda aşama kilometre taşları var).
 		CostPower = 4.9,
 		TapsAtLevel10 = 22,
 		BaseMaxLevel = 25, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level
@@ -332,7 +333,8 @@ return {
 		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
 		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
 		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
-		HealthGrowthAfter = 5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; 4.5 iken 2026-10-09'daki hızlı kas kazancıyla Win ve pet gücü şişiyordu, 5 ile tempo hedefe oturdu; tools/simulate.py hp_growth=)
+		HealthGrowthAfter = 3.2, -- 4. grup 3000 x 3.2 = 9600, 5. grup 30720 ... 20. grup ~1.1 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
+		-- Simülasyon (aktif Auto Click'li oyuncu): 5. aşama 8 dk, 10. aşama 1.2 sa, 15. aşama 4.8 sa, 20. aşama 9.9 sa (20. rebirth); %70 verimli oyuncu ~14 sa, iksirli ~8 sa, Auto Click kapalı pasif ped ~2 gün. Eskiden 5 idi (20. aşama 83 saat), ondan önce 12; tools/simulate.py hp_growth=
 
 		Width = 32, -- koridorun ve duvarın genişliği (stud)
 		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır

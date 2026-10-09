@@ -5,7 +5,9 @@ Kullanım (proje klasöründe): python tools/simulate.py [saat] [anahtar=değer 
 TIKLAMA HIZI (2026-10-09'dan beri): her tıklama kası ANINDA verir. Auto Click açıkken saniyede Config.AutoClick.PerSecond (10) tıklama, elle en çok Config.ClickLimit.PerSecond (12),
 Auto Click KAPALI ve antrenman pedindeyken pedin kendi otomatik squat'ı hareket başına bir tıklama (~2/sn). Varsayılan oyuncu Auto Click'li (cps = AutoClick.PerSecond);
 `cps=2` pasif ped oyuncusu, `cps=12` elle hızlı tıklayan. Duvar seferinde tekme hareket başına bir kez kas verir. `boost=1.3` ortalama iksir/2x güçlendirme etkisi (zaman ortalaması) demektir.
-Hedef tempo (aktif oyuncu): 1. rebirth ~5 dk, 5. ~2 sa, 12. ~12 sa, 20. ~1.2 gün, 45. ~3.5 gün (`python tools/simulate.py 100` sonu).
+HARCAMA (2026-10-09): oyuncu önce en iyi ayakkabıyı (Win'in %60'ına kadar; duvar hasarı), sonra yumurtayı (Win'in yarısını geçmeyen en pahalı) ve skini alır, aura'yı fiyatı yetince alır (`spend=old` eski sıra: ayakkabıyı neredeyse hiç almazdı,
+`shoe_share=`, `egg_share=`). Çıktının son satırları aşama KİLOMETRE TAŞLARIDIR (5/10/15/20. aşamaya ilk ulaşılan zaman ve rebirth sayısı): 20. aşama = oyunun sonu.
+Hedef (aktif oyuncu = Auto Click'li): oyunun sonu (20. aşama) günde 1 saat oynayan için 10-15 günde, yani ~10-14 saat; 5. aşama ~8 dk, 10. ~1.2 sa, 15. ~5 sa, 20. ~10 sa; 1. rebirth ~5 dk, 5. ~1.4 sa, 20. ~10 sa.
 """
 import math
 import random
@@ -85,6 +87,9 @@ CPS_DEFAULT = num(block("AutoClick"), "PerSecond", 10)
 args = sys.argv[1:]
 HOURS = float(args[0]) if args and "=" not in args[0] else 12.0
 OVERRIDES = dict(a.split("=") for a in args if "=" in a)
+SPEND_STRATEGY = OVERRIDES.get("spend", "new")
+SHOE_SHARE = float(OVERRIDES.get("shoe_share", 0.6))  # ayakkabıya harcanabilecek Win oranı
+EGG_SHARE = float(OVERRIDES.get("egg_share", 0.5))
 CPS = float(OVERRIDES.get("cps", CPS_DEFAULT))  # saniyedeki tıklama sayısı (bkz. dosya başı)
 BOOST = float(OVERRIDES.get("boost", 1.0))  # iksir / 2x güçlendirme zaman ortalaması
 if "fusion_factor" in OVERRIDES:
@@ -156,6 +161,8 @@ class Player:
         self.last_won = 0
         self.earned = 0.0
         self._pet_cache = 1.0
+        self.best_stage = 0
+        self.milestones = {}  # aşama -> (ilk ulaşma zamanı sn, o anki rebirth sayısı)
 
     def cap(self):
         return BASE_MAX_LEVEL + self.rebirths * MAX_LEVEL_PER_REBIRTH
@@ -191,11 +198,30 @@ class Player:
         if self.level >= cap:
             self.progress = 0
 
+    def buy_egg(self):
+        eggs = [e for e in EGGS if e[0] <= self.wins * EGG_SHARE]
+        if not eggs:
+            return False
+        price, pool = eggs[-1]
+        self.wins -= price
+        total = sum(w for _, w in pool)
+        roll = rng.random() * total
+        for pet_id, weight in pool:
+            roll -= weight
+            if roll <= 0:
+                self.pets.append((PETS[pet_id], 1))
+                break
+        else:
+            self.pets.append((PETS[pool[-1][0]], 1))
+        self.fuse_pets()
+        self.pets = sorted(self.pets, reverse=True)[:50]
+        return True
+
     def spend(self):
-        """Win'leri sırayla harca: aura (kalıcı) > yumurta > skin > ayakkabı. Her turda bir şey alınır, alınamayana kadar devam."""
+        """Win'leri harca. Strateji 'new' (varsayılan): aura (kalıcı) > en iyi ayakkabı (Win'in %60'ına kadar; duvar hasarı, rebirth'te sıfırlanır) > yumurta (Win'in yarısını geçmeyen en pahalı; pet kalıcı) > skin.
+        Strateji 'old' (spend=old): eski sıra aura > yumurta > skin > ayakkabı (ayakkabıyı hemen hemen hiç almazdı: gerçekçi değil)."""
         for _ in range(500):
             bought = False
-            # aura: kalıcı, ucuzsa al
             for price, mult in AURAS:
                 if mult > self.aura and price <= self.wins:
                     self.wins -= price
@@ -204,35 +230,28 @@ class Player:
                     break
             if bought:
                 continue
-            # yumurta: Win'in yarısını geçmeyen en pahalı yumurta
-            eggs = [e for e in EGGS if e[0] <= self.wins * 0.5]
-            if eggs:
-                price, pool = eggs[-1]
-                self.wins -= price
-                total = sum(w for _, w in pool)
-                roll = rng.random() * total
-                for pet_id, weight in pool:
-                    roll -= weight
-                    if roll <= 0:
-                        self.pets.append((PETS[pet_id], 1))
-                        break
-                else:
-                    self.pets.append((PETS[pool[-1][0]], 1))
-                self.fuse_pets()
-                self.pets = sorted(self.pets, reverse=True)[:50]
+            if SPEND_STRATEGY == "new":
+                shoes = [x for x in ITEMS if x[1] > self.shoe and x[0] <= self.wins * SHOE_SHARE]
+                if shoes:
+                    price, damage = shoes[-1]
+                    self.wins -= price
+                    self.shoe = damage
+                    continue
+            if self.buy_egg():
                 continue
-            skins = [s for s in SKINS if s[1] > self.skin and s[0] <= self.wins * 0.5]
+            skins = [x for x in SKINS if x[1] > self.skin and x[0] <= self.wins * 0.5]
             if skins:
                 price, bonus = skins[-1]
                 self.wins -= price
                 self.skin = bonus
                 continue
-            shoes = [s for s in ITEMS if s[1] > self.shoe and s[0] <= self.wins * 0.5]
-            if shoes:
-                price, damage = shoes[-1]
-                self.wins -= price
-                self.shoe = damage
-                continue
+            if SPEND_STRATEGY != "new":
+                shoes = [x for x in ITEMS if x[1] > self.shoe and x[0] <= self.wins * 0.5]
+                if shoes:
+                    price, damage = shoes[-1]
+                    self.wins -= price
+                    self.shoe = damage
+                    continue
             break
 
     def fuse_pets(self):
@@ -278,6 +297,9 @@ class Player:
             hits_total += hits
             trip_time += (4 * SPACING + BUTTON_GAP) / 16 + hits * MOVE["Kick"]
         self.last_stage = stage
+        for milestone in range(self.best_stage + 1, stage + 1):
+            self.milestones[milestone] = (self.t, self.rebirths)
+        self.best_stage = max(self.best_stage, stage)
         if stage == 0:
             self.last_won = 0
             return 0.0, 0.0
@@ -337,4 +359,5 @@ if __name__ == "__main__":
     for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won, earned in log:
         if r <= 12 or r % 5 == 0:
             print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | +{skin:<5g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
+    print("Aşama kilometre taşları (ilk ulaşılan zaman, rebirth sayısı): " + ", ".join(f"{s}: {fmt(t).strip()} (r{r})" for s, (t, r) in sorted(p.milestones.items()) if s % 5 == 0 or s == STAGE_COUNT))
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")
