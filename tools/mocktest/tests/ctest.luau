@@ -41,29 +41,69 @@ for _, hb in S.heartbeat do
 	hb(0.6)
 end
 print("WallClient init ok; heartbeat callbacks:", #S.heartbeat)
-wallsHandler("Update", { { 1, 0 } })
-wallsHandler("Update", { { 2, 0 }, { 3, 10 } })
-S.root.Position = S.Vector3.new(0, 3, -400)
-for _, hb in S.heartbeat do
-	hb(0.6)
-end
-S.root.Position = S.Vector3.new(0, 3, 0)
-for _, hb in S.heartbeat do
-	hb(0.6)
-end
-print("proximity loop ok")
--- Tüm temaların deseni: oyuncuyu koridor boyunca gezdir (her duvar bir kez yakın olsun)
+-- Duvar ETKİN PENCERESİ: ilk sağlam duvar ve arkasındaki 2 duvarın yüz GUI'si ve tuğla deseni açıktır, kalanlar kapalı (oyuncu sadece ilk sağlam duvarı görür)
 local Layout = require("./Layout")
-local lastZ = Layout.wallZ(100)
-local z = 0
-while z > lastZ - 100 do
-	S.root.Position = S.Vector3.new(0, 3, z)
-	for _, hb in S.heartbeat do
-		hb(0.6)
+local Config = require("./Config")
+local walls = S.game:GetService("Workspace"):FindFirstChild("MyWalls")
+local function wallGui(index)
+	local wall = walls:FindFirstChild("Wall_" .. index)
+	for _, child in rawget(wall, "_children") do
+		if rawget(child, "ClassName") == "SurfaceGui" then
+			return child
+		end
 	end
-	z -= 120
 end
-print("all-theme patterns ok (z down to", lastZ, ")")
+local function hasPattern(gui)
+	for _, child in rawget(gui, "_children") do
+		if rawget(child, "Name") == "Bricks" then
+			return true
+		end
+	end
+	return false
+end
+local function activeCount()
+	local count, patterned = 0, 0
+	for index = 1, Config.Wall.Count do
+		local gui = wallGui(index)
+		if rawget(gui, "Enabled") == true then
+			count += 1
+			if hasPattern(gui) then
+				patterned += 1
+			end
+		elseif hasPattern(gui) then
+			error("kapalı duvarda desen kalmamalı: " .. index)
+		end
+	end
+	return count, patterned
+end
+local active, patterned = activeCount()
+assert(active == 3 and patterned == 3, `başta 3 duvar etkin olmalı (ilk sağlam + 2): {active}/{patterned}`)
+-- Duvarlar kırıldıkça pencere kayar; TÜM temaların deseni bu sırada kurulur (her aşamanın ilk duvarları pencereye girer), hiçbir anda 3'ten fazla duvar etkin olmaz
+for index = 1, Config.Wall.Count do
+	wallsHandler("Update", { { index, 0 } })
+	active, patterned = activeCount()
+	assert(active <= 3 and patterned == active, `{index}. duvar kırılınca etkin pencere: {active} etkin, {patterned} desenli`)
+end
+active = activeCount()
+assert(active == 0, "hepsi kırılınca etkin duvar kalmamalı: " .. active)
+wallsHandler("Sync", (function()
+	local hp = {}
+	for index = 1, Config.Wall.Count do
+		hp[index] = 5
+	end
+	return hp
+end)())
+active, patterned = activeCount()
+assert(active == 3 and patterned == 3, `duvarlar yenilenince (rebirth) pencere başa dönmeli: {active}/{patterned}`)
+print("wall active window ok")
+-- Hafif grafik modu: pencere 2 duvara iner, desenler sade (5 sıra) kurulur
+local Performance = require("./Performance")
+assert(Performance.low == false, "masaüstü taklidinde hafif mod kapalı başlamalı")
+Performance.setLow()
+active, patterned = activeCount()
+assert(Performance.low and active == 2 and patterned == 2, `hafif modda 2 duvar etkin olmalı: {active}/{patterned}`)
+print("low graphics mode ok")
+
 -- Juice: her temanın kırılma parçacığı/lego parçaları/bekleme parçacığı, pcall OLMADAN (hata gizlenmesin)
 local Juice = require("./Juice")
 local part = S.newInstance("Part")

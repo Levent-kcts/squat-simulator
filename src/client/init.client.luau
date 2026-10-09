@@ -694,6 +694,7 @@ refreshBanner()
 ShoeShop.init()
 SkinShop.init()
 TrainingClient.init()
+safeInit("Performance", loadOptional("Performance")) -- ışık/parçacık/tabela uzaklık kısması + hafif grafik modu (telefon); klasörler artık hazır
 safeInit("Juice", loadOptional("Juice"), screenGui)
 safeInit("OverheadTags", loadOptional("OverheadTags"))
 safeInit("BoostHud", loadOptional("BoostHud"), screenGui)
@@ -804,8 +805,15 @@ end)
 
 -- Auto Click gökkuşağı: renk tonu zamanla kayar (kapalıyken yavaş ve biraz sönük, açıkken hızlı ve parlak)
 local rainbowShift = 0
+local rainbowClock = 0
 RunService.Heartbeat:Connect(function(dt)
 	rainbowShift = (rainbowShift + dt * (if autoClick then 0.3 else 0.05)) % 1
+	-- Renk dizisi her karede yeniden kurulmasın (bellek/CPU): saniyede ~15 güncelleme göze aynı akıcılıkta görünür
+	rainbowClock += dt
+	if rainbowClock < 0.066 then
+		return
+	end
+	rainbowClock = 0
 	local brightness = if autoClick then 1 else 0.82
 	local points = {}
 	for index = 0, 6 do

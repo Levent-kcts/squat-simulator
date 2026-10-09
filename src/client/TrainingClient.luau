@@ -114,6 +114,7 @@ function TrainingClient.init()
 	local ringSearches = 0
 	local pulseTime = 0
 	local nextRingSearch = 0
+	local lastPulse = 0
 
 	-- Rainbow Zone'un rengi yavaşça döner (sadece bu oyuncunun ekranında)
 	RunService.RenderStepped:Connect(function(deltaTime)
@@ -127,7 +128,8 @@ function TrainingClient.init()
 				end
 			end
 		end
-		if #ringParts > 0 then
+		if #ringParts > 0 and pulseTime - lastPulse >= 0.05 then
+			lastPulse = pulseTime
 			local transparency = 0.3 + 0.2 * math.sin(pulseTime * 1.5)
 			for _, part in ringParts do
 				part.Transparency = transparency

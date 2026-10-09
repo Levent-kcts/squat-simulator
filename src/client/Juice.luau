@@ -15,6 +15,11 @@ local Layout = require(Shared:WaitForChild("Layout"))
 
 local Juice = {}
 
+-- Performans modülü korumalı yüklenir (hafif grafik modunda kazanç yazıları daha seyrek çıkar)
+local okPerf, Performance = pcall(require, script.Parent.Performance)
+local POP_INTERVAL = 0.2 -- saniye: kas kazancı yazıları en çok bu aralıkla çıkar (aradaki kazançlar toplanır)
+local POP_INTERVAL_LOW = 0.32
+
 -- Ses modülü korumalı yüklenir: hata verirse efektler sessiz çalışır
 local okSfx, Sfx = pcall(require, script.Parent.Sfx)
 local function sfx(name)
@@ -405,12 +410,30 @@ function Juice.init(screenGui)
 		return player:GetAttribute("DataLoaded") == true
 	end
 
+	-- Kas kazancı yazıları BİRLEŞTİRİLİR: Auto Click saniyede 10 tıklama yapar ve her biri için ayrı yazı (çerçeve + 3 yazı + 5 geçiş animasyonu) çıkarmak telefonu yoruyordu.
+	-- En çok POP_INTERVAL saniyede bir yazı çıkar ve o aradaki kazançların TOPLAMINI gösterir (yavaş oyunda hâlâ her kazançta anında çıkar)
+	local popPending, popTimer, lastPopAt = 0, false, -10
+	local function flushPop()
+		popTimer = false
+		if popPending <= 0 then
+			return
+		end
+		local amount = popPending
+		popPending = 0
+		lastPopAt = os.clock()
+		local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
+		Juice.screenPop(`+{Format.compact(amount)}`, if inArea then GREEN else Color3.new(1, 1, 1), popIcon("LegMuscle", "🦵")) -- beyaz (sahibi mavi yerine beyaz istedi); antrenman alanında yeşil
+	end
 	muscle:GetPropertyChangedSignal("Value"):Connect(function()
 		local delta = muscle.Value - last.muscle
 		last.muscle = muscle.Value
 		if delta > 0 and ready() then
-			local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
-			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.new(1, 1, 1), popIcon("LegMuscle", "🦵")) -- beyaz (sahibi mavi yerine beyaz istedi); antrenman alanında yeşil
+			popPending += delta
+			if not popTimer then
+				popTimer = true
+				local interval = if okPerf and Performance.low then POP_INTERVAL_LOW else POP_INTERVAL
+				task.delay(math.max(0, lastPopAt + interval - os.clock()), flushPop)
+			end
 		end
 	end)
 

@@ -613,6 +613,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(0.5, 0, 0, 42),
 			Size = UDim2.fromOffset(iconSize, iconSize),
+			lite = true, -- uzun liste: telefonda 3B yerine çizilmiş yüz (UIStyle.petModelIcon)
 		})
 		if boss then
 			addSparkles(card, 4)

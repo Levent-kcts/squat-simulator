@@ -6,6 +6,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
+-- Performans modülü korumalı yüklenir: hafif grafik modunda uzun listelerdeki pet simgeleri 3B yerine çizilmiş yüz olur
+local okPerf, Performance = pcall(require, script.Parent.Performance)
 
 local UIStyle = {}
 
@@ -161,6 +163,10 @@ local DARK = Color3.fromRGB(60, 34, 42)
 -- Birleşmiş boylar ('cat@2') türün modelini kullanır (boy farkı simge boyutundan gelir). props.dim: keşfedilmemiş pet, koyu siluet.
 -- Model yoksa nil döner ve petIcon çizilmiş yüze düşer.
 function UIStyle.petModelIcon(parent, pet, props)
+	-- 'lite' (uzun listelerdeki kartlar: Pets menüsü, Pet Index): hafif grafik modunda (telefon) 3B ViewportFrame yerine çizilmiş yüz kullanılır; onlarca ViewportFrame aynı anda çizilince telefon takılıyordu
+	if props and props.lite and okPerf and Performance.low then
+		return nil
+	end
 	local config = Config.Models.PetIcon
 	local part, offset = ModelLibrary.create("pet_" .. (pet.baseId or pet.id), 1)
 	if not part then
@@ -172,7 +178,7 @@ function UIStyle.petModelIcon(parent, pet, props)
 	viewport.LightColor = config.LightColor
 	viewport.LightDirection = config.LightDirection
 	for key, value in props or {} do
-		if key ~= "dim" then
+		if key ~= "dim" and key ~= "lite" then
 			viewport[key] = value
 		end
 	end
@@ -215,7 +221,7 @@ function UIStyle.petIcon(parent, pet, props)
 	local holder = Instance.new("Frame")
 	holder.BackgroundTransparency = 1
 	for key, value in props do
-		if key ~= "dim" then
+		if key ~= "dim" and key ~= "lite" then
 			holder[key] = value
 		end
 	end
@@ -462,7 +468,7 @@ function UIStyle.safePetIcon(parent, pet, props)
 	warn(`[UIStyle] Pet simgesi çizilemedi: {result}`)
 	local circle = Instance.new("Frame")
 	for key, value in props or {} do
-		if key ~= "dim" then
+		if key ~= "dim" and key ~= "lite" then
 			circle[key] = value
 		end
 	end

@@ -8,6 +8,8 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Format = require(Shared:WaitForChild("Format"))
+-- Performans modülü korumalı: yoksa her şey eskisi gibi çalışır
+local okPerf, Performance = pcall(require, script.Parent.Performance)
 
 local ShelfClient = {}
 
@@ -92,9 +94,31 @@ function ShelfClient.init(options)
 		local boundingBox = model:GetBoundingBox()
 		table.insert(spinners, { parts = parts, center = boundingBox.Position, phase = index * 0.7 })
 	end
-	RunService.RenderStepped:Connect(function()
+	-- Her karede yüzlerce parçanın CFrame'i değişir: bu yüzden sadece kameraya yakın olanlar oynatılır (yarım saniyeden kısa aralıkla yeniden seçilir),
+	-- hafif grafik modunda (telefon) ayrıca kare başına bir güncellenir. Uzaktaki süsler son konumunda durur (zaten seçilemeyecek kadar uzaktır).
+	local activeSpinners = spinners
+	local sinceSelect, frame = 1, 0
+	RunService.RenderStepped:Connect(function(dt)
+		sinceSelect += dt
+		if sinceSelect >= 0.3 then
+			sinceSelect = 0
+			local camera = Workspace.CurrentCamera
+			if camera then
+				local range = if okPerf and Performance.low then 60 else 95
+				activeSpinners = {}
+				for _, spinner in spinners do
+					if (spinner.center - camera.CFrame.Position).Magnitude <= range then
+						table.insert(activeSpinners, spinner)
+					end
+				end
+			end
+		end
+		frame += 1
+		if okPerf and Performance.low and frame % 2 == 0 then
+			return
+		end
 		local now = os.clock()
-		for _, spinner in spinners do
+		for _, spinner in activeSpinners do
 			local angle = math.sin(now * 1.2 + spinner.phase) * 0.12 -- en fazla yaklaşık 7 derece
 			local bob = math.sin(now * 2 + spinner.phase) * 0.12
 			local transform = CFrame.new(spinner.center + Vector3.new(0, bob, 0))

@@ -140,12 +140,24 @@ InstMT.__index = function(self, key)
 				end,
 			}
 		end
-	elseif key == "GetChildren" or key == "GetDescendants" then
+	elseif key == "GetChildren" then
 		return function()
 			local list = {}
 			for _, child in children do
 				table.insert(list, child)
 			end
+			return list
+		end
+	elseif key == "GetDescendants" then
+		return function()
+			local list = {}
+			local function walk(instance)
+				for _, child in rawget(instance, "_children") or {} do
+					table.insert(list, child)
+					walk(child)
+				end
+			end
+			walk(self)
 			return list
 		end
 	elseif key == "OnServerEvent" or key == "OnClientEvent" or key == "Running" or key == "MouseButton1Click" then
@@ -172,7 +184,21 @@ InstMT.__index = function(self, key)
 			end
 			return copy
 		end
-	elseif key == "Destroy" or key == "ClearAllChildren" then
+	elseif key == "Destroy" then
+		-- Gerçek Roblox'ta Destroy nesneyi ebeveyninden çıkarır (testler 'silindi mi' diye bakabilsin)
+		return function(s)
+			local parent = rawget(s, "Parent")
+			if parent and rawget(parent, "_children") then
+				local siblings = rawget(parent, "_children")
+				for name, child in siblings do
+					if child == s then
+						siblings[name] = nil
+					end
+				end
+			end
+			rawset(s, "Parent", nil)
+		end
+	elseif key == "ClearAllChildren" then
 		return function() end
 	elseif key == "IsA" then
 		return function(s, name)

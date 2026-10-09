@@ -202,6 +202,11 @@ function LoadingScreen.build(parentGui, images)
 	end
 	if #kinds > 0 then
 		local cols, rows = LoadingScreen.Grid.Columns, LoadingScreen.Grid.Rows
+		-- Telefon/tablette (dokunmatik, klavyesiz) süs sayısı ~3 kat azalır: yükleme sırasında her süs her karede güncellenir ve zayıf cihazı yorardı
+		local input = game:GetService("UserInputService")
+		if input.TouchEnabled and not input.KeyboardEnabled then
+			cols, rows = math.min(cols, 5), math.min(rows, 3)
+		end
 		local count = 0
 		for row = 0, rows - 1 do
 			local odd = row % 2 == 1

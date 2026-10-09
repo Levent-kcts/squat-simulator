@@ -162,6 +162,7 @@ function IndexPanel.init(screenGui)
 				Position = UDim2.fromScale(0.5, 0.2),
 				Size = UDim2.fromOffset(62, 62),
 				dim = not known,
+				lite = true, -- uzun liste: telefonda 3B yerine çizilmiş yüz (UIStyle.petModelIcon)
 			})
 			if not known then
 				-- Keşfedilmemiş: yüzün üstüne büyük soru işareti

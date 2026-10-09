@@ -10,6 +10,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Catalog = require(Shared:WaitForChild("Catalog"))
 local Config = require(Shared:WaitForChild("Config"))
 local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
+local okPerf, Performance = pcall(require, script.Parent.Performance) -- hafif grafik modunda (telefon) pahalı Highlight dış çizgisi atlanır
 
 local PetFollowers = {}
 
@@ -47,7 +48,10 @@ local function addBossEffect(part, pet)
 	sparkles.SpreadAngle = Vector2.new(180, 180)
 	sparkles.Parent = part
 
-	-- İnce dış çizgi (Highlight desteklenmeyen yerde sessizce atlanır)
+	-- İnce dış çizgi (Highlight desteklenmeyen yerde ya da hafif grafik modunda sessizce atlanır)
+	if okPerf and Performance.low then
+		return shell
+	end
 	pcall(function()
 		local outline = Instance.new("Highlight")
 		outline.Adornee = part

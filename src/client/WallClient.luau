@@ -15,6 +15,11 @@ local cfg = Config.Wall
 
 -- Efekt modülü korumalı yüklenir: hata verirse duvarlar yine çalışır
 local okJuice, Juice = pcall(require, script.Parent.Juice)
+-- Performans modülü de korumalı: hafif grafik modunda tuğla deseni sadeleşir, yüz GUI'si küçülür (yoksa normal)
+local okPerf, Performance = pcall(require, script.Parent.Performance)
+local function isLow()
+	return okPerf and Performance.low == true
+end
 
 local WallClient = {}
 
@@ -56,6 +61,7 @@ end
 -- aynı aşamadaki duvarlara kopyalanır (100 duvar için binlerce nesneyi tek tek kurmamak için). Tuğla rengi ve yüz deseni aşamanın temasından
 -- gelir (Config.Wall.Themes: decor = lines, grain, specks, shine, facet, crack, swirl).
 local BRICK_ROWS = 7
+local LOW_BRICK_ROWS = 5 -- hafif grafik modu (telefon): daha az tuğla, süs yok
 local patternTemplates = {}
 
 local function darker(color, factor)
@@ -167,7 +173,10 @@ local function decorateBrick(brick, theme, random, brickColor)
 end
 
 local function brickPattern(stage, theme)
-	local template = patternTemplates[stage]
+	local low = isLow()
+	local templateKey = if low then -stage else stage
+	local rows = if low then LOW_BRICK_ROWS else BRICK_ROWS
+	local template = patternTemplates[templateKey]
 	if not template then
 		local color = theme.color
 		local luminance = color.R * 0.3 + color.G * 0.59 + color.B * 0.11
@@ -182,12 +191,12 @@ local function brickPattern(stage, theme)
 		template.BorderSizePixel = 0
 		template.ZIndex = -1 -- okunaklılık plakasının, yazıların ve can çubuğunun altında kalsın
 		local random = Random.new(stage)
-		for row = 0, BRICK_ROWS - 1 do
+		for row = 0, rows - 1 do
 			local edges = if row % 2 == 0 then { 0, 0.25, 0.5, 0.75, 1 } else { 0, 0.125, 0.375, 0.625, 0.875, 1 }
 			for i = 1, #edges - 1 do
 				local brick = Instance.new("Frame")
-				brick.Position = UDim2.new(edges[i], 2, row / BRICK_ROWS, 2)
-				brick.Size = UDim2.new(edges[i + 1] - edges[i], -4, 1 / BRICK_ROWS, -4)
+				brick.Position = UDim2.new(edges[i], 2, row / rows, 2)
+				brick.Size = UDim2.new(edges[i + 1] - edges[i], -4, 1 / rows, -4)
 				-- Her tuğlanın üstüne çok hafif açık ya da koyu bir ton: tuğlalar tek tek ayrışsın
 				brick.BackgroundColor3 = if random:NextNumber() > 0.5 then Color3.new(1, 1, 1) else Color3.new(0, 0, 0)
 				brick.BackgroundTransparency = 0.86 + random:NextNumber() * 0.08
@@ -199,11 +208,13 @@ local function brickPattern(stage, theme)
 				seam.Color = seamColor
 				seam.Transparency = seamTransparency
 				seam.Parent = brick
-				decorateBrick(brick, theme, random, color)
+				if not low then
+					decorateBrick(brick, theme, random, color)
+				end
 				brick.Parent = template
 			end
 		end
-		patternTemplates[stage] = template
+		patternTemplates[templateKey] = template
 	end
 	return template:Clone()
 end
@@ -237,10 +248,10 @@ local function createWall(folder, index)
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Back
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	gui.PixelsPerStud = 30
+	gui.PixelsPerStud = if isLow() then 20 else 30 -- doku boyutu: telefonda daha küçük (yazılar yine net)
 	gui.LightInfluence = 0
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	-- Tuğla deseni (yüzlerce GUI nesnesi) burada kurulmaz: oyuncu duvara yaklaşınca WallClient.init'teki döngü kurar, uzaklaşınca siler (setNear)
+	-- Tuğla deseni (yüzlerce GUI nesnesi) burada kurulmaz: sadece 'etkin pencere'deki (ilk sağlam duvar ve hemen arkasındakiler) duvarlarda kurulur (applyVisibility)
 	-- Okunaklılık plakası: desenli/dokulu malzemenin üstünde numara, isim ve can çubuğu net okunsun diye yarı saydam koyu zemin
 	local plate = Instance.new("Frame")
 	plate.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -299,25 +310,23 @@ local function createWall(folder, index)
 	end
 
 	local maxHp = Layout.maxHp(index)
-	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient, baseTransparency = baseTransparency, stage = stage, near = false, pattern = nil }
+	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient, baseTransparency = baseTransparency, stage = stage, active = false, pattern = nil }
 end
 
--- Duvarın ön yüz GUI'si ve bekleme parçacığı sadece hem sağlam hem YAKIN iken açıktır
+-- ETKİN PENCERE: duvarlar koridoru baştan sona kapatır, yani oyuncu SADECE ilk sağlam duvarı (ve o kırılınca hemen arkasındakileri) görür. Ön yüz GUI'si (yüksek çözünürlüklü doku), tuğla deseni
+-- ve bekleme parçacığı sadece bu pencerede (ilk sağlam duvar + arkasındaki 2, hafif modda 1) kurulur/açıktır; kalanlar kapalıdır (telefonda bellek ve çizim yükü ~10 kat azalır).
+-- Önceden mesafeye (160 stud) göre ~20 duvarın deseni açık tutuluyordu ve hepsi görünmez duvarların arkasında kalıyordu.
+local function windowSize()
+	return if isLow() then 2 else 3
+end
+
 local function applyVisibility(wall)
-	local visible = wall.hp > 0 and wall.near
+	local visible = wall.hp > 0 and wall.active
 	wall.gui.Enabled = visible
 	if wall.ambient then
 		wall.ambient.Enabled = visible
 	end
-end
-
--- Oyuncu yaklaşınca tuğla deseni kurulur, uzaklaşınca silinir (100 duvarın yüzlerce nesnesi açılışta bellek ve süre yemesin)
-local function setNear(wall, near)
-	if wall.near == near then
-		return
-	end
-	wall.near = near
-	if near then
+	if visible then
 		if not wall.pattern then
 			wall.pattern = brickPattern(wall.stage, wall.theme)
 			wall.pattern.Parent = wall.gui
@@ -326,11 +335,19 @@ local function setNear(wall, near)
 		wall.pattern:Destroy()
 		wall.pattern = nil
 	end
-	applyVisibility(wall)
 end
 
-local NEAR_DISTANCE = 160 -- bu kadar (stud, koridor ekseninde) yakınsa desen kurulur
-local FAR_DISTANCE = 230 -- bundan uzaksa silinir (iki eşik arası titremeyi önler)
+-- Etkin pencereyi ilk sağlam duvara (frontier) göre günceller; sadece değişen duvarlara dokunur
+local function refreshWindow(walls, frontier)
+	local size = windowSize()
+	for index, wall in walls do
+		local active = index >= frontier and index < frontier + size
+		if wall.active ~= active then
+			wall.active = active
+			applyVisibility(wall)
+		end
+	end
+end
 
 local function setHp(wall, hp)
 	local wasAlive = wall.hp > 0
@@ -369,44 +386,28 @@ function WallClient.init(onProgress)
 		setHp(walls[i], walls[i].maxHp)
 	end
 
-	-- İlk aşamaların desenleri hemen kurulur (oyun başında ilk duvarlar önde); gerisini yakınlık döngüsü yönetir
-	for i = 1, math.min(10, cfg.Count) do
-		setNear(walls[i], true)
-	end
-	local sinceCheck = 0
-	RunService.Heartbeat:Connect(function(deltaTime)
-		sinceCheck += deltaTime
-		if sinceCheck < 0.5 then
-			return
-		end
-		sinceCheck = 0
-		local character = Players.LocalPlayer.Character
-		local root = character and character:FindFirstChild("HumanoidRootPart")
-		if not root then
-			return
-		end
-		local z = root.Position.Z
-		for _, wall in walls do
-			local distance = math.abs(wall.part.Position.Z - z)
-			if wall.near and distance > FAR_DISTANCE then
-				setNear(wall, false)
-			elseif not wall.near and distance < NEAR_DISTANCE then
-				setNear(wall, true)
-			end
-		end
-	end)
-
 	local function notify()
 		local frontier = 1
 		while frontier <= cfg.Count and walls[frontier].hp <= 0 do
 			frontier += 1
 		end
 		currentFrontier = frontier
+		refreshWindow(walls, frontier)
 		if onProgress then
 			onProgress(frontier)
 		end
 	end
 	notify()
+	-- Hafif moda sonradan geçilirse (kare hızı düştü) pencere küçülür, desenler sade hâliyle yeniden kurulur
+	if okPerf then
+		Performance.onChange(function()
+			for _, wall in walls do
+				wall.active = false
+				applyVisibility(wall) -- yüz GUI'sini kapatır ve eski (tam) deseni siler
+			end
+			notify() -- pencere yeni boyutuyla yeniden açılır, desenler sade hâliyle kurulur
+		end)
+	end
 
 	event.OnClientEvent:Connect(function(action, data)
 		if action == "Sync" then
