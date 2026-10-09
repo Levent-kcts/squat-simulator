@@ -39,13 +39,15 @@ function TrainingClient.init()
 	local entries = {}
 	for index, area in Config.Training.Areas do
 		local pad = folder:WaitForChild(`Pad_{area.id}`)
-		local trainerHeight = 5.3 * Config.Training.TrainerScales[rowOf[index]]
+		local trainerScale = Config.Training.TrainerScales[rowOf[index]]
+		local trainerHeight = 5.3 * trainerScale
+		local labelScale = trainerScale / Config.Training.TrainerScales[1] -- üst basamaklarda antrenör büyüdükçe etiket de büyür (alt basamak = 1)
 
 		-- Antrenörün üstünde üç satır: antrenör ismi, çarpan ve durum
 		local gui = Instance.new("BillboardGui")
-		gui.Size = UDim2.fromScale(8, 3.9)
-		gui.StudsOffsetWorldSpace = Vector3.new(0, 0.3 + trainerHeight + 0.4 + 1.95, 0) -- ped yarım kalınlığı + antrenör boyu + boşluk + etiket yarı boyu
-		gui.MaxDistance = 70
+		gui.Size = UDim2.fromScale(9 * labelScale, 4.4 * labelScale)
+		gui.StudsOffsetWorldSpace = Vector3.new(0, 0.3 + trainerHeight + 0.4 + 2.2 * labelScale, 0) -- ped yarım kalınlığı + antrenör boyu + boşluk + etiket yarı boyu
+		gui.MaxDistance = 110
 		gui.Adornee = pad
 		gui.Parent = pad
 

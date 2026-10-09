@@ -84,7 +84,7 @@ function EnvironmentService.init()
 		Enum.Material.SmoothPlastic
 	)
 
-	local columns = 12
+	local columns = math.max(12, math.floor(halfWidth * 2 / 10.33 + 0.5)) -- plaka boyu salon genişlese de ~10.3 stud kalır (eskiden 124 / 12)
 	local rows = 13
 	local cellWidth = (halfWidth * 2) / columns
 	local cellLength = length / rows
@@ -163,10 +163,17 @@ function EnvironmentService.init()
 		Enum.Material.Plastic,
 		true
 	)
-	-- Tavan ışık panelleri: salona oranla küçük (7x7), seyrek ızgara (16 adet)
+	-- Tavan ışık panelleri: salona oranla küçük (7x7), seyrek ızgara (salon 124 geniş iken 4 sütun x 4 sıra = 16 adet; genişleyince yanlara sütun eklenir, 28 stud aralık)
+	local lightColumns = {}
+	local lightX = 14
+	while lightX < halfWidth - 14 do
+		table.insert(lightColumns, -lightX)
+		table.insert(lightColumns, lightX)
+		lightX += 28
+	end
 	local z = back - 18
 	while z > zFront + 8 do
-		for _, x in { -42, -14, 14, 42 } do
+		for _, x in lightColumns do
 			Build.ceilingLight(
 				folder,
 				"LobbyLight",

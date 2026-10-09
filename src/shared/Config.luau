@@ -305,7 +305,9 @@ return {
 
 	-- Başlangıç lobisi: spawn'ın bulunduğu geniş kapalı salon
 	Lobby = {
-		HalfWidth = 62, -- salonun yarı genişliği (stud; salon 124 x 130, referans fotoğraflardaki gibi derli toplu). Sol duvar ayakkabılar, sağ duvar antrenman alanı, arka duvar yumurtalar, ön duvar koridor
+		-- 2026-10-09: sahibi 'antrenman alanı çok küçük, 3-5 kişi toplanınca iyice küçük durur, haritayı da büyütüp koç alanlarını büyüt' dedi: salon 124 -> 192 stud genişledi (HalfWidth 62 -> 96) ve antrenman pedleri ~1.75 kat büyüdü
+		-- (Training.RowPadSizes); raflar/çark/sıralama panosu duvara göre durur, ortadaki geniş alan spawn plazası olur.
+		HalfWidth = 96, -- salonun yarı genişliği (stud; salon 192 x 130). Sol duvar ayakkabılar, sağ duvar antrenman alanı, arka duvar yumurtalar, ön duvar koridor
 		BackZ = 65, -- salonun arka duvarının Z'si (ön duvar koridor girişidir; spawn tam ortadadır)
 		Height = 36, -- salonun yüksekliği (koridordan yüksek)
 		SpawnPadSize = 8, -- klasik Roblox doğma yeri (beyaz zemin, siyah patlama deseni) kenar uzunluğu; klasiği 6, salon geniş olduğu için 8
@@ -314,16 +316,16 @@ return {
 		SkinShelfZ = 15.75, -- skin rafı: ayakkabı rafının hemen yanında (aralarında 2 stud). Sol duvarın arka ucu (z > 41) yeni şeyler için boş
 		-- Sıralama panoları sol arka köşede DUVARA YASLI DEĞİL, bağımsız stand olarak durur (sahibi referans görselle 'duvarda olmasın' dedi): stand merkezi (LeaderboardX, LeaderboardZ),
 		-- LeaderboardAngle: standın lobi ortasına doğru kaç derece döndüğü. Skin rafı z = 41'de biter, arka duvar z = 65; sütunlarla birlikte stand z 43 - 64 arasını kaplar.
-		LeaderboardX = -50,
+		LeaderboardX = -84, -- sol duvardan 12 stud içeride (eskiden sol duvar -62 iken -50)
 		LeaderboardZ = 53.5,
 		LeaderboardAngle = 28,
 		-- Günlük çark: SAĞ ARKA köşede (arka duvar ile antrenman alanının arasındaki boş köşe; sahibi Studio görüntüsünde 'bu köşeye koy' dedi). Sağ duvar x = 62, arka duvar z = 65,
 		-- yumurta standı x = 27'de biter, antrenman alanı z = 23'te biter; çark (kapı çerçevesiyle ~9 stud yarıçaplı) buraya sığar. WheelFaceX/Z: çarkın baktığı nokta (lobinin ortası).
-		WheelX = 47,
+		WheelX = 81, -- sağ duvardan 15 stud içeride (eskiden sağ duvar 62 iken 47)
 		WheelZ = 46,
 		WheelFaceX = 0,
 		WheelFaceZ = 0,
-		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı: koridor tarafına doğru kaydırıldı, duvarın arka ucu (z > 23) yeni şeyler için boş
+		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı (merkez z): koridor tarafına doğru kaydırıldı; alan z = -55 ile 31 arasını kaplar, duvarın arka ucu (z > 31, çarkın yanı) yeni şeyler için boş
 	},
 
 	-- Tek sıra halinde ard arda duvarlar. En düşük canlı duvardan başlanır, can giderek artar.
@@ -481,10 +483,12 @@ return {
 	Training = {
 		RowCounts = { 4, 3, 3 }, -- basamaklardaki ped sayıları (alttan üste)
 		-- Üst basamaklara çıktıkça ped, antrenör ve şerit büyür (referans fotoğraftaki gibi); her şeridin ped dizisi RowLength'i doldurur
-		RowPadSizes = { 8.5, 11, 13.5 }, -- ped boyutu (stud)
-		RowDepths = { 12, 14.5, 17 }, -- şerit derinliği (stud)
-		RowLength = 48, -- her şeridin ped dizisinin uzunluğu
-		TrainerScales = { 1, 1.25, 1.5 }, -- antrenör boyutu (1 = ~5.3 stud boy)
+		-- 2026-10-09: pedler ~1.75 kat büyüdü (eskiden 8.5 / 11 / 13.5 stud, derinlik 12 / 14.5 / 17, uzunluk 48, antrenör 1 / 1.25 / 1.5): 3-5 kişi (büyümüş, ~4 stud geniş karakterler) rahat sığsın.
+		-- Alan sağ duvardan 64.5 stud içeri uzanır (Lobby.HalfWidth 96 olduğu için spawn plazasına girmez).
+		RowPadSizes = { 15, 18, 21 }, -- ped boyutu (stud)
+		RowDepths = { 18.5, 21.5, 24.5 }, -- şerit derinliği (stud): ped + 3.5
+		RowLength = 68, -- her şeridin ped dizisinin uzunluğu
+		TrainerScales = { 1.4, 1.75, 2.1 }, -- antrenör boyutu (1 = ~5.3 stud boy); etiketler (client/TrainingClient) buna göre büyür
 		Areas = {
 			{ id = "green", name = "Green Zone", trainer = "Coach Sprout", outfit = "leaf", mult = 1, rebirths = 0, color = Color3.fromRGB(60, 220, 90) },
 			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 1.5, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
