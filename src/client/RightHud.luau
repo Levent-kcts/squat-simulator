@@ -143,6 +143,23 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		IgnoreGuiInset = true,
 		DisplayOrder = 2,
 	}, player:WaitForChild("PlayerGui"))
+	-- Kısa ekranlarda (telefon) sağ üst daireler de küçülür (sol HUD ana ölçekle zaten küçülüyor, daireler ayrı ScreenGui'de olduğu için dışarıda kalıyordu): 520 px ve üstü yükseklikte 1, 390'da ~0.75
+	local cornerRoot = create("Frame", { Name = "CornerRoot", BackgroundTransparency = 1, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1) }, cornerGui)
+	local cornerScale = create("UIScale", { Scale = 1 }, cornerRoot)
+	local function updateCornerScale()
+		local camera = workspace.CurrentCamera
+		local height = if camera then camera.ViewportSize.Y else 1000
+		local scale = if type(height) == "number" then math.clamp(height / 520, 0.7, 1) else 1
+		cornerScale.Scale = scale
+		cornerRoot.Size = UDim2.fromScale(1 / scale, 1 / scale)
+	end
+	updateCornerScale()
+	do
+		local camera = workspace.CurrentCamera
+		if camera then
+			camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateCornerScale)
+		end
+	end
 
 	-- Sağ üst daireler (referanstaki gibi siyah daireler, sağdan sola: Arkadaş bonusu, Stats, Index). Her biri 60 px genişliğinde sütun.
 	local function circleButton(name, slot, imageId, emoji)
@@ -154,7 +171,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 			Text = "",
 			AutoButtonColor = false,
 			BackgroundTransparency = 1,
-		}, cornerGui)
+		}, cornerRoot)
 		local disc = create("Frame", {
 			Position = UDim2.fromOffset(4, 0),
 			Size = UDim2.fromOffset(52, 52),
@@ -269,7 +286,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Text = "",
 		AutoButtonColor = false,
 		BackgroundTransparency = 1,
-	}, cornerGui)
+	}, cornerRoot)
 
 	-- Siyah yuvarlak zemin (referanstaki sağ üst yuvarlak butonlar gibi: koyu daire, ince açık kenar); simge içinde ortalı
 	local iconBox = create("Frame", {
@@ -309,7 +326,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Size = UDim2.fromOffset(236, 106),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,
-	}, cornerGui)
+	}, cornerRoot)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tooltip)
 	UIStyle.soften(tooltip, { radius = 12, strength = 0.2, shine = false })
 	text(tooltip, {
