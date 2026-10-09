@@ -54,6 +54,7 @@ local function addBossEffect(part, pet)
 		outline.FillTransparency = 1
 		outline.OutlineColor = BOSS_GOLD
 		outline.OutlineTransparency = 0.2
+		outline.DepthMode = Enum.HighlightDepthMode.Occluded -- pet karakterin/duvarın ARKASINA geçince çizgi üstten görünmesin (varsayılan AlwaysOnTop karakterin üstüne biniyordu)
 		outline.Parent = part
 	end)
 	return shell
