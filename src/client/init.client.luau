@@ -483,6 +483,21 @@ local autoBadge = makeText(autoButton, {
 	TextColor3 = Color3.fromRGB(255, 92, 70),
 	ZIndex = 5,
 }, 22, 3)
+-- Auto Click game pass'i satılıyorsa (Config.AutoClick.GamePassId > 0) ve oyuncuda yoksa: 'ONLY R$ 99' rozeti OFF/ON rozetinin yerinde durur, düğmeye basınca satın alma penceresi açılır
+local ROBUX_SIGN = utf8.char(0xE002)
+local autoPrice = makeText(autoButton, {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.new(0.5, 0, 0, 1),
+	Size = UDim2.fromOffset(120, 28),
+	Text = `ONLY {ROBUX_SIGN} {Config.AutoClick.Robux}`,
+	TextColor3 = Color3.fromRGB(255, 226, 90),
+	Visible = false,
+	ZIndex = 6,
+}, 22, 3)
+-- Auto Click kilitli mi: pass satılıyor ve sunucu 'sahip değil' (ya da henüz bilmiyor) diyor
+local function autoLocked()
+	return (Config.AutoClick.GamePassId or 0) > 0 and player:GetAttribute("HasAutoClick") ~= true
+end
 
 -- Hızlı satın alma düğmeleri: kırmızı-pembe, kalın siyah çerçeveli, sağ altında bacak simgesi; sağdaki yeşil '+' Shop'u açar
 local quickButtons = {}
@@ -567,6 +582,10 @@ local function refresh()
 	local perClick = math.floor((player:GetAttribute("PerClick") or 1) * areaMultiplier)
 	gainLabel.Text = `+{Format.compact(perClick)}/click  x{Format.multiplier(player:GetAttribute("DamageMultiplier") or 1)} dmg`
 	multiplierLabel.Text = `x{Format.multiplier((player:GetAttribute("TotalMultiplier") or 1) * areaMultiplier)} Multiplier`
+	local locked = autoLocked()
+	autoClick = autoClick and not locked
+	autoBadge.Visible = not locked
+	autoPrice.Visible = locked
 	autoBadge.Text = if autoClick then "ON" else "OFF"
 	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
 	warning.Visible = RunService:IsStudio() and player:GetAttribute("DataError") == true
@@ -751,7 +770,22 @@ RunService.Heartbeat:Connect(function(dt)
 end)
 
 autoButton.MouseButton1Click:Connect(function()
+	if autoLocked() then
+		-- pass'e sahip değil: satın alma penceresi (alınca sunucu HasAutoClick'i true yapar, aşağıdaki dinleyici Auto Click'i açar)
+		pcall(MarketplaceService.PromptGamePassPurchase, MarketplaceService, player, Config.AutoClick.GamePassId)
+		return
+	end
 	autoClick = not autoClick
+	refresh()
+end)
+-- Satın alınınca (sunucu HasAutoClick'i false iken true yapınca) Auto Click kendiliğinden açılır; girişteki ilk (nil -> true) değer açmaz
+local previousAuto = player:GetAttribute("HasAutoClick")
+player:GetAttributeChangedSignal("HasAutoClick"):Connect(function()
+	local value = player:GetAttribute("HasAutoClick")
+	if value == true and previousAuto == false and (Config.AutoClick.GamePassId or 0) > 0 then
+		autoClick = true
+	end
+	previousAuto = value
 	refresh()
 end)
 

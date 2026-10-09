@@ -2,7 +2,7 @@
 Kullanım (proje klasöründe):
     python tools/set_robux_ids.py --init           robux_ids.txt (boş şablon) ve ROBUX_URUNLERI.md (Creator Hub'da açılacak ürünler tablosu) üretir
     python tools/set_robux_ids.py robux_ids.txt    dosyadaki 'anahtar=ID' satırlarını Config.luau'ya yazar (boş ID'ler atlanır, ID 0 kalır)
-Anahtarlar: shop:<id> (Shop ürünleri), potion:<id> (iksirler), trail:<id>, aura:<id>, skip (Rebirth SKIP), double (Offline DOUBLE IT!), vip (VIP game pass).
+Anahtarlar: shop:<id> (Shop ürünleri), potion:<id> (iksirler), trail:<id>, aura:<id>, skip (Rebirth SKIP), double (Offline DOUBLE IT!), vip (VIP game pass), autoclick (Auto Click game pass).
 Yazmadan önce: ID'ler sayı olmalı, aynı ID iki yerde kullanılamaz (Purchases.init uyarı verir); VIP game pass ID'si çevrimiçi doğrulanmaya çalışılır (olmazsa uyarı).
 Config.luau'daki fiyatlar (robux = ...) sadece arayüzde GÖSTERİLEN fiyattır; asıl fiyatı Creator Hub'daki ürün belirler: tabloyu aynı fiyatlarla aç.
 """
@@ -66,16 +66,25 @@ def read_products():
     items.append(("skip", "Rebirth Skip", "Skip the level requirement and rebirth right now.", skip, "Developer Product"))
     items.append(("double", "Double Offline Earnings", "Doubles the offline earnings waiting for you.", double, "Developer Product"))
     items.append(("vip", "VIP", "VIP pad: the Win button gives 2x Wins every stage. Permanent.", 99, "Game Pass"))
+    auto = int(re.search(r"AutoClick = \{[^}]*Robux = (\d+)", text).group(1))
+    items.append(("autoclick", "Auto Click", "Auto Click: your character squats and kicks for you, up to 10 clicks per second. Permanent.", auto, "Game Pass"))
     return items
 
 
 def write_template():
     items = read_products()
-    with io.open(os.path.join(ROOT, "robux_ids.txt"), "w", encoding="utf-8", newline="") as f:
+    path = os.path.join(ROOT, "robux_ids.txt")
+    existing = {}  # var olan ID'ler KORUNUR (yeni ürün eklenince şablon güvenle yeniden üretilebilir)
+    if os.path.exists(path):
+        for raw in io.open(path, encoding="utf-8").read().splitlines():
+            if "=" in raw and not raw.startswith("#"):
+                name, value = raw.split("=", 1)
+                existing[name.strip()] = value.strip()
+    with io.open(path, "w", encoding="utf-8", newline="") as f:
         f.write("# Her satırda anahtar=ID. Boş bırakılan ürün 'coming soon' kalır. Doldurunca: python tools/set_robux_ids.py robux_ids.txt\n")
-        f.write("# Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. VIP: Para Kazanma > Geçişler (Game Pass).\n")
+        f.write("# Developer Product ID'leri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri. Game Pass'ler (VIP, Auto Click): Para Kazanma > Geçişler (Passes).\n")
         for key, *_ in items:
-            f.write(f"{key}=\n")
+            f.write(f"{key}={existing.get(key, '')}\n")
     lines = ["# Robux ürünleri: Creator Hub'da açılacaklar", "",
              "Her satır için Creator Hub'da (create.roblox.com) oyunun > **Para Kazanma (Monetization) > Geliştirici Ürünleri (Developer Products)** sayfasında bir ürün aç (VIP için **Geçişler / Passes**).",
              "Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; hiçbir fiyat 150 Robux'u geçmez). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz",
@@ -147,18 +156,21 @@ def apply_ids(path):
             replace_line(r"[^\n]*DoubleProductId = \d+[^\n]*", "DoubleProductId", value)
         elif key == "vip":
             replace_line(r"[^\n]*VipGamePassId = \d+[^\n]*", "VipGamePassId", value)
+        elif key == "autoclick":
+            replace_line(r"[^\n]*AutoClick = \{[^\n]*GamePassId = \d+[^\n]*", "GamePassId", value)
     io.open(CONFIG, "w", encoding="utf-8", newline="").write(text)
     print(f"{done} ID Config.luau'ya yazıldı")
-    if "vip" in mapping:
+    if "vip" in mapping or "autoclick" in mapping:
         try:
             import json
             import urllib.request
 
-            url = f"https://apis.roblox.com/game-passes/v1/game-passes/{mapping['vip']}/product-info"
+            pass_id = mapping.get("vip") or mapping["autoclick"]
+            url = f"https://apis.roblox.com/game-passes/v1/game-passes/{pass_id}/product-info"
             data = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=15))
-            print(f"VIP game pass doğrulandı: {data.get('Name')} ({data.get('PriceInRobux')} Robux)")
+            print(f"Game pass doğrulandı: {data.get('Name')} ({data.get('PriceInRobux')} Robux)")
         except Exception as error:  # noqa: BLE001
-            print(f"uyarı: VIP game pass çevrimiçi doğrulanamadı ({error}); ID'yi Creator Hub'dan kontrol et")
+            print(f"uyarı: game pass çevrimiçi doğrulanamadı ({error}); ID'yi Creator Hub'dan kontrol et")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ Her satır için Creator Hub'da (create.roblox.com) oyunun > **Para Kazanma (Mon
 Ad, açıklama ve **fiyat** tabloda yazdığı gibi olsun (oyundaki gösterilen fiyatla aynı olmalı; hiçbir fiyat 150 Robux'u geçmez). Açınca ürünün ID'sini `robux_ids.txt` dosyasında ilgili satıra yaz
 (ya da bana yapıştır), sonra `python tools/set_robux_ids.py robux_ids.txt` Config'e işler. Oyun Studio'da yayınlanmış olmalı, ürünler o oyuna (deneyime) ait olmalı.
 
-Toplam: 32 ürün (31 Developer Product + 1 Game Pass).
+Toplam: 33 ürün (31 Developer Product + 2 Game Pass).
 
 | # | Anahtar | Tür | Ad | Fiyat (Robux) | Açıklama |
 |---|---|---|---|---|---|
@@ -40,5 +40,6 @@ Toplam: 32 ürün (31 Developer Product + 1 Game Pass).
 | 30 | `skip` | Developer Product | Rebirth Skip | 99 | Skip the level requirement and rebirth right now. |
 | 31 | `double` | Developer Product | Double Offline Earnings | 19 | Doubles the offline earnings waiting for you. |
 | 32 | `vip` | Game Pass | VIP | 99 | VIP pad: the Win button gives 2x Wins every stage. Permanent. |
+| 33 | `autoclick` | Game Pass | Auto Click | 99 | Auto Click: your character squats and kicks for you, up to 10 clicks per second. Permanent. |
 
 Not: en önemli ürünler (ilk açılacaklar): Pet Space, +1K / +10K / +100K Power, Win Pack, Mega Win Pack, iksirler, VIP. İz ve aura ürünleri sonra eklenebilir; ID'si boş olan ürün oyunda 'coming soon' der ve hata vermez.

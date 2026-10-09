@@ -286,8 +286,9 @@ function ShopPanel.init(screenGui, showToast)
 		create("UICorner", { CornerRadius = UDim.new(0, 8) }, buy)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, buy)
 		UIStyle.soften(buy, { radius = 10, strength = 0.28 })
-		text(buy, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = priceText, TextColor3 = Color3.new(1, 1, 1) }, 2)
+		local priceLabel = text(buy, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = priceText, TextColor3 = Color3.new(1, 1, 1) }, 2)
 		buy.MouseButton1Click:Connect(onBuy)
+		return card, buy, priceLabel
 	end
 
 	local order = 0
@@ -301,6 +302,24 @@ function ShopPanel.init(screenGui, showToast)
 			showToast(false, "VIP is coming soon!")
 		end
 	end)
+
+	-- AUTO CLICK game pass'i (Config.AutoClick.GamePassId, server/AutoClickPass): sahipse kart 'OWNED', değilse fiyat; satış yokken (ID 0) 'SOON'
+	order += 1
+	local _, autoBuy, autoLabel = addCard(order, Color3.fromRGB(70, 150, 255), "🖱️", Config.Icons.Click, "Auto Click", "Clicks for you!", "SOON", function()
+		if (Config.AutoClick.GamePassId or 0) > 0 and player:GetAttribute("HasAutoClick") ~= true then
+			MarketplaceService:PromptGamePassPurchase(player, Config.AutoClick.GamePassId)
+		elseif (Config.AutoClick.GamePassId or 0) <= 0 then
+			showToast(false, "Auto Click is coming soon!")
+		end
+	end)
+	local function refreshAuto()
+		local selling = (Config.AutoClick.GamePassId or 0) > 0
+		local owned = selling and player:GetAttribute("HasAutoClick") == true
+		autoLabel.Text = if owned then "OWNED" elseif selling then `{ROBUX} {Config.AutoClick.Robux}` else "SOON"
+		autoBuy.BackgroundColor3 = if owned then Color3.fromRGB(110, 118, 135) else BUY_GREEN
+	end
+	refreshAuto()
+	player:GetAttributeChangedSignal("HasAutoClick"):Connect(refreshAuto)
 
 	for _, product in Config.Shop.Products do
 		order += 1

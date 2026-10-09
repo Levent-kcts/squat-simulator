@@ -260,4 +260,28 @@ local function imageCount(image)
 end
 assert(imageCount(Config.Icons.LegMuscle) >= 1, "kas artınca bacak görseli çıkmalı")
 print("click gain pop ok")
+-- AUTO CLICK GAME PASS: pass satılıyor (GamePassId > 0) ve oyuncuda yoksa düğme KİLİTLİDİR (basınca açılmaz, satın alma penceresi istenir, 'ONLY R$ fiyat' rozeti görünür);
+-- sunucu HasAutoClick'i true yapınca (satın alma) Auto Click kendiliğinden açılır
+assert(hasText("ONLY"), "Auto Click fiyat rozeti ('ONLY R$ ...') oluşturulmalı")
+local savedPassId = Config.AutoClick.GamePassId
+Config.AutoClick.GamePassId = 555
+S.localPlayer:SetAttribute("HasAutoClick", false)
+local lockedBefore = clicksSent
+rawget(autoButton, "_handlers").MouseButton1Click() -- kilitli: açmamalı (satın alma penceresi istenir)
+for _ = 1, 4 do
+	for _, hb in S.heartbeat do
+		pcall(hb, 0.5)
+	end
+end
+assert(clicksSent == lockedBefore, "kilitliyken Auto Click tıklamamalı")
+S.localPlayer:SetAttribute("HasAutoClick", true) -- satın alındı
+for _ = 1, 4 do
+	for _, hb in S.heartbeat do
+		pcall(hb, 0.5)
+	end
+end
+assert(clicksSent - lockedBefore >= 6, "satın alınınca Auto Click kendiliğinden açılmalı: " .. (clicksSent - lockedBefore))
+rawget(autoButton, "_handlers").MouseButton1Click() -- kapat
+Config.AutoClick.GamePassId = savedPassId
+print("auto click pass lock ok")
 print("DONE")

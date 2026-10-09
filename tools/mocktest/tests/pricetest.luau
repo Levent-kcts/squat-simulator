@@ -21,6 +21,7 @@ for _, aura in Config.Auras do
 end
 add("Rebirth skip", Config.Rebirth.SkipRobuxPrice)
 add("Offline double", Config.Offline.DoubleRobux)
+add("Auto Click pass", Config.AutoClick.Robux)
 add("Gift unlock all", Config.GiftUnlockAllRobux)
 add("Gift unlock next", Config.GiftUnlockNextRobux)
 local highest = 0
