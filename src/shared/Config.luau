@@ -405,7 +405,7 @@ return {
 
 	-- VIP game pass'in ID'si (Roblox Creator Hub'da game pass oluşturunca verilir). 0 = henüz yok: VIP pedine ("2x WINS") basınca
 	-- 'coming soon' mesajı çıkar. ID girilince pede basan, pass'i olmayana Robux satın alma penceresi açılır; pass'i olan 2x Win alır.
-	VipGamePassId = 0,
+	VipGamePassId = 2022488478,
 
 	-- Ayakkabılar: lobideki raflardan, üstlerine basarak satın alınır (alt sıra ucuz, üst sıra pahalı).
 	-- damage = duvara verilen hasar çarpanı (hasar = bacak kası x damage). Bacak kazancını ETKİLEMEZ. Takılı ayakkabı geçerlidir, toplanmaz (sahip olduğun ucuz ayakkabılara basıp istediğini takabilirsin).
