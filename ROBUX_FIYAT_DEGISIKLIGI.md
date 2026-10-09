@@ -38,4 +38,4 @@ Geliştirici ürünleri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ür
 | VIP | 99 | 149 |
 | Auto Click | 99 | 149 |
 
-Toplam 31 ürün. Yumurta pass'leri (eggauto, eggtriple, eggten) yeni ürünlerdir: ROBUX_URUNLERI.md'deki 34-36. satır.
+Toplam 31 ürün. Yumurta pass'leri (eggauto, eggtriple, eggmulti) yeni ürünlerdir: ROBUX_URUNLERI.md'deki 34-36. satır.

@@ -1,5 +1,5 @@
--- Yumurta game pass'leri (Config.EggPasses: Auto Open, Triple Open x3, Mega Open x10): oyuncunun sahip olup olmadığı SUNUCUDA sorulur (MarketplaceService:UserOwnsGamePassAsync)
--- ve her pass için bir öznitelik olarak istemciye verilir ('HasEggAuto', 'HasEggTriple', 'HasEggTen'). EggShop sunucuda zorlar (x3/x10 açmak ve otomatik açma pass ister).
+-- Yumurta game pass'leri (Config.EggPasses: Auto Open, Triple Open x3, Multi Open x10): oyuncunun sahip olup olmadığı SUNUCUDA sorulur (MarketplaceService:UserOwnsGamePassAsync)
+-- ve her pass için bir öznitelik olarak istemciye verilir ('HasEggAuto', 'HasEggTriple', 'HasEggMulti'). EggShop sunucuda zorlar (x3/x10 açmak ve otomatik açma pass ister).
 -- GamePassId = 0 iken pass henüz satışa açılmamıştır: özellik KİLİTLİ kalır (VIP gibi; istemcide fiyat rozeti görünür, basınca 'coming soon' der). Satın alınca (PromptGamePassPurchaseFinished) anında açılır.
 -- DEV: 'DevEggPasses' özniteliği (DevTools 'Egg Passes (test)') üçünü de açar; 'DevPassLock' (Passes Lock) hepsini kilitler.
 local MarketplaceService = game:GetService("MarketplaceService")
