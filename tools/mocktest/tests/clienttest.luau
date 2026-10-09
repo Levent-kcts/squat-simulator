@@ -240,4 +240,24 @@ for _, key in { "Shop", "Rebirth", "Settings", "Pets", "Gifts", "Quests", "Index
 	assert(Config.Icons[key] ~= "" and headerImages[Config.Icons[key]], "pencere başlığında menüdeki görsel yok: " .. key)
 end
 print("window header icons ok")
+-- Tıklayınca çıkan kazanç yazısı (Juice.screenPop): veri yüklüyken kas artınca ekranda bacak görseli ve '+N' yazısı belirir
+local Juice = require("./Juice")
+S.localPlayer:SetAttribute("DataLoaded", true)
+Juice.screenPop("+7", S.Color3.new(1, 1, 1), Config.Icons.LegMuscle)
+assert(hasText("+7"), "kas artınca '+7' yazısı çıkmalı (Juice.screenPop)")
+local function imageCount(image)
+	local count = 0
+	local function walk(instance)
+		for _, child in rawget(instance, "_children") do
+			if rawget(child, "ClassName") == "ImageLabel" and rawget(child, "Image") == image then
+				count += 1
+			end
+			walk(child)
+		end
+	end
+	walk(S.localPlayer)
+	return count
+end
+assert(imageCount(Config.Icons.LegMuscle) >= 1, "kas artınca bacak görseli çıkmalı")
+print("click gain pop ok")
 print("DONE")
