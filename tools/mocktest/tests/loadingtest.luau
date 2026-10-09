@@ -43,22 +43,29 @@ assert(#LoadingScreen.collectAssets(nil) == 0, "tablo yoksa liste boş olmalı")
 
 -- Arayüz: kurulur, ilerleme ve yüzde yazısı güncellenir, hata vermeden animasyon ve solma çalışır
 local gui = S.newInstance("PlayerGui")
-local screen = LoadingScreen.build(gui)
-assert(screen.gui and screen.root and screen.backdrop and screen.viewport and screen.fill and screen.percent and screen.label, "arayüz parçaları yok")
+local screen = LoadingScreen.build(gui, "rbxassetid://123")
+assert(screen.gui and screen.root and screen.backdrop and screen.fill and screen.percent and screen.label, "arayüz parçaları yok")
 assert(rawget(screen.gui, "DisplayOrder") == LoadingScreen.DisplayOrder, "DisplayOrder ayarlanmalı")
 assert(rawget(screen.backdrop, "Active") == true, "zemin Active olmalı (arkadaki tıklamalar sayılmasın)")
--- 3B tuğlalar: 6 adet, her biri 2x2 (gövde + 4 çıkıntı), hepsi ViewportFrame'in içinde
+-- 2D tuğlalar: 6 adet ImageLabel, hepsi aynı resim ama farklı renge boyanmış; 3B (ViewportFrame) yok
 assert(#screen.bricks == 6, "6 tuğla olmalı: " .. #screen.bricks)
+local colors = {}
 for index, item in screen.bricks do
-	local parts = rawget(item.model, "_children")
-	local count = 0
-	for _ in parts do
-		count += 1
-	end
-	assert(count == 5 and parts.Body and parts.Stud1 and parts.Stud2 and parts.Stud3 and parts.Stud4, "tuğla " .. index .. ": gövde + 4 çıkıntı olmalı, parça sayısı " .. count)
-	assert(rawget(parts.Stud1, "Shape") == "PartType.Cylinder", "çıkıntı silindir olmalı")
-	assert(rawget(item.model, "PrimaryPart") == parts.Body, "PrimaryPart gövde olmalı")
+	assert(rawget(item.frame, "ClassName") == "ImageLabel", "tuğla ImageLabel olmalı")
+	assert(rawget(item.frame, "Image") == "rbxassetid://123", "tuğla resmi verilen kimlik olmalı")
+	local color = rawget(item.frame, "ImageColor3")
+	colors[string.format("%.2f/%.2f/%.2f", color.R, color.G, color.B)] = true
 end
+local distinct = 0
+for _ in colors do
+	distinct += 1
+end
+assert(distinct == 6, "6 tuğla 6 farklı renkte olmalı: " .. distinct)
+assert(not rawget(screen, "viewport"), "3B ViewportFrame kalmamalı")
+-- Kimlik yokken (Config.Icons.LoadingBrick boş) tuğla çizilmez ama ekran hatasız kurulur
+local plain = LoadingScreen.build(S.newInstance("PlayerGui"), nil)
+assert(#plain.bricks == 0, "resim kimliği yokken tuğla çizilmemeli")
+plain.animate(2)
 screen.setProgress(0.5)
 assert(rawget(screen.percent, "Text") == "50%", "yüzde yazısı: " .. tostring(rawget(screen.percent, "Text")))
 screen.setProgress(2)

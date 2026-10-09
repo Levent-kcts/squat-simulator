@@ -91,45 +91,22 @@ local function addText(parent, props, strokeThickness)
 	return label
 end
 
--- 3B 2x2 LEGO TUĞLA (4 çıkıntılı, 'dörtlü'; sahibi önceki düz çizimleri 'çok kötü' bulunca sıfırdan tasarlandı): gövde 4 x 2.4 x 4 stud (gerçek 2x2 tuğla oranı 1 : 0.6),
--- üstünde 4 silindir çıkıntı (çap 1.3, boy 0.5). Model orijini gövdenin ortasıdır; PivotTo ile konumlanır ve döner. Hepsi Anchored (ViewportFrame içinde fizik yok).
-local BRICK_BODY = Vector3.new(4, 2.4, 4)
-local STUD_DIAMETER, STUD_HEIGHT = 1.3, 0.5
-
-local function newPart(model, name, size, color)
-	local part = Instance.new("Part")
-	part.Name = name
-	part.Anchored = true
-	part.CanCollide = false
-	part.Size = size
-	part.Color = color
-	part.Material = Enum.Material.SmoothPlastic
-	part.TopSurface = Enum.SurfaceType.Smooth
-	part.BottomSurface = Enum.SurfaceType.Smooth
-	part.Parent = model
-	return part
-end
-
-function LoadingScreen.buildBrick(color)
-	local model = Instance.new("Model")
-	model.Name = "Brick"
-	local body = newPart(model, "Body", BRICK_BODY, color)
-	model.PrimaryPart = body
-	local index = 0
-	for _, sx in { -1, 1 } do
-		for _, sz in { -1, 1 } do
-			index += 1
-			-- Roblox silindirinin ekseni X'tir: boyu X'e, çapı Y/Z'ye veririz ve 90 derece yatırıp yukarı baktırırız
-			local stud = newPart(model, `Stud{index}`, Vector3.new(STUD_HEIGHT, STUD_DIAMETER, STUD_DIAMETER), color)
-			stud.Shape = Enum.PartType.Cylinder
-			stud.CFrame = CFrame.new(sx * 1, BRICK_BODY.Y / 2 + STUD_HEIGHT / 2, sz * 1) * CFrame.Angles(0, 0, math.pi / 2)
+-- 2D LEGO TUĞLA (sahibi 3B tuğlayı beğenmedi: 'çok yukarda gözüküyor ve 3 boyutlu yapmışsın, 2d fotoğrafını çek o hareket etsin'): 2x2 (4 çıkıntılı) tuğlanın Blender'da çekilmiş
+-- şeffaf PNG fotoğrafı (tools/loading/make_brick.py -> assets/loading/brick.png) ImageLabel olarak durur. Resim BEYAZA yakın griyle çekildiği için ImageColor3 ile her tuğla farklı renge boyanır
+-- (gölge ve parlak vurgu korunur): Roblox'a SADECE BU TEK RESİM yüklenir, kimliği Config.Icons.LoadingBrick'e yazılır. Kimlik boşken tuğla çizilmez (düz Frame ile çizmeye DÖNME, 3B'ye de).
+function LoadingScreen.brickImageId()
+	local ok, config = pcall(require, script.Parent.Config)
+	if ok and type(config) == "table" and type(config.Icons) == "table" then
+		local id = config.Icons.LoadingBrick
+		if type(id) == "string" and id ~= "" then
+			return id
 		end
 	end
-	return model
+	return nil
 end
 
--- Ekranı kurar. Dönen nesne: gui, root, setProgress(0..1), setDots(clock), animate(clock), fadeOut(seconds)
-function LoadingScreen.build(parentGui)
+-- Ekranı kurar (brickImage verilmezse Config.Icons.LoadingBrick). Dönen nesne: gui, backdrop, root, bricks, setProgress(0..1), setDots(clock), animate(clock), fadeOut(seconds)
+function LoadingScreen.build(parentGui, brickImage)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "LoadingScreen"
 	gui.DisplayOrder = LoadingScreen.DisplayOrder
@@ -138,8 +115,7 @@ function LoadingScreen.build(parentGui)
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = parentGui
 
-	-- Katmanlar (aşağıdan yukarı): zemin (Active: arkadaki oyun tıklamaları yükleme sırasında squat sayılmasın), 3B tuğlalar (ViewportFrame), yazılar ve çubuk (CanvasGroup: tek parça solar).
-	-- ViewportFrame CanvasGroup'un içine KONMAZ: canvas içinde 3B görüntü güvenilir çizilmeyebilir, bu yüzden üç katman ayrı solar.
+	-- Katmanlar (aşağıdan yukarı): zemin (Active: arkadaki oyun tıklamaları yükleme sırasında squat sayılmasın), sonra tuğlalar + yazılar + çubuk (tek CanvasGroup: birlikte solar)
 	local backdrop = Instance.new("Frame")
 	backdrop.Name = "Backdrop"
 	backdrop.Size = UDim2.fromScale(1, 1)
@@ -153,45 +129,42 @@ function LoadingScreen.build(parentGui)
 	gradient.Color = ColorSequence.new(TOP_COLOR, BOTTOM_COLOR)
 	gradient.Parent = backdrop
 
-	-- Dekor: köşelerde ve kenarlarda süzülüp dönen 2x2 tuğlalar (ortayı boş bırakır). { ekran x, ekran y (0-1), kameradan uzaklık (küçük = büyük görünür), renk sırası, başlangıç fazı }
-	local bricks = {}
-	local viewport = Instance.new("ViewportFrame")
-	viewport.Name = "Bricks"
-	viewport.Size = UDim2.fromScale(1, 1)
-	viewport.BackgroundTransparency = 1
-	viewport.BorderSizePixel = 0
-	viewport.ZIndex = 2
-	viewport.Ambient = Color3.fromRGB(150, 155, 190)
-	viewport.LightColor = Color3.fromRGB(255, 255, 255)
-	viewport.LightDirection = Vector3.new(-0.6, -1, -0.8)
-	viewport.Parent = gui
-	local camera = Instance.new("Camera")
-	camera.FieldOfView = 40
-	camera.Parent = viewport
-	viewport.CurrentCamera = camera
-	local layout = {
-		{ 0.09, 0.15, 50, 1, 0.0 }, { 0.91, 0.13, 56, 2, 1.7 }, { 0.06, 0.52, 60, 5, 3.1 },
-		{ 0.94, 0.55, 54, 6, 4.4 }, { 0.17, 0.86, 52, 3, 5.2 }, { 0.84, 0.85, 48, 4, 2.4 },
-	}
-	local okBricks, errBricks = pcall(function()
-		for index, def in layout do
-			local model = LoadingScreen.buildBrick(BRICK_COLORS[def[4]])
-			model.Parent = viewport
-			bricks[index] = { model = model, x = def[1], y = def[2], depth = def[3], phase = def[5] }
-		end
-	end)
-	if not okBricks then
-		warn(`[Loading] Could not build the bricks: {errBricks}`)
-	end
-
-	-- İçerik katmanı: yazılar ve çubuk (şeffaf CanvasGroup; solarken hepsi birlikte kaybolur)
 	local root = Instance.new("CanvasGroup")
 	root.Name = "Root"
 	root.Size = UDim2.fromScale(1, 1)
 	root.BackgroundTransparency = 1
 	root.BorderSizePixel = 0
-	root.ZIndex = 3
+	root.ZIndex = 2
 	root.Parent = gui
+
+	-- Dekor: ekranın kenarlarında süzülüp sallanan 2D tuğla resimleri (ortayı ve başlığı boş bırakır; üstte, ortada, altta ikişer tane).
+	-- { ekran x, ekran y (0-1), genişlik (ekran genişliğinin oranı), renk sırası, başlangıç fazı, eğim (derece) }
+	local bricks = {}
+	local brickImage = brickImage or LoadingScreen.brickImageId()
+	if brickImage then
+		local layout = {
+			{ 0.08, 0.13, 0.14, 1, 0.0, -12 }, { 0.92, 0.12, 0.13, 2, 1.7, 10 }, { 0.07, 0.56, 0.11, 5, 3.1, 14 },
+			{ 0.93, 0.58, 0.12, 6, 4.4, -14 }, { 0.17, 0.85, 0.135, 3, 5.2, 8 }, { 0.83, 0.84, 0.15, 4, 2.4, -9 },
+		}
+		for index, def in layout do
+			local brick = Instance.new("ImageLabel")
+			brick.Name = `Brick{index}`
+			brick.AnchorPoint = Vector2.new(0.5, 0.5)
+			brick.Position = UDim2.fromScale(def[1], def[2])
+			brick.Size = UDim2.fromScale(def[3], def[3]) -- kare resim: yükseklik aşağıdaki oran sınırından gelir (ekran oranı ne olursa olsun bozulmaz)
+			brick.BackgroundTransparency = 1
+			brick.Image = brickImage
+			brick.ImageColor3 = BRICK_COLORS[def[4]]
+			brick.Rotation = def[6]
+			brick.ZIndex = 1
+			brick.Parent = root
+			local ratio = Instance.new("UIAspectRatioConstraint")
+			ratio.AspectRatio = 1
+			ratio.DominantAxis = Enum.DominantAxis.Width
+			ratio.Parent = brick
+			bricks[index] = { frame = brick, x = def[1], y = def[2], phase = def[5], tilt = def[6] }
+		end
+	end
 
 	if LoadingScreen.ShowTitle then
 		addText(root, { Position = UDim2.fromScale(0.5, 0.30), Size = UDim2.fromScale(0.7, 0.16), Text = LoadingScreen.GameTitle, Color = YELLOW }, 6)
@@ -248,7 +221,6 @@ function LoadingScreen.build(parentGui)
 	local screen = {}
 	screen.gui = gui
 	screen.backdrop = backdrop
-	screen.viewport = viewport
 	screen.bricks = bricks
 	screen.root = root
 	screen.fill = fill
@@ -263,27 +235,17 @@ function LoadingScreen.build(parentGui)
 	function screen.setDots(clock)
 		loadingLabel.Text = LoadingScreen.dots(clock)
 	end
-	-- Tuğlalar süzülür (yukarı aşağı), kendi ekseninde yavaşça döner ve hafif sallanır; konumlar her karede ekran oranından hesaplanır (pencere boyu değişse de köşelerde kalır)
+	-- Tuğlalar yavaşça süzülür (yukarı aşağı) ve eğimlerinin etrafında sallanır
 	function screen.animate(clock)
-		local size = viewport.AbsoluteSize
-		local aspect = if size.Y > 0 then size.X / size.Y else 16 / 9
-		local tanHalf = math.tan(math.rad(camera.FieldOfView / 2))
-		for index, item in bricks do
-			local halfHeight = item.depth * tanHalf
-			local halfWidth = halfHeight * aspect
-			local bob = math.sin(clock * 1.3 + item.phase) * 1.2
-			local x = (item.x - 0.5) * 2 * halfWidth
-			local y = (0.5 - item.y) * 2 * halfHeight + bob
-			local spin = clock * 0.6 + item.phase -- kendi dikey ekseninde dönüş
-			local sway = math.sin(clock * 0.9 + item.phase * 2) * 0.12
-			item.model:PivotTo(CFrame.new(x, y, -item.depth) * CFrame.Angles(-0.55, 0, 0) * CFrame.Angles(0, spin, sway)) -- sabit eğim: üstteki 4 çıkıntı hep görünür
+		for _, item in bricks do
+			item.frame.Position = UDim2.fromScale(item.x, item.y + math.sin(clock * 1.3 + item.phase) * 0.014)
+			item.frame.Rotation = item.tilt + math.sin(clock * 0.9 + item.phase * 2) * 6
 		end
 	end
 	function screen.fadeOut(seconds)
 		local TweenService = game:GetService("TweenService")
 		local info = TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 		local main = TweenService:Create(backdrop, info, { BackgroundTransparency = 1 })
-		TweenService:Create(viewport, info, { ImageTransparency = 1 }):Play()
 		TweenService:Create(root, info, { GroupTransparency = 1 }):Play()
 		main:Play()
 		return main
