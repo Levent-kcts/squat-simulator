@@ -61,6 +61,9 @@ local function isVip(player)
 	if not passId or passId <= 0 then
 		return false
 	end
+	if player:GetAttribute("DevPassLock") == true then
+		return false -- DEV testi (DevTools 'TogglePassLock'): pass'e sahip DEĞİLMİŞ gibi davran
+	end
 	if vipCache[player.UserId] == nil then
 		local ok, owns = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, passId)
 		vipCache[player.UserId] = ok and owns or false
@@ -207,6 +210,7 @@ function WallService.init(notify)
 	-- VIP game pass satın alındı: önbellek güncellenir, pede hemen basılabilir
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, gamePassId, wasPurchased)
 		if wasPurchased and gamePassId == Config.VipGamePassId then
+			player:SetAttribute("DevPassLock", nil) -- satın alma tamamlandı: DEV kilidi kalkar
 			vipCache[player.UserId] = true
 			notifyEvent:FireClient(player, true, "VIP unlocked! Step on the pink pad for 2x Wins.")
 		end

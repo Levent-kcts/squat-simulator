@@ -10,6 +10,8 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 
 local AutoClickPass = {}
 
+local checkPlayer -- init içinde kurulur; DEV 'Passes Lock' değişince yeniden sorulur (AutoClickPass.recheck)
+
 local function publish(player, owns)
 	if player.Parent then
 		player:SetAttribute("HasAutoClick", owns)
@@ -25,9 +27,15 @@ function AutoClickPass.init(notifyEvent)
 			publish(player, true) -- satış yok: Auto Click serbest
 			return
 		end
+		-- DEV testi (DevTools 'TogglePassLock', sadece sunucudan ayarlanır): pass'e sahip DEĞİLMİŞ gibi davran, kilit ve satın alma akışı denenebilsin
+		if player:GetAttribute("DevPassLock") == true then
+			publish(player, false)
+			return
+		end
 		local ok, owns = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, passId)
 		publish(player, ok and owns == true)
 	end
+	checkPlayer = check
 
 	Players.PlayerAdded:Connect(function(player)
 		task.spawn(check, player)
@@ -39,10 +47,18 @@ function AutoClickPass.init(notifyEvent)
 	if passId > 0 then
 		MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, gamePassId, wasPurchased)
 			if wasPurchased and gamePassId == passId then
+				player:SetAttribute("DevPassLock", nil) -- satın alma tamamlandı: DEV kilidi kalkar
 				publish(player, true)
 				notifyEvent:FireClient(player, true, "Auto Click unlocked! It is ON now.")
 			end
 		end)
+	end
+end
+
+-- Sahiplik durumunu yeniden sorar (DEV paneli 'Passes Lock' açıp kapatınca)
+function AutoClickPass.recheck(player)
+	if checkPlayer then
+		task.spawn(checkPlayer, player)
 	end
 end
 

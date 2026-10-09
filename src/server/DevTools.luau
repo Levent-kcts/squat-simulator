@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local PlayerStats = require(script.Parent.PlayerStats)
 local WallService = require(script.Parent.WallService)
+local AutoClickPass = require(script.Parent.AutoClickPass)
 
 local DevTools = {}
 
@@ -43,6 +44,12 @@ function DevTools.init(notifyEvent)
 		elseif command == "TeleportToWalls" then
 			WallService.devTeleportToWalls(player)
 			ok, message = true, "Teleported to your walls"
+		elseif command == "TogglePassLock" then
+			-- Oyunun sahibi tüm pass'lerin sahibi sayılabilir: kilit ve satın alma akışını denemek için VIP ve Auto Click'e 'sahip değilmiş gibi' bakılır
+			local locked = player:GetAttribute("DevPassLock") ~= true
+			player:SetAttribute("DevPassLock", if locked then true else nil)
+			AutoClickPass.recheck(player)
+			ok, message = true, if locked then "Passes LOCKED (test): VIP and Auto Click act as not owned" else "Passes back to normal"
 		else
 			ok, message = PlayerStats.dev(player, command, amount)
 			-- Rebirth ve sıfırlama duvarları da baştan kurmalı

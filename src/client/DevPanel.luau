@@ -31,6 +31,7 @@ local BUTTONS = {
 	{ "Muscle Potion", "PotionMuscle" },
 	{ "Wins Potion", "PotionWins" },
 	{ "Rainbow Potion", "PotionRainbow" },
+	{ "Passes Lock (test)", "TogglePassLock" },
 	{ "Break Stage", "BreakStage" },
 	{ "TP to Walls", "TeleportToWalls" },
 	{ "Gifts +10 min", "GiftTime", 10 },
