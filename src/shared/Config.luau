@@ -588,6 +588,7 @@ return {
 		Cost = 3,
 		MaxTier = 4,
 		PowerFactor = 1.3,
+		BossShell = false, -- Boss petin etrafındaki nabız gibi atan saydam kabuk (hale): sahibi 'çok kötü duruyor, kapat' dedi; true yapılırsa geri gelir (sadece parıltı parçacıkları ve ince çizgi kalır)
 		-- Boylar: Small (yumurtadan çıkan), Normal, Big (en büyük boy) ve Boss (Big ile aynı boy, üstüne parlayan efekt: PetFollowers, Pets menüsü). Sahibi 'en büyük hali big, boss da üzerine efekt' dedi.
 		TierNames = { "Small", "Normal", "Big", "Boss" },
 		TierColors = { Color3.fromRGB(140, 200, 255), Color3.fromRGB(110, 230, 140), Color3.fromRGB(255, 190, 60), Color3.fromRGB(255, 70, 130) },

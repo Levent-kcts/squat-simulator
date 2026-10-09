@@ -330,14 +330,16 @@ runRender()
 assert(math.abs(moveHumanoid.HipHeight - 1) < 1e-6, "rebirth sonrası HipHeight küçük boyun asıl değeri olmalı: " .. moveHumanoid.HipHeight)
 print("moves keep playing across scale changes ok")
 
--- 7) Takipçi petler: Boss pet efektli (saydam kabuk + parçacık), diğer boylar düz küre ve boyları büyür
+-- 7) Takipçi petler: Boss pet efektli (parçacık + çizgi; saydam kabuk/hale Config.PetFusion.BossShell = false iken YOK), diğer boylar düz küre ve boyları büyür
 S.localPlayer:SetAttribute("EquippedPets", "cat@4,dog,bunny@3")
 local PetFollowers = require("./PetFollowers")
 PetFollowers.init()
 local worldChildren = rawget(S.game:GetService("Workspace"), "_children")
-for _, name in { "Boss Cat", "BossShell", "Small Dog", "Big Bunny" } do
+for _, name in { "Boss Cat", "Small Dog", "Big Bunny" } do
 	assert(worldChildren[name], "takipçi parçası yok: " .. name)
 end
+assert(not Config.PetFusion.BossShell, "boss halesi (BossShell) kapalı olmalı (sahibi 'çok kötü duruyor' dedi)")
+assert(not worldChildren["BossShell"], "boss halesi (saydam kabuk) çizilmemeli")
 for _, hb in S.heartbeat do
 	hb(0.05)
 end

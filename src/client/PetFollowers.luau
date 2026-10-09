@@ -1,6 +1,6 @@
 -- Takılı petleri oyuncunun arkasında süzülen modeller olarak gösterir (sadece bu oyuncuya görünür). Blender modeli (kutu pet, shared/ModelLibrary 'pet_<id>') varsa o, yoksa renkli küre.
 -- Boy arttıkça küre büyür (Small < Normal < Big); BOSS (en büyük boy) Big ile aynı boydadır ama üstünde parlayan bir efekt vardır:
--- altın/pembe parıltı parçacıkları, nabız gibi atan saydam kabuk ve ince bir dış çizgi.
+-- altın/pembe parıltı parçacıkları ve ince bir dış çizgi. Nabız gibi atan SAYDAM KABUK (hale) sahibi 'çok kötü duruyor, kapat' dediği için KAPALI (Config.PetFusion.BossShell = false).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -16,21 +16,24 @@ local PetFollowers = {}
 local BOSS_GOLD = Color3.fromRGB(255, 215, 90)
 local BOSS_PINK = Color3.fromRGB(255, 90, 170)
 
--- Boss efekti: parçacıklar + saydam kabuk (kabuk kürenin konumunu her karede izler). Dönüş: kabuk (ya da nil)
+-- Boss efekti: parçacıklar + ince dış çizgi (+ isteğe bağlı saydam kabuk: kabuk kürenin konumunu her karede izler). Dönüş: kabuk (ya da nil)
 local function addBossEffect(part, pet)
-	local shell = Instance.new("Part")
-	shell.Name = "BossShell"
-	shell.Shape = Enum.PartType.Ball
-	local diameter = math.max(part.Size.X, part.Size.Y, part.Size.Z) * 1.1
-	shell.Size = Vector3.new(diameter, diameter, diameter) -- top şekli her zaman eşit boyutludur
-	shell.Material = Enum.Material.Neon
-	shell.Color = pet.color:Lerp(BOSS_GOLD, 0.6)
-	shell.Transparency = 0.75
-	shell.Anchored = true
-	shell.CanCollide = false
-	shell.CanTouch = false
-	shell.CanQuery = false
-	shell.Parent = Workspace
+	local shell = nil
+	if Config.PetFusion.BossShell then
+		shell = Instance.new("Part")
+		shell.Name = "BossShell"
+		shell.Shape = Enum.PartType.Ball
+		local diameter = math.max(part.Size.X, part.Size.Y, part.Size.Z) * 1.1
+		shell.Size = Vector3.new(diameter, diameter, diameter) -- top şekli her zaman eşit boyutludur
+		shell.Material = Enum.Material.Neon
+		shell.Color = pet.color:Lerp(BOSS_GOLD, 0.6)
+		shell.Transparency = 0.75
+		shell.Anchored = true
+		shell.CanCollide = false
+		shell.CanTouch = false
+		shell.CanQuery = false
+		shell.Parent = Workspace
+	end
 
 	local sparkles = Instance.new("ParticleEmitter")
 	sparkles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
