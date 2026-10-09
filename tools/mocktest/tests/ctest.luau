@@ -92,6 +92,17 @@ local function textsUnder(instance, found)
 	end
 	return found
 end
+-- Altındaki yazılardan 'text'e eşit olanların SAYISI (kartlar yığılmıyor: aynı petten 3 tane = 3 ayrı kart)
+local function countText(instance, text)
+	local total = 0
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "Text") == text then
+			total += 1
+		end
+		total += countText(child, text)
+	end
+	return total
+end
 -- Torunlarında verilen yazı bulunan ilk TextButton
 local function buttonWith(instance, text)
 	for _, child in rawget(instance, "_children") do
@@ -149,9 +160,12 @@ print("PetsPanel tiers ok")
 -- 2) Aynı petten 3 tane: Merge 'Normal (3/3)' der ve tıklanınca FusePet gider; Equip, Merge All, Delete (iki basış)
 local root2 = openPets("cat,cat,cat", "")
 local t2 = textsUnder(root2, {})
-for _, label in { "Normal (3/3)", "Equip", "Merge All", "Pet Team (0/3 Pets)", "Small Cat", "x3" } do
+for _, label in { "Normal (3/3)", "Equip", "Merge All", "Pet Team (0/3 Pets)", "Small Cat" } do
 	assert(t2[label], "3'lü pet ekranında yazı yok: " .. label)
 end
+-- Kartlar YIĞILMAZ (sahibi 'bunlar stacklenmesin' dedi): üç kedi = üç ayrı kart (+ ayrıntı kutusunda bir ad), 'x3' sayacı ve toplu 'E3' rozeti yok
+assert(not t2["x3"], "yığın sayacı (x3) olmamalı")
+assert(countText(root2, "Small Cat") == 4, "3 kedi 3 ayrı kart + ayrıntı adı = 4 'Small Cat' yazısı olmalı: " .. countText(root2, "Small Cat"))
 S.lastInvoke = nil
 click(buttonWith(root2, "Equip"))
 assert(S.lastInvoke and S.lastInvoke[1] == "EquipPet" and S.lastInvoke[2] == "cat", "Equip düğmesi EquipPet göndermeli")
@@ -182,6 +196,22 @@ local trashImage = rawget(trashIcon, "_children")["ImageLabel"]
 assert(trashImage and rawget(trashImage, "Image") == "rbxassetid://72909566398443", "yüklenen çöp kutusu görseli kullanılmalı")
 assert(t2["+10% when equipped"] and not t2["+10%"], "takılı olmayan petin kartında yüzde olmamalı, ayrıntıda 'when equipped' yazmalı")
 print("PetsPanel merge/equip/delete ok")
+
+-- 2b) Takılı kopyalar: 3 kediden 2'si takılıysa iki kartta tek 'E' rozeti ve '+10%' yazısı vardır; 'E2' / 'x3' yoktur
+local root2b = openPets("cat,cat,cat", "cat,cat")
+local t2b = textsUnder(root2b, {})
+assert(not t2b["E2"] and not t2b["x3"], "toplu rozet olmamalı")
+assert(countText(root2b, "E") == 2, "iki takılı kopya = iki 'E' rozeti: " .. countText(root2b, "E"))
+assert(countText(root2b, "+10%") == 2, "yüzde yazısı sadece takılı iki kartta olmalı: " .. countText(root2b, "+10%"))
+assert(countText(root2b, "Small Cat") == 4, "takılı olsun olmasın üç kart + ayrıntı adı")
+-- 2c) Silme modu kart başınadır: çöp kutusu > bir kartı işaretle > çöp kutusu = o türden TEK pet silinir (DeletePet)
+local root2c = openPets("cat,cat,dog", "")
+S.lastInvoke = nil
+click(buttonNamed(root2c, "TrashButton")) -- silme modu açılır
+click(buttonWith(root2c, "Small Dog")) -- köpek kartını işaretle
+click(buttonNamed(root2c, "TrashButton")) -- işaretliyi sil
+assert(S.lastInvoke and S.lastInvoke[1] == "DeletePet" and S.lastInvoke[2] == "dog", "işaretlenen kart DeletePet(dog) göndermeli: " .. tostring(S.lastInvoke and S.lastInvoke[2]))
+print("PetsPanel unstacked cards ok")
 
 -- 3) 3'ten az: ilerleme gösterilir, tıklayınca bilgi mesajı (sunucuya gitmez)
 local root3, toasts3 = openPets("cat,cat", "")

@@ -172,8 +172,9 @@ function PetsPanel.init(screenGui, showToast, openShop)
 	local fusion = Config.PetFusion
 
 	local selectedId = nil -- ayrıntı kutusunda gösterilen pet türü (id)
+	local selectedCopy = 1 -- o türün hangi kartı (kopyası) seçili: kartlar YIĞILMAZ, her pet ayrı kartta (sahibi 'stacklenmesin' dedi)
 	local deleteMode = false
-	local marked = {} -- silme modunda işaretlenen petler: [id] = silinecek kopya sayısı
+	local marked = {} -- silme modunda işaretlenen kartlar: ["id#kopya sırası"] = true (her pet kendi kartıdır)
 	local pendingDelete = nil -- Delete düğmesine bir kez basılan pet (ikinci basış siler)
 	local hinted = false -- 'Merge edebilirsin' ipucu bu oturumda gösterildi mi
 	local tweens = {} -- her çizimde yeniden kurulan, tekrarlayan animasyonlar (sonraki çizimde iptal edilir)
@@ -571,11 +572,13 @@ function PetsPanel.init(screenGui, showToast, openShop)
 		end)
 	end
 
-	-- ---------- Pet kartı (yığılmış: aynı pet tek kart) ----------
-	local function buildCard(order, pet, count, equippedCount)
+	-- ---------- Pet kartı (YIĞILMAZ: sahip olunan her pet ayrı kart; sahibi 'bunlar stacklenmesin, daha önce de söylemiştim' dedi, 'xN' sayacına DÖNME) ----------
+	-- copy: o türün kaçıncı kopyası; equipped: bu kopya takılı mı (takılı kopyalar önce gelir: takım sayısı kadar ilk kopya)
+	local function buildCard(order, pet, copy, equipped)
 		local rarity = Catalog.rarityOf(pet)
 		local boss = Catalog.isBoss(pet)
-		local isSelected = pet.id == selectedId and not deleteMode
+		local key = `{pet.id}#{copy}`
+		local isSelected = pet.id == selectedId and copy == selectedCopy and not deleteMode
 		local card = create("TextButton", {
 			LayoutOrder = order,
 			Text = "",
@@ -595,7 +598,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 		end
 
 		-- Yüzde yazısı sadece takılı petlerde var: takılı olmayan pet çarpana yüzde vermez (sahibi karışıklığı düzelttirdi)
-		if equippedCount > 0 then
+		if equipped then
 			makeText(card, {
 				Position = UDim2.fromOffset(5, 4),
 				Size = UDim2.fromOffset(52, 15),
@@ -633,32 +636,12 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			ZIndex = 4,
 		}, 1.5)
 
-		-- Kopya sayısı rozeti
-		if count > 1 then
-			local badge = create("Frame", {
-				AnchorPoint = Vector2.new(1, 1),
-				Position = UDim2.new(1, -4, 1, -26),
-				Size = UDim2.fromOffset(30, 16),
-				BackgroundColor3 = BLACK,
-				BackgroundTransparency = 0.3,
-				ZIndex = 5,
-			}, card)
-			UIStyle.round(badge, 8)
-			makeText(badge, {
-				Position = UDim2.fromScale(0.05, 0.05),
-				Size = UDim2.fromScale(0.9, 0.9),
-				Text = `x{count}`,
-				TextColor3 = WHITE,
-				ZIndex = 6,
-			}, 1.5)
-		end
-
-		-- Takılı kopya varsa yeşil "E" rozeti (birden fazlaysa sayısıyla)
-		if equippedCount > 0 then
+		-- Takılı kopyada yeşil "E" rozeti
+		if equipped then
 			local badge = create("Frame", {
 				AnchorPoint = Vector2.new(1, 0),
 				Position = UDim2.new(1, -3, 0, 3),
-				Size = UDim2.fromOffset(if equippedCount > 1 then 32 else 24, 24),
+				Size = UDim2.fromOffset(24, 24),
 				BackgroundColor3 = Color3.fromRGB(60, 210, 70),
 				ZIndex = 5,
 			}, card)
@@ -667,14 +650,14 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			makeText(badge, {
 				Position = UDim2.fromScale(0.08, 0.1),
 				Size = UDim2.fromScale(0.84, 0.8),
-				Text = if equippedCount > 1 then `E{equippedCount}` else "E",
+				Text = "E",
 				TextColor3 = WHITE,
 				ZIndex = 6,
 			}, 2)
 		end
 
-		-- Silme modunda işaretliyse kart kararır ve üstüne kırmızı çarpı ile silinecek sayı çıkar
-		if deleteMode and marked[pet.id] then
+		-- Silme modunda işaretliyse kart kararır ve üstüne kırmızı çarpı çıkar
+		if deleteMode and marked[key] then
 			local shade = create("Frame", {
 				Size = UDim2.fromScale(1, 1),
 				BackgroundColor3 = BLACK,
@@ -693,26 +676,19 @@ function PetsPanel.init(screenGui, showToast, openShop)
 				}, shade)
 				create("UIStroke", { Thickness = 3, Color = BLACK }, bar)
 			end
-			makeText(shade, {
-				AnchorPoint = Vector2.new(0.5, 0),
-				Position = UDim2.new(0.5, 0, 0, 6),
-				Size = UDim2.fromOffset(60, 22),
-				Text = `-{marked[pet.id]}`,
-				TextColor3 = Color3.fromRGB(255, 120, 120),
-				ZIndex = 9,
-			}, 2)
 		end
 
 		card.MouseButton1Click:Connect(function()
 			if deleteMode then
-				-- Aç/kapa: işaretliyse tek tıkla iptal edilir (çarpı kalkar). İşaretlenince takılı OLMAYAN kopyalar silinecek sayılır (hepsi takılıysa 1 kopya)
-				if marked[pet.id] then
-					marked[pet.id] = nil
+				-- Aç/kapa: işaretliyse tek tıkla iptal edilir (çarpı kalkar). Sunucu silerken o türün takılı olmayan kopyasını önce tutar gibi davranmaz: tek kopya silinir (DeletePet)
+				if marked[key] then
+					marked[key] = nil
 				else
-					marked[pet.id] = math.max(1, count - equippedCount)
+					marked[key] = true
 				end
 			else
 				selectedId = pet.id
+				selectedCopy = copy
 				pendingDelete = nil
 			end
 			render()
@@ -797,14 +773,24 @@ function PetsPanel.init(screenGui, showToast, openShop)
 
 		if not selectedId or not owned[selectedId] then
 			selectedId = if pets[1] then pets[1].id else nil
+			selectedCopy = 1
+		end
+		if selectedId and selectedCopy > owned[selectedId] then
+			selectedCopy = owned[selectedId]
 		end
 
+		-- Her kopya ayrı kart: tür sırasıyla, önce takılı kopyalar
 		local anyMergeable = false
-		for order, pet in pets do
+		local order = 0
+		for _, pet in pets do
 			if Catalog.nextTier(pet) and owned[pet.id] >= fusion.Cost then
 				anyMergeable = true
 			end
-			buildCard(order, pet, owned[pet.id], equipped[pet.id] or 0)
+			local equippedCopies = equipped[pet.id] or 0
+			for copy = 1, owned[pet.id] do
+				order += 1
+				buildCard(order, pet, copy, copy <= equippedCopies)
+			end
 		end
 		emptyText.Visible = #pets == 0
 
@@ -826,8 +812,8 @@ function PetsPanel.init(screenGui, showToast, openShop)
 
 		-- Alt satır: çöp kutusu normalde kırmızı, silme modunda turuncu, işaretli pet varsa yeşil (basınca siler)
 		local markedCount = 0
-		for _, count in marked do
-			markedCount += count
+		for _ in marked do
+			markedCount += 1
 		end
 		trash.BackgroundColor3 = if not deleteMode then RED elseif markedCount > 0 then Color3.fromRGB(60, 200, 60) else ORANGE
 		bottomHint.Text = if deleteMode
@@ -882,9 +868,14 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			return
 		end
 
+		-- İşaretli kartlar -> silinecek pet türleri (her işaret bir kopya; sahip olunandan fazlası sayılmaz)
 		local toDelete = {}
-		for id, count in marked do
-			for _ = 1, count do
+		local perType = {}
+		local ownedNow = toCounts(player:GetAttribute("OwnedPets"))
+		for key in marked do
+			local id = string.match(key, "^(.-)#")
+			if id and (perType[id] or 0) < (ownedNow[id] or 0) then
+				perType[id] = (perType[id] or 0) + 1
 				table.insert(toDelete, id)
 			end
 		end
