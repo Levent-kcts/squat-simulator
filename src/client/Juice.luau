@@ -410,7 +410,7 @@ function Juice.init(screenGui)
 		last.muscle = muscle.Value
 		if delta > 0 and ready() then
 			local inArea = (player:GetAttribute("AreaMultiplier") or 1) > 1
-			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.fromRGB(90, 220, 255), popIcon("LegMuscle", "🦵"))
+			Juice.screenPop(`+{Format.compact(delta)}`, if inArea then GREEN else Color3.new(1, 1, 1), popIcon("LegMuscle", "🦵")) -- beyaz (sahibi mavi yerine beyaz istedi); antrenman alanında yeşil
 		end
 	end)
 
