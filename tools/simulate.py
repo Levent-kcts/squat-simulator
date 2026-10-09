@@ -56,6 +56,9 @@ ITEMS = [(num(l, "price"), num(l, "damage")) for l in block("Items").splitlines(
 SKINS = [(num(l, "price"), num(l, "bonus")) for l in block("Skins").splitlines() if "price =" in l]
 PETS = {m.group(1): float(m.group(2)) for m in re.finditer(r'id = "(\w+)", name = "[^"]+", mult = ([\d\.]+)', block("Pets"))}
 AURAS = [(num(l, "winPrice"), num(l, "mult")) for l in block("Auras").splitlines() if "winPrice =" in l]
+# Fiyat merdiveni çıktısı için (id, fiyat): iz ve aura'lar
+TRAIL_PRICES = [(re.search(r'id = "(\w+)"', l).group(1), num(l, "winPrice")) for l in block("Trails").splitlines() if "winPrice =" in l]
+AURA_PRICES = [(re.search(r'id = "(\w+)"', l).group(1), num(l, "winPrice")) for l in block("Auras").splitlines() if "winPrice =" in l]
 
 # Pet birleştirme (Config.PetFusion): Cost aynı pet (aynı çarpan ve boy) tek bir üst boya dönüşür, çarpan PowerFactor katına çıkar
 FUSION = block("PetFusion")
@@ -372,3 +375,15 @@ if __name__ == "__main__":
     print("Sınırdaki duvar (rebirth anı: aşama, o aşamayı kırmak için tekme [5 duvar, duvar başına ~/5], sonraki aşama için tekme): " + "; ".join(f"r{r}: S{st}, {h}, {nh:,.0f}" for r, (st, h, nh) in sorted(p.fronts.items()) if r in (1, 3, 5, 8, 12, 16, 20, 25)))
     print("Aşama kilometre taşları (ilk ulaşılan zaman, rebirth sayısı): " + ", ".join(f"{s}: {fmt(t).strip()} (r{r})" for s, (t, r) in sorted(p.milestones.items()) if s % 5 == 0 or s == STAGE_COUNT))
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")
+
+    # Fiyat merdiveni: bir fiyatı TEK sefer ödülüyle karşılayan ilk aşama ve oraya ilk ulaşma zamanı (biriktirerek daha erken de alınabilir)
+    def ladder(name, prices):
+        parts = []
+        for item_id, price in prices:
+            stage = next((s for s in range(1, STAGE_COUNT + 1) if reward(s) >= price), None)
+            when = fmt(p.milestones[stage][0]).strip() if stage in p.milestones else "ulaşılmadı"
+            parts.append(f"{item_id} {price:,.0f} (aşama {stage}, {when})")
+        print(f"{name}: " + "; ".join(parts))
+
+    ladder("Fiyat merdiveni, izler", TRAIL_PRICES)
+    ladder("Fiyat merdiveni, aura'lar", AURA_PRICES)

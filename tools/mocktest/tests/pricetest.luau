@@ -90,3 +90,31 @@ end
 -- Rainbow iksiri üç tekil iksirin toplamından ucuz olmalı (paket indirimi)
 assert(potionPrice.rainbow15 < potionPrice.luck15 + potionPrice.muscle15 + potionPrice.wins15, "Rainbow 15 dk paket indirimi")
 assert(potionPrice.rainbow60 < potionPrice.luck60 + potionPrice.muscle60 + potionPrice.wins60, "Rainbow 60 dk paket indirimi")
+
+-- WIN fiyat merdiveni (2026-10-10): izler ve aura'lar zayıftan güçlüye pahalılaşır, her biri oyunun bir aşamasının TEK sefer ödülüyle alınabilir ve en pahalısı bile 20. aşama ödülünün altındadır (alınabilir kalır);
+-- aura'lar (kalıcı çarpan) aynı sıradaki izden pahalı ya da eşit hedef aşamaya konur ve rainbow aura son aşamalarda (>= 17) alınır
+local Layout = require("./Layout")
+local function stageFor(price)
+	for stage = 1, Config.Wall.Count // Config.Wall.GroupSize do
+		if Layout.reward(stage) >= price then
+			return stage
+		end
+	end
+	return nil
+end
+local lastStage, lastPrice = 0, 0
+for _, trail in Config.Trails do
+	assert(trail.winPrice > lastPrice, "iz Win fiyatları artmalı: " .. trail.id)
+	local stage = stageFor(trail.winPrice)
+	assert(stage and stage >= lastStage, "iz hedef aşaması azalmamalı: " .. trail.id)
+	lastStage, lastPrice = stage, trail.winPrice
+end
+assert(lastStage >= 17 and lastStage <= 19, "rainbow iz oyunun sonlarında alınmalı: aşama " .. lastStage)
+lastStage, lastPrice = 0, 0
+for _, aura in Config.Auras do
+	assert(aura.winPrice > lastPrice, "aura Win fiyatları artmalı: " .. aura.id)
+	local stage = stageFor(aura.winPrice)
+	assert(stage and stage > lastStage, "aura hedef aşaması ilerlemeli (her aura farklı aşama): " .. aura.id)
+	lastStage, lastPrice = stage, aura.winPrice
+end
+assert(lastStage >= 18 and lastStage <= 19, "rainbow aura 18-19. aşamada alınmalı (oyunun sonu 20): aşama " .. lastStage)
