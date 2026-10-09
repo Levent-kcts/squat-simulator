@@ -115,7 +115,7 @@ return {
 		Products = {
 			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", badge = "+", kind = "petSpace", amount = 25, robux = 49, productId = 3717466379, color = Color3.fromRGB(235, 70, 70) },
 			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
-			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 15, productId = 0, quick = true, color = Color3.fromRGB(255, 45, 140) },
+			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 15, productId = 3717466555, quick = true, color = Color3.fromRGB(255, 45, 140) },
 			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 10000, robux = 49, productId = 0, quick = true, color = Color3.fromRGB(232, 32, 112) },
 			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 100000, robux = 149, productId = 0, quick = true, color = Color3.fromRGB(180, 20, 70) },
 			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", imageKey = "WinPack", kind = "stageWins", stage = 8, robux = 25, productId = 0, color = Color3.fromRGB(70, 210, 90) },
