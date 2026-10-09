@@ -324,10 +324,11 @@ return {
 		LeaderboardZ = 53.5,
 		LeaderboardAngle = 28,
 		-- Günlük çark: arka duvara yakın, YUMURTA STANDININ yanında (x = 27'de biter) ve antrenman alanının (z = 31'de biter) arkasında. Eskiden sağ arka köşedeydi (x = 81); salon genişleyince çok uzakta kaldı,
-		-- sahibi 'çok uzakta, şu araya koy yakın dursun, uzak kısma legolar falan olsun' dedi. Çark (kapı çerçevesiyle ~9.5 stud yarıçaplı) x 40-60, z 38-58 arasını kaplar; sağ arka köşe (x > 66) lego kulelerine kaldı (EnvironmentService).
+		-- sahibi 'çok uzakta, şu araya koy yakın dursun, uzak kısma legolar falan olsun' dedi; sonra 'wheeli daha da yakınlaştır, köşeye arkasını doldur' dedi: çark (x 46, z 45) yumurta standının rampasına (x <= 33) ve antrenman rampasına (z <= 31)
+		-- çakışmayacak en yakın yerdedir. Çark (kapı çerçevesiyle ~9.5 stud yarıçaplı) x 36.5-55.5, z 35.5-54.5 arasını kaplar; arkası ve sağ arka köşe (x > 56) lego kulelerine kaldı (EnvironmentService).
 		-- WheelFaceX/Z: çarkın baktığı nokta (lobinin ortası).
-		WheelX = 50,
-		WheelZ = 48,
+		WheelX = 46,
+		WheelZ = 45,
 		WheelFaceX = 0,
 		WheelFaceZ = 0,
 		TrainingShelfZ = -12, -- SAĞ duvardaki antrenman alanı (merkez z): koridor tarafına doğru kaydırıldı; alan z = -55 ile 31 arasını kaplar, duvarın arka ucu (z > 31, çarkın yanı) yeni şeyler için boş
