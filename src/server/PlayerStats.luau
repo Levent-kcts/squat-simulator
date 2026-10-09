@@ -663,9 +663,9 @@ function PlayerStats.usePotion(player, sku)
 	return true, potionMessage(def.kind, def.minutes)
 end
 
--- Çevrimdışı kazanç: verilen süre (saniye) için bacak kası miktarı = (süre / squat süresi) x tıklama başı kazanç x Rate
+-- Çevrimdışı kazanç: verilen süre (saniye) için bacak kası miktarı = (süre x Auto Click hızı) x tıklama başı kazanç x Rate (aktif Auto Click oyununun %2'si)
 local function offlineGain(profile, seconds)
-	return math.floor(seconds / Config.MoveDuration.Squat * profile.gain * Config.Offline.Rate)
+	return math.floor(seconds * Config.AutoClick.PerSecond * profile.gain * Config.Offline.Rate)
 end
 
 -- DEV: çevrimdışı penceresini yeniden açtırmak için sayaç. Öznitelik değeri aynı kalsa bile (örneğin pencere X ile kapatılmışken

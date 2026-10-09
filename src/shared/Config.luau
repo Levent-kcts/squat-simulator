@@ -16,13 +16,15 @@ return {
 	Level = {
 		BaseTaps = 10, -- 1. level 10 kas ister
 		-- Bir sonraki levele geçmek için gereken kas KUVVET YASASIYLA büyür: 10 + (TapsAtLevel10 - 10) / 9^CostPower x (level - 1)^CostPower
-		-- (level 1 = 10, level 10 = 22; sonrası hızla artar). Üstel (1.09^level) yerine kuvvet yasası seçildi: rebirth başına süre düzgün uzasın,
-		-- tools/simulate.py ile ölçüldü (aktif oyuncu: 1. rebirth ~5 dk, 5. ~2 sa, 12. ~12 sa, 20. ~1.2 gün, 45. ~3.5 gün).
-		CostPower = 4.2,
+		-- (level 1 = 10, level 10 = 22 sahibinin verdiği iki nokta, sabit; sonrası hızla artar). Üstel (1.09^level) yerine kuvvet yasası seçildi: rebirth başına süre düzgün uzasın,
+		-- tools/simulate.py ile ölçüldü (aktif oyuncu = Auto Click açık, saniyede 10 tıklama: 1. rebirth ~5 dk, 5. ~1.6 sa, 12. ~11 sa, 20. ~1.1 gün, 45. ~3.6 gün).
+		-- 2026-10-09: her tıklama kası anında verdiği ve Auto Click saniyede 10 tıklama attığı için (eskiden saniyede ~2 varsayılırdı) CostPower 4.2 -> 4.9 ve BaseMaxLevel 20 -> 25 yapıldı
+		-- (eski ayarla 12. rebirth 2.5 saatte, 45. 14 saatte geliyordu). Tempoyu değiştirirsen önce `python tools/simulate.py 100 poly=... base_max=...` ile dene.
+		CostPower = 4.9,
 		TapsAtLevel10 = 22,
-		BaseMaxLevel = 20, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level
+		BaseMaxLevel = 25, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level
 		MaxLevelPerRebirth = 10, -- her rebirth bu kadar yüksek level izni verir
-		MultiplierPerLevel = 0.1, -- level 20 = x2.9
+		MultiplierPerLevel = 0.1, -- level 25 = x3.4
 	},
 
 	-- Görünüm: oyuncunun KENDİ skini (ten rengi, gömlek, pantolon) korunur. Sadece bacakların üstünde görünen
@@ -132,8 +134,8 @@ return {
 	},
 
 	-- Çevrimdışı kazanç (Offline Earnings): oyundan uzakta geçen süre için bacak kası birikir; girişte açılan pencerede CLAIM'e basınca verilir.
-	-- Süre MaxHours ile sınırlanır, MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye / squat süresi) x tıklama başı kazanç x Rate
-	-- (Rate = aktif oynamanın yüzdesi: 0.02 = %2). Alınmayan kazanç kayıtlı kalır. Kayıt gerektirir (yayınlanmış oyun + API); Studio'da DEV > Offline 3h ile denenir.
+	-- Süre MaxHours ile sınırlanır, MinSeconds'tan kısa aralar sayılmaz. Kazanç = (uzakta geçen saniye x AutoClick.PerSecond) x tıklama başı kazanç x Rate
+	-- (Rate = aktif Auto Click oyununun yüzdesi: 0.02 = %2; eskiden squat süresine bölünürdü, tıklama hızı 5 katına çıkınca oran korunsun diye Auto Click hızına bağlandı). Alınmayan kazanç kayıtlı kalır. Kayıt gerektirir (yayınlanmış oyun + API); Studio'da DEV > Offline 3h ile denenir.
 	-- DoubleProductId: pencerenin 'DOUBLE IT!' butonu (Robux ile bekleyen kazancın 2 katı). Creator Hub'da Developer Product oluşturup ID'sini yaz;
 	-- 0 iken buton 'COMING SOON' der. DoubleRobux sadece butonda gösterilen fiyattır (gerçek fiyatı Developer Product belirler).
 	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300, DoubleProductId = 0, DoubleRobux = 19 },
@@ -330,7 +332,7 @@ return {
 		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
 		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
 		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
-		HealthGrowthAfter = 4.5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; tools/simulate.py)
+		HealthGrowthAfter = 5, -- 4. grup 3000 x 5 = 15000 ... (12 iken Win ödülleri çok geç yetişiyordu; 4.5 iken 2026-10-09'daki hızlı kas kazancıyla Win ve pet gücü şişiyordu, 5 ile tempo hedefe oturdu; tools/simulate.py hp_growth=)
 
 		Width = 32, -- koridorun ve duvarın genişliği (stud)
 		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır
@@ -533,13 +535,13 @@ return {
 		PetEgg = 3, -- 'pet' dilimi Config.Eggs içindeki bu sıradaki yumurtanın havuzundan pet verir
 		Prizes = {
 			{ kind = "wins", mult = 2, weight = 24, icon = "🏆", imageKey = "Wins", label = "Wins", color = Color3.fromRGB(235, 80, 90) },
-			{ kind = "muscle", clicks = 500, weight = 24, icon = "💪", imageKey = "LegMuscle", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
+			{ kind = "muscle", clicks = 2500, weight = 24, icon = "💪", imageKey = "LegMuscle", label = "Muscle", color = Color3.fromRGB(70, 140, 235) },
 			{ kind = "boostMuscle", minutes = 15, weight = 14, icon = "💪", potion = "muscle", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
 			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", imageKey = "Wins", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
-			{ kind = "muscle", clicks = 2000, weight = 14, icon = "💪", imageKey = "LegMuscle", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
+			{ kind = "muscle", clicks = 10000, weight = 14, icon = "💪", imageKey = "LegMuscle", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
 			{ kind = "boostWins", minutes = 15, weight = 8, icon = "🏆", potion = "wins", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
 			{ kind = "pet", weight = 5, icon = "🐾", imageKey = "Pet", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
-			{ kind = "jackpot", mult = 20, clicks = 5000, weight = 1, icon = "💎", imageKey = "Jackpot", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
+			{ kind = "jackpot", mult = 20, clicks = 25000, weight = 1, icon = "💎", imageKey = "Jackpot", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
 		},
 	},
 	MaxEquippedPets = 3, -- aynı anda takılı pet sayısı (en güçlüler otomatik takılır)
@@ -555,16 +557,16 @@ return {
 		BonusBoostMinutes = 15,
 		Pool = {
 			{ id = "walls", text = "Break {goal} walls", goals = { 12, 25, 50 } },
-			{ id = "clicks", text = "Squat or kick {goal} times", goals = { 120, 250, 500 } },
+			{ id = "clicks", text = "Squat or kick {goal} times", goals = { 600, 1250, 2500 } }, -- Auto Click ile ~1 / 2 / 4 dk (tıklama saniyede 10)
 			{ id = "hatch", text = "Hatch {goal} eggs", goals = { 2, 4, 8 } },
 			{ id = "winpads", text = "Step on the Win button {goal} times", goals = { 2, 3, 5 } },
 			{ id = "fuse", text = "Merge pets {goal}x", goals = { 1, 1, 2 }, hardOnly = true },
 			{ id = "rebirth", text = "Rebirth {goal}x", goals = { 1 }, hardOnly = true },
 		},
 		Rewards = {
-			{ kind = "muscle", clicks = 600 },
+			{ kind = "muscle", clicks = 3000 }, -- 'clicks' = tıklama başı kazanç x bu kadar; tıklama hızı 5 katına çıkınca ödüller de 5 kat (eski süre eşdeğeri)
 			{ kind = "wins", mult = 4 },
-			{ kind = "muscle", clicks = 3000 },
+			{ kind = "muscle", clicks = 15000 },
 		},
 	},
 

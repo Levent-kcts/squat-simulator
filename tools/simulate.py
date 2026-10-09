@@ -2,6 +2,10 @@
 Kullanım (proje klasöründe): python tools/simulate.py [saat] [anahtar=değer ...]
 Örnek: python tools/simulate.py 12 growth=1.09 level_mult=0.1
 Çıktı: rebirth zamanları, zonlar, çarpanlar. Sayıları değiştirmeden önce/sonra kıyaslamak içindir; gerçek oyuncu davranışı farklı olabilir.
+TIKLAMA HIZI (2026-10-09'dan beri): her tıklama kası ANINDA verir. Auto Click açıkken saniyede Config.AutoClick.PerSecond (10) tıklama, elle en çok Config.ClickLimit.PerSecond (12),
+Auto Click KAPALI ve antrenman pedindeyken pedin kendi otomatik squat'ı hareket başına bir tıklama (~2/sn). Varsayılan oyuncu Auto Click'li (cps = AutoClick.PerSecond);
+`cps=2` pasif ped oyuncusu, `cps=12` elle hızlı tıklayan. Duvar seferinde tekme hareket başına bir kez kas verir. `boost=1.3` ortalama iksir/2x güçlendirme etkisi (zaman ortalaması) demektir.
+Hedef tempo (aktif oyuncu): 1. rebirth ~5 dk, 5. ~2 sa, 12. ~12 sa, 20. ~1.2 gün, 45. ~3.5 gün (`python tools/simulate.py 100` sonu).
 """
 import math
 import random
@@ -75,13 +79,20 @@ SPACING = num(WALL, "Spacing")
 BUTTON_GAP = num(WALL, "ButtonGap")
 
 MOVE = {"Kick": 0.4, "Squat": 0.5}
+CPS_DEFAULT = num(block("AutoClick"), "PerSecond", 10)
 
 # komut satırından geçersiz kılmalar
 args = sys.argv[1:]
 HOURS = float(args[0]) if args and "=" not in args[0] else 12.0
 OVERRIDES = dict(a.split("=") for a in args if "=" in a)
+CPS = float(OVERRIDES.get("cps", CPS_DEFAULT))  # saniyedeki tıklama sayısı (bkz. dosya başı)
+BOOST = float(OVERRIDES.get("boost", 1.0))  # iksir / 2x güçlendirme zaman ortalaması
 if "fusion_factor" in OVERRIDES:
     FUSION_FACTOR = float(OVERRIDES["fusion_factor"])
+if "t10" in OVERRIDES:
+    TAPS_AT_LEVEL10 = float(OVERRIDES["t10"])
+if "base_max" in OVERRIDES:
+    BASE_MAX_LEVEL = float(OVERRIDES["base_max"])
 if "growth" in OVERRIDES:
     GROWTH = float(OVERRIDES["growth"])
 if "level_mult" in OVERRIDES:
@@ -292,7 +303,7 @@ def run(hours):
     while p.t < horizon:
         # Zaman adımı: başta ince (level hızlı atlıyor), sonra kalınlaşır (hız için)
         step = 1 if p.t < 600 else (5 if p.t < 3600 else 20)
-        p.add_muscle(p.gain() * p.zone() * step / MOVE["Squat"])
+        p.add_muscle(p.gain() * p.zone() * step * CPS * BOOST)
         p.t += step
         since_trip += step
         at_cap = p.level >= p.cap()
@@ -320,7 +331,8 @@ def fmt(seconds):
 if __name__ == "__main__":
     p, log, first_cap = run(HOURS)
     print(f"Seviye maliyeti: {'kuvvet yasası ^%.2f' % POLY_P if POLY_P else ('x%.3f üstel' % GROWTH if GROWTH else 'doğrusal')}, level çarpanı +{LEVEL_MULT}/level, rebirth +{REBIRTH_MULT}, rebirth başına +{MAX_LEVEL_PER_REBIRTH:.0f} level sınırı")
-    print(f"İlk level sınırına (20) ulaşma: {fmt(first_cap) if first_cap else 'yok'}")
+    print(f"Tıklama hızı: {CPS:g}/sn, güçlendirme x{BOOST:g}")
+    print(f"İlk level sınırına ({BASE_MAX_LEVEL:g}) ulaşma: {fmt(first_cap) if first_cap else 'yok'}")
     print("rebirth | zaman     | bölge | pet   | aura | skin | ayakkabı | kas (rebirth anı) | aşama | sefer Win | kalan Win | devirde kazanılan Win")
     for t, r, zone, pm, aura, wins, muscle, shoe, skin, stage, won, earned in log:
         if r <= 12 or r % 5 == 0:
