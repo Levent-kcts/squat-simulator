@@ -25,7 +25,7 @@ local BRICK_COLORS = {
 
 LoadingScreen.GameTitle = "SQUAT SIMULATOR" -- başlık (Config.GameName ile aynı; Config bu aşamada henüz gelmemiş olabilir)
 LoadingScreen.ShowTitle = true
-LoadingScreen.MinSeconds = 1.5 -- her koşulda en az bu kadar görünür (yanıp sönmesin)
+LoadingScreen.MinSeconds = 3 -- her koşulda en az bu kadar görünür (yanıp sönmesin). Süre ekranın İLK ÇİZİLDİĞİ kareden sayılır: Studio'da pencere geç açılırsa ekran kaçmasın
 LoadingScreen.MaxSeconds = 30 -- en geç bu kadar sonra kapanır
 LoadingScreen.DisplayOrder = 1000 -- hiçbir arayüz bunun üstüne çıkmaz (en yükseği WheelPanel 20)
 
@@ -96,12 +96,16 @@ local function addBrick(parent, x, y, width, color, tilt)
 	local brick = Instance.new("Frame")
 	brick.AnchorPoint = Vector2.new(0.5, 0.5)
 	brick.Position = UDim2.fromScale(x, y)
-	brick.Size = UDim2.fromScale(width, width * 0.55)
+	brick.Size = UDim2.fromScale(width, width) -- yükseklik aşağıdaki oran sınırından gelir (ekran en-boy oranı ne olursa olsun tuğla yatay dikdörtgen kalır)
 	brick.BackgroundColor3 = color
 	brick.BorderSizePixel = 0
 	brick.Rotation = tilt
 	brick.ZIndex = 1
 	brick.Parent = parent
+	local ratio = Instance.new("UIAspectRatioConstraint")
+	ratio.AspectRatio = 1 / 0.55
+	ratio.DominantAxis = Enum.DominantAxis.Width
+	ratio.Parent = brick
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.12, 0)
 	corner.Parent = brick
@@ -270,6 +274,7 @@ function LoadingScreen.run()
 		return
 	end
 
+	print("[Loading] screen shown")
 	local startedAt = os.clock()
 	local progress: { [string]: number } = { game = 0, world = 0, assets = 0, character = 0, client = 0 }
 	local maxSeconds = LoadingScreen.MaxSeconds
@@ -348,18 +353,20 @@ function LoadingScreen.run()
 	local shown = 0
 	local finished = false
 	local connection
+	local renderStart -- ilk çizilen karenin zamanı
 	connection = RunService.RenderStepped:Connect(function(dt)
 		if finished then
 			return
 		end
-		local clock = os.clock() - startedAt
+		renderStart = renderStart or os.clock()
+		local clock = os.clock() - renderStart -- ekranın görünür kaldığı süre
 		local allDone = true
 		for stage in LoadingScreen.Stages do
 			if progress[stage] < 1 then
 				allDone = false
 			end
 		end
-		local timedOut = clock > maxSeconds + 2
+		local timedOut = os.clock() - startedAt > maxSeconds + 2
 		local target = if timedOut then 1 else LoadingScreen.target(progress)
 		if clock < LoadingScreen.MinSeconds then
 			target = math.min(target, 0.97 * clock / LoadingScreen.MinSeconds) -- kısa sürede dolup hemen kapanmasın
@@ -372,6 +379,7 @@ function LoadingScreen.run()
 		if (allDone or timedOut) and clock >= LoadingScreen.MinSeconds and shown >= 0.995 then
 			finished = true
 			connection:Disconnect()
+			print(`[Loading] done after {string.format("%.1f", clock)} s{if timedOut then " (timed out)" else ""}`)
 			screen.setProgress(1)
 			task.delay(0.25, function()
 				local tween = screen.fadeOut(0.5)
