@@ -91,46 +91,41 @@ local function addText(parent, props, strokeThickness)
 	return label
 end
 
--- Süzülen lego tuğla: gövde + üstte iki çıkıntı (stud). Merkez (x, y) ekran oranıdır.
-local function addBrick(parent, x, y, width, color, tilt)
-	local brick = Instance.new("Frame")
-	brick.AnchorPoint = Vector2.new(0.5, 0.5)
-	brick.Position = UDim2.fromScale(x, y)
-	brick.Size = UDim2.fromScale(width, width) -- yükseklik aşağıdaki oran sınırından gelir (ekran en-boy oranı ne olursa olsun tuğla yatay dikdörtgen kalır)
-	brick.BackgroundColor3 = color
-	brick.BorderSizePixel = 0
-	brick.Rotation = tilt
-	brick.ZIndex = 1
-	brick.Parent = parent
-	local ratio = Instance.new("UIAspectRatioConstraint")
-	ratio.AspectRatio = 1 / 0.55
-	ratio.DominantAxis = Enum.DominantAxis.Width
-	ratio.Parent = brick
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0.12, 0)
-	corner.Parent = brick
-	local stroke = Instance.new("UIStroke")
-	stroke.Thickness = 3
-	stroke.Color = Color3.new(color.R * 0.55, color.G * 0.55, color.B * 0.55)
-	stroke.Parent = brick
-	for index = 1, 2 do
-		local stud = Instance.new("Frame")
-		stud.AnchorPoint = Vector2.new(0.5, 1)
-		stud.Position = UDim2.fromScale(index == 1 and 0.28 or 0.72, 0.02)
-		stud.Size = UDim2.fromScale(0.26, 0.26)
-		stud.BackgroundColor3 = color
-		stud.BorderSizePixel = 0
-		stud.ZIndex = 1
-		stud.Parent = brick
-		local studCorner = Instance.new("UICorner")
-		studCorner.CornerRadius = UDim.new(0.5, 0)
-		studCorner.Parent = stud
-		local studStroke = Instance.new("UIStroke")
-		studStroke.Thickness = 2
-		studStroke.Color = Color3.new(color.R * 0.55, color.G * 0.55, color.B * 0.55)
-		studStroke.Parent = stud
+-- 3B 2x2 LEGO TUĞLA (4 çıkıntılı, 'dörtlü'; sahibi önceki düz çizimleri 'çok kötü' bulunca sıfırdan tasarlandı): gövde 4 x 2.4 x 4 stud (gerçek 2x2 tuğla oranı 1 : 0.6),
+-- üstünde 4 silindir çıkıntı (çap 1.3, boy 0.5). Model orijini gövdenin ortasıdır; PivotTo ile konumlanır ve döner. Hepsi Anchored (ViewportFrame içinde fizik yok).
+local BRICK_BODY = Vector3.new(4, 2.4, 4)
+local STUD_DIAMETER, STUD_HEIGHT = 1.3, 0.5
+
+local function newPart(model, name, size, color)
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Anchored = true
+	part.CanCollide = false
+	part.Size = size
+	part.Color = color
+	part.Material = Enum.Material.SmoothPlastic
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part.Parent = model
+	return part
+end
+
+function LoadingScreen.buildBrick(color)
+	local model = Instance.new("Model")
+	model.Name = "Brick"
+	local body = newPart(model, "Body", BRICK_BODY, color)
+	model.PrimaryPart = body
+	local index = 0
+	for _, sx in { -1, 1 } do
+		for _, sz in { -1, 1 } do
+			index += 1
+			-- Roblox silindirinin ekseni X'tir: boyu X'e, çapı Y/Z'ye veririz ve 90 derece yatırıp yukarı baktırırız
+			local stud = newPart(model, `Stud{index}`, Vector3.new(STUD_HEIGHT, STUD_DIAMETER, STUD_DIAMETER), color)
+			stud.Shape = Enum.PartType.Cylinder
+			stud.CFrame = CFrame.new(sx * 1, BRICK_BODY.Y / 2 + STUD_HEIGHT / 2, sz * 1) * CFrame.Angles(0, 0, math.pi / 2)
+		end
 	end
-	return brick
+	return model
 end
 
 -- Ekranı kurar. Dönen nesne: gui, root, setProgress(0..1), setDots(clock), animate(clock), fadeOut(seconds)
@@ -143,28 +138,60 @@ function LoadingScreen.build(parentGui)
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = parentGui
 
-	-- CanvasGroup: tüm ekran tek parça olarak solarak kapanır. Active: arkadaki oyun tıklamaları (squat) yükleme sırasında sayılmasın
-	local root = Instance.new("CanvasGroup")
-	root.Name = "Root"
-	root.Size = UDim2.fromScale(1, 1)
-	root.BackgroundColor3 = Color3.new(1, 1, 1)
-	root.BorderSizePixel = 0
-	root.Active = true
-	root.Parent = gui
+	-- Katmanlar (aşağıdan yukarı): zemin (Active: arkadaki oyun tıklamaları yükleme sırasında squat sayılmasın), 3B tuğlalar (ViewportFrame), yazılar ve çubuk (CanvasGroup: tek parça solar).
+	-- ViewportFrame CanvasGroup'un içine KONMAZ: canvas içinde 3B görüntü güvenilir çizilmeyebilir, bu yüzden üç katman ayrı solar.
+	local backdrop = Instance.new("Frame")
+	backdrop.Name = "Backdrop"
+	backdrop.Size = UDim2.fromScale(1, 1)
+	backdrop.BackgroundColor3 = Color3.new(1, 1, 1)
+	backdrop.BorderSizePixel = 0
+	backdrop.Active = true
+	backdrop.ZIndex = 1
+	backdrop.Parent = gui
 	local gradient = Instance.new("UIGradient")
 	gradient.Rotation = 90
 	gradient.Color = ColorSequence.new(TOP_COLOR, BOTTOM_COLOR)
-	gradient.Parent = root
+	gradient.Parent = backdrop
 
-	-- Dekor: köşelerde ve kenarlarda süzülen tuğlalar (ortayı boş bırakır)
+	-- Dekor: köşelerde ve kenarlarda süzülüp dönen 2x2 tuğlalar (ortayı boş bırakır). { ekran x, ekran y (0-1), kameradan uzaklık (küçük = büyük görünür), renk sırası, başlangıç fazı }
 	local bricks = {}
+	local viewport = Instance.new("ViewportFrame")
+	viewport.Name = "Bricks"
+	viewport.Size = UDim2.fromScale(1, 1)
+	viewport.BackgroundTransparency = 1
+	viewport.BorderSizePixel = 0
+	viewport.ZIndex = 2
+	viewport.Ambient = Color3.fromRGB(150, 155, 190)
+	viewport.LightColor = Color3.fromRGB(255, 255, 255)
+	viewport.LightDirection = Vector3.new(-0.6, -1, -0.8)
+	viewport.Parent = gui
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = 40
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
 	local layout = {
-		{ 0.10, 0.18, 0.12, 1, -14 }, { 0.88, 0.14, 0.10, 2, 12 }, { 0.20, 0.82, 0.11, 3, 9 }, { 0.80, 0.84, 0.13, 4, -10 },
-		{ 0.05, 0.50, 0.08, 5, 16 }, { 0.95, 0.52, 0.08, 6, -16 }, { 0.32, 0.10, 0.07, 2, -8 }, { 0.68, 0.92, 0.07, 1, 7 },
+		{ 0.09, 0.15, 50, 1, 0.0 }, { 0.91, 0.13, 56, 2, 1.7 }, { 0.06, 0.52, 60, 5, 3.1 },
+		{ 0.94, 0.55, 54, 6, 4.4 }, { 0.17, 0.86, 52, 3, 5.2 }, { 0.84, 0.85, 48, 4, 2.4 },
 	}
-	for index, def in layout do
-		bricks[index] = { frame = addBrick(root, def[1], def[2], def[3], BRICK_COLORS[def[4]], def[5]), x = def[1], y = def[2], tilt = def[5] }
+	local okBricks, errBricks = pcall(function()
+		for index, def in layout do
+			local model = LoadingScreen.buildBrick(BRICK_COLORS[def[4]])
+			model.Parent = viewport
+			bricks[index] = { model = model, x = def[1], y = def[2], depth = def[3], phase = def[5] }
+		end
+	end)
+	if not okBricks then
+		warn(`[Loading] Could not build the bricks: {errBricks}`)
 	end
+
+	-- İçerik katmanı: yazılar ve çubuk (şeffaf CanvasGroup; solarken hepsi birlikte kaybolur)
+	local root = Instance.new("CanvasGroup")
+	root.Name = "Root"
+	root.Size = UDim2.fromScale(1, 1)
+	root.BackgroundTransparency = 1
+	root.BorderSizePixel = 0
+	root.ZIndex = 3
+	root.Parent = gui
 
 	if LoadingScreen.ShowTitle then
 		addText(root, { Position = UDim2.fromScale(0.5, 0.30), Size = UDim2.fromScale(0.7, 0.16), Text = LoadingScreen.GameTitle, Color = YELLOW }, 6)
@@ -220,6 +247,9 @@ function LoadingScreen.build(parentGui)
 
 	local screen = {}
 	screen.gui = gui
+	screen.backdrop = backdrop
+	screen.viewport = viewport
+	screen.bricks = bricks
 	screen.root = root
 	screen.fill = fill
 	screen.percent = percent
@@ -233,18 +263,30 @@ function LoadingScreen.build(parentGui)
 	function screen.setDots(clock)
 		loadingLabel.Text = LoadingScreen.dots(clock)
 	end
-	-- Tuğlalar yavaşça süzülür ve sallanır
+	-- Tuğlalar süzülür (yukarı aşağı), kendi ekseninde yavaşça döner ve hafif sallanır; konumlar her karede ekran oranından hesaplanır (pencere boyu değişse de köşelerde kalır)
 	function screen.animate(clock)
+		local size = viewport.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 16 / 9
+		local tanHalf = math.tan(math.rad(camera.FieldOfView / 2))
 		for index, item in bricks do
-			item.frame.Position = UDim2.fromScale(item.x, item.y + math.sin(clock * 1.3 + index) * 0.012)
-			item.frame.Rotation = item.tilt + math.sin(clock * 0.9 + index * 2) * 4
+			local halfHeight = item.depth * tanHalf
+			local halfWidth = halfHeight * aspect
+			local bob = math.sin(clock * 1.3 + item.phase) * 1.2
+			local x = (item.x - 0.5) * 2 * halfWidth
+			local y = (0.5 - item.y) * 2 * halfHeight + bob
+			local spin = clock * 0.6 + item.phase -- kendi dikey ekseninde dönüş
+			local sway = math.sin(clock * 0.9 + item.phase * 2) * 0.12
+			item.model:PivotTo(CFrame.new(x, y, -item.depth) * CFrame.Angles(-0.55, 0, 0) * CFrame.Angles(0, spin, sway)) -- sabit eğim: üstteki 4 çıkıntı hep görünür
 		end
 	end
 	function screen.fadeOut(seconds)
 		local TweenService = game:GetService("TweenService")
-		local tween = TweenService:Create(root, TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { GroupTransparency = 1 })
-		tween:Play()
-		return tween
+		local info = TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		local main = TweenService:Create(backdrop, info, { BackgroundTransparency = 1 })
+		TweenService:Create(viewport, info, { ImageTransparency = 1 }):Play()
+		TweenService:Create(root, info, { GroupTransparency = 1 }):Play()
+		main:Play()
+		return main
 	end
 	return screen
 end

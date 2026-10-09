@@ -44,9 +44,21 @@ assert(#LoadingScreen.collectAssets(nil) == 0, "tablo yoksa liste boş olmalı")
 -- Arayüz: kurulur, ilerleme ve yüzde yazısı güncellenir, hata vermeden animasyon ve solma çalışır
 local gui = S.newInstance("PlayerGui")
 local screen = LoadingScreen.build(gui)
-assert(screen.gui and screen.root and screen.fill and screen.percent and screen.label, "arayüz parçaları yok")
+assert(screen.gui and screen.root and screen.backdrop and screen.viewport and screen.fill and screen.percent and screen.label, "arayüz parçaları yok")
 assert(rawget(screen.gui, "DisplayOrder") == LoadingScreen.DisplayOrder, "DisplayOrder ayarlanmalı")
-assert(rawget(screen.root, "Active") == true, "kök Active olmalı (arkadaki tıklamalar sayılmasın)")
+assert(rawget(screen.backdrop, "Active") == true, "zemin Active olmalı (arkadaki tıklamalar sayılmasın)")
+-- 3B tuğlalar: 6 adet, her biri 2x2 (gövde + 4 çıkıntı), hepsi ViewportFrame'in içinde
+assert(#screen.bricks == 6, "6 tuğla olmalı: " .. #screen.bricks)
+for index, item in screen.bricks do
+	local parts = rawget(item.model, "_children")
+	local count = 0
+	for _ in parts do
+		count += 1
+	end
+	assert(count == 5 and parts.Body and parts.Stud1 and parts.Stud2 and parts.Stud3 and parts.Stud4, "tuğla " .. index .. ": gövde + 4 çıkıntı olmalı, parça sayısı " .. count)
+	assert(rawget(parts.Stud1, "Shape") == "PartType.Cylinder", "çıkıntı silindir olmalı")
+	assert(rawget(item.model, "PrimaryPart") == parts.Body, "PrimaryPart gövde olmalı")
+end
 screen.setProgress(0.5)
 assert(rawget(screen.percent, "Text") == "50%", "yüzde yazısı: " .. tostring(rawget(screen.percent, "Text")))
 screen.setProgress(2)
@@ -56,6 +68,7 @@ assert(rawget(screen.percent, "Text") == "0%", "negatif değer 0% olmalı")
 screen.setDots(0.8)
 assert(rawget(screen.label, "Text") == LoadingScreen.dots(0.8), "nokta yazısı güncellenmeli")
 screen.animate(1.5)
+screen.animate(7.25) -- zaman ilerleyince de hata vermemeli
 local ok, err = pcall(screen.fadeOut, 0.5)
 assert(ok, "fadeOut hata verdi: " .. tostring(err))
 print("LoadingScreen ok")
