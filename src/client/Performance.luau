@@ -11,8 +11,13 @@ local Workspace = game:GetService("Workspace")
 
 local Performance = {}
 
--- Telefon/tablet: dokunmatik var, klavye ve fare yok
-Performance.mobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
+-- Telefon/tablet: dokunmatik var ve (klavye/fare yok YA DA ekran kısa: Studio cihaz emülatörü klavye/fareyi 'var' gösterebilir; dokunmatik ekranlı dizüstü yüksek ekranlıdır)
+local function screenHeight()
+	local camera = Workspace.CurrentCamera
+	local height = if camera then camera.ViewportSize.Y else 1000
+	return if type(height) == "number" then height else 1000
+end
+Performance.mobile = UserInputService.TouchEnabled and ((not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled) or screenHeight() < 520)
 Performance.low = Performance.mobile
 
 -- Kısılacak klasörler (server/EnvironmentService, Shelf, TrainingArea, EggShop, Hub, WheelService, WorldsGate...); duvarlar (MyWalls) KENDİ penceresini WallClient yönetir

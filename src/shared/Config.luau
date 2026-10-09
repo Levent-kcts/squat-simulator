@@ -255,7 +255,9 @@ return {
 	-- scale = ekran yüksekliği / ReferenceHeight, MinScale ile MaxScale arasına sıkıştırılır. Sahibi 'arayüz referans oyuna göre küçük' dedi: referans oyunun
 	-- sol butonları, level çubuğu ve sayaçları bu oranda büyük ölçüldü (bu bilgisayarda ekran yüksekliği ~862 iken 1.3). Daha büyük istersen ReferenceHeight'i küçült.
 	-- Sağ üst daireler ayrı ScreenGui'dedir (RightHud.CornerGui), bu ölçekten ETKİLENMEZ (referanstakilerden zaten büyüktü).
-	UI = { ReferenceHeight = 663, MinScale = 0.75, MaxScale = 1.75 },
+	-- 2026-10-10: MinScale 0.75 -> 0.58. Telefonda (ekran yüksekliği ~390) 0.75 tabanı arayüzü olması gerekenden 1.3 kat büyük bırakıyordu: sol düğmeler ekranın yarısını kaplıyor, hedef şeridi duvarın can çubuğunun üstüne biniyordu.
+	-- 0.58 ile yaklaşık 385 yükseklikten itibaren arayüz referans oyundaki oranda küçülür (düğmeler yine ~40 dp, dokunulabilir).
+	UI = { ReferenceHeight = 663, MinScale = 0.58, MaxScale = 1.75 },
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
