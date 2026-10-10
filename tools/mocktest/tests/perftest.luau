@@ -63,5 +63,10 @@ lightOn, fxOn = on(mid)
 assert(not lightOn and fxOn, "hafif modda 60 stud'daki ışık kapanır, parçacık (menzil 75) açık kalır")
 lightOn = on(near)
 assert(lightOn, "hafif modda da yakındaki ışık açık")
+-- Telefon yerleşimi (Config.UI.Phone): sayılar tanımlı; sol HUD sola/yukarı (eksi), teyp sola (eksi) kayar
+local Config = require("./Config")
+local phone = Config.UI.Phone
+assert(type(phone.LeftShiftX) == "number" and phone.LeftShiftX < 0 and type(phone.LeftShiftY) == "number" and phone.LeftShiftY < 0, "sol HUD telefonda sola ve yukarı kayar")
+assert(type(phone.MusicShiftX) == "number" and phone.MusicShiftX < 0, "teyp telefonda sola kayar")
 print("performance culling ok")
 print("DONE")

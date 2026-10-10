@@ -82,9 +82,12 @@ function MusicPlayer.init(screenGui)
 	local player = Players.LocalPlayer
 	local maxLevel = Sfx.getMusicMaxLevel()
 
+	-- Telefonda teyp biraz sola kayar (sağ alttaki Roblox zıplama butonunun üstüne binmesin); masaüstünde yerinde (Config.UI.Phone)
+	local okPerf, Performance = pcall(require, script.Parent.Performance)
+	local phoneShift = if okPerf and Performance.mobile then Config.UI.Phone.MusicShiftX else 0
 	local body = create("Frame", {
 		AnchorPoint = Vector2.new(1, 1),
-		Position = UDim2.new(1, -14, 1, -14),
+		Position = UDim2.new(1, -14 + phoneShift, 1, -14),
 		Size = UDim2.fromOffset(BODY_WIDTH, BODY_HEIGHT),
 		BackgroundColor3 = Color3.fromRGB(52, 56, 74),
 		Active = true, -- teybe tıklamak hareket başlatmasın

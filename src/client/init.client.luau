@@ -189,10 +189,16 @@ local function addOutlinedIcon(parent, imageId, size, position, anchor)
 	return holder
 end
 
+-- TELEFON (sahibi 'soldaki her şeyi biraz sola ve yukarı al' dedi): sol HUD (sayaçlar ve 2x3 butonlar) kaydırılır; sadece telefonda (Performance.mobile), masaüstü aynı kalır (Config.UI.Phone)
+local PerformanceForLayout = loadOptional("Performance")
+local ON_PHONE = PerformanceForLayout ~= nil and PerformanceForLayout.mobile == true
+local PHONE_SHIFT_X = if ON_PHONE then Config.UI.Phone.LeftShiftX else 0
+local PHONE_SHIFT_Y = if ON_PHONE then Config.UI.Phone.LeftShiftY else 0
+
 local function makeStatChip(order, icon, imageId)
 	-- Referanstaki gibi hapsız: büyük ikon ve yanında büyük, kalın siyah kenarlı rakam (dünyanın üstünde yüzer)
 	local row = create("Frame", {
-		Position = UDim2.fromOffset(14, 60 + (order - 1) * 50),
+		Position = UDim2.fromOffset(14 + PHONE_SHIFT_X, 60 + PHONE_SHIFT_Y + (order - 1) * 50),
 		Size = UDim2.fromOffset(150, 48),
 		BackgroundTransparency = 1,
 	}, screenGui)
@@ -309,7 +315,7 @@ end
 local function makeGridButton(index, icon, label, accent, imageId)
 	local column = (index - 1) % 2
 	local row = (index - 1) // 2
-	return makeSquareButton(UDim2.fromOffset(14 + column * 82, 166 + row * 82), icon, label, accent, imageId)
+	return makeSquareButton(UDim2.fromOffset(14 + PHONE_SHIFT_X + column * 82, 166 + PHONE_SHIFT_Y + row * 82), icon, label, accent, imageId)
 end
 
 local icons = Config.Icons
@@ -750,16 +756,42 @@ local function playMove()
 end
 
 -- Arayüz butonlarına basmak sayılmaz. Her tıklama sayılır (sunucu hızı sınırlar), animasyon boştayken oynar
+-- FARE: tıklama anında sayılır. DOKUNMATİK (telefon): parmak ekrana değince DEĞİL, parmak kalkınca ve sadece KISA, HAREKETSİZ dokunuş (tap) sayılır; kaydırma (kamera döndürme, joystick)
+-- tıklama sayılmaz (sahibi telefondan 'ekranı çeviremiyorum, her dokunuşta leg power veriyor, kaydırmamı algılamıyor' dedi). Süzgeç client/TapFilter; yüklenemezse eski davranış (dokunuşta anında).
+local function registerClick()
+	playMove()
+	clickEvent:FireServer()
+end
+local TapFilterModule = loadOptional("TapFilter")
+local tapFilter = if TapFilterModule then TapFilterModule.new(0.6, 14) else nil
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then
 		return
 	end
 	local inputType = input.UserInputType
-	if inputType == Enum.UserInputType.MouseButton1 or inputType == Enum.UserInputType.Touch then
-		playMove()
-		clickEvent:FireServer()
+	if inputType == Enum.UserInputType.MouseButton1 then
+		registerClick()
+	elseif inputType == Enum.UserInputType.Touch then
+		if tapFilter then
+			tapFilter:began(input, input.Position.X, input.Position.Y, os.clock())
+		else
+			registerClick()
+		end
 	end
 end)
+if tapFilter then
+	UserInputService.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			tapFilter:moved(input, input.Position.X, input.Position.Y)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch and tapFilter:ended(input, os.clock()) then
+			registerClick()
+		end
+	end)
+end
 
 -- AUTO CLICK açıkken (koçun pedinde de) SERİ SERİ tıklar: saniyede Config.AutoClick.PerSecond tıklama, her tıklama anında kas verir (elle hızlı tıklamayla aynı);
 -- animasyon boştayken oynar. Kare atlaması sonrası yığılma olmasın diye birikim en çok 2 tıklamadır. Sunucu hız sınırı Config.ClickLimit'tir.
