@@ -289,7 +289,7 @@ function Juice.brickChunks(wallPart, theme)
 		part.CanTouch = false
 		part.CastShadow = false
 		part.Material = Enum.Material.Plastic
-		part.Size = Vector3.new(2, 1, 1) * (0.8 + math.random() * 0.9)
+		part.Size = Vector3.new(2, 1, 1) * (0.5 + math.random() * 0.55) -- küçük parçalar: büyükleri (3.4 stud) kameraya uçup ekranın yarısını kaplıyordu
 		part.Color = (if theme then theme.color else wallPart.Color):Lerp(Color3.new(1, 1, 1), math.random() * 0.25)
 		part.Reflectance = if theme then theme.reflect or 0 else 0
 		if theme and theme.fx == "implode" then
@@ -304,7 +304,7 @@ function Juice.brickChunks(wallPart, theme)
 		table.insert(chunks, {
 			part = part,
 			position = position,
-			velocity = Vector3.new((math.random() - 0.5) * 36, 12 + math.random() * 22, (math.random() - 0.3) * 40),
+			velocity = Vector3.new((math.random() - 0.5) * 36, 12 + math.random() * 22, (math.random() - 0.6) * 30), -- çoğu yanlara ve duvarın arkasına: oyuncuya (kameraya) doğru az uçar
 			angle = Vector3.zero,
 			spin = Vector3.new((math.random() - 0.5) * 12, (math.random() - 0.5) * 12, (math.random() - 0.5) * 12),
 		})
