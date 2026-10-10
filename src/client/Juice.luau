@@ -15,6 +15,12 @@ local Layout = require(Shared:WaitForChild("Layout"))
 
 local Juice = {}
 
+-- Level atlayınca çağrılacak işlev (init.client alttaki level çubuğunun nabzını bağlar). Yazı çıkmaz: sahibi 'level up yazısı yerine bar hafif büyüyüp küçülsün' dedi
+local levelPulse = nil
+function Juice.setLevelPulse(callback)
+	levelPulse = callback
+end
+
 -- Performans modülü korumalı yüklenir (hafif grafik modunda kazanç yazıları daha seyrek çıkar)
 local okPerf, Performance = pcall(require, script.Parent.Performance)
 local POP_INTERVAL = 0.2 -- saniye: kas kazancı yazıları en çok bu aralıkla çıkar (aradaki kazançlar toplanır)
@@ -447,16 +453,14 @@ function Juice.init(screenGui)
 		end
 	end)
 
-	-- Başlangıçta level atlamak çok sık olur: büyük yazı en fazla 4 saniyede bir çıkar, küçük patlama her seferinde
-	local lastBanner = 0
+	-- Level atlayınca: alttaki level çubuğu nabız atar (yazı YOK), küçük parıltı patlaması ve ses her seferinde
 	level:GetPropertyChangedSignal("Value"):Connect(function()
 		local previousLevel = last.level
 		local gained = level.Value > previousLevel
 		last.level = level.Value
 		if gained and ready() then
-			if os.clock() - lastBanner > 4 then
-				lastBanner = os.clock()
-				Juice.banner("LEVEL UP!", GOLD)
+			if levelPulse then
+				pcall(levelPulse)
 			end
 			Juice.celebrate(GOLD, 40)
 			-- Her level atlayışında vücut büyür: kas aşaması da değiştiyse (yeni kas çıktı/irileşti) daha güçlü ses

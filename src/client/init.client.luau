@@ -422,7 +422,8 @@ local gainLabel = makeText(bottom, {
 }, 20, 2)
 
 local bar = create("Frame", {
-	Position = UDim2.fromOffset(0, 72),
+	AnchorPoint = Vector2.new(0.5, 0.5), -- merkezden büyüyüp küçülsün (level atlayınca nabız, aşağıda)
+	Position = UDim2.new(0.5, 0, 0, 72 + 27),
 	Size = UDim2.new(1, 0, 0, 54),
 	BackgroundColor3 = Color3.fromRGB(52, 50, 64), -- boş kısım koyu gri (referanstaki gibi), dolgu kırmızı-pembe
 }, bottom)
@@ -439,6 +440,21 @@ local barFill = create("Frame", {
 UIStyle.soften(barFill, { radius = 12, gradient = false })
 create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 78, 172), Color3.fromRGB(226, 24, 74)) }, barFill)
 UIStyle.brickSkin(bar, 22, 4, 12, { light = 0.9 }) -- lego tuğla deseni (referanstaki gibi); yazılar bunun ÜSTÜNDE
+
+-- LEVEL ATLAYINCA çubuk hafifçe büyüyüp küçülür (sahibi 'level up yazısı yerine alttaki bar hafif büyüyüp küçülsün' dedi; ekranın ortasına yazı çıkmaz). Juice level atlamayı görünce çağırır.
+local barScale = create("UIScale", { Scale = 1 }, bar)
+local barPulseToken = 0
+local function pulseLevelBar()
+	barPulseToken += 1
+	local token = barPulseToken
+	local grow = TweenService:Create(barScale, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = 1.07 })
+	grow:Play()
+	grow.Completed:Connect(function()
+		if token == barPulseToken then -- arka arkaya level atlanırsa eski nabız yenisini bozmasın
+			TweenService:Create(barScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		end
+	end)
+end
 
 local stageLabel = makeText(bar, {
 	Position = UDim2.fromOffset(14, 4),
@@ -702,7 +718,11 @@ ShoeShop.init()
 SkinShop.init()
 TrainingClient.init()
 safeInit("Performance", loadOptional("Performance")) -- ışık/parçacık/tabela uzaklık kısması + hafif grafik modu (telefon); klasörler artık hazır
-safeInit("Juice", loadOptional("Juice"), screenGui)
+local JuiceModule = loadOptional("Juice")
+safeInit("Juice", JuiceModule, screenGui)
+if JuiceModule and JuiceModule.setLevelPulse then
+	JuiceModule.setLevelPulse(pulseLevelBar) -- level atlayınca alttaki çubuk nabız atar (yazı yok)
+end
 safeInit("OverheadTags", loadOptional("OverheadTags"))
 safeInit("BoostHud", loadOptional("BoostHud"), screenGui)
 local eggHooks = {} -- showToast ve openShop aşağıda (bildirim ve Shop kurulunca) doldurulur: yumurta panelindeki 'Get Wins' yönlendirmesi ve ücretli düğmelerin 'coming soon' mesajı
