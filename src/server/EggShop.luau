@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local PlayerStats = require(script.Parent.PlayerStats)
+local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
 local Shelf = require(script.Parent.Shelf)
 local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
 local EggRules = require(Shared:WaitForChild("EggRules"))
@@ -133,6 +134,11 @@ function EggShop.init(notifyEvent)
 			return false, "Invalid request."
 		end
 		count = math.clamp(math.floor(count), 1, Config.EggMultiOptions[#Config.EggMultiOptions])
+		-- Roblox 'ücretli rastgele ürün' politikası: kısıtlı hesaplarda yumurta açılmaz (server/PaidRandomPolicy)
+		if PaidRandomPolicy.isRestricted(player) then
+			notifyEvent:FireClient(player, false, PaidRandomPolicy.Message)
+			return false, PaidRandomPolicy.Message
+		end
 		local allowed, denied = EggShop.checkPasses(player, count, auto)
 		if not allowed then
 			notifyEvent:FireClient(player, false, denied)

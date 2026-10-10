@@ -160,7 +160,14 @@ local function encode(x)
 	end
 	return tostring(x)
 end
+-- Roblox PolicyService taklidi: M.policy.restricted = true ise 'ArePaidRandomItemsRestricted' döner (test için)
+M.policy = { restricted = false }
 local services = {
+	PolicyService = {
+		GetPolicyInfoForPlayerAsync = function()
+			return { ArePaidRandomItemsRestricted = M.policy.restricted, IsPaidItemTradingAllowed = true }
+		end,
+	},
 	DataStoreService = {
 		GetDataStore = function()
 			return {

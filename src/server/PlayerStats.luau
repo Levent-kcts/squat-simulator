@@ -10,6 +10,7 @@ local Catalog = require(Shared:WaitForChild("Catalog"))
 local Progression = require(Shared:WaitForChild("Progression"))
 local Layout = require(Shared:WaitForChild("Layout"))
 local Format = require(Shared:WaitForChild("Format"))
+local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
 
 local PlayerStats = {}
 
@@ -752,6 +753,7 @@ local function publishOffline(player, profile)
 end
 
 local function setup(player)
+	task.spawn(PaidRandomPolicy.check, player) -- Roblox 'ücretli rastgele ürün' politikası: sonuç 'PaidRandomRestricted' özniteliğine yazılır (yumurta açma ve Luck iksiri satın alma bakar)
 	local leaderstats = Instance.new("Folder")
 	leaderstats.Name = "leaderstats"
 

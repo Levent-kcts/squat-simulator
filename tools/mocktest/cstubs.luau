@@ -284,6 +284,7 @@ M.playerAdded = {}
 M.characterOwners = {} -- [karakter] = oyuncu (Players:GetPlayerFromCharacter için)
 M.playerRemoving = {}
 local services = {
+	PolicyService = { GetPolicyInfoForPlayerAsync = function() return { ArePaidRandomItemsRestricted = M.policy.restricted, IsPaidItemTradingAllowed = true } end },
 	RunService = RunService,
 	Players = { LocalPlayer = localPlayer, PlayerAdded = { Connect = function(_, f) table.insert(M.playerAdded, f) return proxy() end }, PlayerRemoving = { Connect = function(_, f) table.insert(M.playerRemoving, f) return proxy() end }, GetPlayers = function() return {} end, GetPlayerFromCharacter = function(_, character) return M.characterOwners[character] end },
 	DataStoreService = { GetDataStore = function() return {

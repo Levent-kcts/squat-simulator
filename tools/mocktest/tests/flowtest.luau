@@ -182,4 +182,22 @@ for index = 1, #Config.Wheel.Prizes do
 	assert(seen[index], "dilim hiç çıkmadı: " .. index)
 end
 print("wheel prizes seen:", #Config.Wheel.Prizes, "wins/muscle delta:", stat(Config.StatWins) - winsBefore, stat(Config.StatLegMuscle) - muscleBefore)
+-- Roblox 'ücretli rastgele ürün' politikası: kısıtlı hesapta yumurta AÇILMAZ (sunucu zorlar), kısıtsızda politika engeli çıkmaz; sorgu yapılamazsa güvenli taraf = kısıtlı
+local eggOpen = rawget(remote("EggOpen"), "OnServerInvoke")
+assert(eggOpen, "EggOpen OnServerInvoke yok")
+local firstEgg = Config.Eggs[1].id
+assert(player:GetAttribute("PaidRandomRestricted") == false, "girişte politika sorulmalı (kısıtsız taklit): " .. tostring(player:GetAttribute("PaidRandomRestricted")))
+player:SetAttribute("PaidRandomRestricted", nil)
+S.policy.restricted = true
+local okRestricted, whyRestricted = eggOpen(player, firstEgg, 1, false)
+assert(okRestricted == false and string.find(tostring(whyRestricted), "not available", 1, true), "kısıtlı hesapta yumurta açılmamalı: " .. tostring(whyRestricted))
+assert(player:GetAttribute("PaidRandomRestricted") == true, "kısıtlı sonuç özniteliğe yazılmalı")
+local winsBeforeEgg = stat(Config.StatWins)
+eggOpen(player, firstEgg, 1, false)
+assert(stat(Config.StatWins) == winsBeforeEgg, "kısıtlı hesapta Win harcanmamalı")
+S.policy.restricted = false
+player:SetAttribute("PaidRandomRestricted", nil)
+local _, whyOpen = eggOpen(player, firstEgg, 1, false)
+assert(player:GetAttribute("PaidRandomRestricted") == false, "kısıtsız sonuç özniteliğe yazılmalı")
+assert(not string.find(tostring(whyOpen), "not available for your account", 1, true), "kısıtsız hesapta politika engeli çıkmamalı: " .. tostring(whyOpen))
 print("DONE")

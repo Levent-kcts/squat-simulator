@@ -195,6 +195,9 @@ function ShopPanel.init(screenGui, showToast)
 					local ok, message = shopFunction:InvokeServer("UsePotion", sku.id)
 					showToast(ok, message or "")
 				end)
+			elseif (sku.potion == "luck" or sku.potion == "rainbow") and player:GetAttribute("PaidRandomRestricted") ~= false then
+				-- Roblox 'ücretli rastgele ürün' politikası (server/PaidRandomPolicy): kısıtlı hesapta (ya da henüz bilinmiyorken) şansı artıran iksir satılmaz
+				showToast(false, "This potion is not available for your account.")
 			elseif sku.productId > 0 then
 				MarketplaceService:PromptProductPurchase(player, sku.productId)
 			else
