@@ -1,6 +1,6 @@
 # Squat Simulator (Roblox)
 
-Oyunun adı "Squat Simulator" (bundan sonra). Rojo ile yönetilen basit bir Roblox simülatör oyunu. Kod yalnızca Luau, `src/` altında.
+Oyunun adı "Squat Simulator: Smash Walls" (2026-10-10, sahibi daha çekici bir ad istedi; Creator Hub'da emojili "�µ Squat Simulator: Smash Walls! 🦵", Config.GameName; yükleme ekranında büyük başlık "SQUAT SIMULATOR" + altında "SMASH WALLS!", LoadingScreen.GameSubtitle; oyun sayfası adı/açıklaması assets/cover/UPLOAD/OYUN_ADI_VE_ACIKLAMA.txt). Rojo ile yönetilen basit bir Roblox simülatör oyunu. Kod yalnızca Luau, `src/` altında.
 
 ## Oyun kuralları
 - Ekranın herhangi bir yerine tıklamak bacak kasını artırır (UI butonlarına tıklamak sayılmaz).

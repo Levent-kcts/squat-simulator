@@ -23,7 +23,8 @@ local BRICK_COLORS = {
 	Color3.fromRGB(172, 114, 236), -- mor
 }
 
-LoadingScreen.GameTitle = "SQUAT SIMULATOR" -- başlık (Config.GameName ile aynı; Config bu aşamada henüz gelmemiş olabilir)
+LoadingScreen.GameTitle = "SQUAT SIMULATOR" -- başlık (Config.GameName'in ilk kısmı; Config bu aşamada henüz gelmemiş olabilir)
+LoadingScreen.GameSubtitle = "SMASH WALLS!" -- alt başlık: oyunun yeni adı 'Squat Simulator: Smash Walls' (2026-10-10); uzun ad tek satırda küçülüyordu, bu yüzden iki satır
 LoadingScreen.ShowTitle = true
 LoadingScreen.MinSeconds = 3 -- her koşulda en az bu kadar görünür (yanıp sönmesin). Süre ekranın İLK ÇİZİLDİĞİ kareden sayılır: Studio'da pencere geç açılırsa ekran kaçmasın
 LoadingScreen.MaxSeconds = 30 -- en geç bu kadar sonra kapanır
@@ -245,6 +246,9 @@ function LoadingScreen.build(parentGui, images)
 
 	if LoadingScreen.ShowTitle then
 		addText(root, { Position = UDim2.fromScale(0.5, 0.30), Size = UDim2.fromScale(0.7, 0.16), Text = LoadingScreen.GameTitle, Color = YELLOW }, 6)
+		if LoadingScreen.GameSubtitle ~= "" then
+			addText(root, { Position = UDim2.fromScale(0.5, 0.425), Size = UDim2.fromScale(0.3, 0.06), Text = LoadingScreen.GameSubtitle, Color = ORANGE }, 4)
+		end
 	end
 	local loadingLabel = addText(root, { Position = UDim2.fromScale(0.5, 0.52), Size = UDim2.fromScale(0.32, 0.075), Text = LoadingScreen.dots(0) }, 4)
 

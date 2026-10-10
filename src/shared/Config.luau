@@ -2,7 +2,7 @@
 
 return {
 	-- Oyunun adı (tabelalarda görünür)
-	GameName = "Squat Simulator",
+	GameName = "Squat Simulator: Smash Walls",
 
 	-- Leaderboard'da ve UI'da görünen istatistik isimleri
 	StatLegMuscle = "Leg Muscle",
