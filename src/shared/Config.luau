@@ -175,8 +175,10 @@ return {
 			fallback = "rbxasset://sounds/volume_slider.ogg",
 			pick = "first",
 			volume = 0.2,
-			gap = 1.5,
+			speed = { 0.96, 1.05 }, -- her çalışta hafif farklı perde: aynı sesin tekrarı kulağı yormasın
+			gap = 1.2,
 		},
+		-- YUMUŞAK ALTERNATİF (assets/sounds/levelup_soft.ogg ya da levelup_bright.ogg, tools/sounds/make_levelup.py ile üretildi): Roblox'a yüklenince ID'yi LevelUp.ids'in BAŞINA yaz ('rbxassetid://...'): 2-5 kHz'de neredeyse enerji yok, 330 ms, yumuşak giriş.
 		GrowBig = {
 			ids = { "rbxassetid://133977339172345", "rbxassetid://90395161583182", "rbxassetid://109916245799751" },
 			pick = "first",
