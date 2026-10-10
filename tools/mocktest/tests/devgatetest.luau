@@ -33,6 +33,8 @@ end
 assert(Config.DevTools.Enabled == false, "yayın hâlinde Config.DevTools.Enabled = false olmalı")
 local owner, stranger = join(555), join(777)
 assert(owner:GetAttribute("IsDev") == false and stranger:GetAttribute("IsDev") == false, "yayında kimsede DEV paneli görünmemeli (IsDev false)")
+-- Ekran görüntüsü modu (H): canlıda sadece oyunun sahibine açık (sadece kendi ekranındaki arayüzü gizler, komut vermez)
+assert(owner:GetAttribute("IsCreator") == true and stranger:GetAttribute("IsCreator") == false, "H modu canlıda sadece sahibe açık olmalı")
 for _, player in { owner, stranger } do
 	local before = wins(player)
 	devCommand(player, "AddWins", 1000)

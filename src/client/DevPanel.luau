@@ -131,7 +131,7 @@ function DevPanel.init(screenGui)
 	player:GetAttributeChangedSignal("IsDev"):Connect(update)
 	update()
 
-	-- EKRAN GÖRÜNTÜSÜ MODU (H tuşu, sadece DEV yetkisi olanda yani Studio/sahip): oyunun arayüzünü, sağ üst daireleri, Roblox'un kendi üst çubuğunu/sohbetini ve baş üstü isim etiketlerini gizler.
+	-- EKRAN GÖRÜNTÜSÜ MODU (H tuşu, sadece oyunun sahibinde ve Studio'da; DEV kapalı olsa bile CANLI oyunda sahibe açık, başkasına asla): oyunun arayüzünü, sağ üst daireleri, Roblox'un kendi üst çubuğunu/sohbetini ve baş üstü isim etiketlerini gizler.
 	-- Oyun sayfası için temiz görüntü/video çekmek içindir; tekrar H ile geri gelir. Hiçbir şey kaydedilmez (sadece bu ekranda).
 	local shotMode = false
 	local savedNameTags = nil
@@ -154,7 +154,7 @@ function DevPanel.init(screenGui)
 		end
 	end
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed or input.KeyCode ~= Enum.KeyCode.H or player:GetAttribute("IsDev") ~= true then
+		if gameProcessed or input.KeyCode ~= Enum.KeyCode.H or (player:GetAttribute("IsDev") ~= true and player:GetAttribute("IsCreator") ~= true) then
 			return
 		end
 		setShotMode(not shotMode)

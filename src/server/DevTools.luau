@@ -29,6 +29,8 @@ function DevTools.init(notifyEvent)
 	-- İstemci paneli göstermek için bu özniteliğe bakar (asıl kontrol yine de her komutta yapılır)
 	local function mark(player)
 		player:SetAttribute("IsDev", isAllowed(player))
+		-- Oyunun SAHİBİ (ya da Studio) canlıda da ekran görüntüsü modunu (H tuşu, client/DevPanel) kullanabilsin: sadece bu oyuncunun ekranındaki arayüzü gizler, DEV komutu vermez
+		player:SetAttribute("IsCreator", RunService:IsStudio() or player.UserId == game.CreatorId)
 	end
 	Players.PlayerAdded:Connect(mark)
 	for _, player in Players:GetPlayers() do
