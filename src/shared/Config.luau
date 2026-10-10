@@ -258,7 +258,7 @@ return {
 	-- 2026-10-10: MinScale 0.75 -> 0.58. Telefonda (ekran yüksekliği ~390) 0.75 tabanı arayüzü olması gerekenden 1.3 kat büyük bırakıyordu: sol düğmeler ekranın yarısını kaplıyor, hedef şeridi duvarın can çubuğunun üstüne biniyordu.
 	-- 0.58 ile yaklaşık 385 yükseklikten itibaren arayüz referans oyundaki oranda küçülür (düğmeler yine ~40 dp, dokunulabilir).
 	-- Phone: SADECE telefonda (client/Performance.mobile) uygulanan yerleşim kaydırmaları (Root birimi): sol HUD (sayaçlar + 2x3 butonlar) sola/yukarı, teyp sola (Roblox'un zıplama butonundan uzaklaşsın). Sahibi telefondan ekran görüntüsüyle istedi.
-	UI = { ReferenceHeight = 663, MinScale = 0.58, MaxScale = 1.75, Phone = { LeftShiftX = -8, LeftShiftY = -22, MusicShiftX = -100 } },
+	UI = { ReferenceHeight = 663, MinScale = 0.58, MaxScale = 1.75, Phone = { LeftShiftX = -8, LeftShiftY = -40, MusicShiftX = -100 } },
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
