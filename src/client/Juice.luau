@@ -142,7 +142,7 @@ function Juice.banner(text, color, subText)
 	end
 	local holder = Instance.new("Frame")
 	holder.AnchorPoint = Vector2.new(0.5, 0.5)
-	holder.Position = UDim2.fromScale(0.5, 0.3)
+	holder.Position = UDim2.fromScale(0.5, 0.26) -- biraz yukarıda: ekranın ortasındaki karakteri ve alttaki yazıları kapatmasın
 	holder.Size = UDim2.fromOffset(0, 0)
 	holder.BackgroundTransparency = 1
 	holder.Parent = screenGuiRef
@@ -167,8 +167,8 @@ function Juice.banner(text, color, subText)
 	end
 
 	-- Küçükten büyüğe zıplayarak açılır, bir süre durur, solar
-	holder.Size = UDim2.fromOffset(120, 36)
-	TweenService:Create(holder, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(if subText then 520 else 420, if subText then 130 else 110) }):Play()
+	holder.Size = UDim2.fromOffset(100, 30)
+	TweenService:Create(holder, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(if subText then 440 else 330, if subText then 108 else 84) }):Play()
 	Debris:AddItem(holder, if subText then 2.9 else 1.8)
 end
 

@@ -394,7 +394,7 @@ local rebirthHint = makeText(bottom, {
 	Text = "Rebirth to unlock more levels!",
 	TextColor3 = Color3.fromRGB(255, 50, 140),
 	Visible = false,
-}, 26, 3)
+}, 20, 2.5)
 
 -- Üst bilgi iki satırdır (eskiden tek satırda üst üste biniyordu): 1. satır büyük 'Leg Muscle' sayısı, 2. satır solda çarpan, sağda tıklama başı kazanç
 local multiplierLabel = makeText(bottom, {
@@ -402,14 +402,15 @@ local multiplierLabel = makeText(bottom, {
 	Size = UDim2.new(0.48, 0, 0, 24),
 	TextColor3 = Color3.fromRGB(110, 255, 120),
 	TextXAlignment = Enum.TextXAlignment.Left,
-}, 24, 2)
+}, 20, 2)
 
+-- Bacak kası yazısı (referanstaki '3.6M Punch' gibi sade): eskiden 36 punto ve 40 yüksekliğindi, ekranı çok kaplıyordu (sahibi 'referansa göre bunaltıcı' dedi)
 local muscleLabel = makeText(bottom, {
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.fromScale(0.5, 0),
-	Size = UDim2.new(0.7, 0, 0, 40),
+	Size = UDim2.new(0.7, 0, 0, 34),
 	TextColor3 = Color3.new(1, 1, 1),
-}, 36, 3)
+}, 28, 2.5)
 local pop = create("UIScale", {}, muscleLabel)
 
 local gainLabel = makeText(bottom, {
@@ -418,7 +419,7 @@ local gainLabel = makeText(bottom, {
 	Size = UDim2.new(0.5, 0, 0, 24),
 	TextColor3 = Color3.fromRGB(255, 220, 90),
 	TextXAlignment = Enum.TextXAlignment.Right,
-}, 24, 2)
+}, 20, 2)
 
 local bar = create("Frame", {
 	Position = UDim2.fromOffset(0, 72),
@@ -864,13 +865,14 @@ end)
 -- =====================================================================
 -- BİLDİRİM MESAJI (satın alma sonucu vb.), 2.5 saniye görünür
 -- =====================================================================
+-- Bildirim (satın alma sonucu, hata): küçük ve ÜSTTE (hedef şeridinin altı). Eskiden ekranın ortasında (0.62) ve 28 punto idi, karakteri ve bacak kası yazısını kapatıyordu
 local toast = makeText(screenGui, {
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.fromScale(0.5, 0.62),
-	Size = UDim2.fromOffset(560, 40),
+	Position = UDim2.fromScale(0.5, 0.2),
+	Size = UDim2.fromOffset(520, 32),
 	TextColor3 = Color3.new(1, 1, 1),
 	Visible = false,
-}, 28, 3)
+}, 22, 2.5)
 local toastId = 0
 
 

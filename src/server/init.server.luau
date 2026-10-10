@@ -197,10 +197,8 @@ local function creditClick(player, area)
 	PlayerStats.tutorialClick(player) -- eğitimin ilk adımı için tıklama sayısı
 	PlayerStats.questEvent(player, "clicks", 1) -- günlük görev ilerlemesi
 	-- Kazanılan bacak kası level çubuğunu doldurur; dolunca level atlanır
-	local leveledUp, newLevel = PlayerStats.addTap(player, gained)
-	if leveledUp then
-		notifyEvent:FireClient(player, true, `Level up! You are now level {newLevel}`)
-	end
+	-- (Level atlayınca yeşil 'Level up! You are now level N' bildirimi KALDIRILDI: ekranın ortasını kaplıyordu, sahibi 'ekran referansa göre çok bunaltıcı' dedi; sarı 'LEVEL UP!' yazısı [client/Juice] ve level çubuğu zaten gösteriyor)
+	PlayerStats.addTap(player, gained)
 	return true
 end
 
