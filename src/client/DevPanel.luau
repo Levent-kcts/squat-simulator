@@ -1,6 +1,8 @@
 -- Test paneli (sol üstte küçük "DEV" butonu). Sadece sunucu izin verirse (Studio veya oyun sahibi) görünür.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
 
 local DevPanel = {}
 
@@ -128,6 +130,35 @@ function DevPanel.init(screenGui)
 	end
 	player:GetAttributeChangedSignal("IsDev"):Connect(update)
 	update()
+
+	-- EKRAN GÖRÜNTÜSÜ MODU (H tuşu, sadece DEV yetkisi olanda yani Studio/sahip): oyunun arayüzünü, sağ üst daireleri, Roblox'un kendi üst çubuğunu/sohbetini ve baş üstü isim etiketlerini gizler.
+	-- Oyun sayfası için temiz görüntü/video çekmek içindir; tekrar H ile geri gelir. Hiçbir şey kaydedilmez (sadece bu ekranda).
+	local shotMode = false
+	local savedNameTags = nil
+	local function setShotMode(on)
+		shotMode = on
+		local playerGui = player:FindFirstChildOfClass("PlayerGui") or player:WaitForChild("PlayerGui")
+		for _, name in { "StatsGui", "CornerGui" } do
+			local gui = playerGui:FindFirstChild(name)
+			if gui then
+				gui.Enabled = not on
+			end
+		end
+		pcall(StarterGui.SetCoreGuiEnabled, StarterGui, Enum.CoreGuiType.All, not on)
+		pcall(StarterGui.SetCore, StarterGui, "TopbarEnabled", not on)
+		if on then
+			savedNameTags = player:GetAttribute("NameTags")
+			player:SetAttribute("NameTags", false)
+		else
+			player:SetAttribute("NameTags", savedNameTags)
+		end
+	end
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed or input.KeyCode ~= Enum.KeyCode.H or player:GetAttribute("IsDev") ~= true then
+			return
+		end
+		setShotMode(not shotMode)
+	end)
 end
 
 return DevPanel
