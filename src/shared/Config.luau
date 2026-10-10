@@ -168,12 +168,14 @@ return {
 		-- Squat sesi YOK (gecikiyordu, sahibi kaldırttı). Tekme sesi VAR ama sunucudan gelmez: istemci ayak duvara değdiği anda (Config.MoveContact) kendisi çalar,
 		-- yani ağ gecikmesi yok. pick = "first": yüklenebilen ilk ses çalar (ses her seferinde aynı kalsın).
 		-- startAt (isteğe bağlı): sesin başındaki sessizliği atlamak için saniye; ses dosyasının başında boşluk varsa (gecikmeli duyuluyorsa) artır.
-		Grow = {
-			ids = { "rbxassetid://18613451236", "rbxassetid://96518360714287", "rbxassetid://114672007947933" },
+		-- LEVEL ATLAMA sesi (2026-10-10, sahibi 'level atlama sesi eski Roblox kazanma sesi olsun, kısık sesle' dedi): eski Roblox'un yerleşik 'ta-da' zaferi (victory); KISIK (0.2) ve en çok 1.5 sn'de bir çalar
+		-- (oyun başında level çok sık atlanır). .mp3 yüklenemezse .wav denenir, o da olmazsa fallback. Eski 'Grow' sesi (Creator Store) kaldırıldı. Beğenmezse ids'in başına başka ses yaz.
+		LevelUp = {
+			ids = { "rbxasset://sounds/victory.mp3", "rbxasset://sounds/victory.wav" },
+			fallback = "rbxasset://sounds/volume_slider.ogg",
 			pick = "first",
-			volume = 0.35,
-			speed = { 0.97, 1.05 },
-			gap = 0.4,
+			volume = 0.2,
+			gap = 1.5,
 		},
 		GrowBig = {
 			ids = { "rbxassetid://133977339172345", "rbxassetid://90395161583182", "rbxassetid://109916245799751" },

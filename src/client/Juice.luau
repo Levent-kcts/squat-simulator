@@ -463,8 +463,8 @@ function Juice.init(screenGui)
 				pcall(levelPulse)
 			end
 			Juice.celebrate(GOLD, 40)
-			-- Her level atlayışında vücut büyür: kas aşaması da değiştiyse (yeni kas çıktı/irileşti) daha güçlü ses
-			sfx(if Progression.legStage(level.Value) > Progression.legStage(previousLevel) then "GrowBig" else "Grow")
+			-- Level atlayınca kısık 'LevelUp' (eski Roblox zafer sesi); kas aşaması da değiştiyse (yeni kas çıktı/irileşti) daha güçlü 'GrowBig'
+			sfx(if Progression.legStage(level.Value) > Progression.legStage(previousLevel) then "GrowBig" else "LevelUp")
 		end
 	end)
 
