@@ -23,8 +23,8 @@ local BRICK_COLORS = {
 	Color3.fromRGB(172, 114, 236), -- mor
 }
 
-LoadingScreen.GameTitle = "SQUAT SIMULATOR" -- başlık (Config.GameName'in ilk kısmı; Config bu aşamada henüz gelmemiş olabilir)
-LoadingScreen.GameSubtitle = "SMASH WALLS!" -- alt başlık: oyunun yeni adı 'Squat Simulator: Smash Walls' (2026-10-10); uzun ad tek satırda küçülüyordu, bu yüzden iki satır
+LoadingScreen.GameTitle = "+1 SQUAT EVOLUTION" -- başlık (Config.GameName'in ilk kısmı; Config bu aşamada henüz gelmemiş olabilir)
+LoadingScreen.GameSubtitle = "SMASH WALLS!" -- alt başlık: oyunun adı '+1 Squat Evolution: Smash Walls' (2026-10-11; önce 'Squat Simulator: Smash Walls'); uzun ad tek satırda küçülüyordu, bu yüzden iki satır
 LoadingScreen.ShowTitle = true
 LoadingScreen.MinSeconds = 3 -- her koşulda en az bu kadar görünür (yanıp sönmesin). Süre ekranın İLK ÇİZİLDİĞİ kareden sayılır: Studio'da pencere geç açılırsa ekran kaçmasın
 LoadingScreen.MaxSeconds = 30 -- en geç bu kadar sonra kapanır
