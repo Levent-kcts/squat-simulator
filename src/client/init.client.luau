@@ -260,6 +260,8 @@ end
 -- koyu zeminde büyük ikon (siyah çizgili + gölgeli) ve butonun en altında, ikonun altına binen kalın kenarlı küçük yazı.
 -- accent = { üst-sol renk, alt-sağ renk } çerçevenin gradyanı; imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji.
 local BORDER = 4
+-- İki sütun arası (buton başına 74 + boşluk): 82 iken Shop'un köşe rozeti yan düğmeye (Rebirth) değiyordu, sahibi 'arayı açabilirsin' dedi; 90 = 16 birim boşluk
+local GRID_PITCH = 90
 -- iconSize: görselin kenarı (varsayılan 56). Kenarlara kadar dolu görseller (Auras alevi) taşmasın diye küçültülür (Config.IconSizes)
 local function makeSquareButton(position, icon, label, accent, imageId, iconSize)
 	local button = create("TextButton", {
@@ -320,7 +322,7 @@ end
 local function makeGridButton(index, icon, label, accent, imageId)
 	local column = (index - 1) % 2
 	local row = (index - 1) // 2
-	return makeSquareButton(UDim2.fromOffset(14 + PHONE_SHIFT_X + column * 82, 166 + PHONE_SHIFT_Y + row * 82), icon, label, accent, imageId)
+	return makeSquareButton(UDim2.fromOffset(14 + PHONE_SHIFT_X + column * GRID_PITCH, 166 + PHONE_SHIFT_Y + row * 82), icon, label, accent, imageId)
 end
 
 local icons = Config.Icons

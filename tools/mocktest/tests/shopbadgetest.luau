@@ -59,7 +59,7 @@ for _, child in rawget(core, "_children") do
 		numberLabel = child
 	end
 end
-assert(numberLabel, "sayı yuvarlağın İÇİNDE (Core'un çocuğu) olmalı; boyutu ShopPanel'de yuvarlağın %58'i (UDim2 taklidi sayısal değer tutmadığı için burada ölçülmez)")
+assert(numberLabel, "sayı yuvarlağın İÇİNDE (Core'un çocuğu) olmalı; boyutu ShopPanel'de yuvarlağın %80'i (UDim2 taklidi sayısal değer tutmadığı için burada ölçülmez)")
 local numberAnchor = rawget(numberLabel, "AnchorPoint")
 assert(numberAnchor.X == 0.5 and numberAnchor.Y == 0.5, "sayı yuvarlağın ortasında olmalı")
 assert(not visible(), "kayıt yüklenmeden rozet görünmemeli")

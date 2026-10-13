@@ -21,7 +21,7 @@ local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel 
 local BUY_GREEN = Color3.fromRGB(72, 205, 40)
 local USE_BLUE = Color3.fromRGB(60, 160, 255)
 local CARD_ICON = 80 -- PACKS kartlarındaki simge kenarı (piksel)
-local CORE_SIZE = 25 -- yeni iksir rozetindeki kırmızı yuvarlağın kenarı (piksel); nabızda +5 büyür
+local CORE_SIZE = 28 -- yeni iksir rozetindeki kırmızı yuvarlağın kenarı (piksel): Gifts rozetiyle AYNI ölçü (sahibi 'giftsin orantısı güzel' dedi); nabızda +4 büyür
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -255,7 +255,7 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 			Name = "PotionBadge",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(1, -4, 0, 4),
-			Size = UDim2.fromOffset(34, 34),
+			Size = UDim2.fromOffset(CORE_SIZE + 8, CORE_SIZE + 8),
 			BackgroundTransparency = 1,
 			Visible = false,
 			ZIndex = 9,
@@ -268,18 +268,19 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 			BackgroundColor3 = Color3.fromRGB(232, 38, 52),
 			ZIndex = 9,
 		}, badge)
-		create("UIStroke", { Thickness = 2.5, Color = Color3.new(1, 1, 1) }, core)
+		create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, core) -- Gifts rozetiyle aynı siyah çerçeve
 		UIStyle.soften(core, { radius = UDim.new(0.5, 0), strength = 0.3, shine = false }) -- yarıçap kenarın yarısı (ORAN): büyüyünce de tam daire kalır
-		-- Sayı yuvarlağın içine rahat sığar (kenara değmez): yuvarlağın ~%58'i kadar, ortada
+		-- Sayı Gifts rozetindeki gibi: yuvarlağın %80'i kadar kutu, en çok 16 punto, ortada (kenara değmez)
 		local badgeText = text(core, {
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromScale(0.58, 0.58),
+			Size = UDim2.fromScale(0.8, 0.8),
 			Text = "1",
 			TextColor3 = Color3.new(1, 1, 1),
 			ZIndex = 10,
 		}, 1)
-		local badgePulse = TweenService:Create(core, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Size = UDim2.fromOffset(CORE_SIZE + 5, CORE_SIZE + 5) })
+		create("UITextSizeConstraint", { MaxTextSize = 16 }, badgeText)
+		local badgePulse = TweenService:Create(core, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Size = UDim2.fromOffset(CORE_SIZE + 4, CORE_SIZE + 4) })
 		local pulsing = false
 
 		local function totalItems()
