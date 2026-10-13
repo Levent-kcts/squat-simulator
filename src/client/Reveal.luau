@@ -1,6 +1,7 @@
 -- Yumurta açılış ekranı: ekran kararır, beyaz bir parıltı çakar, açılan petler nadirliğe göre renklenen kartlar olarak SIRAYLA dönerek/zıplayarak belirir, kısa süre durur ve solar.
 -- Epic ve üstü bir pet çıkarsa üstte nadirlik başlığı ('EPIC!', 'LEGENDARY!', 'MYTHIC!!!'), konfeti ve hafif sarsıntı gelir (2026-10-13 playtest: 'egg ödülleri tatmin etmiyor, açılış sönük').
 -- Sadece görsel: sonucu sunucu verir (PlayerStats.hatchEgg). Yeni açılan pet "NEW!" rozeti alır.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
@@ -235,6 +236,30 @@ local function buildCard(parent, entry, isNew, order)
 	return card
 end
 
+-- KARARTMA TÜM EKRANI KAPLASIN (2026-10-13, sahibi 'üstü kararmıyor, onu da karart' dedi): ana arayüz çerçevesi Roblox'un üst çubuğu payının ALTINDA başlar ve sağ üst daireler ayrı bir ScreenGui'dedir;
+-- bu yüzden açılış kendi tam ekran ScreenGui'sinde kurulur (IgnoreGuiInset = true, DisplayOrder diğer arayüzlerin üstünde). Kartlar/yumurta ana arayüzle aynı boyutta kalsın diye ölçek (RootScale) kopyalanır.
+-- PlayerGui yoksa (testler) eski davranış: ana arayüz çerçevesi. Dönüş: ebeveyn, ölçek
+local function overlayParent(screenGui)
+	local player = Players.LocalPlayer
+	local playerGui = player and (player:FindFirstChildOfClass("PlayerGui") or player:FindFirstChild("PlayerGui"))
+	if not playerGui then
+		return screenGui, nil
+	end
+	local gui = playerGui:FindFirstChild("HatchRevealGui")
+	if not gui then
+		gui = Instance.new("ScreenGui")
+		gui.Name = "HatchRevealGui"
+		gui.ResetOnSpawn = false
+		gui.IgnoreGuiInset = true
+		gui.DisplayOrder = 60 -- ana arayüz (0), sağ üst daireler (2) ve pencerelerin üstünde; yükleme ekranının (1000) altında
+		gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		gui.Parent = playerGui
+	end
+	local rootScale = screenGui:FindFirstChild("RootScale")
+	local scale = if rootScale and type(rootScale.Scale) == "number" and rootScale.Scale > 0 then rootScale.Scale else 1
+	return gui, scale
+end
+
 -- results: { { id, kept } ... } açılış sırasıyla; ownedBefore: açmadan önce sahip olunan pet id'leri { [id] = true }
 -- egg: açılan yumurta (Config.Eggs girdisi) verilirse ve TEK pet açıldıysa önce yumurta kırılma animasyonu oynar; çoklu/otomatik açmada nil verilir (animasyon yok)
 function Reveal.show(screenGui, results, ownedBefore, egg)
@@ -274,11 +299,25 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 	root.Name = "HatchReveal"
 	root.Size = UDim2.fromScale(1, 1)
 	root.BackgroundTransparency = 1
-	root.Parent = screenGui
+	local parentGui, uiScale = overlayParent(screenGui)
+	root.Parent = parentGui
 	current = root
 
+	-- İçerik (yumurta, kartlar, başlık): tam ekran kökün içinde ana arayüzle aynı ölçekte; karartma ve parıltı ölçeksiz tam ekran kalır
+	local content = root
+	if uiScale then
+		content = Instance.new("Frame")
+		content.Name = "HatchContent"
+		content.BackgroundTransparency = 1
+		content.Size = UDim2.fromScale(1 / uiScale, 1 / uiScale)
+		content.Parent = root
+		local contentScale = Instance.new("UIScale")
+		contentScale.Scale = uiScale
+		contentScale.Parent = content
+	end
+
 	if egg and #results == 1 then
-		intro = playEggIntro(root, egg)
+		intro = playEggIntro(content, egg)
 	end
 	-- Açılış sesi (yumurta kırılma anında) ve Epic+ parıltı sesi
 	task.delay(intro, sfx, "Hatch")
@@ -324,7 +363,7 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 	holder.Position = UDim2.fromScale(0.5, 0.42)
 	holder.Size = UDim2.fromOffset(columns * (CARD_WIDTH + CARD_GAP), rows * (CARD_HEIGHT + CARD_GAP))
 	holder.BackgroundTransparency = 1
-	holder.Parent = root
+	holder.Parent = content
 
 	local grid = Instance.new("UIGridLayout")
 	grid.CellSize = UDim2.fromOffset(CARD_WIDTH, CARD_HEIGHT)
@@ -362,7 +401,7 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 	local title = best and RARITY_TITLE[best.name]
 	if title then
 		hold = HOLD + 0.8
-		local banner = label(root, {
+		local banner = label(content, {
 			AnchorPoint = Vector2.new(0.5, 1),
 			Position = UDim2.new(0.5, 0, 0.42, -(rows * (CARD_HEIGHT + CARD_GAP)) / 2 - 4), -- kartların hemen üstünde
 			Size = UDim2.fromOffset(460, 62),

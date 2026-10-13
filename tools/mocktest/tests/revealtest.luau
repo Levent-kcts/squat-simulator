@@ -84,3 +84,26 @@ Reveal.show(rootAuto, petResults(1), {}, nil)
 local revealAuto = find(rootAuto, "HatchReveal")
 assert(revealAuto and not find(revealAuto, "HatchEgg") and find(revealAuto, "HatchFlash"), "yumurta verilmezse animasyon olmamalı")
 print("reveal multi/auto ok")
+
+-- 5) KARARTMA TÜM EKRANI KAPLAR (sahibi 'üstü kararmıyor, onu da karart' dedi): açılış, üst çubuk payını ve sağ üst daireleri de örten KENDİ tam ekran ScreenGui'sinde kurulur;
+-- kartlar ana arayüzle aynı boyutta kalsın diye ölçek kopyalanır, karartma ölçeksiz tam ekran kalır
+local playerGui = S.newInstance("PlayerGui")
+playerGui.Name = "PlayerGui"
+rawget(S.localPlayer, "_children")["PlayerGui"] = playerGui
+local hudRoot = S.newInstance("Frame")
+local rootScale = S.newInstance("UIScale")
+rootScale.Name = "RootScale"
+rawset(rootScale, "Scale", 1.3)
+rootScale.Parent = hudRoot
+Reveal.show(hudRoot, petResults(1), {}, nil)
+local overlayGui = rawget(playerGui, "_children").HatchRevealGui
+assert(overlayGui and rawget(overlayGui, "IgnoreGuiInset") == true, "açılış üst çubuk payını da kaplayan (IgnoreGuiInset) kendi ScreenGui'sinde olmalı")
+assert(rawget(overlayGui, "DisplayOrder") > 2 and rawget(overlayGui, "DisplayOrder") < 1000, "ana arayüzün ve sağ üst dairelerin üstünde, yükleme ekranının altında olmalı")
+local overlayReveal = find(overlayGui, "HatchReveal")
+assert(overlayReveal and not find(hudRoot, "HatchReveal"), "açılış ana arayüz çerçevesine değil tam ekran ScreenGui'ye kurulmalı")
+local dim = find(overlayReveal, "HatchDim")
+assert(dim and rawget(dim, "Parent") == overlayReveal, "karartma ölçeksiz tam ekran kökte olmalı")
+local content = find(overlayReveal, "HatchContent")
+assert(content and find(content, "HatchCards"), "kartlar ölçekli içerikte olmalı")
+assert(rawget(rawget(content, "_children").UIScale, "Scale") == 1.3, "içerik ana arayüzün ölçeğini kopyalamalı")
+print("reveal full screen ok")
