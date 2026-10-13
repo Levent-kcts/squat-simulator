@@ -535,12 +535,16 @@ local autoPrice = makeText(autoButton, {
 	ZIndex = 6,
 }, 22, 3)
 -- ÜCRETSİZ DENEME (Config.AutoClick.TrialSeconds): yeni oyuncuya ilk dakikalarda Auto Click açık; kalan süreyi sunucu 'AutoClickTrialUntil' (sunucu saati) olarak verir, düğmede 'FREE m:ss' yazar
+-- AUTO CLICK POTION (Config.Potions, 2026-10-13): iksir süresince de Auto Click pass'siz açıktır ('AutoBoostUntil'); ücretsiz süre = deneme ya da iksir, hangisi daha uzunsa
 local function trialSecondsLeft()
-	local untilTime = player:GetAttribute("AutoClickTrialUntil")
-	if type(untilTime) ~= "number" then
-		return 0
+	local best = 0
+	for _, name in { "AutoClickTrialUntil", "AutoBoostUntil" } do
+		local untilTime = player:GetAttribute(name)
+		if type(untilTime) == "number" then
+			best = math.max(best, untilTime - workspace:GetServerTimeNow())
+		end
 	end
-	return math.max(0, untilTime - workspace:GetServerTimeNow())
+	return math.max(0, best)
 end
 local function trialActive()
 	return player:GetAttribute("HasAutoClick") ~= true and trialSecondsLeft() > 0
@@ -898,6 +902,7 @@ autoButton.MouseButton1Click:Connect(function()
 end)
 -- Satın alınınca (sunucu HasAutoClick'i false iken true yapınca) Auto Click kendiliğinden açılır; girişteki ilk (nil -> true) değer açmaz
 local previousAuto = player:GetAttribute("HasAutoClick")
+player:GetAttributeChangedSignal("AutoBoostUntil"):Connect(refresh) -- iksir içilince düğme hemen açılır ('FREE m:ss')
 player:GetAttributeChangedSignal("HasAutoClick"):Connect(function()
 	local value = player:GetAttribute("HasAutoClick")
 	if value == true and previousAuto == false and (Config.AutoClick.GamePassId or 0) > 0 then

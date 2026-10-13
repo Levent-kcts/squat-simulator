@@ -216,9 +216,17 @@ print("quick buy buttons ok")
 local robuxSign = utf8.char(0xE002)
 assert(hasText("POTIONS") and hasText("PACKS"), "Shop bölüm başlıkları yok")
 for _, sku in Config.Shop.Potions do
-	assert(hasText(robuxSign .. " " .. sku.robux), "iksir fiyatı yok: " .. sku.id)
+	if sku.forSale ~= false then
+		assert(hasText(robuxSign .. " " .. sku.robux), "iksir fiyatı yok: " .. sku.id)
+	end
 end
 assert(hasText("15 min") and hasText("60 min"), "iksir süreleri yok")
+-- Auto Click Potion SATILMAZ: kartı var (30 dk, kaynağı); iksir yokken düğmesi Auto Click pass'ini gösterir (pass satışı yokken 'WIN IT!'; satılırken 'R$ fiyat FOREVER', aşağıdaki pass testinde)
+assert(hasText("Auto Click Potion") and hasText("30 min"), "Auto Click Potion kartı yok")
+assert(hasText("WIN IT!"), "pass satılmıyorken iksir kartının düğmesi 'WIN IT!' demeli")
+S.localPlayer:SetAttribute("PotionItems", "auto30:1")
+assert(hasText("USE  x1"), "envanterdeki Auto Click Potion 'USE x1' yazmalı")
+S.localPlayer:SetAttribute("PotionItems", "")
 S.localPlayer:SetAttribute("PotionItems", "luck15:2")
 assert(hasText("USE  x2"), "envanterdeki iksirde 'USE x2' yazmalı")
 S.localPlayer:SetAttribute("PotionItems", "")
@@ -311,7 +319,29 @@ for _ = 1, 4 do
 	end
 end
 assert(clicksSent == lockedBefore, "kilitliyken Auto Click tıklamamalı")
+-- Shop > Potions: iksir yokken Auto Click Potion kartının düğmesi kalıcı pass'ı ('R$ fiyat FOREVER') gösterir (Robux isteği)
+assert(hasText(robuxSign .. " " .. Config.AutoClick.Robux .. " FOREVER"), "iksir yokken düğme Auto Click pass'ini 'FOREVER' diye göstermeli")
+-- AUTO CLICK POTION: iksir süresince pass'siz de açıktır (kilit kalkar, düğme çalışır); süre bitince kilit döner
+S.localPlayer:SetAttribute("AutoBoostUntil", S.workspace:GetServerTimeNow() + 1800)
+rawget(autoButton, "_handlers").MouseButton1Click()
+local potionClicksBefore = clicksSent
+for _ = 1, 4 do
+	for _, hb in S.heartbeat do
+		pcall(hb, 0.5)
+	end
+end
+assert(clicksSent - potionClicksBefore >= 6, "Auto Click Potion etkinken pass'siz de Auto Click çalışmalı: " .. (clicksSent - potionClicksBefore))
+rawget(autoButton, "_handlers").MouseButton1Click() -- kapat
+S.localPlayer:SetAttribute("AutoBoostUntil", 0)
+local lockedAgain = clicksSent
+for _ = 1, 4 do
+	for _, hb in S.heartbeat do
+		pcall(hb, 0.5)
+	end
+end
+assert(clicksSent == lockedAgain, "iksir bitince Auto Click yine kilitli olmalı")
 S.localPlayer:SetAttribute("HasAutoClick", true) -- satın alındı
+assert(hasText("OWNED FOREVER"), "pass alınınca iksir kartının düğmesi 'OWNED FOREVER' demeli")
 for _ = 1, 4 do
 	for _, hb in S.heartbeat do
 		pcall(hb, 0.5)

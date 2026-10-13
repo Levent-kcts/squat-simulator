@@ -11,7 +11,9 @@ for _, product in Config.Shop.Products do
 	add("Shop " .. product.id, product.robux)
 end
 for _, sku in Config.Shop.Potions do
-	add("Potion " .. sku.id, sku.robux)
+	if sku.forSale ~= false then -- (Auto Click Potion satılmaz: fiyatı yok)
+		add("Potion " .. sku.id, sku.robux)
+	end
 end
 for _, trail in Config.Trails do
 	add("Trail " .. trail.id, trail.robuxPrice)
@@ -35,19 +37,32 @@ end
 
 -- İksir ürünleri: her iksir x her süre için tam bir ürün; kimlikler benzersiz
 local seen = {}
+local fixedPotions = 0
 for _, potion in Config.Potions.List do
-	for _, minutes in Config.Potions.Durations do
-		local id = potion.id .. minutes
-		assert(Catalog.PotionSkuById[id], "iksir ürünü yok: " .. id)
-		assert(not seen[id])
+	if potion.fixedMinutes then
+		-- Sabit süreli, SATILMAYAN iksir (Auto Click Potion): tek ürün, fiyatı/Robux ürünü yok
+		fixedPotions += 1
+		local id = potion.id .. potion.fixedMinutes
+		local sku = Catalog.PotionSkuById[id]
+		assert(sku and sku.forSale == false and sku.robux == nil and sku.productId == nil, "satılmayan iksir ürünü fiyatsız olmalı: " .. id)
+		assert(potion.forSale == false and potion.fixedMinutes == Config.Potions.AutoMinutes and potion.id == "auto", "sabit süreli iksir Auto Click Potion olmalı")
 		seen[id] = true
+	else
+		for _, minutes in Config.Potions.Durations do
+			local id = potion.id .. minutes
+			assert(Catalog.PotionSkuById[id], "iksir ürünü yok: " .. id)
+			assert(Catalog.PotionSkuById[id].forSale ~= false, "satılan iksir ürünü satışta olmalı: " .. id)
+			assert(not seen[id])
+			seen[id] = true
+		end
 	end
 end
+assert(fixedPotions == 1, "tam bir sabit süreli (Auto Click) iksir olmalı")
 local skuCount = 0
 for _ in Catalog.PotionSkuById do
 	skuCount += 1
 end
-assert(skuCount == #Config.Potions.List * #Config.Potions.Durations, "iksir ürün sayısı: " .. skuCount)
+assert(skuCount == (#Config.Potions.List - fixedPotions) * #Config.Potions.Durations + fixedPotions, "iksir ürün sayısı: " .. skuCount)
 
 -- Çark / Gifts / görev bonusundan çıkan iksirler envantere girer: kind + süre bir ürüne denk gelmeli
 for _, prize in Config.Wheel.Prizes do
@@ -61,6 +76,7 @@ for _, reward in Config.GiftRewards do
 	end
 end
 assert(Catalog.potionSkuFor("boostRainbow", Config.Quests.BonusBoostMinutes), "görev bonusu iksiri ürün değil")
+assert(Catalog.potionSkuFor("boostAuto", Config.Potions.AutoMinutes) == "auto30", "Auto Click Potion (görev bonusu) ürün değil")
 print("prices ok, highest:", highest, "potion skus:", skuCount)
 print("DONE")
 
@@ -85,9 +101,11 @@ for _, sku in Config.Shop.Potions do
 	potionPrice[sku.id] = sku.robux
 end
 for _, potion in Config.Potions.List do
-	local short, long = potionPrice[potion.id .. 15], potionPrice[potion.id .. 60]
-	assert(short and long and long > short, potion.id .. ": 60 dk iksir 15 dk'dan pahalı olmalı")
-	assert(long / 60 < short / 15, potion.id .. ": 60 dk iksir dakika başına ucuz olmalı (indirim)")
+	if not potion.fixedMinutes then
+		local short, long = potionPrice[potion.id .. 15], potionPrice[potion.id .. 60]
+		assert(short and long and long > short, potion.id .. ": 60 dk iksir 15 dk'dan pahalı olmalı")
+		assert(long / 60 < short / 15, potion.id .. ": 60 dk iksir dakika başına ucuz olmalı (indirim)")
+	end
 end
 -- Rainbow iksiri üç tekil iksirin toplamından ucuz olmalı (paket indirimi)
 assert(potionPrice.rainbow15 < potionPrice.luck15 + potionPrice.muscle15 + potionPrice.wins15, "Rainbow 15 dk paket indirimi")

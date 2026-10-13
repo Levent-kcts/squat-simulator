@@ -34,6 +34,7 @@ local BUTTONS = {
 	{ "Muscle Potion", "PotionMuscle" },
 	{ "Wins Potion", "PotionWins" },
 	{ "Rainbow Potion", "PotionRainbow" },
+	{ "Auto Click Potion", "PotionAuto" },
 	{ "Passes Lock (test)", "TogglePassLock" },
 	{ "Egg Upgrades (test)", "ToggleEggPasses" },
 	{ "Coach Pads (test)", "ToggleAreaPasses" },

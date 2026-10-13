@@ -153,6 +153,8 @@ return {
 			{ id = "wins60", potion = "wins", minutes = 60, robux = 99, productId = 3717468491 },
 			{ id = "rainbow15", potion = "rainbow", minutes = 15, robux = 79, productId = 3717468870 },
 			{ id = "rainbow60", potion = "rainbow", minutes = 60, robux = 149, productId = 3717468975 },
+			-- SATILMAZ (forSale = false): kart sadece envanterdeki iksiri içmek ve Auto Click pass'ini göstermek içindir (robux/productId yok)
+			{ id = "auto30", potion = "auto", minutes = 30, forSale = false },
 		},
 	},
 
@@ -715,7 +717,7 @@ return {
 			{ kind = "boostMuscle", minutes = 15, weight = 14, icon = "💪", potion = "muscle", label = "Muscle Potion", color = Color3.fromRGB(70, 195, 110) },
 			{ kind = "wins", mult = 6, weight = 10, icon = "🏆", imageKey = "Wins", label = "Big Wins", color = Color3.fromRGB(255, 160, 40) },
 			{ kind = "muscle", clicks = 10000, weight = 14, icon = "💪", imageKey = "LegMuscle", label = "Big Muscle", color = Color3.fromRGB(160, 90, 235) },
-			{ kind = "boostWins", minutes = 15, weight = 8, icon = "🏆", potion = "wins", label = "Wins Potion", color = Color3.fromRGB(50, 190, 200) },
+			{ kind = "boostAuto", minutes = 30, weight = 8, icon = "🖱️", potion = "auto", label = "Auto Click Potion", color = Color3.fromRGB(50, 190, 200) }, -- (2026-10-13: eski Wins Potion dilimi yerine; dilim sayısı TAM 8 kalmalı)
 			{ kind = "pet", weight = 5, icon = "🐾", imageKey = "Pet", label = "Pet!", color = Color3.fromRGB(255, 120, 190) },
 			{ kind = "jackpot", mult = 20, clicks = 25000, weight = 1, icon = "💎", imageKey = "Jackpot", label = "JACKPOT", color = Color3.fromRGB(255, 205, 50) },
 		},
@@ -730,7 +732,7 @@ return {
 	-- (Layout.reward(tahmini aşama), tahmin rebirth sayısından). Üçü de bitince BonusBoostMinutes dakikalık RAINBOW POTION (Luck + Muscle + Wins 2x).
 	Quests = {
 		PerDay = 3,
-		BonusBoostMinutes = 15,
+		BonusBoostMinutes = 15, -- 3 görev bitince bonus: Rainbow Potion (bu kadar dk) + AUTO CLICK POTION (Config.Potions.AutoMinutes = 30 dk, sabit) envantere girer
 		Pool = {
 			{ id = "walls", text = "Break {goal} walls", goals = { 12, 25, 50 } },
 			{ id = "clicks", text = "Squat or kick {goal} times", goals = { 600, 1250, 2500 } }, -- Auto Click ile ~1 / 2 / 4 dk (tıklama saniyede 10)
@@ -807,14 +809,20 @@ return {
 	-- Muscle Potion: tıklama başı bacak kazancı x2. Wins Potion: kazanılan Win x2.
 	-- Rainbow Potion: 'bütün iksirlerden almışsın gibi' sayılır, yani Luck + Muscle + Wins etkisi BİRLİKTE (tek şişe, tek geri sayım). Aynı etki üst üste çarpmaz (iki kaynak da olsa hep x2).
 	-- kind: ödül türü (Shop, Gifts, Wheel, DEV'de bu adla geçer); attribute: oyuncuya yayınlanan bitiş zamanı (sunucu saati).
+	-- AUTO CLICK POTION (2026-10-13, sahibi 'auto clicki de bir potion haline getir, benzer bir potion yap, bu potionu satmayalım ama tamamen açmak için Robux ödemelerini isteyelim, günlük göreve ekle, rainbow bunu içermesin, çarka da ekle, sabit 30 dk geçerli olsun' dedi):
+	-- süresi boyunca Auto Click, game pass olmadan da açıktır (istemci düğmeyi açık sayar: client/init.client; sunucu hız sınırı ClickLimit herkese aynı). SATILMAZ (forSale = false: Shop > Potions'ta kartı vardır ama Robux fiyatı yok):
+	-- günlük görev BONUSUNDAN (3 görev bitince Rainbow ile birlikte) ve ÇARKTAN çıkar, envantere girer (Shop > Potions > USE). SÜRE SABİT 30 dk (fixedMinutes; her kaynakta aynı). RAINBOW POTION BUNU İÇERMEZ (potionActive 'auto'yu Rainbow'a bağlamaz).
+	-- Robux isteği: iksir bitince / envanterde yokken kartın düğmesi 'R$ fiyat FOREVER' yazar ve Auto Click game pass'ini açar (Config.AutoClick), iksir bitince de 'Get it for R$ X to keep it forever' bildirimi gelir.
 	Potions = {
 		Mult = 2,
 		Durations = { 15, 60 }, -- Shop'ta satılan süreler (dakika); çark/Gifts/görev bonusu iksirleri bunlardan birindedir (BoostMinutes)
+		AutoMinutes = 30, -- Auto Click Potion'ın SABİT süresi (dakika)
 		List = {
 			{ id = "luck", kind = "boostLuck", attribute = "LuckBoostUntil", name = "Luck Potion", effect = "2x Egg Luck", description = "Rare pets hatch from eggs up to 2x more often.", emoji = "🍀", color = Color3.fromRGB(70, 210, 90) },
 			{ id = "muscle", kind = "boostMuscle", attribute = "MuscleBoostUntil", name = "Muscle Potion", effect = "2x Leg Muscle", description = "Doubles the Leg Muscle you get from every squat.", emoji = "💪", color = Color3.fromRGB(255, 120, 50) },
 			{ id = "wins", kind = "boostWins", attribute = "WinBoostUntil", name = "Wins Potion", effect = "2x Wins", description = "Doubles every Win you earn.", emoji = "🏆", color = Color3.fromRGB(255, 205, 50) },
 			{ id = "rainbow", kind = "boostRainbow", attribute = "RainbowBoostUntil", name = "Rainbow Potion", effect = "2x Luck, Muscle & Wins", description = "Counts as ALL potions: 2x egg luck, 2x muscle and 2x Wins!", emoji = "🌈", rainbow = true, color = Color3.fromRGB(255, 255, 255) },
+			{ id = "auto", kind = "boostAuto", attribute = "AutoBoostUntil", name = "Auto Click Potion", effect = "Free Auto Click", description = "Auto Click squats for you, no pass needed! Win it from Daily Quests and the Daily Wheel. Get the Auto Click pass to keep it forever.", emoji = "🖱️", fixedMinutes = 30, forSale = false, source = "Quests & Wheel", color = Color3.fromRGB(70, 150, 255) },
 		},
 	},
 

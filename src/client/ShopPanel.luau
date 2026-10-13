@@ -162,7 +162,7 @@ function ShopPanel.init(screenGui, showToast)
 			AnchorPoint = Vector2.new(1, 0),
 			Position = UDim2.new(1, -10, 0, 46),
 			Size = UDim2.fromOffset(190, 24),
-			Text = `{sku.minutes} min`,
+			Text = if sku.forSale == false then `{sku.minutes} min  ({potion.source})` else `{sku.minutes} min`,
 			TextColor3 = Color3.fromRGB(255, 225, 70),
 			TextXAlignment = Enum.TextXAlignment.Right,
 			ZIndex = 5,
@@ -195,6 +195,15 @@ function ShopPanel.init(screenGui, showToast)
 					local ok, message = shopFunction:InvokeServer("UsePotion", sku.id)
 					showToast(ok, message or "")
 				end)
+			elseif sku.forSale == false then
+				-- Satılmayan iksir (Auto Click Potion): envanterde yoksa düğme Auto Click game pass'ini (kalıcı) açar
+				if player:GetAttribute("HasAutoClick") == true then
+					showToast(true, "You already own Auto Click forever!")
+				elseif (Config.AutoClick.GamePassId or 0) > 0 then
+					pcall(MarketplaceService.PromptGamePassPurchase, MarketplaceService, player, Config.AutoClick.GamePassId)
+				else
+					showToast(false, `Win the {potion.name} from Daily Quests and the Daily Wheel!`)
+				end
 			elseif (sku.potion == "luck" or sku.potion == "rainbow") and player:GetAttribute("PaidRandomRestricted") ~= false then
 				-- Roblox 'ücretli rastgele ürün' politikası (server/PaidRandomPolicy): kısıtlı hesapta (ya da henüz bilinmiyorken) şansı artıran iksir satılmaz
 				showToast(false, "This potion is not available for your account.")
@@ -217,12 +226,18 @@ function ShopPanel.init(screenGui, showToast)
 			if owned > 0 then
 				row.label.Text = `USE  x{owned}`
 				row.button.BackgroundColor3 = USE_BLUE
+			elseif row.sku.forSale == false then
+				-- Satılmayan iksir: envanterde yoksa Auto Click pass'ini (kalıcı) göster; Robux isteği burada
+				local owned = player:GetAttribute("HasAutoClick") == true
+				row.label.Text = if owned then "OWNED FOREVER" elseif (Config.AutoClick.GamePassId or 0) > 0 then `{ROBUX} {Config.AutoClick.Robux} FOREVER` else "WIN IT!"
+				row.button.BackgroundColor3 = if owned then Color3.fromRGB(110, 118, 135) else BUY_GREEN
 			else
 				row.label.Text = `{ROBUX} {row.sku.robux}`
 				row.button.BackgroundColor3 = BUY_GREEN
 			end
 		end
 	end
+	player:GetAttributeChangedSignal("HasAutoClick"):Connect(refreshPotions)
 	player:GetAttributeChangedSignal("PotionItems"):Connect(refreshPotions)
 	refreshPotions()
 

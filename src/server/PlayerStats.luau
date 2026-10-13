@@ -70,9 +70,13 @@ local POTION_FIELD = {
 	boostMuscle = "boostMuscleUntil",
 	boostWins = "boostWinsUntil",
 	boostRainbow = "boostRainbowUntil",
+	boostAuto = "boostAutoUntil", -- Auto Click Potion: Rainbow BUNU İÇERMEZ (aşağıda potionActive), sabit 30 dk (Config.Potions.AutoMinutes)
 }
 local function potionActive(profile, field)
 	local now = os.time()
+	if field == "boostAutoUntil" then
+		return now < profile[field] -- Rainbow Potion Auto Click Potion'ı kapsamaz
+	end
 	return now < profile[field] or now < profile.boostRainbowUntil
 end
 
@@ -191,7 +195,7 @@ local function publishQuests(player)
 			resetAt = (state.day + 1) * 86400,
 			quests = entries,
 			bonusClaimed = state.bonus,
-			bonusText = `Rainbow Potion for {Config.Quests.BonusBoostMinutes} minutes`,
+			bonusText = `Rainbow Potion {Config.Quests.BonusBoostMinutes}m + Auto Click Potion {Config.Potions.AutoMinutes}m`,
 		})
 	)
 end
@@ -747,6 +751,7 @@ local function refresh(player)
 	player:SetAttribute("WinBoostUntil", profile.boostWinsUntil)
 	player:SetAttribute("LuckBoostUntil", profile.boostLuckUntil)
 	player:SetAttribute("RainbowBoostUntil", profile.boostRainbowUntil)
+	player:SetAttribute("AutoBoostUntil", profile.boostAutoUntil) -- Auto Click Potion: istemci süresince Auto Click'i açık sayar
 	local itemList = {}
 	for sku, count in profile.potionItems do
 		table.insert(itemList, `{sku}:{count}`)
@@ -827,6 +832,7 @@ local function save(player, mode)
 			muscle = profile.boostMuscleUntil,
 			wins = profile.boostWinsUntil,
 			rainbow = profile.boostRainbowUntil,
+			auto = profile.boostAutoUntil,
 		},
 		Discovered = (function()
 			local list = {}
@@ -919,6 +925,10 @@ end
 -- Dönüş: oyuncuya gösterilecek mesaj. Ürün bulunamazsa (yapılandırma hatası) iksir hemen içilir.
 local function giveItem(player, profile, kind, minutes)
 	minutes = minutes or Config.BoostMinutes
+	local fixed = Catalog.PotionByKind[kind]
+	if fixed and fixed.fixedMinutes then
+		minutes = fixed.fixedMinutes -- Auto Click Potion hep 30 dk (hangi kaynaktan gelirse gelsin)
+	end
 	local sku = Catalog.potionSkuFor(kind, minutes)
 	if not sku then
 		startBoost(player, profile, kind, minutes)
@@ -1017,6 +1027,7 @@ local function setup(player)
 		boostWinsUntil = 0,
 		boostLuckUntil = 0,
 		boostRainbowUntil = 0,
+		boostAutoUntil = 0, -- Auto Click Potion bitişi (os.time; Rainbow kapsamaz)
 		claimedGifts = {}, -- oyun süresi ödülleri (bu oturum)
 		offlinePending = 0, -- alınmayı bekleyen çevrimdışı kazanç (bacak kası) ve uzakta geçen süre (saniye)
 		offlineSeconds = 0,
@@ -1557,10 +1568,11 @@ function PlayerStats.claimQuestBonus(player)
 		end
 	end
 	profile.quests.bonus = true
-	local itemMessage = giveItem(player, profile, "boostRainbow", Config.Quests.BonusBoostMinutes)
+	giveItem(player, profile, "boostRainbow", Config.Quests.BonusBoostMinutes)
+	giveItem(player, profile, "boostAuto", Config.Potions.AutoMinutes)
 	refresh(player)
 	requestSave(player)
-	return true, `Bonus! {itemMessage}`
+	return true, `Bonus! Rainbow Potion ({Config.Quests.BonusBoostMinutes} min) and Auto Click Potion ({Config.Potions.AutoMinutes} min) added to your potions: open Shop > Potions and press USE!`
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
@@ -2413,8 +2425,8 @@ function PlayerStats.dev(player, command, amount)
 		end
 		publishQuests(player)
 		message = "All of today's quests are complete: claim them!"
-	elseif command == "PotionLuck" or command == "PotionMuscle" or command == "PotionWins" or command == "PotionRainbow" then
-		-- İksirleri denemek için: envantere 15 dakikalık 1 iksir ekler (Luck, Muscle, Wins ya da Rainbow); Shop > Potions'ta USE ile içilir
+	elseif command == "PotionLuck" or command == "PotionMuscle" or command == "PotionWins" or command == "PotionRainbow" or command == "PotionAuto" then
+		-- İksirleri denemek için: envantere 15 dakikalık (Auto Click Potion: sabit 30 dk) 1 iksir ekler; Shop > Potions'ta USE ile içilir
 		local kind = "boost" .. string.sub(command, 7)
 		message = giveItem(player, profile, kind, 15) -- envantere 1 adet (Shop > Potions'tan içilir)
 	elseif command == "WheelReset" then
@@ -2526,6 +2538,7 @@ function PlayerStats.dev(player, command, amount)
 		profile.boostWinsUntil = 0
 		profile.boostLuckUntil = 0
 		profile.boostRainbowUntil = 0
+		profile.boostAutoUntil = 0
 		profile.potionItems = {}
 		profile.discovered = {}
 		profile.tutorialDone = false -- eğitim yeniden başlar
