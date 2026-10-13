@@ -50,7 +50,7 @@ def module_names(folder, skip):
     return sorted(names)
 
 
-CLIENT_TESTS = ("ctest.luau", "clienttest.luau", "loadingtest.luau", "giftstest.luau", "perftest.luau", "taptest.luau", "leveluptest.luau", "guidetourtest.luau")  # istemci taklidiyle (c klasöründe) koşan testler
+CLIENT_TESTS = ("ctest.luau", "clienttest.luau", "loadingtest.luau", "giftstest.luau", "perftest.luau", "taptest.luau", "leveluptest.luau", "guidetourtest.luau", "objectivetest.luau")  # istemci taklidiyle (c klasöründe) koşan testler
 SHARED = module_names("shared", "")
 SERVER = module_names("server", "init.server.luau")  # init.server 'serverMain' olarak ayrıca kurulur
 CLIENT = module_names("client", "init.client.luau")  # init.client 'clientMain' olarak ayrıca kurulur
@@ -131,8 +131,12 @@ def main():
             print(f"{'HATA ' if bad else 'tamam'}  {name}")
             if bad:
                 failed += 1
-                for line in output.splitlines():
+                # Hata iletisi (assert metni) 'stacktrace' satırından ÖNCE gelir: o satırdan bir önceki satır da gösterilir
+                shown = output.splitlines()
+                for index, line in enumerate(shown):
                     if re.search(r"ERROR|WARN\b|attempt to|stacktrace|Error opening|failures:", line):
+                        if "stacktrace" in line and index > 0:
+                            print("      " + shown[index - 1][:300])
                         print("      " + line[:220])
     finally:
         shutil.rmtree(target, ignore_errors=True)

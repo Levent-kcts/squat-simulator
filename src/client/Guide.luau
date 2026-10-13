@@ -1,8 +1,9 @@
--- Yeni oyuncular için yol gösterici çizgi (EĞİTİM): karakterden hedefe giden parlak bir şerit.
---   * İlk skinin fiyatına yetecek Win yokken: sıradaki duvarın önündeki noktaya (duvara yaklaşınca kaybolur); aşama bitince o aşamanın sarı Win pedine
---   * Hiç peti yokken ilk yumurtaya (Config.Eggs[1]) yetecek Win olunca: o yumurtanın pedine (2026-10-13)
---   * Yetecek Win olunca: skin rafındaki İLK skinin (Config.Skins[1]) pedine (pedin yanına gelince kaybolur)
--- Sadece oyuncunun 'TutorialDone' = false olduğu sürece (yani ilk skinini alana kadar) gösterilir; sunucu bayrağı ilk skin alınınca true yapar. Tamamen görsel.
+-- Yeni oyuncular için yol gösterici çizgi: karakterden GÜNCEL HEDEFE (client/Objective; üst şerit ve rehber kartlarıyla aynı hedef, çakışmasınlar diye) giden parlak bir şerit.
+--   * Hedef 'ilk pet': ilk yumurtanın pedine (Config.Eggs[1]; pedin yanına gelince kaybolur)
+--   * Hedef 'ilk skin': skin rafındaki ilk skinin (Config.Skins[1]) pedine
+--   * Hedef 'duvar' (Win kazanmak ya da 3 duvar görevi): sıradaki duvarın önündeki noktaya (duvara yaklaşınca kaybolur); aşama bitince o aşamanın sarı Win pedine
+--   * Diğer hedeflerde (squat sayma, ayakkabı, level...) çizgi yok.
+-- Sadece Guide açıkken ve ilk rebirth'e kadar gösterilir. Tamamen görsel.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -10,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Layout = require(Shared:WaitForChild("Layout"))
+local Objective = require(script.Parent.Objective)
 
 local Guide = {}
 
@@ -20,7 +22,10 @@ local LINE_COLOR = Color3.fromRGB(255, 235, 90)
 -- wallClient: WallClient modülü (getFrontier ve isNearWall için)
 function Guide.init(wallClient)
 	local player = Players.LocalPlayer
-	local wins = player:WaitForChild("leaderstats"):WaitForChild(Config.StatWins)
+	local leaderstats = player:WaitForChild("leaderstats")
+	local wins = leaderstats:WaitForChild(Config.StatWins)
+	local levelValue = leaderstats:WaitForChild(Config.StatLevel)
+	local rebirthValue = leaderstats:WaitForChild(Config.StatRebirths)
 	local firstSkin = Config.Skins[1]
 
 	-- İlk skinin rafındaki ped (sunucu pedi SkinShop klasöründe, 'ItemId' özniteliğiyle kurar); bulunana kadar nil
@@ -101,26 +106,23 @@ function Guide.init(wallClient)
 		task.spawn(bindCharacter, player.Character)
 	end
 
-	-- Hedefi belirle: dönüş (konum) ya da nil (çizgi gizli)
-	local function pickTarget(position)
-		-- Eğitimin ilk adımı (squat say): duvara yönlendirme, ilk Config.Tutorial.ClickGoal tıklama bitene kadar çizgi yok
-		if (player:GetAttribute("TutorialClicks") or 0) < Config.Tutorial.ClickGoal then
-			return nil
-		end
-		-- Hiç peti yoksa ve ilk yumurtaya yetecek Win varsa: ilk yumurtanın pedine (ilk pet 1. dakikada; retention)
-		if (player:GetAttribute("OwnedPets") or "") == "" and wins.Value >= starterEgg.price then
+	-- Hedefi belirle: dönüş (konum) ya da nil (çizgi gizli). Hedef türü güncel hedeften (Objective.id) gelir
+	local function pickTarget(position, objectiveId)
+		if objectiveId == "pet" then
+			-- İlk yumurtanın pedine (ilk pet 1. dakikada; retention)
 			local pad = findEggPad()
 			if pad and (pad.Position - position).Magnitude > 8 then
 				return pad.Position + Vector3.new(0, 1.2, 0)
 			end
 			return nil
-		end
-		-- İlk skine yetecek Win varsa: skin rafındaki ilk pede
-		if wins.Value >= firstSkin.price then
+		elseif objectiveId == "skin" then
+			-- Skin rafındaki ilk pede
 			local pad = findSkinPad()
 			if pad and (pad.Position - position).Magnitude > 7 then
 				return pad.Position + Vector3.new(0, 1.2, 0)
 			end
+			return nil
+		elseif objectiveId ~= "wall" then
 			return nil
 		end
 		local frontier = wallClient.getFrontier()
@@ -155,14 +157,15 @@ function Guide.init(wallClient)
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local training = (player:GetAttribute("TrainingArea") or "") ~= ""
-		-- Settings'teki 'Guide' anahtarı (GuideOn = false) kapalıysa yol gösterici çizgi de kapalıdır
-		local inTutorial = player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false and player:GetAttribute("GuideOn") ~= false
-		if not root or not startAttachment or not inTutorial or training then
+		-- Settings'teki 'Guide' anahtarı (GuideOn = false) kapalıysa yol gösterici çizgi de kapalıdır; ilk rebirth'ten sonra yok
+		local guiding = player:GetAttribute("DataLoaded") == true and player:GetAttribute("GuideOn") ~= false and rebirthValue.Value == 0
+		if not root or not startAttachment or not guiding or training then
 			beam.Enabled = false
 			return
 		end
-
-		local goal = pickTarget(root.Position)
+		-- Üst şeritle aynı hedef (sunucuda 'TutorialDone' kapanmış olsa bile 3 duvar görevi sürerken çizgi duvara gider)
+		local objective = Objective.read(player, { wins = wins.Value, level = levelValue.Value, maxLevel = player:GetAttribute("MaxLevel"), rebirths = rebirthValue.Value, wallText = "" })
+		local goal = objective and pickTarget(root.Position, objective.id)
 		if not goal then
 			beam.Enabled = false
 			return

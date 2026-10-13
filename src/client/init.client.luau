@@ -680,9 +680,10 @@ refresh()
 -- Banner iki kaynaktan beslenir: duvar ilerlemesi ve antrenman alanı (alandayken "Training..." yazar, çıkınca duvar yazısına döner)
 local progressText = bannerText.Text
 
--- EĞİTİM: üstteki yönerge yazısı SADECE yeni oyuncuya görünür ve oyuncu ilk skinini alana kadar sürer (sunucu 'TutorialDone' bayrağı, Config.Guide notuna bak).
--- Deneyimli oyuncuda yazı gizlidir; sadece antrenman alanındayken 'Training with...' bilgisi için görünür.
-local firstSkin = Config.Skins[1]
+-- EĞİTİM + GÖREV ZİNCİRİ (2026-10-13, sahibi 'iki görev çakışıyor, görevleri birbirine entegre et' dedi): üstteki şerit, yol gösterici çizgi (Guide) ve rehber kartları (GuideTour)
+-- AYNI güncel hedefi okur (client/Objective: NEW PLAYER görevlerinin sırasıyla ilk bitmemişi: 30 squat > ilk pet > ilk skin > 3 duvar > ayakkabı > level 10 > Playtime ödülü > antrenman > çark > rebirth).
+-- Şerit ilk rebirth'e kadar sürer (Config.Tutorial.RebirthGoal = false ise sadece ilk skine kadar). Deneyimli oyuncuda şerit gizlidir (sadece antrenman alanında 'Training with...' görünür).
+local Objective = require(script.Objective)
 
 -- Settings'teki 'Guide' anahtarı: kapalıysa (GuideOn = false) üstteki yönerge/hedef şeridi, yol gösterici çizgi ve tanıtım kartları görünmez
 local function guideOn()
@@ -693,54 +694,23 @@ local function tutorialActive()
 	return player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false
 end
 
-local function tutorialClicks()
-	return player:GetAttribute("TutorialClicks") or 0
-end
-
--- Hiç pet'i var mı (OwnedPets virgüllü liste)
-local function ownsAnyPet()
-	return (player:GetAttribute("OwnedPets") or "") ~= ""
-end
-
-local function tutorialText()
-	-- 1. adım: squat say. Sunucu hareket başlatılınca sayar; ClickGoal kez olunca oyuncu duvara yönlendirilir
-	local goal = Config.Tutorial.ClickGoal
-	if tutorialClicks() < goal then
-		return `Click anywhere to squat and get stronger!  ({tutorialClicks()}/{goal})`
+local function currentObjective()
+	if not guideOn() or player:GetAttribute("DataLoaded") ~= true or rebirthValue.Value > 0 then
+		return nil
 	end
-	local wins = winValue.Value
-	-- 2. adım (retention): ilk PET. Başlangıç hediyesi Win'i ilk yumurtaya yeter; ilk pet 1. dakikada gelsin (sahibi: oyuncular 1K güçte bırakıyor)
-	local starterEgg = Config.Eggs[1]
-	if not ownsAnyPet() and wins >= starterEgg.price then
-		return `You have {Format.number(wins)} Wins! Hatch your FIRST PET: step on the {starterEgg.name} pad at the back wall and press E!`
+	if player:GetAttribute("TutorialDone") == true and Config.Tutorial.RebirthGoal ~= true then
+		return nil
 	end
-	if wins >= firstSkin.price then
-		return `You have {Format.number(wins)} Wins! Go to the SKIN shelf on the left wall and step on the {firstSkin.name} pad!`
-	end
-	return progressText
-end
-
--- İLK REBIRTH HEDEFİ (retention): eğitim bitince (ilk skin) ilk rebirth'e kadar üstteki şerit hedefi gösterir: 'level N/25' ve çubuk; seviyeye gelince Rebirth'i işaret eder
-local function goalActive()
-	return Config.Tutorial.RebirthGoal == true and player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == true and rebirthValue.Value == 0
-end
-
-local function goalLevels()
-	local level = levelValue.Value
-	local maxLevel = math.max(1, player:GetAttribute("MaxLevel") or level)
-	return level, maxLevel
-end
-
-local function goalText()
-	local level, maxLevel = goalLevels()
-	if level >= maxLevel then
-		return "MAX LEVEL! Open REBIRTH on the left to grow stronger forever!"
-	end
-	return `Goal: reach level {maxLevel} to REBIRTH!  ({level}/{maxLevel})`
+	return Objective.read(player, {
+		wins = winValue.Value,
+		level = levelValue.Value,
+		maxLevel = player:GetAttribute("MaxLevel"),
+		rebirths = rebirthValue.Value,
+		wallText = progressText,
+	})
 end
 
 local function refreshBanner()
-	local goalFraction = nil -- ilk rebirth hedefi gösteriliyorsa level doluluğu, yoksa nil (eğitim çubuğu tıklama sayar)
 	local areaId = player:GetAttribute("TrainingArea") or ""
 	local area = nil
 	for _, candidate in Config.Training.Areas do
@@ -748,24 +718,22 @@ local function refreshBanner()
 			area = candidate
 		end
 	end
-	local showBar = false
+	local fraction = nil -- çubuk gösterilecekse doluluğu (squat sayacı, level, görev ilerlemesi)
 	if area then
 		banner.Visible = true
 		bannerText.Text = `Training with {area.trainer}: x{string.format("%g", area.mult)} Squat!`
-	elseif guideOn() and tutorialActive() then
-		banner.Visible = true
-		bannerText.Text = tutorialText()
-		showBar = tutorialClicks() < Config.Tutorial.ClickGoal
-	elseif guideOn() and goalActive() then
-		banner.Visible = true
-		bannerText.Text = goalText()
-		showBar = true
-		goalFraction = math.clamp(select(1, goalLevels()) / select(2, goalLevels()), 0, 1)
 	else
-		banner.Visible = false
+		local objective = currentObjective()
+		if objective then
+			banner.Visible = true
+			bannerText.Text = objective.text
+			fraction = objective.fraction
+		else
+			banner.Visible = false
+		end
 	end
-	bannerBar.Visible = showBar
-	bannerFill.Size = UDim2.fromScale(if goalFraction then goalFraction else math.clamp(tutorialClicks() / Config.Tutorial.ClickGoal, 0, 1), 1)
+	bannerBar.Visible = fraction ~= nil
+	bannerFill.Size = UDim2.fromScale(fraction or 0, 1)
 end
 
 local function onProgress(frontier)
@@ -789,6 +757,8 @@ player:GetAttributeChangedSignal("TutorialDone"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("TutorialClicks"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("OwnedPets"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("OwnedSkins"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("StarterState"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("MaxLevel"):Connect(refreshBanner)
 levelValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)
 rebirthValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)

@@ -30,7 +30,19 @@ for _, step in Config.GuideTour do
 	assert(type(step.id) == "string" and not ids[step.id], "rehber adım kimlikleri benzersiz olmalı: " .. tostring(step.id))
 	ids[step.id] = true
 	assert(type(step.title) == "string" and type(step.text) == "string" and #step.text < 220, "adımın başlığı ve kısa metni olmalı: " .. step.id)
-	assert(step.when == "start" or step.when == "clicks" or step.when == "winsFirst" or step.when == "pet" or step.when == "skin" or step.when == "nearMax" or string.match(step.when, "^level:%d+$"), "geçersiz koşul: " .. step.id .. " " .. tostring(step.when))
+	local questId = string.match(step.when, "^quest:(.+)$")
+	if questId then
+		local known = false
+		for _, quest in Config.StarterQuests do
+			known = known or quest.id == questId
+		end
+		assert(known, "kart bilinmeyen bir göreve bağlı: " .. step.id .. " " .. questId)
+	else
+		assert(step.when == "start" or step.when == "nearMax" or string.match(step.when, "^level:%d+$"), "geçersiz koşul: " .. step.id .. " " .. tostring(step.when))
+	end
+	if step.tip then
+		assert(step.tag == "TIP", "bilgi kartının etiketi TIP olmalı: " .. step.id)
+	end
 	if step.intro then
 		introSteps += 1
 	end
@@ -173,24 +185,73 @@ assert(S.lastInvoke and S.lastInvoke[1] == "GuideSeen" and S.lastInvoke[2] == "i
 assert(toasts[#toasts] and string.find(toasts[#toasts], "Quests", 1, true), "tur bitince Quests'e yönlendiren bildirim gelmeli")
 S.localPlayer:SetAttribute("GuideSeen", "welcome,intro") -- sunucu yayımlar
 
--- 5) Eğitim görevi (30 tık) bitmeden ikinci bir görev kartı açılmaz (iki görev birbirine bağlı)
+-- Güncel hedef: üst şerit, yol çizgisi ve kartlar hep client/Objective'i okur
+local Objective = require("./Objective")
+local function objectiveId()
+	local objective = Objective.read(S.localPlayer, {
+		wins = stats[Config.StatWins].Value,
+		level = stats[Config.StatLevel].Value,
+		maxLevel = S.localPlayer:GetAttribute("MaxLevel"),
+		rebirths = stats[Config.StatRebirths].Value,
+		wallText = "",
+	})
+	return objective and objective.id
+end
+local function starterState(done, claimed)
+	local parts = {}
+	for _, quest in Config.StarterQuests do
+		local isDone = done[quest.id] == true
+		local isClaimed = isDone and claimed ~= false
+		table.insert(parts, `{quest.id},{if isDone then quest.goal else 0},{if isDone then 1 else 0},{if isClaimed then 1 else 0}`)
+	end
+	return table.concat(parts, ";")
+end
+local function questById(id)
+	for _, quest in Config.StarterQuests do
+		if quest.id == id then
+			return quest
+		end
+	end
+	return nil
+end
+local function stepById(id)
+	for _, step in Config.GuideTour do
+		if step.id == id then
+			return step
+		end
+	end
+	return nil
+end
+S.localPlayer:SetAttribute("StarterState", starterState({}))
+
+-- 5) Eğitim görevi (30 tık) bitmeden ikinci bir görev kartı açılmaz (iki görev çakışmasın)
 stats[Config.StatLevel].Value = 6
+assert(objectiveId() == "squat", "30 tıklama bitmeden güncel hedef squat olmalı")
 GuideTour._tick()
-assert(not visible(), "30 tıklama bitmeden 'level 6' kartı çıkmamalı")
+assert(not visible(), "30 tıklama bitmeden başka kart çıkmamalı")
 stats[Config.StatLevel].Value = 1
+
+-- 5b) ÇAKIŞMA DÜZELTMESİ (ekran görüntüsü: şerit 'ilk pet'i çıkar' derken kart 'duvarları kır' diyordu): kart güncel hedefle AYNI şeyi söyler
 S.localPlayer:SetAttribute("TutorialClicks", Config.Tutorial.ClickGoal)
+stats[Config.StatWins].Value = 0
+assert(objectiveId() == "wall", "Win yokken (ilk pet/skin alınamıyor) güncel hedef Win kazanmak (duvar) olmalı")
+stats[Config.StatWins].Value = 16
+assert(objectiveId() == "pet", "yumurtaya yetecek Win varken güncel hedef ilk pet olmalı")
 GuideTour._tick()
-assert(visible() and cardHas(Config.GuideTour[3].title), "30 tıktan sonra duvar kartı gösterilmeli")
+assert(visible() and cardHas(stepById("q_pet").title) and cardHas("NEW QUEST"), "güncel hedef 'ilk pet' iken kart da 'ilk pet' demeli")
+assert(not cardHas(stepById("q_wall").title), "ilk pet hedefiyken 'duvarları kır' kartı çıkmamalı")
+S.lastInvoke = nil
 click(find(card, "GotIt"))
+assert(S.lastInvoke and S.lastInvoke[2] == "q_pet", "kart görüldü diye bildirilmeli: " .. tostring(S.lastInvoke and S.lastInvoke[2]))
 
 -- 6) GÖREV BAĞI: görev bitince Quests düğmesine 'claim' oku, altında sıradaki görev
-local first, second = Config.StarterQuests[1], Config.StarterQuests[2]
-S.localPlayer:SetAttribute("StarterState", `{first.id},{first.goal},1,0;{second.id},0,0,0`)
+local first, second = questById("squat"), questById("wheel")
+S.localPlayer:SetAttribute("StarterState", starterState({ squat = true }, false))
 GuideTour._tick()
 local claimState = GuideTour._state()
 assert(claimState.current and claimState.current.claim and claimState.callout, "biten görev için Quests'e ok çıkmalı")
 assert(calloutText() == "Quest complete! Tap to claim", "ok balonu 'görev tamamlandı' demeli: " .. tostring(calloutText()))
-assert(hasText(claimState.callout.bubble, "Next: " .. second.text), "balon sıradaki görevi söylemeli")
+assert(hasText(claimState.callout.bubble, "Next: " .. questById("pet").text), "balon sıradaki görevi söylemeli")
 assert(claimState.callout.target == button("QuestsButton"), "ok Quests düğmesini göstermeli")
 -- Konum düzeltmesi: ilk yerleştirme hedefin AbsolutePosition'ına göredir, sonrakiler kapsayıcının GERÇEK konumunu ölçüp farkı kapatır (üst çubuk payı yüzünden halka kaçmasın)
 local callout = claimState.callout
@@ -204,27 +265,46 @@ click(button("QuestsButton")) -- oyuncu Quests'e basar
 assert(GuideTour._state().callout == nil and GuideTour._state().current == nil, "Quests'e basınca ok kalkmalı")
 GuideTour._tick()
 assert(GuideTour._state().callout == nil, "aynı görev için ok tekrar çıkmamalı")
--- Yeni görev bitince yeniden; alınınca kendiliğinden kalkar
+-- Yeni görev bitince yeniden (güncel hedefi değiştirmeyen sondaki bir görev); alınınca kendiliğinden kalkar
 S.localPlayer:SetAttribute("StarterState", `{first.id},{first.goal},1,1;{second.id},{second.goal},1,0`)
 GuideTour._tick()
 assert(GuideTour._state().current and GuideTour._state().current.questId == second.id, "yeni biten görev için ok yeniden çıkmalı")
 S.localPlayer:SetAttribute("StarterState", `{first.id},{first.goal},1,1;{second.id},{second.goal},1,1`)
 assert(GuideTour._state().current == nil and GuideTour._state().callout == nil, "görev alınınca ok kalkmalı")
 
--- 7) Hedefli kart: büyük ok + kısa balon, hedefe basınca kart kapanır
-stats[Config.StatWins].Value = 8
+-- 7) Görev zinciri: pet > skin > duvar kartları sırayla ve şeritle aynı hedefle gelir
+S.localPlayer:SetAttribute("StarterState", starterState({ squat = true }))
+S.localPlayer:SetAttribute("OwnedPets", "cat")
+stats[Config.StatWins].Value = Config.Skins[1].price
+assert(objectiveId() == "skin", "ilk pet alınınca güncel hedef ilk skin olmalı")
 GuideTour._tick()
-assert(visible() and cardHas(Config.GuideTour[4].title), "ilk Win kartı gösterilmeli")
-assert(calloutText() == Config.GuideTour[4].pointer and GuideTour._state().callout.target == button("WinsChip"), "kart hedef düğmeyi balonlu okla işaretlemeli")
+assert(visible() and cardHas(stepById("q_skin").title), "güncel hedef 'ilk skin' iken kart da 'ilk skin' demeli")
+click(find(card, "GotIt"))
+S.localPlayer:SetAttribute("OwnedSkins", Config.Skins[1].id)
+assert(objectiveId() == "wall", "ilk skin alınınca güncel hedef 3 duvar olmalı")
+GuideTour._tick()
+assert(visible() and cardHas(stepById("q_wall").title), "güncel hedef '3 duvar' iken 'duvarları kır' kartı gelmeli")
+click(find(card, "GotIt"))
+
+-- 7b) Bilgi (TIP) kartları güncel hedefin kartı beklerken çıkmaz; sonra hedefli karta büyük ok + kısa balon
+S.localPlayer:SetAttribute("StarterState", starterState({ squat = true, pet = true, skin = true, wall = true }))
+stats[Config.StatLevel].Value = 9
+assert(objectiveId() == "shoes", "3 duvar bitince güncel hedef ilk ayakkabı olmalı")
+GuideTour._tick()
+assert(visible() and cardHas(stepById("q_shoes").title) and not cardHas(stepById("auto").title), "level 9 olsa da önce güncel hedefin kartı gelmeli, TIP kartı beklemeli")
+click(find(card, "GotIt"))
+GuideTour._tick()
+assert(visible() and cardHas(stepById("auto").title) and cardHas("TIP"), "hedefin kartı görülünce TIP kartı gelmeli")
+assert(calloutText() == stepById("auto").pointer and GuideTour._state().callout.target == button("AutoClickButton"), "TIP kartı hedef düğmeyi balonlu okla işaretlemeli")
 S.lastInvoke = nil
-click(button("WinsChip"))
+click(button("AutoClickButton"))
 assert(not visible() and GuideTour._state().callout == nil, "işaretlenen düğmeye basmak kartı kapatmalı")
-assert(S.lastInvoke and S.lastInvoke[2] == "wins", "hedefe basmak da görüldü sayılmalı")
+assert(S.lastInvoke and S.lastInvoke[2] == "auto", "hedefe basmak da görüldü sayılmalı")
 
 -- 8) Guide anahtarı kapanınca açık kart/ok gider ve yenisi çıkmaz; yeniden açılınca devam eder
-S.localPlayer:SetAttribute("OwnedPets", "cat")
+stats[Config.StatLevel].Value = 11
 GuideTour._tick()
-assert(visible() and GuideTour._state().callout, "pet kartı ve oku açık olmalı")
+assert(visible() and GuideTour._state().callout, "Pet Index kartı ve oku açık olmalı")
 S.localPlayer:SetAttribute("GuideOn", false)
 assert(not visible() and GuideTour._state().callout == nil, "Guide kapanınca kart ve ok kaybolmalı")
 GuideTour._tick()

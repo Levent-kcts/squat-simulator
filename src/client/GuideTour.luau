@@ -13,6 +13,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
 local PlayerSettings = require(script.Parent.PlayerSettings)
+local Objective = require(script.Parent.Objective)
 
 local GuideTour = {}
 
@@ -117,23 +118,21 @@ local function isShown(target)
 	return not ok or shown
 end
 
--- Adımın koşulu sağlandı mı? when: start / clicks / winsFirst / pet / skin / level:N / nearMax
--- 'start' ve 'clicks' dışındakiler eğitim tıklamaları bitmeden çıkmaz: ilk görev (30 tıklama) sürerken ikinci bir görev kartı açılmaz
-local function conditionMet(player, when, wins, level)
+-- Adımın koşulu sağlandı mı? when: start / quest:<görev id> (o görev GÜNCEL HEDEF: üst şerit, çizgi ve kart hep aynı hedefi söyler) / level:N / nearMax
+-- 'start' dışındakiler eğitim tıklamaları (30) bitmeden çıkmaz. cardPending: güncel hedefin kartı henüz gösterilmediyse bilgi (tip) kartları ve diğerleri bekler (iki görev çakışmasın).
+local function conditionMet(player, step, level, objective, cardPending)
+	local when = step.when
 	if when == "start" then
 		return true
 	end
-	local clicksDone = (player:GetAttribute("TutorialClicks") or 0) >= Config.Tutorial.ClickGoal
-	if when == "clicks" then
-		return clicksDone
-	elseif not clicksDone then
+	if (player:GetAttribute("TutorialClicks") or 0) < Config.Tutorial.ClickGoal then
 		return false
-	elseif when == "winsFirst" then
-		return wins >= 1
-	elseif when == "pet" then
-		return (player:GetAttribute("OwnedPets") or "") ~= ""
-	elseif when == "skin" then
-		return (player:GetAttribute("OwnedSkins") or "") ~= ""
+	end
+	local questId = string.match(when, "^quest:(.+)$")
+	if questId then
+		return objective ~= nil and objective.id == questId
+	elseif cardPending then
+		return false
 	elseif when == "nearMax" then
 		local maxLevel = player:GetAttribute("MaxLevel") or 0
 		return maxLevel > 0 and level >= maxLevel - 2
@@ -188,9 +187,10 @@ function GuideTour.init(screenGui, showToast)
 	UIStyle.soften(card, { radius = 16, strength = 0.2, shine = false })
 	create("UISizeConstraint", { MaxSize = Vector2.new(430, 170), MinSize = Vector2.new(260, 170) }, card)
 
-	label(card, { -- 'GUIDE' etiketi
+	local tagLabel = label(card, { -- 'GUIDE' / 'NEW QUEST' / 'TIP' etiketi
+		Name = "Tag",
 		Position = UDim2.fromOffset(14, 8),
-		Size = UDim2.fromOffset(70, 18),
+		Size = UDim2.fromOffset(110, 18),
 		Text = "GUIDE",
 		TextColor3 = GOLD,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -712,6 +712,7 @@ function GuideTour.init(screenGui, showToast)
 		title.Text = step.title
 		body.Text = step.text
 		gotItLabel.Text = step.button or "Got it!"
+		tagLabel.Text = step.tag or "GUIDE"
 		card.Visible = true
 		local target = findTarget(player, step.target)
 		if target and not pcall(setCallout, target, step.pointer or "Tap here!", nil, dismiss) then
@@ -786,8 +787,24 @@ function GuideTour.init(screenGui, showToast)
 		end
 		local seen = seenSet()
 		local sinceDismiss = os.clock() - lastDismiss
+		-- Güncel hedef (üst şeritle aynı) ve bu hedefin kartı bekliyor mu
+		local objective = Objective.read(player, {
+			wins = winValue.Value,
+			level = levelValue.Value,
+			maxLevel = player:GetAttribute("MaxLevel"),
+			rebirths = rebirthValue.Value,
+			wallText = "",
+		})
+		local cardPending = false
+		if objective then
+			for _, step in Config.GuideTour do
+				if step.when == "quest:" .. objective.id and not seen[step.id] and not shownThisSession[step.id] then
+					cardPending = true
+				end
+			end
+		end
 		for _, step in Config.GuideTour do
-			if not seen[step.id] and not shownThisSession[step.id] and conditionMet(player, step.when, winValue.Value, levelValue.Value) then
+			if not seen[step.id] and not shownThisSession[step.id] and conditionMet(player, step, levelValue.Value, objective, cardPending) then
 				if sinceDismiss >= math.min(step.gap or timing.gap, timing.gap) then
 					show(step)
 				end

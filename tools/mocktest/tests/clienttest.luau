@@ -114,23 +114,35 @@ local function refreshBanner()
 	nonce += 1
 	S.localPlayer:SetAttribute("TutorialClicks", nonce) -- yazıyı yeniden hesaplatmak için değişen bir değer (sayaç hedefin üstündeyse davranış aynı)
 end
+-- Üst şerit GÜNCEL HEDEFİ yazar (client/Objective: NEW PLAYER görevlerinin sırasıyla ilk bitmemişi; rehber kartı ve yol çizgisi de aynı hedefi okur)
+local function starterState(done)
+	local parts = {}
+	for _, quest in Config.StarterQuests do
+		local isDone = done[quest.id] == true
+		table.insert(parts, `{quest.id},{if isDone then quest.goal else 0},{if isDone then 1 else 0},0`)
+	end
+	return table.concat(parts, ";")
+end
+S.localPlayer:SetAttribute("StarterState", starterState({}))
 -- 1. adım: sayaç hedefin altında
 S.localPlayer:SetAttribute("TutorialClicks", 7)
 assert(hasText("Click anywhere to squat and get stronger!  (7/" .. Config.Tutorial.ClickGoal .. ")"), "1. adım yazısı yok")
--- 2. adım: sayaç doldu, Win yok: duvar yönergesi (Win yetmedi)
+-- 2. adım: sayaç doldu, Win yok: ilk pet için Win kazanmak gerekir (duvar yönergesi)
 S.localPlayer:SetAttribute("TutorialClicks", Config.Tutorial.ClickGoal)
 assert(not hasText("Click anywhere"), "sayaç dolunca ilk adım yazısı kalkmalı")
 -- 2b. adım (retention): hiç peti yokken ilk yumurtaya yetecek Win: ilk pet yönergesi (ilk skinden ÖNCE)
 wins.Value = Config.Eggs[1].price + Config.Skins[1].price
 refreshBanner()
 assert(hasText("You have " .. wins.Value .. " Wins! Hatch your FIRST PET"), "ilk pet yönergesi yok")
--- 3. adım: ilk skinin fiyatına yetecek Win: skin rafına yönlendirme
+-- 3. adım: pet alındı; ilk skinin fiyatına yetecek Win: skin rafına yönlendirme
+S.localPlayer:SetAttribute("OwnedPets", "cat")
 wins.Value = Config.Skins[1].price
 refreshBanner()
 assert(hasText("You have " .. Config.Skins[1].price .. " Wins! Go to the SKIN shelf"), "3. adım yazısı yok")
 -- Eğitim bitti: yönerge yazıları kalkar (ilk rebirth hedefi şeridi kapalıyken; açık hâli aşağıda ayrıca denenir)
 Config.Tutorial.RebirthGoal = false
-S.localPlayer:SetAttribute("TutorialDone", true)
+S.localPlayer:SetAttribute("TutorialDone", true) -- (önce bu: şerit gizlenir ve son yazı 'You have...' olarak kalır)
+S.localPlayer:SetAttribute("OwnedSkins", Config.Skins[1].id)
 -- (yazı metni silinmez, yönerge çerçevesi gizlenir: etiketin ebeveyni Visible = false olmalı)
 local function labelWith(prefix)
 	local found = nil
@@ -148,11 +160,22 @@ local function labelWith(prefix)
 end
 local label = labelWith("You have")
 assert(label and rawget(rawget(label, "Parent"), "Visible") == false, "eğitim bitince yönerge çerçevesi gizlenmeli")
--- İlk rebirth hedefi (varsayılan açık): eğitim bitince şerit 'Goal: reach level N to REBIRTH!' gösterir, level sınırına gelince Rebirth'i işaret eder
+-- İlk rebirth'e kadar görev zinciri (varsayılan açık): eğitimden sonra şerit sıradaki görevi yazar
 Config.Tutorial.RebirthGoal = true
+S.localPlayer:SetAttribute("MaxLevel", Config.Level.BaseMaxLevel)
+S.localPlayer:SetAttribute("StarterState", starterState({ squat = true, pet = true, skin = true }))
+refreshBanner()
+assert(hasText("Quest 4/" .. #Config.StarterQuests .. ": " .. Config.StarterQuests[4].text), "eğitimden sonra sıradaki görev yazılmalı: " .. Config.StarterQuests[4].text)
+-- Görevler bitince ilk rebirth hedefi: 'Goal: reach level N to REBIRTH!' ve level sınırına gelince Rebirth'i işaret eder
+local allButRebirth = {}
+for _, quest in Config.StarterQuests do
+	allButRebirth[quest.id] = quest.id ~= "rebirth"
+end
+S.localPlayer:SetAttribute("StarterState", starterState(allButRebirth))
 S.localPlayer:SetAttribute("MaxLevel", 25)
 refreshBanner()
 assert(hasText("Goal: reach level 25 to REBIRTH!"), "ilk rebirth hedefi yazısı yok")
+S.localPlayer:SetAttribute("StarterState", starterState({ squat = true, pet = true, skin = true })) -- görevler sürerken bile level sınırına gelince hedef REBIRTH olur
 S.localPlayer:SetAttribute("MaxLevel", 1) -- level (en az 1) sınıra eşit: hedef 'MAX LEVEL' der
 refreshBanner()
 assert(hasText("MAX LEVEL! Open REBIRTH"), "level sınırında Rebirth'i işaret eden yazı yok")

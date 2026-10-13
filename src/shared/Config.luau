@@ -333,9 +333,9 @@ return {
 	-- / wheel (çarkı çevirdi) / rebirths. rewards: { kind = wins | boostLuck | boostMuscle | boostWins | boostRainbow, amount | minutes }. Eski oyuncuya (eğitimi bitmiş) geriye dönük verilmez. Yeni görev eklersen SONA koy (id değişmesin).
 	StarterQuests = {
 		{ id = "squat", text = "Squat 30 times", hint = "Click or tap anywhere to squat!", metric = "clicks", goal = 30, rewards = { { kind = "wins", amount = 5 } } },
-		{ id = "wall", text = "Break 3 walls", hint = "Walk into the corridor ahead and tap near the walls to kick them.", metric = "walls", goal = 3, rewards = { { kind = "wins", amount = 10 } } },
 		{ id = "pet", text = "Hatch your first pet", hint = "Back wall: step on the Starter Egg pad and press E.", metric = "pets", goal = 1, rewards = { { kind = "wins", amount = 10 } } },
 		{ id = "skin", text = "Buy your first skin", hint = "Left wall, SKIN shelf: step on a pad you can afford.", metric = "skins", goal = 1, rewards = { { kind = "wins", amount = 5 } } },
+		{ id = "wall", text = "Break 3 walls", hint = "Walk into the corridor ahead and tap near the walls to kick them.", metric = "walls", goal = 3, rewards = { { kind = "wins", amount = 10 } } },
 		{ id = "shoes", text = "Buy your first shoes", hint = "Left wall, SHOE shelf: shoes multiply your wall damage.", metric = "shoes", goal = 1, rewards = { { kind = "wins", amount = 10 } } },
 		{ id = "level10", text = "Reach level 10", hint = "Keep squatting: every level makes each squat stronger.", metric = "level", goal = 10, rewards = { { kind = "wins", amount = 15 } } },
 		{ id = "gift", text = "Claim a Playtime Reward", hint = "Gifts button on the left, or the FREE REWARD box on the right.", metric = "gifts", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
@@ -344,21 +344,24 @@ return {
 		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, then press Rebirth on the left. You keep Wins, shoes, skins and pets!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 } } },
 	},
 	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen').
-	-- when: start / clicks (eğitim tıklamaları bitti) / winsFirst (ilk Win) / pet / skin / level:N / nearMax (level sınırına 2 kala); 'start' ve 'clicks' dışındakiler eğitim tıklamaları (ClickGoal) bitmeden çıkmaz (eğitim görevi bitmeden ikinci bir görev kartı açılmasın).
-	-- target: arayüz öğesinin adı (büyük ok + konuşma balonu ile işaretlenir; balon yazısı pointer, yoksa 'Tap here!'), yoksa sadece kart. button: kartın yeşil düğmesinin yazısı. intro = true: kart değil, GuideIntro'daki HIZLI OK TURU. Yeni adım SONA eklenir (id'ler sunucuda doğrulanır).
+	-- when: start / quest:<görev id> (o görev GÜNCEL HEDEF olunca; üst şerit [client/Objective] de aynı hedefi yazar, böylece kart ile şerit çakışmaz: 2026-10-13 'iki görev çakışıyor' şikayeti) / level:N / nearMax (level sınırına 2 kala).
+	-- Bilgi (tip = true) kartları ancak güncel hedefin kartı beklemiyorsa ve 30 tıklama bittiyse çıkar. target: arayüz öğesinin adı (büyük ok + konuşma balonu; balon yazısı pointer, yoksa 'Tap here!'), yoksa sadece kart.
+	-- tag: kartın başlık etiketi (yoksa GUIDE). button: yeşil düğmenin yazısı. intro = true: kart değil, GuideIntro'daki HIZLI OK TURU. Liste sırası öncelik sırasıdır (aynı anda birden çok adım uygunsa ilki gösterilir); id'ler sunucuda doğrulanır, yeni id eklemek yeterli.
 	GuideTour = {
 		{ id = "welcome", when = "start", button = "Show me!", title = "Welcome, Squat Hero!", text = "Tap anywhere to squat and grow stronger! Want a quick tour of the buttons?" },
 		{ id = "intro", when = "start", intro = true, gap = 0.2, title = "Quick tour", text = "A fast tour of every button with arrows." },
-		{ id = "wall", when = "clicks", title = "Smash the walls!", text = "Walk into the corridor ahead and tap near the walls. Your damage is your total Leg Muscle. Broken walls give you Wins!" },
-		{ id = "wins", when = "winsFirst", target = "WinsChip", pointer = "Your Wins!", title = "Wins = money", text = "Wins buy pets, shoes, skins and more. You got a free gift of Wins to start!" },
-		{ id = "pets", when = "pet", target = "PetsButton", pointer = "Open Pets", title = "Your first pet!", text = "Open Pets to equip pets, merge 3 matching pets into a stronger one, and manage your team." },
-		{ id = "gifts", when = "level:6", target = "GiftsButton", pointer = "Free gifts!", title = "Free gifts", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
-		{ id = "auto", when = "level:9", target = "AutoClickButton", pointer = "Auto Click", title = "Auto Click", text = "Auto Click squats for you! You have a free trial, then you can keep it forever in the Shop." },
-		{ id = "index", when = "level:11", target = "IndexButton", pointer = "Pet Index", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
-		{ id = "backpack", when = "level:13", target = "BackpackButton", pointer = "Backpack", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
-		{ id = "shop", when = "level:15", target = "ShopButton", pointer = "Shop", title = "Shop and Settings", text = "The Shop sells potions and Win packs. Settings has the Guide switch if you want to turn tips off." },
-		{ id = "training", when = "level:17", title = "Training Area", text = "On the right wall, stand on a Coach pad to squat automatically with a big multiplier. Better pads unlock with Rebirths." },
-		{ id = "rebirth", when = "nearMax", target = "RebirthButton", pointer = "Rebirth now!", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier!" },
+		{ id = "q_pet", when = "quest:pet", tag = "NEW QUEST", title = "Hatch your first pet!", text = "Your free Wins pay for it! Step on the Starter Egg pad at the back wall and press E. Then open Pets on the left to equip it." },
+		{ id = "q_skin", when = "quest:skin", tag = "NEW QUEST", title = "Buy your first skin!", text = "Skins add power to every squat. Step on a pad on the SKIN shelf (left wall)." },
+		{ id = "q_wall", when = "quest:wall", tag = "NEW QUEST", title = "Smash the walls!", text = "Walk into the corridor ahead and tap near the walls. Your damage is your total Leg Muscle. Broken walls give you Wins!" },
+		{ id = "q_shoes", when = "quest:shoes", tag = "NEW QUEST", title = "Buy your first shoes!", text = "Shoes multiply your wall damage. Step on a pad on the SHOE shelf (left wall)." },
+		{ id = "q_gift", when = "quest:gift", tag = "NEW QUEST", target = "GiftsButton", pointer = "Free gifts!", title = "Claim a free gift!", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
+		{ id = "q_train", when = "quest:train", tag = "NEW QUEST", title = "Training Area", text = "On the right wall, stand on a Coach pad to squat automatically with a big multiplier. Better pads unlock with Rebirths." },
+		{ id = "q_wheel", when = "quest:wheel", tag = "NEW QUEST", title = "Daily Wheel", text = "Next to the eggs: walk up to the wheel and press E for a free spin every day!" },
+		{ id = "auto", when = "level:9", tip = true, tag = "TIP", target = "AutoClickButton", pointer = "Auto Click", title = "Auto Click", text = "Auto Click squats for you! You have a free trial, then you can keep it forever in the Shop." },
+		{ id = "index", when = "level:11", tip = true, tag = "TIP", target = "IndexButton", pointer = "Pet Index", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
+		{ id = "backpack", when = "level:13", tip = true, tag = "TIP", target = "BackpackButton", pointer = "Backpack", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
+		{ id = "shop", when = "level:15", tip = true, tag = "TIP", target = "ShopButton", pointer = "Shop", title = "Shop and Settings", text = "The Shop sells potions and Win packs. Settings has the Guide switch if you want to turn tips off." },
+		{ id = "rebirth", when = "nearMax", tag = "NEW QUEST", target = "RebirthButton", pointer = "Rebirth now!", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier!" },
 	},
 	-- HIZLI OK TURU (2026-10-13, sahibi 'çok sade kalıyor, hızlı bir tanıtım yapıp oklarla göstersin' dedi): GuideTour'daki 'intro' adımı bu listeyi sırayla gezer; her durakta hedef düğmeye büyük zıplayan ok + kısa balon, GuideIntroSeconds sn'de bir kendiliğinden ilerler ('Next' hızlandırır, 'Skip' bitirir).
 	-- Son durak Quests'tir: görevlerle bağ kurar (görev bitince Quests düğmesine 'claim' oku çıkar). Hedef adı arayüzde yoksa o durak atlanır.
