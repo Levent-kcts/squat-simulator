@@ -32,18 +32,25 @@ local RARITY_TITLE = { Epic = "EPIC!", Legendary = "LEGENDARY!", Mythic = "MYTHI
 
 local current = nil -- açık olan açılış ekranı (yenisi gelince eskisi kaldırılır)
 
--- YUMURTA KIRILMA ANİMASYONU (2026-10-13, sahibi 'her yumurta satın aldığında [multi alımlar hariç] yumurta ekranın önüne UI olarak gelsin, sallansın, sonra şu anki animasyon oynasın' dedi): TEK yumurta açılışında önce yumurta
--- ekranın ortasında belirir, giderek şiddetlenen sallanmayla çatlaklar çıkar, sonra beyaz parıltıyla kırılır ve mevcut açılış (parıltı + pet kartı) oynar. Çoklu (x3/x10) ve otomatik açmada oynamaz (hız kesmesin).
+-- YUMURTA KIRILMA ANİMASYONU (2026-10-13, sahibi 'her yumurta satın aldığında [multi alımlar hariç] yumurta ekranın önüne UI olarak gelsin, sallansın, sonra şu anki animasyon oynasın' dedi; ilk sürümdeki kahverengi çubuk çatlaklar
+-- 'çok kötü' bulundu, bu yüzden yeniden yapıldı: çubuk çatlak YOK): TEK yumurta açılışında yumurta ekranın ortasında belirir, giderek şiddetlenen sallanmayla büyür, arkasında ışık parlar, ortasında parlak bir çatlak çizgisi belirir,
+-- sonra TAM O ÇİZGİDEN ikiye ayrılır (üst yarı sola-yukarı, alt yarı sağa-aşağı savrulur; döndürülmez çünkü Roblox döndürülmüş çerçevede ClipsDescendants'ı kırpmaz) ve beyaz bir ışık patlamasıyla mevcut açılış (hafif ışık + pet kartı) başlar. Her sallanışta tok bir 'tık', kırılırken kabuk kırılma sesi çalar.
+-- Çoklu (x3/x10) ve otomatik açmada oynamaz (hız kesmesin).
 local EGG_POP = 0.2 -- yumurtanın belirme süresi
-local EGG_SHAKE = { { -10, 0.12 }, { 10, 0.12 }, { -14, 0.11 }, { 14, 0.11 }, { -18, 0.1 }, { 18, 0.1 }, { -22, 0.09 }, { 22, 0.09 }, { -26, 0.08 }, { 26, 0.08 }, { 0, 0.1 } } -- { açı (derece), süre (sn) }
-local EGG_CRACKS = { { 0.35, 0.34, 28, 40, 0.45 }, { 0.46, 0.54, -42, 34, 0.7 }, { 0.58, 0.44, 52, 30, 0.9 } } -- { x, y (yumurtanın içinde, oran), eğim, uzunluk (px), belirme zamanı (sn, sallanma başından) }
-local EGG_INTRO = EGG_POP + (function()
+local EGG_SHAKE = { { -9, 0.12 }, { 9, 0.12 }, { -13, 0.11 }, { 13, 0.11 }, { -17, 0.1 }, { 17, 0.1 }, { -21, 0.09 }, { 21, 0.09 }, { -25, 0.08 }, { 25, 0.08 }, { 0, 0.1 } } -- { açı (derece), süre (sn) }
+local EGG_BREAK = 0.35 -- iki yarının savrulma süresi
+local EGG_WOBBLE = (function()
 	local total = 0
 	for _, step in EGG_SHAKE do
 		total += step[2]
 	end
 	return total
 end)()
+local EGG_BREAK_AT = EGG_POP + EGG_WOBBLE -- kırılma anı (açılıştan itibaren sn)
+local EGG_INTRO = EGG_BREAK_AT + EGG_BREAK -- yumurta animasyonunun toplam süresi: pet açılışı bu kadar sonra başlar
+local EGG_SIZE = 250 -- yumurta görselinin kenarı (px)
+Reveal.EggIntroSeconds = EGG_INTRO
+Reveal.EggBreakAt = EGG_BREAK_AT
 
 local function round(parent, x, y, width, height, color, strokeColor)
 	local dot = Instance.new("Frame")
@@ -65,7 +72,7 @@ local function round(parent, x, y, width, height, color, strokeColor)
 	return dot
 end
 
--- Çizilmiş yumurta (Blender modeli yoksa): geniş alt daire + küçük üst daire = yumurta gibi, yumurtanın rengi ve beneği
+-- Çizilmiş yumurta (Blender modeli yoksa): geniş alt daire + küçük üst daire = yumurta gibi, yumurtanın rengi ve beneği (190x240'lık alana)
 local function drawEgg(parent, egg)
 	local outline = UIStyle.darken(egg.color, 0.45)
 	round(parent, 95, 145, 190, 190, egg.color, outline)
@@ -77,73 +84,172 @@ local function drawEgg(parent, egg)
 	round(parent, 62, 92, 30, 52, Color3.new(1, 1, 1)).BackgroundTransparency = 0.55 -- parlama
 end
 
--- Yumurtayı ekranın önüne koyar, sallar ve çatlatır. Dönüş: bittiği zamana kadar süre (sn); sonunda yumurta kendiliğinden kalkar
-local function playEggIntro(root, egg)
+-- Yumurta görseli (EGG_SIZE kare): Blender modeli varsa ViewportFrame, yoksa çizilmiş yumurta. Konumu çağıran verir.
+local function makeEggVisual(parent, egg)
+	local viewport = UIStyle.eggModelIcon(parent, egg, { Size = UDim2.fromOffset(EGG_SIZE, EGG_SIZE) })
+	if viewport then
+		return viewport
+	end
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.fromOffset(EGG_SIZE, EGG_SIZE)
+	frame.BackgroundTransparency = 1
+	frame.Parent = parent
+	local inner = Instance.new("Frame")
+	inner.Size = UDim2.fromOffset(190, 240)
+	inner.Position = UDim2.fromOffset((EGG_SIZE - 190) / 2, (EGG_SIZE - 240) / 2)
+	inner.BackgroundTransparency = 1
+	inner.Parent = frame
+	drawEgg(inner, egg)
+	return frame
+end
+
+-- Yumurtanın üst ya da alt YARISI: kırpılan çerçevenin içinde tam yumurta görseli (alt yarıda görsel yukarı kaydırılır). Merkez çizgisinden iki yarı birleşince bütün yumurta olur.
+local function makeHalf(holder, egg, top)
+	local clip = Instance.new("Frame")
+	clip.Name = if top then "HatchEggTop" else "HatchEggBottom"
+	clip.AnchorPoint = Vector2.new(0.5, if top then 1 else 0)
+	clip.Position = UDim2.fromScale(0.5, 0.5)
+	clip.Size = UDim2.fromOffset(EGG_SIZE, EGG_SIZE / 2)
+	clip.BackgroundTransparency = 1
+	clip.ClipsDescendants = true
+	clip.ZIndex = 5
+	clip.Parent = holder
+	local visual = makeEggVisual(clip, egg)
+	visual.Position = UDim2.fromOffset(0, if top then 0 else -EGG_SIZE / 2)
+	return clip
+end
+
+-- Orta çizgideki parlak çatlak: kısa eğik parçalardan oluşan zikzak, iç ışığı beyaz-sarı, koyu ince kenarlı (kırılma çizgisiyle AYNI yerde)
+local function buildCrack(holder)
+	local crack = Instance.new("Frame")
+	crack.Name = "HatchCrack"
+	crack.AnchorPoint = Vector2.new(0.5, 0.5)
+	crack.Position = UDim2.fromScale(0.5, 0.5)
+	crack.Size = UDim2.fromOffset(EGG_SIZE - 40, 40)
+	crack.BackgroundTransparency = 1
+	crack.Visible = false
+	crack.ZIndex = 8
+	crack.Parent = holder
+	local segments = 7
+	local step = (EGG_SIZE - 60) / segments
+	for index = 1, segments do
+		local piece = Instance.new("Frame")
+		piece.Name = "HatchCrackPiece"
+		piece.AnchorPoint = Vector2.new(0.5, 0.5)
+		piece.Position = UDim2.fromOffset(30 + (index - 0.5) * step, 20 + (if index % 2 == 0 then 7 else -7))
+		piece.Size = UDim2.fromOffset(step * 0.95, 6)
+		piece.Rotation = if index % 2 == 0 then -32 else 32
+		piece.BackgroundColor3 = Color3.fromRGB(255, 252, 215)
+		piece.BorderSizePixel = 0
+		piece.ZIndex = 9
+		local stroke = Instance.new("UIStroke")
+		stroke.Thickness = 2
+		stroke.Color = Color3.fromRGB(120, 70, 30)
+		stroke.Parent = piece
+		piece.Parent = crack
+	end
+	return crack
+end
+
+-- Yumurtayı ekranın önüne koyar, sallar, çatlatır ve ikiye ayırır. Dönüş: bittiği zamana kadar süre (sn); sonunda yumurta kendiliğinden kalkar
+local function playEggIntro(root, egg, fullScreen)
 	local holder = Instance.new("Frame")
 	holder.Name = "HatchEgg"
 	holder.AnchorPoint = Vector2.new(0.5, 0.5)
 	holder.Position = UDim2.fromScale(0.5, 0.42)
-	holder.Size = UDim2.fromOffset(190, 240)
+	holder.Size = UDim2.fromOffset(EGG_SIZE, EGG_SIZE)
 	holder.BackgroundTransparency = 1
 	holder.ZIndex = 5
 	holder.Parent = root
 
-	local viewport = UIStyle.eggModelIcon(holder, egg, {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(250, 250),
-	})
-	if not viewport then
-		drawEgg(holder, egg)
-	end
+	-- Arkada büyüyen ışık: kırılma yaklaştıkça yumurtanın içinden ışık sızıyor gibi
+	local glow = round(holder, EGG_SIZE / 2, EGG_SIZE / 2, EGG_SIZE * 1.1, EGG_SIZE * 1.1, egg.accent:Lerp(Color3.new(1, 1, 1), 0.6))
+	glow.Name = "HatchGlow"
+	glow.BackgroundTransparency = 0.92
+	glow.ZIndex = 4
+	local glowScale = Instance.new("UIScale")
+	glowScale.Scale = 0.6
+	glowScale.Parent = glow
 
-	-- Çatlaklar: sallanırken sırayla belirir
-	local cracks = {}
-	for _, spec in EGG_CRACKS do
-		local crack = Instance.new("Frame")
-		crack.Name = "HatchCrack"
-		crack.AnchorPoint = Vector2.new(0.5, 0.5)
-		crack.Position = UDim2.fromOffset(spec[1] * 190, spec[2] * 240)
-		crack.Size = UDim2.fromOffset(6, spec[4])
-		crack.Rotation = spec[3]
-		crack.BackgroundColor3 = Color3.fromRGB(70, 45, 30)
-		crack.BackgroundTransparency = 1
-		crack.BorderSizePixel = 0
-		crack.ZIndex = 7
-		crack.Parent = holder
-		table.insert(cracks, { frame = crack, time = spec[5] })
-	end
+	-- Bütün yumurta (kırılana kadar)
+	local whole = Instance.new("Frame")
+	whole.Name = "HatchEggWhole"
+	whole.AnchorPoint = Vector2.new(0.5, 0.5)
+	whole.Position = UDim2.fromScale(0.5, 0.5)
+	whole.Size = UDim2.fromScale(1, 1)
+	whole.BackgroundTransparency = 1
+	whole.ZIndex = 5
+	whole.Parent = holder
+	local visual = makeEggVisual(whole, egg)
+	visual.AnchorPoint = Vector2.new(0.5, 0.5)
+	visual.Position = UDim2.fromScale(0.5, 0.5)
+	local crack = buildCrack(whole)
 
-	-- Küçükten belirir, sallanırken hafifçe büyür
+	-- Küçükten belirir, sallanırken büyür
 	local scale = Instance.new("UIScale")
 	scale.Scale = 0
 	scale.Parent = holder
 	TweenService:Create(scale, TweenInfo.new(EGG_POP, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 	task.delay(EGG_POP, function()
 		if holder.Parent then
-			TweenService:Create(scale, TweenInfo.new(EGG_INTRO - EGG_POP, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.2 }):Play()
+			TweenService:Create(scale, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.25 }):Play()
+			TweenService:Create(glow, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { BackgroundTransparency = 0.45 }):Play()
+			TweenService:Create(glowScale, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.5 }):Play()
 		end
 	end)
-	for _, crack in cracks do
-		task.delay(EGG_POP + crack.time, function()
-			if holder.Parent then
-				crack.frame.BackgroundTransparency = 0
-			end
-		end)
-	end
+	-- Çatlak çizgisi: sallanmanın ~%60'ında belirir
+	task.delay(EGG_POP + EGG_WOBBLE * 0.6, function()
+		if holder.Parent then
+			crack.Visible = true
+			sfx("EggKnock")
+		end
+	end)
+	-- Sallanma: her yön değişiminde tok bir 'tık'
 	task.spawn(function()
 		task.wait(EGG_POP)
-		for _, step in EGG_SHAKE do
+		for index, step in EGG_SHAKE do
 			if not holder.Parent then
 				return
 			end
-			TweenService:Create(holder, TweenInfo.new(step[2], Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = step[1] }):Play()
+			TweenService:Create(whole, TweenInfo.new(step[2], Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = step[1] }):Play()
+			if index > 1 and index % 2 == 0 then
+				sfx("EggKnock")
+			end
 			task.wait(step[2])
 		end
 	end)
+
+	-- KIRILMA: bütün yumurta kalkar, iki yarı çatlak çizgisinden ayrılıp savrulur, beyaz ışık patlar
+	task.delay(EGG_BREAK_AT, function()
+		if not holder.Parent then
+			return
+		end
+		sfx("EggBreak")
+		whole:Destroy()
+		local top = makeHalf(holder, egg, true)
+		local bottom = makeHalf(holder, egg, false)
+		local flyInfo = TweenInfo.new(EGG_BREAK, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		TweenService:Create(top, flyInfo, { Position = UDim2.new(0.5, -70, 0.5, -90) }):Play()
+		TweenService:Create(bottom, flyInfo, { Position = UDim2.new(0.5, 70, 0.5, 90) }):Play()
+		-- Kırılma ışığı: ışık halkası büyüyüp sönerken kısa bir beyaz patlama
+		TweenService:Create(glowScale, flyInfo, { Scale = 2.4 }):Play()
+		TweenService:Create(glow, flyInfo, { BackgroundTransparency = 1 }):Play()
+		local burst = Instance.new("Frame")
+		burst.Name = "HatchBurst"
+		burst.Size = UDim2.fromScale(1, 1)
+		burst.BackgroundColor3 = Color3.new(1, 1, 1)
+		burst.BackgroundTransparency = 0.15
+		burst.BorderSizePixel = 0
+		burst.ZIndex = 6
+		burst.Parent = fullScreen or root -- ışık patlaması ölçeksiz tam ekran kökte
+		TweenService:Create(burst, TweenInfo.new(EGG_BREAK + 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+		task.delay(EGG_BREAK + 0.2, function()
+			burst:Destroy()
+		end)
+	end)
 	task.delay(EGG_INTRO, function()
 		if holder.Parent then
-			holder:Destroy() -- kırıldı: yerini beyaz parıltı ve pet kartı alır
+			holder:Destroy() -- yarılar uçtu: yerini pet kartları alır
 		end
 	end)
 	return EGG_INTRO
@@ -317,7 +423,7 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 	end
 
 	if egg and #results == 1 then
-		intro = playEggIntro(content, egg)
+		intro = playEggIntro(content, egg, root)
 	end
 	-- Açılış sesi (yumurta kırılma anında) ve Epic+ parıltı sesi
 	task.delay(intro, sfx, "Hatch")
@@ -341,7 +447,7 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 		flash.Name = "HatchFlash"
 		flash.Size = UDim2.fromScale(1, 1)
 		flash.BackgroundColor3 = if bestRank >= 3 and best then best.color:Lerp(Color3.new(1, 1, 1), 0.5) else Color3.new(1, 1, 1)
-		flash.BackgroundTransparency = if intro > 0 then 0 else 0.35 -- yumurta kırılırken parıltı daha güçlü (yumurtanın kalkışını örter)
+		flash.BackgroundTransparency = 0.35 -- hafif ışık (yumurta kırılma patlaması zaten oynadı)
 		flash.BorderSizePixel = 0
 		flash.ZIndex = 6
 		flash.Parent = root

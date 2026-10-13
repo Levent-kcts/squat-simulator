@@ -214,6 +214,16 @@ return {
 		Win = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 1.5, 1.6 } },
 		Rebirth = { id = "rbxasset://sounds/action_get_up.mp3", volume = 0.5, speed = { 0.7, 0.75 } },
 		Hatch = { id = "rbxasset://sounds/impact_water.mp3", volume = 0.35, speed = { 1.3, 1.5 } },
+		-- YUMURTA KIRILMA ANİMASYONU sesleri (client/Reveal; 2026-10-13, sahibi 'kırılırken uyacak bir ses koy' dedi): EggKnock = sallanırken kabuğa tok 'tık' (plastik adım sesi, yüksek perde);
+		-- EggBreak = kabuğun çatlayıp kırılması (duvar kırılma sesleriyle aynı lego/plastik kırılma sesleri, yüksek perde = ince kabuk). Daha uygun bir ses bulursan ids'i değiştir (Creator Store: 'egg crack').
+		EggKnock = { id = "rbxasset://sounds/action_footsteps_plastic.mp3", volume = 0.4, speed = { 1.7, 2.0 }, gap = 0.05 },
+		EggBreak = {
+			ids = { "rbxassetid://15351953300", "rbxassetid://93173820310993", "rbxassetid://90091919296355" },
+			fallback = "rbxasset://sounds/impact_water.mp3",
+			volume = 0.55,
+			speed = { 1.1, 1.25 },
+			gap = 0.2,
+		},
 		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca
 		Buy = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.3, speed = { 1.3, 1.4 } },
 		Error = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.25, speed = { 0.6, 0.65 } },

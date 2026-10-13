@@ -26,23 +26,23 @@ local function count(instance, name)
 	end
 	return total
 end
--- Zamanı ileri sar: kuyruktaki gecikmeli işlerden süresi 'until' saniyeden kısa olanları çalıştırır
+-- Zamanı ileri sar: kuyruktaki gecikmeli işlerden süresi 'until' saniyeden kısa olanları çalıştırır (çalışırken yeni kurulan gecikmeler kuyrukta kalır, bir sonraki sarmada işlenir)
 local function advance(untilSeconds)
-	local pending = S.delayed
-	table.sort(pending, function(a, b)
+	local batch = table.clone(S.delayed)
+	table.clear(S.delayed)
+	table.sort(batch, function(a, b)
 		return a[1] < b[1]
 	end)
-	local remaining = {}
-	for _, entry in pending do
+	local later = {}
+	for _, entry in batch do
 		if entry[1] <= untilSeconds then
 			pcall(entry[2])
 		else
-			table.insert(remaining, entry)
+			table.insert(later, entry)
 		end
 	end
-	table.clear(pending)
-	for _, entry in remaining do
-		table.insert(pending, entry)
+	for _, entry in later do
+		table.insert(S.delayed, entry)
 	end
 end
 local function petResults(total)
@@ -55,37 +55,43 @@ end
 
 local egg = Config.Eggs[1]
 
--- 1) TEK yumurta + yumurta verildi: önce yumurta ekranın önünde (sallanır, çatlaklar), parıltı ve kart henüz yok
+-- 1) TEK yumurta + yumurta verildi: önce yumurta ekranın önünde (arkasında ışık, ortasında çatlak çizgisi hazır), parıltı ve kart henüz yok; eski kahverengi çubuk çatlaklar YOK
 local root = S.newInstance("Frame")
 Reveal.show(root, petResults(1), {}, egg)
 local reveal = find(root, "HatchReveal")
 assert(reveal, "açılış ekranı kurulmalı")
 local eggFrame = find(reveal, "HatchEgg")
-assert(eggFrame, "tek yumurtada önce yumurta görünmeli")
-assert(count(eggFrame, "HatchCrack") == 3, "yumurtada çatlaklar olmalı")
+assert(eggFrame and find(eggFrame, "HatchEggWhole") and find(eggFrame, "HatchGlow"), "tek yumurtada önce bütün yumurta ve arkasında ışık görünmeli")
+assert(count(eggFrame, "HatchCrack") == 1 and count(eggFrame, "HatchCrackPiece") >= 5, "yumurtanın ortasında zikzak çatlak çizgisi olmalı")
 assert(not find(reveal, "HatchFlash"), "yumurta kırılmadan parıltı olmamalı")
--- 2) Yumurta kırılınca (süre dolunca) yumurta kalkar, parıltı çakar ve mevcut açılış (kartlar) oynar
-advance(2.5)
-assert(not find(reveal, "HatchEgg"), "kırılınca yumurta kalkmalı")
-assert(find(reveal, "HatchFlash"), "kırılınca parıltı çakmalı")
+assert(Reveal.EggIntroSeconds > Reveal.EggBreakAt and Reveal.EggBreakAt > 0.5, "kırılma anı ve toplam süre tanımlı olmalı")
+-- 2) KIRILMA anı: bütün yumurta kalkar, çatlak çizgisinden İKİ YARI ayrılır (üst + alt), ışık patlar
+advance(Reveal.EggBreakAt + 0.05)
+assert(not find(eggFrame, "HatchEggWhole"), "kırılınca bütün yumurta kalkmalı")
+assert(find(eggFrame, "HatchEggTop") and find(eggFrame, "HatchEggBottom"), "kırılınca iki yarı görünmeli")
+assert(find(reveal, "HatchBurst"), "kırılırken ışık patlaması olmalı")
+-- 3) Yumurta animasyonu bitince yarılar kalkar, mevcut açılış (hafif ışık + pet kartları) oynar
+advance(Reveal.EggIntroSeconds + 0.05)
+assert(not find(reveal, "HatchEgg"), "animasyon bitince yumurta kalkmalı")
+assert(find(reveal, "HatchFlash"), "sonra hafif ışık çakmalı")
 assert(find(reveal, "HatchCards"), "pet kartları olmalı")
 print("egg break animation ok")
 
--- 3) ÇOKLU açılış (x3): yumurta animasyonu YOK, parıltı hemen
+-- 4) ÇOKLU açılış (x3): yumurta animasyonu YOK, parıltı hemen
 local rootMulti = S.newInstance("Frame")
 Reveal.show(rootMulti, petResults(3), {}, egg)
 local revealMulti = find(rootMulti, "HatchReveal")
 assert(revealMulti and not find(revealMulti, "HatchEgg"), "çoklu açılışta yumurta animasyonu olmamalı")
 assert(find(revealMulti, "HatchFlash"), "çoklu açılışta parıltı hemen çakmalı")
 
--- 4) Yumurta verilmezse (otomatik açma ya da eski çağrı): tek pet de olsa animasyon yok
+-- 5) Yumurta verilmezse (otomatik açma ya da eski çağrı): tek pet de olsa animasyon yok
 local rootAuto = S.newInstance("Frame")
 Reveal.show(rootAuto, petResults(1), {}, nil)
 local revealAuto = find(rootAuto, "HatchReveal")
 assert(revealAuto and not find(revealAuto, "HatchEgg") and find(revealAuto, "HatchFlash"), "yumurta verilmezse animasyon olmamalı")
 print("reveal multi/auto ok")
 
--- 5) KARARTMA TÜM EKRANI KAPLAR (sahibi 'üstü kararmıyor, onu da karart' dedi): açılış, üst çubuk payını ve sağ üst daireleri de örten KENDİ tam ekran ScreenGui'sinde kurulur;
+-- 6) KARARTMA TÜM EKRANI KAPLAR (sahibi 'üstü kararmıyor, onu da karart' dedi): açılış, üst çubuk payını ve sağ üst daireleri de örten KENDİ tam ekran ScreenGui'sinde kurulur;
 -- kartlar ana arayüzle aynı boyutta kalsın diye ölçek kopyalanır, karartma ölçeksiz tam ekran kalır
 local playerGui = S.newInstance("PlayerGui")
 playerGui.Name = "PlayerGui"
