@@ -1478,14 +1478,7 @@ function PlayerStats.tutorialClick(player)
 		profile.tutorialClicks += 1
 		player:SetAttribute("TutorialClicks", profile.tutorialClicks)
 		publishStarter(player, profile) -- Yeni oyuncu görevi 'Squat 30 times' ilerlemesi
-		-- Başlangıç hediyesi (retention): ilk adım bitince yeni oyuncuya bir kez Win verilir, ilk yumurta ve ilk skin hemen alınabilir
-		local wins = getStat(player, Config.StatWins)
-		if profile.tutorialClicks >= Config.Tutorial.ClickGoal and not profile.starterWins and wins then
-			profile.starterWins = true
-			wins.Value += Config.Tutorial.StarterWins
-			sendToast(player, profile, `Free gift: {Config.Tutorial.StarterWins} Wins! Hatch your first pet at the Starter Egg!`)
-			requestSave(player)
-		end
+		-- (Başlangıç Win'i artık sessizce verilmez: 'Squat 30 times' görevinin ödülüdür, oyuncu Quests'ten CLAIM ile alır. 'starterWins' kayıt alanı eski kayıtlarla uyum için duruyor, kullanılmıyor.)
 		if profile.tutorialClicks >= Config.Tutorial.ClickGoal then
 			funnel(player, profile, "Clicked30")
 		end

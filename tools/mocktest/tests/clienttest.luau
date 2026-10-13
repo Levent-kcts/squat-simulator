@@ -119,7 +119,7 @@ local function starterState(done)
 	local parts = {}
 	for _, quest in Config.StarterQuests do
 		local isDone = done[quest.id] == true
-		table.insert(parts, `{quest.id},{if isDone then quest.goal else 0},{if isDone then 1 else 0},0`)
+		table.insert(parts, `{quest.id},{if isDone then quest.goal else 0},{if isDone then 1 else 0},{if isDone then 1 else 0}`)
 	end
 	return table.concat(parts, ";")
 end

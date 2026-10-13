@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Format = require(Shared:WaitForChild("Format"))
+local Catalog = require(Shared:WaitForChild("Catalog"))
 
 local Objective = {}
 
@@ -20,6 +21,20 @@ function Objective.readStates(player)
 		end
 	end
 	return states
+end
+
+-- Ödül listesini kısa yazıya çevirir ('+8 Wins', 'Rainbow Potion 15m'); QuestPanel'deki ile aynı biçim
+function Objective.rewardText(rewards)
+	local parts = {}
+	for _, reward in rewards do
+		if reward.kind == "wins" then
+			table.insert(parts, `+{reward.amount} Wins`)
+		else
+			local potion = Catalog.PotionByKind[reward.kind]
+			table.insert(parts, `{if potion then potion.name else "Potion"} {reward.minutes or Config.BoostMinutes}m`)
+		end
+	end
+	return table.concat(parts, " + ")
 end
 
 local function rebirthObjective(quest, ctx)
@@ -40,6 +55,14 @@ function Objective.read(player, ctx)
 	local quests = Config.StarterQuests
 	local total = #quests
 	local wins = ctx.wins or 0
+	-- Biten ama ödülü alınmamış görev varsa hedef: Quests'ten ödülü almak. Ödül SESSİZCE verilmez (sahibi istedi): oyuncu Quests penceresine yönlendirilir, oradan CLAIM eder, ardından zincir devam eder.
+	-- (rebirth görevi hariç: rebirth'ten sonra şerit/rehber zaten kapanır, ödülü Quests rozetinden alınır.)
+	for _, quest in quests do
+		local state = states[quest.id]
+		if state and state.done and not state.claimed and quest.id ~= "rebirth" then
+			return { id = "claim", quest = quest, text = `Quest complete! Tap 📜 QUESTS (top right) and CLAIM {Objective.rewardText(quest.rewards)}!` }
+		end
+	end
 	-- Level sınırına gelindiyse (ve ilk rebirth yapılmadıysa) sıradaki isteğe bağlı görevler ne olursa olsun hedef REBIRTH'tir: ilerleme orada tıkanıyor
 	local maxLevel = ctx.maxLevel or 0
 	if (ctx.rebirths or 0) == 0 and clicks >= goal and maxLevel > 0 and (ctx.level or 1) >= maxLevel then

@@ -32,7 +32,7 @@ for _, step in Config.GuideTour do
 	assert(type(step.title) == "string" and type(step.text) == "string" and #step.text < 220, "adımın başlığı ve kısa metni olmalı: " .. step.id)
 	local questId = string.match(step.when, "^quest:(.+)$")
 	if questId then
-		local known = false
+		local known = questId == "claim" -- 'claim': biten görevin ödülü alınmayı bekliyor
 		for _, quest in Config.StarterQuests do
 			known = known or quest.id == questId
 		end
@@ -252,14 +252,20 @@ S.lastInvoke = nil
 click(find(card, "GotIt"))
 assert(S.lastInvoke and S.lastInvoke[2] == "q_pet", "kart görüldü diye bildirilmeli: " .. tostring(S.lastInvoke and S.lastInvoke[2]))
 
--- 6) GÖREV BAĞI: görev bitince Quests düğmesine 'claim' oku, altında sıradaki görev
+-- 6) ÖDÜL SESSİZCE VERİLMEZ: görev bitince güncel hedef 'claim' olur (üst şerit Quests'e yönlendirir); ilk seferde Quests'i anlatan kart, sonra Quests düğmesine kalıcı ok; oyuncu Quests'ten CLAIM eder, sonra zincir sürer
 local first, second = questById("squat"), questById("wheel")
 S.localPlayer:SetAttribute("StarterState", starterState({ squat = true }, false))
+assert(objectiveId() == "claim", "biten görevin ödülü alınmadıysa güncel hedef 'claim' olmalı")
+local claimObjective = Objective.read(S.localPlayer, { wins = 16, level = 1, maxLevel = 0, rebirths = 0, wallText = "" })
+assert(string.find(claimObjective.text, "CLAIM", 1, true) and string.find(claimObjective.text, Objective.rewardText(first.rewards), 1, true), "şerit Quests'ten CLAIM'i ve ödülü söylemeli: " .. claimObjective.text)
+GuideTour._tick()
+assert(visible() and cardHas(stepById("q_claim").title) and calloutText() == stepById("q_claim").pointer and GuideTour._state().callout.target == button("QuestsButton"), "ilk seferde Quests'i anlatan kart ve ok gelmeli")
+click(find(card, "GotIt"))
 GuideTour._tick()
 local claimState = GuideTour._state()
-assert(claimState.current and claimState.current.claim and claimState.callout, "biten görev için Quests'e ok çıkmalı")
+assert(claimState.current and claimState.current.claim and claimState.callout, "ödülü bekleyen görev için Quests'e kalıcı ok çıkmalı")
 assert(calloutText() == "Quest complete! Tap to claim", "ok balonu 'görev tamamlandı' demeli: " .. tostring(calloutText()))
-assert(hasText(claimState.callout.bubble, "Next: " .. questById("pet").text), "balon sıradaki görevi söylemeli")
+assert(hasText(claimState.callout.bubble, "Reward: " .. Objective.rewardText(first.rewards)), "balon ödülü yazmalı")
 assert(claimState.callout.target == button("QuestsButton"), "ok Quests düğmesini göstermeli")
 -- Konum düzeltmesi: ilk yerleştirme hedefin AbsolutePosition'ına göredir, sonrakiler kapsayıcının GERÇEK konumunu ölçüp farkı kapatır (üst çubuk payı yüzünden halka kaçmasın)
 local callout = claimState.callout
@@ -272,9 +278,17 @@ assert(rawget(callout.container, "Visible") == true, "ölçümden sonra ok gör�
 assert(callout.ringIsDisc and callout.ringTarget == rawget(button("QuestsButton"), "_children")["Disc"] and callout.holder, "halka yalnız 'Disc' dairesini sarmalı (altındaki sayıyı değil)")
 click(button("QuestsButton")) -- oyuncu Quests'e basar
 assert(GuideTour._state().callout == nil and GuideTour._state().current == nil, "Quests'e basınca ok kalkmalı")
+assert(GuideTour._timing.snoozeUntil > os.clock(), "Quests'e basınca ok bir süre susmalı (oyuncu pencerede ödülünü alsın)")
 GuideTour._tick()
-assert(GuideTour._state().callout == nil, "aynı görev için ok tekrar çıkmamalı")
--- Yeni görev bitince yeniden (güncel hedefi değiştirmeyen sondaki bir görev); alınınca kendiliğinden kalkar
+assert(GuideTour._state().callout == nil, "susma süresinde ok tekrar çıkmamalı")
+GuideTour._timing.snoozeUntil = 0 -- süre doldu, ödül hâlâ alınmadı (pencereyi kapattı)
+GuideTour._tick()
+assert(GuideTour._state().current and GuideTour._state().current.claim, "ödül hâlâ alınmadıysa ok geri gelmeli")
+-- Ödül alınınca ok kalkar ve zincir sürer
+S.localPlayer:SetAttribute("StarterState", starterState({ squat = true }))
+assert(GuideTour._state().current == nil and GuideTour._state().callout == nil, "ödül alınınca ok kalkmalı")
+assert(objectiveId() == "pet", "ödül alınınca zincir sürmeli: sıradaki hedef ilk pet")
+-- Başka bir görev bitince yeniden (zincirin sonundaki bir görev): kart bir kez görüldü, bu sefer sadece ok
 S.localPlayer:SetAttribute("StarterState", `{first.id},{first.goal},1,1;{second.id},{second.goal},1,0`)
 GuideTour._tick()
 assert(GuideTour._state().current and GuideTour._state().current.questId == second.id, "yeni biten görev için ok yeniden çıkmalı")

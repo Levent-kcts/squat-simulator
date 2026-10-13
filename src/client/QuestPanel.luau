@@ -222,7 +222,7 @@ function QuestPanel.init(screenGui, showToast)
 			Text = "",
 			BackgroundColor3 = Color3.fromRGB(95, 100, 120),
 		}, parent)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		create("UIStroke", { Name = "Stroke", Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
 		UIStyle.soften(button, { radius = 10, strength = 0.28 })
 		local label = makeText(button, {
 			Position = UDim2.fromScale(0.05, 0.12),
@@ -244,6 +244,12 @@ function QuestPanel.init(screenGui, showToast)
 	end
 
 	local function styleClaim(button, label, state)
+		-- Alınmaya hazır ödülün düğmesi altın çerçeveli (oyuncu Quests'e yönlendirilince CLAIM'i hemen bulsun)
+		local stroke = button:FindFirstChild("Stroke")
+		if stroke then
+			stroke.Color = if state == "ready" then Color3.fromRGB(255, 214, 60) else Color3.new(0, 0, 0)
+			stroke.Thickness = if state == "ready" then 4 else 3
+		end
 		if state == "ready" then
 			button.BackgroundColor3 = Color3.fromRGB(60, 200, 40)
 			label.Text = "CLAIM!"
@@ -377,7 +383,7 @@ function QuestPanel.init(screenGui, showToast)
 		button.MouseButton1Click:Connect(function()
 			invoke("ClaimStarter", quest.id)
 		end)
-		starterRows[quest.id] = { title = title, fill = fill, amount = amount, button = button, buttonLabel = buttonLabel, quest = quest }
+		starterRows[quest.id] = { frame = row, title = title, fill = fill, amount = amount, button = button, buttonLabel = buttonLabel, quest = quest }
 	end
 
 	local function renderStarter()
@@ -392,12 +398,14 @@ function QuestPanel.init(screenGui, showToast)
 			row.title.Text = if entry.done then `✔ {row.quest.text}` else row.quest.text
 			if entry.claimed then
 				styleClaim(row.button, row.buttonLabel, "claimed")
+				row.frame.BackgroundColor3 = Color3.fromRGB(58, 63, 82)
 			else
 				open += 1
 				if entry.done then
 					ready += 1
 				end
 				styleClaim(row.button, row.buttonLabel, if entry.done then "ready" else "progress")
+				row.frame.BackgroundColor3 = if entry.done then Color3.fromRGB(48, 96, 66) else Color3.fromRGB(58, 63, 82) -- ödülü alınmayı bekleyen satır yeşilimsi
 			end
 		end
 		tabs.starter.dot.Visible = ready > 0
@@ -505,20 +513,31 @@ function QuestPanel.init(screenGui, showToast)
 	return function()
 		PanelManager.toggle(panel)
 		if PanelManager.isOpen(panel) then
-			-- İlk açılışta, alınmamış yeni oyuncu görevi varsa NEW PLAYER sekmesi açılır (yeni oyuncu doğrudan görür), yoksa DAILY
-			if not openedOnce then
-				openedOnce = true
-				local state = QuestPanel.readStarter(player)
-				local anyOpen = false
-				for _, quest in Config.StarterQuests do
-					local entry = state[quest.id]
-					if not entry or not entry.claimed then
-						anyOpen = true
-					end
+			-- Alınmayı bekleyen yeni oyuncu ödülü varsa HER açılışta NEW PLAYER sekmesi açılır ve o satıra kaydırılır (ödül sessizce verilmez: oyuncu buradan CLAIM eder; rehber/üst şerit buraya yönlendirir).
+			-- Yoksa ilk açılışta alınmamış yeni oyuncu görevi varsa NEW PLAYER (yeni oyuncu doğrudan görür), yoksa DAILY.
+			local state = QuestPanel.readStarter(player)
+			local anyOpen = false
+			local firstReady = nil
+			for index, quest in Config.StarterQuests do
+				local entry = state[quest.id]
+				if not entry or not entry.claimed then
+					anyOpen = true
 				end
+				if entry and entry.done and not entry.claimed and not firstReady then
+					firstReady = index
+				end
+			end
+			if firstReady or not openedOnce then
+				openedOnce = true
 				setTab(if anyOpen then "starter" else "daily")
 			else
 				renderAll()
+			end
+			if firstReady then
+				-- (Tuval boyutu liste görünür olduktan sonra hesaplanır: bir an sonra kaydır)
+				task.delay(0.05, function()
+					starterList.CanvasPosition = Vector2.new(0, math.max(0, (firstReady - 1) * 80 - 4))
+				end)
 			end
 		end
 	end

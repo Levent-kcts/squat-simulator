@@ -11,7 +11,7 @@ Bu belge bir YOL HARİTASIDIR: neyin neden işlemediğini ve sırayla neyi yapma
 
 **(2026-10-13 sonrası: oyun kısaltıldı, ilk rebirth çok hızlı; yeni oyuncu görevleri ve rehber turu eklendi, bkz. CLAUDE.md.)**
 
-**Bu turda yapılanlar (retention):** başlangıç Win hediyesi (ilk pet 1. dakikada), 10 dakika ücretsiz Auto Click, level 6/12/18/22/25 ödülleri, ilk rebirth'e kadar hedef şeridi + rehber çizgisi, daha gösterişli yumurta açılışı, ilk oyun hunisi analitiği.
+**Bu turda yapılanlar (retention):** başlangıç Win'i ('Squat 30 times' görevinin ödülü, Quests'ten CLAIM; ilk pet 1. dakikada), 10 dakika ücretsiz Auto Click, level 6/12/18/22/25 ödülleri, ilk rebirth'e kadar hedef şeridi + rehber çizgisi, daha gösterişli yumurta açılışı, ilk oyun hunisi analitiği.
 
 ## 2. Oyun teorisi gözüyle: oyun "çözülmüş" bir oyun
 

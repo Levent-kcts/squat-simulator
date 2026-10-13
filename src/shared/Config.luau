@@ -320,11 +320,12 @@ return {
 	-- eski kayıtlarda ilerleme varsa (kas, Win, rebirth, eşya, pet, skin) eğitim bitmiş sayılır. Adımlar: duvarları kır, Win pedine bas, ilk skin fiyatına (Config.Skins[1]) yetince skin rafına git ve al.
 	-- Çizgi ve yazı client/Guide ve init.client'tadır.
 	-- İlk adım: oyun başında 'Click to squat and get stronger! (0/30)': ClickGoal kez tıklayınca (hareket başlayınca, sunucu sayar, kayıtlı) oyuncu duvara yönlendirilir.
-	-- StarterWins: ClickGoal tıklama bitince yeni oyuncuya BİR KEZ verilen Win (2026-10-13): ilk yumurta (Starter 5) + ilk skin (3) = 8, böylece ilk pet 1. dakikada gelir
-	-- (eskiden ilk yumurta 3. aşama kırılınca, elle tıklayanda ~6. dakikada alınabiliyordu; playtest: oyuncular 2-3. dakikada bırakıyordu).
+	-- Başlangıç Win'i (2026-10-13): ilk yumurta (Starter 5) + ilk skin (3) = 8 Win ilk pet'i 1. dakikaya çeker (eskiden elle tıklayanda ~6. dakikada alınabiliyordu; playtest: oyuncular 2-3. dakikada bırakıyordu).
+	-- Bu Win artık SESSİZCE verilmez (sahibi 'görevleri tamamladıkça anında bir şey demeden ödül vermesin, Quests'e yönlendirsin, oyuncu ödülü oradan toplasın' dedi): 'Squat 30 times' görevinin ödülüdür (StarterQuests[1], 8 Win; pricetest/retentiontest
+	-- ilk yumurta + ilk skine yettiğini denetler) ve oyuncu Quests > NEW PLAYER > CLAIM ile alır; üst şerit/rehber (client/Objective 'claim' hedefi) bunu söyler.
 	-- RebirthGoal: eğitim bitince ilk rebirth'e kadar üstteki şerit 'Goal: reach level 25 to REBIRTH! (N/25)' + çubuk gösterir (2026-10-13 retention; sahibi 'üstte oyuncu ilerleme şeridi istemem' demişti, bu SADECE ilk rebirth'e kadar
 	-- ve eğitim şeridinin devamıdır: istemezse false yap).
-	Tutorial = { ClickGoal = 30, StarterWins = 8, RebirthGoal = true },
+	Tutorial = { ClickGoal = 30, RebirthGoal = true },
 	-- İLK OYUN HUNİSİ (2026-10-13): oyuncunun ilk dakikalarda nereye kadar geldiği Roblox Analytics > Funnels'a gönderilir (AnalyticsService:LogOnboardingFunnelStepEvent). Sıra = adım numarası; her adım
 	-- bir oyuncu için BİR KEZ (kayıtlı) gönderilir; eski oyuncu için hiç gönderilmez. Yeni adım eklersen SONA koy (numaralar değişmesin).
 	Funnel = { "Joined", "Clicked30", "FirstWall", "FirstPet", "FirstSkin", "Level12", "FirstRebirth" },
@@ -332,7 +333,7 @@ return {
 	-- ve CLAIM ile ödülü alınır; her görev oyunu tanıtır (hint = nerede/nasıl). metric: clicks (eğitim tıklamaları) / walls (ömür boyu kırılan duvar) / pets (ilk pet) / skins / shoes / level (ulaşılan level) / gifts (bir Playtime ödülü alındı) / train (antrenman alanına girdi)
 	-- / wheel (çarkı çevirdi) / rebirths. rewards: { kind = wins | boostLuck | boostMuscle | boostWins | boostRainbow, amount | minutes }. Eski oyuncuya (eğitimi bitmiş) geriye dönük verilmez. Yeni görev eklersen SONA koy (id değişmesin).
 	StarterQuests = {
-		{ id = "squat", text = "Squat 30 times", hint = "Click or tap anywhere to squat!", metric = "clicks", goal = 30, rewards = { { kind = "wins", amount = 5 } } },
+		{ id = "squat", text = "Squat 30 times", hint = "Click or tap anywhere to squat!", metric = "clicks", goal = 30, rewards = { { kind = "wins", amount = 8 } } },
 		{ id = "pet", text = "Hatch your first pet", hint = "Back wall: step on the Starter Egg pad and press E.", metric = "pets", goal = 1, rewards = { { kind = "wins", amount = 10 } } },
 		{ id = "skin", text = "Buy your first skin", hint = "Left wall, SKIN shelf: step on a pad you can afford.", metric = "skins", goal = 1, rewards = { { kind = "wins", amount = 5 } } },
 		{ id = "wall", text = "Break 3 walls", hint = "Walk into the corridor ahead and tap near the walls to kick them.", metric = "walls", goal = 3, rewards = { { kind = "wins", amount = 10 } } },
@@ -344,13 +345,14 @@ return {
 		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, then press Rebirth on the left. You keep Wins, shoes, skins and pets!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 } } },
 	},
 	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen').
-	-- when: start / quest:<görev id> (o görev GÜNCEL HEDEF olunca; üst şerit [client/Objective] de aynı hedefi yazar, böylece kart ile şerit çakışmaz: 2026-10-13 'iki görev çakışıyor' şikayeti) / level:N / nearMax (level sınırına 2 kala).
+	-- when: start / quest:<görev id> ('claim' = biten bir görevin ödülü alınmayı bekliyor; o görev GÜNCEL HEDEF olunca; üst şerit [client/Objective] de aynı hedefi yazar, böylece kart ile şerit çakışmaz: 2026-10-13 'iki görev çakışıyor' şikayeti) / level:N / nearMax (level sınırına 2 kala).
 	-- Bilgi (tip = true) kartları ancak güncel hedefin kartı beklemiyorsa ve 30 tıklama bittiyse çıkar. target: arayüz öğesinin adı (büyük ok + konuşma balonu; balon yazısı pointer, yoksa 'Tap here!'), yoksa sadece kart.
 	-- tag: kartın başlık etiketi (yoksa GUIDE). button: yeşil düğmenin yazısı. intro = true: kart değil, GuideIntro'daki HIZLI OK TURU. Liste sırası öncelik sırasıdır (aynı anda birden çok adım uygunsa ilki gösterilir); id'ler sunucuda doğrulanır, yeni id eklemek yeterli.
 	GuideTour = {
 		{ id = "welcome", when = "start", button = "Show me!", title = "Welcome, Squat Hero!", text = "Tap anywhere to squat and grow stronger! Want a quick tour of the buttons?" },
 		{ id = "intro", when = "start", intro = true, gap = 0.2, title = "Quick tour", text = "A fast tour of every button with arrows." },
-		{ id = "q_pet", when = "quest:pet", tag = "NEW QUEST", title = "Hatch your first pet!", text = "Your free Wins pay for it! Step on the Starter Egg pad at the back wall and press E. Then open Pets on the left to equip it." },
+		{ id = "q_claim", when = "quest:claim", tag = "NEW QUEST", target = "QuestsButton", pointer = "Claim here!", title = "Quest complete!", text = "Quests give free rewards! Tap the 📜 Quests button, open the NEW PLAYER tab and press CLAIM to collect it." },
+		{ id = "q_pet", when = "quest:pet", tag = "NEW QUEST", title = "Hatch your first pet!", text = "Your quest reward pays for it! Step on the Starter Egg pad at the back wall and press E. Then open Pets on the left to equip it." },
 		{ id = "q_skin", when = "quest:skin", tag = "NEW QUEST", title = "Buy your first skin!", text = "Skins add power to every squat. Step on a pad on the SKIN shelf (left wall)." },
 		{ id = "q_wall", when = "quest:wall", tag = "NEW QUEST", title = "Smash the walls!", text = "Walk into the corridor ahead and tap near the walls. Your damage is your total Leg Muscle. Broken walls give you Wins!" },
 		{ id = "q_shoes", when = "quest:shoes", tag = "NEW QUEST", title = "Buy your first shoes!", text = "Shoes multiply your wall damage. Step on a pad on the SHOE shelf (left wall)." },

@@ -28,22 +28,22 @@ end
 
 -- ---- 1) Yeni oyuncu: ücretsiz Auto Click denemesi
 local kid = join(9301, "NewKid")
-assert(Config.AutoClick.TrialSeconds == 600 and Config.Tutorial.StarterWins == 8, "ayar değerleri beklenen gibi olmalı")
+assert(Config.AutoClick.TrialSeconds == 600, "ayar değerleri beklenen gibi olmalı")
 assert(kid:GetAttribute("AutoClickTrialUntil") == now + Config.AutoClick.TrialSeconds, "yeni oyuncu 10 dakikalık deneme almalı: " .. tostring(kid:GetAttribute("AutoClickTrialUntil")))
 
--- ---- 2) Başlangıç hediyesi: hedef tıklamaya varınca BİR KEZ
+-- ---- 2) Başlangıç Win'i SESSİZCE verilmez (sahibi istedi): 'Squat 30 times' görevinin ödülüdür, oyuncu Quests'ten CLAIM ile alır
 local winsBefore = stat(kid, Config.StatWins)
-for _ = 1, Config.Tutorial.ClickGoal - 1 do
+for _ = 1, Config.Tutorial.ClickGoal do
 	PlayerStats.tutorialClick(kid)
 end
-assert(stat(kid, Config.StatWins) == winsBefore, "hedefe varmadan Win verilmemeli")
-PlayerStats.tutorialClick(kid)
-assert(stat(kid, Config.StatWins) == winsBefore + Config.Tutorial.StarterWins, "hedefe varınca başlangıç Win'i verilmeli: " .. stat(kid, Config.StatWins))
-assert(string.find(tostring(kid:GetAttribute("RewardToast")), "Free gift", 1, true), "hediye bildirimi gitmeli: " .. tostring(kid:GetAttribute("RewardToast")))
-PlayerStats.tutorialClick(kid)
-assert(stat(kid, Config.StatWins) == winsBefore + Config.Tutorial.StarterWins, "hediye ikinci kez verilmemeli")
--- Ilk yumurta ve ilk skin birlikte alınabilmeli
-assert(Config.Tutorial.StarterWins >= Config.Eggs[1].price + Config.Skins[1].price, "başlangıç Win'i ilk yumurta + ilk skine yetmeli")
+assert(stat(kid, Config.StatWins) == winsBefore, "30 tıklamada Win sessizce verilmemeli: " .. stat(kid, Config.StatWins))
+local squatQuest = Config.StarterQuests[1]
+assert(squatQuest.id == "squat" and squatQuest.rewards[1].kind == "wins", "ilk görev 30 squat ve Win ödüllü olmalı")
+-- İlk yumurta ve ilk skin birlikte alınabilmeli
+assert(squatQuest.rewards[1].amount >= Config.Eggs[1].price + Config.Skins[1].price, "squat görevinin ödülü ilk yumurta + ilk skine yetmeli")
+local okClaimSquat = PlayerStats.claimStarter(kid, "squat")
+assert(okClaimSquat == true and stat(kid, Config.StatWins) == winsBefore + squatQuest.rewards[1].amount, "ödül Quests'ten CLAIM ile alınmalı: " .. stat(kid, Config.StatWins))
+assert(select(1, PlayerStats.claimStarter(kid, "squat")) == false, "ödül ikinci kez alınamaz")
 
 -- ---- 3) Level kilometre taşı ödülleri (hepsi bir kez): Config.LevelRewards sırasıyla, her eşiğe DEV ile çıkılır
 for _, reward in Config.LevelRewards do
@@ -100,7 +100,7 @@ assert(stat(kid, Config.StatWins) == winsIdx2, "Index ödülü ikinci kez verilm
 now += 300 -- 5 dakika oynadı
 assert(PlayerStats.saveNow(kid) == true, "kayıt başarılı olmalı")
 local record = S.datastore["Player_9301"]
-assert(record and record.StarterWins == true, "StarterWins kayıtlı olmalı")
+assert(record, "kayıt yazılmış olmalı")
 assert(record.AutoTrial == Config.AutoClick.TrialSeconds - 300, "kalan deneme süresi kayıtlı olmalı: " .. tostring(record.AutoTrial))
 assert(#record.LevelRewards == #Config.LevelRewards, "alınan level ödülleri kayıtlı olmalı: " .. #record.LevelRewards)
 assert(#record.IndexRewards == #Config.Index.Rewards, "alınan Index ödülleri kayıtlı olmalı: " .. #record.IndexRewards)
@@ -120,7 +120,7 @@ local winsAgain = stat(kidAgain, Config.StatWins)
 for _ = 1, Config.Tutorial.ClickGoal do
 	PlayerStats.tutorialClick(kidAgain)
 end
-assert(stat(kidAgain, Config.StatWins) == winsAgain, "hediye tekrar girişte yeniden verilmemeli")
+assert(stat(kidAgain, Config.StatWins) == winsAgain, "tekrar girişte de tıklamalar Win'i sessizce vermemeli")
 
 -- ---- 5) Eski oyuncu: hiçbiri geriye dönük verilmez
 S.datastore["Player_9302"] = { Muscle = 5000, Wins = 10, Level = 5, Rebirths = 1 } -- yeni alanlar yok (eski kayıt)

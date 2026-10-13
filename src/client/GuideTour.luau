@@ -1,7 +1,8 @@
 -- REHBER TURU (2026-10-13, sahibi 'yeni oyuncu ilk rebirth'e kadar oyun tarafından yönlendirilsin, arayüzleri tanıtsın' dedi; sonra 'çok sade kalıyor, hızlı bir tanıtım yapıp oklarla göstersin, iki görev birbirine bağlı olsun' dedi):
 --   1) HIZLI OK TURU (Config.GuideIntro): ilk girişte tüm düğmeleri sırayla, büyük zıplayan ok + kısa konuşma balonuyla gezer (kendiliğinden ilerler, 'Next' hızlandırır, 'Skip' bitirir).
 --   2) KARTLAR (Config.GuideTour): doğru anda tek tek küçük kart; hedef düğme büyük okla işaretlenir. Eğitim görevi (ilk ClickGoal tıklama) bitmeden ikinci bir kart açılmaz.
---   3) GÖREV BAĞI: bir NEW PLAYER görevi bitince (StarterState) Quests düğmesine 'Quest complete! Tap to claim' oku çıkar, altında sıradaki görev yazar (görevler sekmesi ile rehber aynı zincir).
+--   3) GÖREV BAĞI: bir NEW PLAYER görevi bitince ödül SESSİZCE verilmez (sahibi istedi): güncel hedef 'claim' olur (client/Objective), üst şerit 'Quest complete! Tap QUESTS and CLAIM...' der, ilk seferde bir kart anlatır ve Quests düğmesine ok çıkar;
+--      oyuncu Quests penceresinden CLAIM eder, sonra sıradaki hedefin kartı/oku gelir (görevler sekmesi ile rehber aynı zincir).
 -- Oklar ve balonlar ana arayüzün DEĞİL, ayrı bir üst katman ScreenGui'sindedir (kardeş düğmelerin altında kalmasın); hedefin ekran konumunu izler, hedef gizlenirse oku da gizlenir.
 -- Her adım bir kez gösterilir (sunucuda kayıtlı 'GuideSeen'). 'Skip guide' ve Settings > Guide anahtarı tamamen kapatır (GuideOn = false).
 -- Tamamen görseldir; hata verirse oyun etkilenmez (init.client safeInit).
@@ -23,7 +24,7 @@ local GOLD = Color3.fromRGB(255, 214, 60)
 local NAVY = Color3.fromRGB(34, 38, 60)
 local GAP_SECONDS = 2.5 -- iki kart arası en az bekleme
 local AUTO_DISMISS = 20 -- sn: kapatılmazsa görüldü sayılıp kaybolur
-local CLAIM_SECONDS = 15 -- sn: görev tamamlandı okunun kalma süresi
+local CLAIM_SNOOZE = 20 -- sn: oyuncu Quests'e basınca 'ödülü al' oku bu kadar susar (pencerede ödülü alsın); hâlâ alınmadıysa geri gelir
 local CHECK_INTERVAL = 0.5
 local FOLLOW_INTERVAL = 0.1 -- ok, hedefin konumunu bu aralıkla izler
 local OVERLAY_ORDER = 800 -- yükleme ekranının (1000) altında, diğer arayüzün üstünde
@@ -153,15 +154,6 @@ local function readStarter(player)
 	return list
 end
 
-local function questText(id)
-	for _, quest in Config.StarterQuests do
-		if quest.id == id then
-			return quest.text
-		end
-	end
-	return id
-end
-
 -- screenGui: ana arayüz çerçevesi (kart buraya konur); showToast isteğe bağlı
 function GuideTour.init(screenGui, showToast)
 	local player = Players.LocalPlayer
@@ -170,7 +162,7 @@ function GuideTour.init(screenGui, showToast)
 	local winValue = leaderstats:WaitForChild(Config.StatWins)
 	local levelValue = leaderstats:WaitForChild(Config.StatLevel)
 	local rebirthValue = leaderstats:WaitForChild(Config.StatRebirths)
-	local timing = { gap = GAP_SECONDS, intro = Config.GuideIntroSeconds or 2.6 }
+	local timing = { gap = GAP_SECONDS, intro = Config.GuideIntroSeconds or 2.6, snoozeUntil = 0 }
 
 	-- ---------- Kart (bir kez kurulur, adımlar arasında içeriği değişir) ----------
 	local card = create("Frame", {
@@ -296,7 +288,6 @@ function GuideTour.init(screenGui, showToast)
 	-- ---------- Durum ----------
 	local current = nil -- şu an gösterilen adım (kart, hızlı tur ya da görev oku)
 	local shownThisSession = {} -- bu oturumda gösterilen (sunucu kaydı gelmeden tekrar göstermemek için)
-	local announced = {} -- bu oturumda 'görev tamamlandı' oku gösterilen görevler
 	local lastDismiss = 0
 	local token = 0 -- otomatik kapanma zamanlayıcıları için
 	local activeCallout = nil -- hedefi işaretleyen ok + balon
@@ -738,7 +729,14 @@ function GuideTour.init(screenGui, showToast)
 		tagLabel.Text = step.tag or "GUIDE"
 		card.Visible = true
 		local target = findTarget(player, step.target)
-		if target and not pcall(setCallout, target, step.pointer or "Tap here!", nil, dismiss) then
+		local onTargetClick = dismiss
+		if step.target == "QuestsButton" then
+			onTargetClick = function() -- oyuncu Quests'e bastı: pencerede ödülünü alsın, 'ödülü al' oku kısa süre susar
+				timing.snoozeUntil = os.clock() + CLAIM_SNOOZE
+				dismiss()
+			end
+		end
+		if target and not pcall(setCallout, target, step.pointer or "Tap here!", nil, onTargetClick) then
 			clearCallout() -- ok kurulamazsa sadece kart gösterilir
 		elseif not target then
 			clearCallout()
@@ -750,43 +748,25 @@ function GuideTour.init(screenGui, showToast)
 		end)
 	end
 
-	-- Bir NEW PLAYER görevi bitince Quests düğmesine 'tamamlandı, al' oku; altında sıradaki görev (rehber ile görevler aynı zincir)
+	-- Biten görevin ödülü alınmayı bekliyorsa (güncel hedef 'claim') Quests düğmesine kalıcı ok: altında ödül yazar.
+	-- Oyuncu Quests'e basınca ok CLAIM_SNOOZE sn susar (pencerede ödülü alsın); ödül alınınca ya da hedef değişince kalkar.
 	local function showClaim(quest)
 		local target = findTarget(player, "QuestsButton")
 		if not target then
 			return false
 		end
-		announced[quest.id] = true
-		local nextText = nil
-		for _, entry in readStarter(player) do
-			if not entry.done and entry.id ~= quest.id then
-				nextText = questText(entry.id)
-				break
-			end
-		end
 		local step = { id = "claim:" .. quest.id, claim = true, questId = quest.id }
 		current = step
 		token += 1
-		local mine = token
-		-- Quests'e basınca o an bekleyen tüm tamamlanmış görevler 'duyurulmuş' sayılır (arka arkaya ok çıkıp bunaltmasın)
 		local function opened()
-			for _, entry in readStarter(player) do
-				if entry.done and not entry.claimed then
-					announced[entry.id] = true
-				end
-			end
+			timing.snoozeUntil = os.clock() + CLAIM_SNOOZE
 			dismiss()
 		end
-		local ok = pcall(setCallout, target, "Quest complete! Tap to claim", nextText and ("Next: " .. nextText) or nil, opened)
+		local ok = pcall(setCallout, target, "Quest complete! Tap to claim", "Reward: " .. Objective.rewardText(quest.rewards), opened)
 		if not ok then
 			current = nil
 			return false
 		end
-		task.delay(CLAIM_SECONDS, function()
-			if current == step and token == mine then
-				hide()
-			end
-		end)
 		return true
 	end
 
@@ -834,22 +814,9 @@ function GuideTour.init(screenGui, showToast)
 				return
 			end
 		end
-		-- Hızlı tur görüldükten sonra: biten ama alınmamış görev varsa Quests düğmesine ok
-		if (seen.intro or shownThisSession.intro) and sinceDismiss >= timing.gap then
-			for _, entry in readStarter(player) do
-				if entry.done and not entry.claimed and not announced[entry.id] then
-					local quest = nil
-					for _, candidate in Config.StarterQuests do
-						if candidate.id == entry.id then
-							quest = candidate
-						end
-					end
-					if quest and showClaim(quest) then
-						return
-					end
-					announced[entry.id] = true
-				end
-			end
+		-- Hızlı tur görüldükten sonra: ödülü alınmayı bekleyen görev varsa (güncel hedef 'claim') Quests düğmesine ok
+		if objective and objective.id == "claim" and (seen.intro or shownThisSession.intro) and sinceDismiss >= timing.gap and os.clock() >= timing.snoozeUntil then
+			showClaim(objective.quest)
 		end
 	end
 
@@ -861,9 +828,9 @@ function GuideTour.init(screenGui, showToast)
 	end)
 	-- Sunucu rehber kaydını sıfırladıysa (DEV 'RESTART TUTORIAL'): bu oturumda gösterilmiş sayılanlar da unutulur, açık kart/ok/tur kapanır ve rehber baştan başlar
 	player:GetAttributeChangedSignal("GuideSeen"):Connect(function()
-		if (player:GetAttribute("GuideSeen") or "") == "" and (next(shownThisSession) ~= nil or next(announced) ~= nil) then
+		if (player:GetAttribute("GuideSeen") or "") == "" and next(shownThisSession) ~= nil then
 			table.clear(shownThisSession)
-			table.clear(announced)
+			timing.snoozeUntil = 0
 			if current then
 				hide()
 			end

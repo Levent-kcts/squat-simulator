@@ -49,10 +49,10 @@ for _ = 1, Config.Tutorial.ClickGoal do
 	PlayerStats.tutorialClick(kid)
 end
 assert(state(kid).squat.done, "30 tıklama görevi bitmeli")
-assert(string.find(tostring(kid:GetAttribute("RewardToast")), "Quest complete", 1, true) or string.find(tostring(kid:GetAttribute("RewardToast")), "Free gift", 1, true), "bildirim gitmeli")
 local winsBefore = stat(kid, Config.StatWins)
+assert(winsBefore == 0, "görev bitince ödül SESSİZCE verilmemeli: " .. winsBefore)
 assert(select(1, claim(kid, "squat")) == true, "bitmiş görev alınmalı")
-assert(stat(kid, Config.StatWins) == winsBefore + 5, "squat ödülü +5 Win: " .. stat(kid, Config.StatWins))
+assert(stat(kid, Config.StatWins) == winsBefore + quests[1].rewards[1].amount, "squat ödülü Quests'ten alınınca verilir: " .. stat(kid, Config.StatWins))
 assert(select(1, claim(kid, "squat")) == false, "ödül ikinci kez alınamaz")
 assert(state(kid).squat.claimed, "alındı işareti")
 
@@ -142,7 +142,8 @@ local restartWins = stat(again, Config.StatWins)
 for _ = 1, Config.Tutorial.ClickGoal do
 	PlayerStats.tutorialClick(again)
 end
-assert(stat(again, Config.StatWins) == restartWins + Config.Tutorial.StarterWins, "30 tıklamada başlangıç Win'i yeniden verilmeli")
+assert(stat(again, Config.StatWins) == restartWins, "30 tıklamada Win sessizce verilmemeli (ödül Quests'ten CLAIM ile alınır)")
+assert(select(1, claim(again, "squat")) == true and stat(again, Config.StatWins) == restartWins + quests[1].rewards[1].amount, "restart sonrası squat ödülü yeniden alınabilmeli")
 
 -- 9) Eski oyuncu: görevler 'alınmış', rehber 'görülmüş' sayılır (geriye dönük ödül ve tur YOK)
 S.datastore["Player_9402"] = { Muscle = 5000, Wins = 10, Level = 5, Rebirths = 1 }

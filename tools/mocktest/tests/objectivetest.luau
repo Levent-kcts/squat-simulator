@@ -61,6 +61,29 @@ states({ squat = true, pet = true, skin = true })
 assert(read({ level = 3 }).id == "wall", "sınırdan uzaktayken görev zinciri sürer")
 assert(read({ level = Config.Level.BaseMaxLevel }).id == "rebirth", "level sınırında hedef rebirth olmalı (ilerleme orada tıkanır)")
 
+-- Biten ama ödülü alınmamış görev: hedef 'claim' (ödül sessizce verilmez; Quests'ten alınır), alınınca zincir sürer
+local function statesWithUnclaimed(doneIds, unclaimedId)
+	local parts = {}
+	for _, quest in Config.StarterQuests do
+		local isDone = doneIds[quest.id] == true
+		table.insert(parts, `{quest.id},{if isDone then quest.goal else 0},{if isDone then 1 else 0},{if isDone and quest.id ~= unclaimedId then 1 else 0}`)
+	end
+	player:SetAttribute("StarterState", table.concat(parts, ";"))
+end
+player:SetAttribute("OwnedPets", "") -- (önceki bölümlerde pet/skin alınmıştı; zincir yeniden başlasın)
+player:SetAttribute("OwnedSkins", "")
+statesWithUnclaimed({ squat = true }, "squat")
+objective = read({ wins = 0 })
+assert(objective.id == "claim" and objective.quest.id == "squat" and string.find(objective.text, "CLAIM +" .. Config.StarterQuests[1].rewards[1].amount .. " Wins", 1, true), "biten görev için hedef 'claim' olmalı: " .. objective.text)
+assert(Objective.rewardText({ { kind = "wins", amount = 8 } }) == "+8 Wins", "ödül yazısı")
+statesWithUnclaimed({ squat = true }, "none")
+assert(read({ wins = Config.Eggs[1].price }).id == "pet", "ödül alınınca zincir sürmeli")
+statesWithUnclaimed({ squat = true, pet = true }, "pet")
+assert(read({ wins = 99 }).id == "claim" and read({ wins = 99 }).quest.id == "pet", "her biten görev sırayla claim hedefi olur")
+-- (rebirth görevi hariç: rebirth'ten sonra şerit zaten kapanır)
+statesWithUnclaimed({ squat = true, pet = true, skin = true, wall = true, shoes = true, level10 = true, gift = true, train = true, wheel = true, rebirth = true }, "rebirth")
+assert(read({ level = 2 }).id == "rebirth", "rebirth görevinin ödülü 'claim' hedefi yapmaz")
+
 -- Eski oyuncu (tüm görevler 'alınmış', rebirth yok): hedef yine rebirth; rebirth yapınca hedef kalmaz
 local allDone = {}
 for _, quest in Config.StarterQuests do
