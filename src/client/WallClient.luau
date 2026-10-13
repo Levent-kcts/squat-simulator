@@ -274,6 +274,7 @@ local function createWall(folder, index)
 	bar.Size = UDim2.fromScale(0.5, 0.13)
 	bar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 	bar.BorderSizePixel = 0
+	bar.ClipsDescendants = true -- playtest: 'can barındaki yarı saydam gösterge barın sınırlarından taşıyor': içindeki dolgu ve parlak şerit çubuğun dışına çıkmaz
 	bar.Parent = gui
 
 	local barCorner = Instance.new("UICorner")
@@ -289,6 +290,7 @@ local function createWall(folder, index)
 	local fill = Instance.new("Frame")
 	fill.Size = UDim2.fromScale(1, 1)
 	fill.BorderSizePixel = 0
+	fill.ClipsDescendants = true
 	fill.Parent = bar
 
 	local fillCorner = Instance.new("UICorner")

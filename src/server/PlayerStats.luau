@@ -704,7 +704,7 @@ local function giveItem(player, profile, kind, minutes)
 	end
 	profile.potionItems[sku] = math.min((profile.potionItems[sku] or 0) + 1, 9999)
 	local potion = Catalog.PotionByKind[kind]
-	return `{potion.name} ({minutes} min) added! Use it in Shop > Potions.`
+	return `{potion.name} ({minutes} min) added to your potions! Open Shop > Potions and press USE: {potion.effect} for {minutes} min.`
 end
 
 -- Envanterdeki bir iksiri içer (Shop > Potions kartında USE). Dönüş: başarılı mı, mesaj
@@ -1100,7 +1100,7 @@ local function giveGift(player, profile, index, force)
 		if #profile.equipped < Config.MaxEquippedPets then
 			table.insert(profile.equipped, pet.id)
 		end
-		message = `New pet: {pet.name}!`
+		message = `New pet: {pet.name}! It was added to your Pets menu.`
 	elseif POTION_FIELD[reward.kind] then
 		message = giveItem(player, profile, reward.kind, reward.minutes) -- iksir envantere girer
 	else
@@ -1916,7 +1916,7 @@ function PlayerStats.spinWheel(player)
 		if #profile.equipped < Config.MaxEquippedPets then
 			table.insert(profile.equipped, pet.id)
 		end
-		message = `New pet: {pet.name}!`
+		message = `New pet: {pet.name}! It was added to your Pets menu.`
 	else -- jackpot: Win ve bacak kası birlikte
 		local winAmount = estimatedStageReward(player) * prize.mult
 		local muscleAmount = math.max(100, math.floor(profile.gain * prize.clicks))

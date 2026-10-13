@@ -163,7 +163,7 @@ function EggShop.init(screenGui, hooks)
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 68),
-		Size = UDim2.fromOffset(580, 310), -- 5 pet kartı yan yana sığsın
+		Size = UDim2.fromOffset(580, 338), -- 5 pet kartı yan yana sığsın (+ altta 'çarpı' ipucu satırı)
 		BackgroundColor3 = Color3.fromRGB(45, 48, 62),
 		BackgroundTransparency = 0.05,
 		Active = true, -- panele tıklamak hareket başlatmasın
@@ -191,6 +191,16 @@ function EggShop.init(screenGui, hooks)
 		TextColor3 = Color3.new(1, 1, 1),
 	}, 3)
 
+	-- ÇARPI İPUCU (playtest: 'egg açınca pet anında silindi, kartlara tıklayınca çarpı konduğu hiç belli değildi'): kartlara tıklamak o peti 'yumurtadan çıkınca anında sil' diye işaretler
+	local crossHint = makeText(panel, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 220),
+		Size = UDim2.new(0.94, 0, 0, 22),
+		Text = "Tap a pet to mark it with an X: marked pets are deleted the moment they hatch!",
+		TextColor3 = Color3.fromRGB(255, 214, 120),
+	}, 2)
+	crossHint.TextWrapped = false
+
 	local cards = create("Frame", {
 		Position = UDim2.fromOffset(0, 50),
 		Size = UDim2.new(1, 0, 0, 170),
@@ -207,7 +217,7 @@ function EggShop.init(screenGui, hooks)
 	-- Panelin altındaki tuş kutuları
 	local keys = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 228),
+		Position = UDim2.new(0.5, 0, 0, 252),
 		Size = UDim2.fromOffset(250, 70), -- E / R / T
 		BackgroundTransparency = 1,
 	}, panel)
@@ -412,6 +422,16 @@ function EggShop.init(screenGui, hooks)
 				}, cross)
 				create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, bar)
 			end
+			local markLabel = makeText(cross, {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromScale(0.94, 0.2),
+				Text = "AUTO-DELETE",
+				TextColor3 = Color3.fromRGB(255, 80, 90),
+				ZIndex = 8,
+			}, 3)
+			markLabel.BackgroundTransparency = 0.25
+			markLabel.BackgroundColor3 = Color3.new(0, 0, 0)
 			crossMarks[pet.id] = { cross = cross, shade = shade }
 
 			local hovering = false
@@ -429,7 +449,10 @@ function EggShop.init(screenGui, hooks)
 			end)
 			card.MouseButton1Click:Connect(function()
 				task.spawn(function()
-					shopFunction:InvokeServer("ToggleAutoDelete", pet.id)
+					local ok, message = shopFunction:InvokeServer("ToggleAutoDelete", pet.id)
+					if hooks.showToast and type(message) == "string" then
+						hooks.showToast(ok == true, message) -- 'Dragon will be auto-deleted' / 'will be kept'
+					end
 				end)
 			end)
 			crossMarks[pet.id].update = updateShade

@@ -554,13 +554,21 @@ for index, product in quickProducts do
 		local legIcon = addOutlinedIcon(button, Config.Icons.LegMuscle, 44, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
 		legIcon.ZIndex = 3
 	end
+	-- İki satır: büyük sayı + küçük 'POWER' (playtest: '100k Power yazısı soluk': uzun tek satır küçülüp silikleşiyordu, üç düğmede de aynı boyda ve net olsun)
 	makeText(button, {
-		Position = UDim2.fromOffset(4, 6),
-		Size = UDim2.new(1, -8, 1, -10),
-		Text = `+{Format.compact(product.amount)} Power`,
+		Position = UDim2.fromOffset(4, 2),
+		Size = UDim2.new(1, -8, 0, 24),
+		Text = `+{Format.compact(product.amount)}`,
 		TextColor3 = Color3.new(1, 1, 1),
 		ZIndex = 5,
-	}, 20, 3)
+	}, 24, 3)
+	makeText(button, {
+		Position = UDim2.fromOffset(4, 25),
+		Size = UDim2.new(1, -8, 0, 13),
+		Text = "POWER",
+		TextColor3 = Color3.fromRGB(255, 236, 170),
+		ZIndex = 5,
+	}, 12, 2)
 	table.insert(quickButtons, { button = button, product = product })
 end
 local plusButton = create("TextButton", {

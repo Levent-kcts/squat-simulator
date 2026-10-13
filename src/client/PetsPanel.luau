@@ -176,6 +176,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 	local deleteMode = false
 	local marked = {} -- silme modunda işaretlenen kartlar: ["id#kopya sırası"] = true (her pet kendi kartıdır)
 	local pendingDelete = nil -- Delete düğmesine bir kez basılan pet (ikinci basış siler)
+	local lastTapKey, lastTapTime = nil, 0 -- ÇİFT TIK ile tak/çıkar (playtest isteği): son tıklanan kart ve zamanı (render kartları yeniden kurduğu için dışarıda tutulur)
 	local hinted = false -- 'Merge edebilirsin' ipucu bu oturumda gösterildi mi
 	local tweens = {} -- her çizimde yeniden kurulan, tekrarlayan animasyonlar (sonraki çizimde iptal edilir)
 	local render -- aşağıda tanımlanır (kartlar ve ayrıntı kutusu düğmeleri yeniden çizim ister)
@@ -436,7 +437,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			Position = UDim2.fromOffset(8, 196),
 			Size = UDim2.fromOffset(DETAIL_WIDTH - 16, 24),
 			-- Sadece TAKILI petler kas kazancına yüzde verir (sunucu hesabı): takılı değilse 'takılınca' diye soluk yazılır
-			Text = if equippedCount > 0 then `+{percent(pet)}% Leg Muscle` else `+{percent(pet)}% when equipped`,
+			Text = if equippedCount > 0 then `+{percent(pet)}% Leg Muscle` else `+{percent(pet)}% Leg Muscle when equipped`,
 			TextColor3 = if equippedCount > 0 then Color3.fromRGB(130, 255, 140) else Color3.fromRGB(175, 182, 205),
 		}, 2)
 		makeText(detail, {
@@ -688,6 +689,20 @@ function PetsPanel.init(screenGui, showToast, openShop)
 					marked[key] = true
 				end
 			else
+				-- ÇİFT TIK (0.4 sn içinde aynı karta): takılıysa çıkarır, değilse takar (takım doluysa uyarır); tek tık eskisi gibi sadece seçer
+				local now = os.clock()
+				if lastTapKey == key and now - lastTapTime < 0.4 then
+					lastTapKey = nil
+					if equipped then
+						invoke("UnequipPet", pet.id, true)
+					elseif #toList(player:GetAttribute("EquippedPets")) >= Config.MaxEquippedPets then
+						showToast(false, `Your team is full ({Config.MaxEquippedPets} pets). Unequip one first.`)
+					else
+						invoke("EquipPet", pet.id, true)
+					end
+				else
+					lastTapKey, lastTapTime = key, now
+				end
 				selectedId = pet.id
 				selectedCopy = copy
 				pendingDelete = nil

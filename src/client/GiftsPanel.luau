@@ -68,7 +68,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(640, 470),
+		Size = UDim2.fromOffset(640, 492), -- alttaki 'liste yeniden başlar' notu için biraz yüksek
 		BackgroundColor3 = Color3.fromRGB(50, 52, 66),
 		Active = true, -- panele tıklamak hareket başlatmasın
 		Visible = false,
@@ -117,6 +117,15 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		CellPadding = UDim2.fromOffset(8, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, area)
+
+	-- A5 (playtest: 'ödüller bitince başa sarıyor gibi'): bu BİLİNÇLİ; oyuncuya açıkça yazılır
+	makeText(panel, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 400),
+		Size = UDim2.new(0.94, 0, 0, 22),
+		Text = "Claim all 10 rewards and the list starts over from the beginning!",
+		TextColor3 = Color3.fromRGB(255, 232, 150),
+	}, 2)
 
 	local cells = {} -- [index] = { statusButton, statusLabel }
 	for index, reward in Config.GiftRewards do

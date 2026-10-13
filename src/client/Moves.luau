@@ -69,6 +69,22 @@ local JOINTS = {
 
 local active = {} -- [character] = { move, start, rig }
 
+-- Oyuncu YÜRÜYORSA hareket oynatılmaz / bırakılır (playtest: 'squat sırasında yürüyünce animasyon glitchliyor': Roblox'un yürüme animasyonu ile bizim eklem dönüşlerimiz çakışıyordu).
+-- Niyete (MoveDirection) DEĞİL gerçek hıza bakılır: duvara dayanıp ileri tuşuna basan oyuncu durduğu için tekmesi kesilmez. Kendi karakterimizde de diğerlerinde de aynı ölçü (kök parçanın yatay hızı).
+local WALK_SPEED_LIMIT = 4 -- stud/sn; yürüme hızı 16, dururken ~0
+local function isWalking(character)
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return false
+	end
+	-- pcall: hız okunamazsa (ör. test taklidi) 'yürümüyor' say, hareket oynasın
+	local ok, speed = pcall(function()
+		local velocity = root.AssemblyLinearVelocity
+		return Vector3.new(velocity.X, 0, velocity.Z).Magnitude
+	end)
+	return ok and type(speed) == "number" and speed > WALK_SPEED_LIMIT
+end
+
 local function heightScaleOf(humanoid)
 	local height = humanoid and humanoid:FindFirstChild("BodyHeightScale")
 	return height and height.Value or 1
@@ -200,6 +216,9 @@ function Moves.play(character, name)
 	if state and state.name == name then
 		return -- aynı hareket zaten oynuyor, bitince yenisi başlar
 	end
+	if isWalking(character) then
+		return -- yürürken hareket başlamaz (görsel; kas ve hasar sunucuda yine sayılır)
+	end
 
 	local rig = getRig(character)
 	if DEBUG then
@@ -230,6 +249,10 @@ RunService.RenderStepped:Connect(function()
 		local humanoid = state.rig.humanoid
 		if state.rig.isLocal and humanoid and humanoid.FloorMaterial == Enum.Material.Air then
 			-- Hareket sırasında zıpladı: bacak sallanması karakteri döndürmesin diye hareketi hemen bırak
+			restore(state.rig)
+			active[character] = nil
+		elseif character.Parent and isWalking(character) then
+			-- Hareket sırasında yürümeye başladı: hareketi hemen bırak, yürüme animasyonuyla çakışmasın
 			restore(state.rig)
 			active[character] = nil
 		elseif t >= state.move.duration or not character.Parent then

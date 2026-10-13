@@ -234,7 +234,7 @@ local trashIcon = buttonNamed(buttonNamed(root2, "TrashButton"), "TrashIcon")
 assert(trashIcon, "alt çöp kutusu düğmesinde simge olmalı")
 local trashImage = rawget(trashIcon, "_children")["ImageLabel"]
 assert(trashImage and rawget(trashImage, "Image") == "rbxassetid://72909566398443", "yüklenen çöp kutusu görseli kullanılmalı")
-assert(t2["+10% when equipped"] and not t2["+10%"], "takılı olmayan petin kartında yüzde olmamalı, ayrıntıda 'when equipped' yazmalı")
+assert(t2["+10% Leg Muscle when equipped"] and not t2["+10%"], "takılı olmayan petin kartında yüzde olmamalı, ayrıntıda '+10% Leg Muscle when equipped' yazmalı (playtest: neyin yüzde 10 olduğu yazmıyordu)")
 print("PetsPanel merge/equip/delete ok")
 
 -- 2b) Takılı kopyalar: 3 kediden 2'si takılıysa iki kartta tek 'E' rozeti ve '+10%' yazısı vardır; 'E2' / 'x3' yoktur

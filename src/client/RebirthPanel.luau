@@ -59,11 +59,13 @@ function RebirthPanel.init(screenGui, showToast)
 	}, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
 	UIStyle.headerIcon(header, Config.Icons.Rebirth, "🔄", { Position = UDim2.fromOffset(12, 5), Size = UDim2.fromOffset(48, 48) })
+	-- Başlık ortada (playtest: 'Rebirth yazısı sol üst köşeye sabitlenmiş'); simge solda, X sağda kalır
 	makeText(header, {
-		Position = UDim2.fromOffset(64, 8),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
 		Size = UDim2.new(0.5, 0, 1, -16),
 		Text = "Rebirth",
-		TextXAlignment = Enum.TextXAlignment.Left,
+		TextXAlignment = Enum.TextXAlignment.Center,
 		TextColor3 = Color3.new(1, 1, 1),
 	}, 3)
 	local close = create("TextButton", {
@@ -157,16 +159,20 @@ function RebirthPanel.init(screenGui, showToast)
 		}, panel)
 		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
 		UIStyle.soften(button, { radius = 14, strength = 0.28 })
+		-- Yazı düğmenin tam ortasında (playtest: 'ödeme butonundaki yazı düzgün görünmüyor'); ZIndex açıkça yüksek, parlak şeridin altında kalmasın
 		local label = makeText(button, {
-			Position = UDim2.fromScale(0.05, 0.1),
-			Size = UDim2.fromScale(0.9, 0.8),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.88, 0.62),
 			Text = text,
+			TextXAlignment = Enum.TextXAlignment.Center,
 			TextColor3 = Color3.new(1, 1, 1),
+			ZIndex = 5,
 		}, 3)
 		return button, label
 	end
 	local rebirthButton, rebirthLabel = bigButton("left", Color3.fromRGB(60, 200, 40), "Rebirth")
-	local skipButton, skipLabel = bigButton("right", Color3.fromRGB(170, 40, 230), `SKIP? R$ {Config.Rebirth.SkipRobuxPrice}`)
+	local skipButton, skipLabel = bigButton("right", Color3.fromRGB(170, 40, 230), `SKIP  {utf8.char(0xE002)} {Config.Rebirth.SkipRobuxPrice}`)
 
 	local function currentState()
 		local rebirths = rebirthValue.Value

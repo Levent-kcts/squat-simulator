@@ -51,13 +51,21 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	}, container)
 
 	-- ---------------- 1) FREE REWARD ----------------
-	local reward = create("TextButton", {
+	-- Kutu sabit boyutlu bir TUTUCUNUN içindedir ve ORTADAN büyür (playtest: 'free reward paneli sağ kenara sabit, içerik büyüyünce tek yöne genişliyor, yazılar yamuluyor'):
+	-- eskiden nabız atan UIScale sol-üst köşeden büyüyüp sağ kenara taşıyordu.
+	local rewardHolder = create("Frame", {
 		LayoutOrder = 1,
 		Size = UDim2.fromOffset(150, 64), -- küçük tutulur (sahibi istedi): eskiden 200x88 idi ve lobiyi (raflar, tabelalar) kapatıyordu
+		BackgroundTransparency = 1,
+	}, container)
+	local reward = create("TextButton", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(1, 1),
 		Text = "",
 		AutoButtonColor = true,
 		BackgroundColor3 = Color3.fromRGB(255, 168, 36),
-	}, container)
+	}, rewardHolder)
 	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, reward)
 	UIStyle.soften(reward, { radius = 16, strength = 0.3 })
 	local rewardScale = create("UIScale", { Scale = 1 }, reward)
@@ -94,7 +102,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	end)
 
 	-- Hazırken kutu nabız gibi atar
-	local pulse = TweenService:Create(rewardScale, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.07 })
+	local pulse = TweenService:Create(rewardScale, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 })
 	local pulsing = false
 
 	local function refreshReward()
@@ -220,34 +228,57 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		TextColor3 = Color3.fromRGB(255, 214, 46),
 		ZIndex = 3,
 	}, 3)
-	index.MouseButton1Click:Connect(function()
-		if openIndex then
-			openIndex()
-		end
-	end)
+	-- Yeni pet türü keşfedilince (playtest isteği: 'yeni pet keşfedilince bildirim, Index butonunda rozet'): kısa bildirim + Index dairesi Index'i açana kadar nabız atar
+	local indexDisc = index:FindFirstChildOfClass("Frame")
+	local indexPulseScale = create("UIScale", { Scale = 1 }, indexDisc)
+	local indexPulse = TweenService:Create(indexPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
+	local indexPulsing = false
+	local lastDiscovered = nil
 	local function refreshIndex()
 		local count = 0
 		for _ in string.gmatch(player:GetAttribute("DiscoveredPets") or "", "[^,]+") do
 			count += 1
 		end
 		indexCount.Text = `{count}/{#Config.Pets}`
+		if lastDiscovered ~= nil and count > lastDiscovered then
+			if showToast then
+				showToast(true, "New pet discovered! Check your Pet Index (top right).")
+			end
+			if not indexPulsing then
+				indexPulsing = true
+				indexPulse:Play()
+			end
+		end
+		lastDiscovered = count
 	end
 	player:GetAttributeChangedSignal("DiscoveredPets"):Connect(refreshIndex)
 	refreshIndex()
+	index.MouseButton1Click:Connect(function()
+		if indexPulsing then
+			indexPulsing = false
+			indexPulse:Cancel()
+			indexPulseScale.Scale = 1
+		end
+		if openIndex then
+			openIndex()
+		end
+	end)
 
-	-- Günlük görevler: en soldaki daire; üstünde alınmayı bekleyen ödül sayısı (kırmızı rozet)
+	-- Günlük görevler: en soldaki daire; altında alınmayı bekleyen ödül sayısı. Playtest: 'bildirim sayısının rengi arayüzle uyumsuz': diğer dairelerin altındaki sayılarla (Index, Arkadaş bonusu)
+	-- AYNI sarı, boy ve kenar; dikkat çekmek için ödül varken daire nabız atar.
 	local quests = circleButton("QuestsButton", 3, Config.Icons.Quests, "📜")
-	local questBadge = create("Frame", {
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.fromOffset(58, 0),
-		Size = UDim2.fromOffset(26, 26),
-		BackgroundColor3 = Color3.fromRGB(235, 40, 50),
-		Visible = false,
-		ZIndex = 4,
-	}, quests)
-	create("UICorner", { CornerRadius = UDim.new(1, 0) }, questBadge)
-	create("UIStroke", { Thickness = 2.5, Color = Color3.new(0, 0, 0) }, questBadge)
-	local questBadgeText = text(questBadge, { Position = UDim2.fromScale(0.1, 0.1), Size = UDim2.fromScale(0.8, 0.8), Text = "0", ZIndex = 5 }, 1.5)
+	local questBadgeText = text(quests, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 41),
+		Size = UDim2.fromOffset(62, 32),
+		Text = "",
+		TextColor3 = Color3.fromRGB(255, 214, 46),
+		ZIndex = 3,
+	}, 3)
+	local questDisc = quests:FindFirstChildOfClass("Frame")
+	local questPulseScale = create("UIScale", { Scale = 1 }, questDisc)
+	local questPulse = TweenService:Create(questPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
+	local questPulsing = false
 	quests.MouseButton1Click:Connect(function()
 		if openQuests then
 			openQuests()
@@ -262,11 +293,18 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		local count = QuestPanel.claimable(player)
 		-- Yeni bir görev bitince (alınabilir sayısı artınca) kısa hatırlatma
 		if lastClaimable ~= nil and count > lastClaimable and showToast then
-			showToast(true, "Quest complete! Open the 📜 button to claim your reward.")
+			showToast(true, "Quest complete! Tap the 📜 Quests button (top right) to claim your reward.")
 		end
 		lastClaimable = count
-		questBadge.Visible = count > 0
-		questBadgeText.Text = tostring(count)
+		questBadgeText.Text = if count > 0 then tostring(count) else ""
+		if count > 0 and not questPulsing then
+			questPulsing = true
+			questPulse:Play()
+		elseif count == 0 and questPulsing then
+			questPulsing = false
+			questPulse:Cancel()
+			questPulseScale.Scale = 1
+		end
 	end
 	player:GetAttributeChangedSignal("QuestData"):Connect(refreshQuestBadge)
 	refreshQuestBadge()
