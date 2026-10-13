@@ -371,7 +371,7 @@ return {
 	},
 	-- HIZLI OK TURU (2026-10-13, sahibi 'çok sade kalıyor, hızlı bir tanıtım yapıp oklarla göstersin' dedi): GuideTour'daki 'intro' adımı bu listeyi sırayla gezer; her durakta hedef düğmeye büyük zıplayan ok + kısa balon, GuideIntroSeconds sn'de bir kendiliğinden ilerler ('Next' hızlandırır, 'Skip' bitirir).
 	-- Son durak Quests'tir: görevlerle bağ kurar (görev bitince Quests düğmesine 'claim' oku çıkar). Hedef adı arayüzde yoksa o durak atlanır.
-	GuideIntroSeconds = 2.6,
+	GuideIntroSeconds = 0, -- 0 = duraklar oyuncu 'Next'e (ya da işaretli düğmeye) basana kadar kalır (sahibi 'tutorial çok hızlı kayboluyor, tuşa basılana kadar kalsın' dedi); > 0 = o kadar saniyede kendiliğinden de ilerler
 	GuideIntro = {
 		{ target = "WinsChip", text = "WINS = money. Smash walls to earn them!" },
 		{ target = "ShopButton", text = "SHOP: potions and Win packs" },

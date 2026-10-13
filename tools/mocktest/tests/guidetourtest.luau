@@ -54,7 +54,7 @@ for _, stop in Config.GuideIntro do
 	assert(type(stop.target) == "string" and type(stop.text) == "string" and #stop.text <= 60, "durağın hedef adı ve kısa balon yazısı olmalı: " .. tostring(stop.target))
 end
 assert(Config.GuideIntro[#Config.GuideIntro].target == "QuestsButton", "tur Quests ile bitmeli (görevlerle bağ)")
-assert(Config.GuideIntroSeconds > 0 and Config.GuideIntroSeconds <= 4, "hızlı tur durak başına en çok 4 sn olmalı")
+assert(Config.GuideIntroSeconds >= 0 and Config.GuideIntroSeconds <= 4, "hızlı tur süresi 0 (düğmeye basana kadar) ya da en çok 4 sn olmalı")
 local hasSetting = false
 for _, setting in Config.Settings do
 	if setting.key == "GuideOn" then
@@ -153,8 +153,10 @@ local function calloutText()
 	return callout and rawget(find(callout.bubble, "Text"), "Text")
 end
 
--- 1) İlk adım: hoş geldin (düğme 'Show me!')
+-- 1) İlk adım: hoş geldin (düğme 'Show me!'). Kart oyuncu kapatana kadar KALIR: kendiliğinden kapanma zamanlayıcısı kurulmaz
+local delayedBefore = #S.delayed
 GuideTour._tick()
+assert(#S.delayed == delayedBefore, "kart için kendiliğinden kapanma zamanlayıcısı kurulmamalı (tuşa basılana kadar kalır)")
 assert(visible(), "yeni oyuncuya ilk kart (hoş geldin) gösterilmeli")
 assert(cardHas(Config.GuideTour[1].title) and cardHas(Config.GuideTour[1].text), "ilk kartın başlığı ve metni gösterilmeli")
 assert(cardHas("Show me!"), "hoş geldin kartının düğmesi turu başlatan 'Show me!' olmalı")
@@ -164,7 +166,9 @@ S.lastInvoke = nil
 click(find(card, "GotIt"))
 assert(not visible(), "'Show me!' kartı kapatmalı")
 assert(S.lastInvoke and S.lastInvoke[1] == "GuideSeen" and S.lastInvoke[2] == "welcome", "görülen adım sunucuya bildirilmeli: " .. tostring(S.lastInvoke and S.lastInvoke[2]))
+delayedBefore = #S.delayed
 GuideTour._tick()
+assert(#S.delayed == delayedBefore or Config.GuideIntroSeconds > 0, "hızlı tur durakları kendiliğinden ilerlememeli (Next'e basana kadar kalır)")
 assert(barVisible() and not visible(), "hoş geldin'den sonra hızlı tur çubuğu açılmalı (kart değil)")
 local state = GuideTour._state()
 assert(state.intro and state.callout, "tur ilk durağı ok ve balonla işaretlemeli")
@@ -302,9 +306,14 @@ stats[Config.StatWins].Value = Config.Skins[1].price
 assert(objectiveId() == "skin", "ilk pet alınınca güncel hedef ilk skin olmalı")
 GuideTour._tick()
 assert(visible() and cardHas(stepById("q_skin").title), "güncel hedef 'ilk skin' iken kart da 'ilk skin' demeli")
-click(find(card, "GotIt"))
+-- Kart oyuncu kapatana kadar kalır; ama anlattığı iş yapılınca (skin alındı) eskir ve kendiliğinden kapanır, görüldü sayılır
+GuideTour._tick()
+assert(visible(), "iş yapılmadıkça kart ekranda kalmalı")
+S.lastInvoke = nil
 S.localPlayer:SetAttribute("OwnedSkins", Config.Skins[1].id)
 assert(objectiveId() == "wall", "ilk skin alınınca güncel hedef 3 duvar olmalı")
+GuideTour._tick()
+assert(not visible() and S.lastInvoke and S.lastInvoke[2] == "q_skin", "iş bitince eskimiş görev kartı kapanmalı ve görüldü sayılmalı")
 GuideTour._tick()
 assert(visible() and cardHas(stepById("q_wall").title), "güncel hedef '3 duvar' iken 'duvarları kır' kartı gelmeli")
 click(find(card, "GotIt"))

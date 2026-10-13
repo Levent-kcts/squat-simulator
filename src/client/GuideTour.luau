@@ -23,7 +23,6 @@ local BODY_FONT = Enum.Font.GothamMedium
 local GOLD = Color3.fromRGB(255, 214, 60)
 local NAVY = Color3.fromRGB(34, 38, 60)
 local GAP_SECONDS = 2.5 -- iki kart arası en az bekleme
-local AUTO_DISMISS = 20 -- sn: kapatılmazsa görüldü sayılıp kaybolur
 local CLAIM_SNOOZE = 20 -- sn: oyuncu Quests'e basınca 'ödülü al' oku bu kadar susar (pencerede ödülü alsın); hâlâ alınmadıysa geri gelir
 local CHECK_INTERVAL = 0.5
 local FOLLOW_INTERVAL = 0.1 -- ok, hedefin konumunu bu aralıkla izler
@@ -162,7 +161,7 @@ function GuideTour.init(screenGui, showToast)
 	local winValue = leaderstats:WaitForChild(Config.StatWins)
 	local levelValue = leaderstats:WaitForChild(Config.StatLevel)
 	local rebirthValue = leaderstats:WaitForChild(Config.StatRebirths)
-	local timing = { gap = GAP_SECONDS, intro = Config.GuideIntroSeconds or 2.6, snoozeUntil = 0 }
+	local timing = { gap = GAP_SECONDS, intro = Config.GuideIntroSeconds or 0, snoozeUntil = 0 } -- intro: 0 = hızlı tur durakları oyuncu 'Next'e basana kadar kalır
 
 	-- ---------- Kart (bir kez kurulur, adımlar arasında içeriği değişir) ----------
 	local card = create("Frame", {
@@ -289,7 +288,6 @@ function GuideTour.init(screenGui, showToast)
 	local current = nil -- şu an gösterilen adım (kart, hızlı tur ya da görev oku)
 	local shownThisSession = {} -- bu oturumda gösterilen (sunucu kaydı gelmeden tekrar göstermemek için)
 	local lastDismiss = 0
-	local token = 0 -- otomatik kapanma zamanlayıcıları için
 	local activeCallout = nil -- hedefi işaretleyen ok + balon
 	local intro = nil -- { step, stops = {{target, text}}, index, stopToken }
 	local overlays = {} -- [ignoreInset] = ScreenGui
@@ -682,11 +680,14 @@ function GuideTour.init(screenGui, showToast)
 			task.defer(advanceIntro)
 			return
 		end
-		task.delay(timing.intro, function()
-			if intro == state and state.stopToken == mine then
-				advanceIntro()
-			end
-		end)
+		-- Duraklar oyuncu 'Next'e (ya da işaretli düğmeye) basana kadar kalır (sahibi 'tutorial çok hızlı kayboluyor, tuşa basılana kadar kalsın' dedi); GuideIntroSeconds > 0 yapılırsa kendiliğinden de ilerler
+		if timing.intro > 0 then
+			task.delay(timing.intro, function()
+				if intro == state and state.stopToken == mine then
+					advanceIntro()
+				end
+			end)
+		end
 	end
 
 	local function startIntro(step)
@@ -717,8 +718,6 @@ function GuideTour.init(screenGui, showToast)
 	-- ---------- Kart adımları ve görev oku ----------
 	local function show(step)
 		current = step
-		token += 1
-		local mine = token
 		if step.intro then
 			startIntro(step)
 			return
@@ -741,11 +740,7 @@ function GuideTour.init(screenGui, showToast)
 		elseif not target then
 			clearCallout()
 		end
-		task.delay(AUTO_DISMISS, function()
-			if current == step and token == mine then
-				dismiss()
-			end
-		end)
+		-- (Kart kendiliğinden KAYBOLMAZ: 'Got it!', işaretli düğme ya da 'Skip guide' ile kapanır; tek istisna: kartın anlattığı iş yapıldıysa tick eskimiş kartı kapatır)
 	end
 
 	-- Biten görevin ödülü alınmayı bekliyorsa (güncel hedef 'claim') Quests düğmesine kalıcı ok: altında ödül yazar.
@@ -757,7 +752,6 @@ function GuideTour.init(screenGui, showToast)
 		end
 		local step = { id = "claim:" .. quest.id, claim = true, questId = quest.id }
 		current = step
-		token += 1
 		local function opened()
 			timing.snoozeUntil = os.clock() + CLAIM_SNOOZE
 			dismiss()
@@ -778,6 +772,16 @@ function GuideTour.init(screenGui, showToast)
 			and player:GetAttribute("GuideSeen") ~= nil
 	end
 
+	local function readObjective()
+		return Objective.read(player, {
+			wins = winValue.Value,
+			level = levelValue.Value,
+			maxLevel = player:GetAttribute("MaxLevel"),
+			rebirths = rebirthValue.Value,
+			wallText = "",
+		})
+	end
+
 	local function tick()
 		if not active() then
 			if current then
@@ -788,19 +792,22 @@ function GuideTour.init(screenGui, showToast)
 		if current then
 			if rebirthValue.Value > 0 and not current.claim then
 				hide() -- ilk rebirth yapıldı: açık kart/tur kapanır (sadece 'ödülünü Quests'ten al' oku kalır)
+				return
+			end
+			-- Görev kartı ('quest:<id>') anlattığı iş yapılınca (güncel hedef değişti) eskir: kendiliğinden kapanır ve görüldü sayılır ('Hatch your first pet' kartı pet çıkınca ekranda kalmasın)
+			local questId = if current.when then string.match(current.when, "^quest:(.+)$") else nil
+			if questId and not current.claim then
+				local now = readObjective()
+				if not now or now.id ~= questId then
+					dismiss()
+				end
 			end
 			return
 		end
 		local seen = seenSet()
 		local sinceDismiss = os.clock() - lastDismiss
 		-- Güncel hedef (üst şeritle aynı) ve bu hedefin kartı bekliyor mu
-		local objective = Objective.read(player, {
-			wins = winValue.Value,
-			level = levelValue.Value,
-			maxLevel = player:GetAttribute("MaxLevel"),
-			rebirths = rebirthValue.Value,
-			wallText = "",
-		})
+		local objective = readObjective()
 		local cardPending = false
 		if objective then
 			for _, step in Config.GuideTour do
