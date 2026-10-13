@@ -49,6 +49,56 @@ assert(petRewards >= 2, "Config.GiftRewards'ta pet ödülleri olmalı (dragon, p
 assert(countNamed(root, "RewardPet") == petRewards, "her pet ödül kartında petin kendi resmi olmalı: " .. countNamed(root, "RewardPet") .. "/" .. petRewards)
 print("GiftsPanel pet images ok")
 
+-- ---- Kart bilgi balonu: potionun ne işe yaradığı, petin kaç çarpan verdiği (sahibi istedi)
+local function findFirst(instance, name)
+	for _, child in rawget(instance, "_children") do
+		if rawget(child, "Name") == name then
+			return child
+		end
+		local deeper = findFirst(child, name)
+		if deeper then
+			return deeper
+		end
+	end
+	return nil
+end
+local function textsIn(instance, found)
+	local text = rawget(instance, "Text")
+	if type(text) == "string" and text ~= "" then
+		found[text] = true
+	end
+	for _, child in rawget(instance, "_children") do
+		textsIn(child, found)
+	end
+	return found
+end
+local tipFrame = findFirst(root, "RewardTip")
+assert(tipFrame and rawget(tipFrame, "Visible") == false, "bilgi balonu kurulmuş ve başta gizli olmalı")
+local Format = require("./Format")
+local Catalog = require("./Catalog")
+local sawPotion, sawPet = false, false
+for index, reward in Config.GiftRewards do
+	local title, body = GiftsPanel.rewardInfo(reward)
+	assert(title ~= "" and body ~= "", "her ödülün bilgisi olmalı: " .. index)
+	local info = findFirst(root, "Info_" .. index)
+	assert(info, "her karta bilgi düğmesi konmalı: " .. index)
+	rawget(info, "_handlers").MouseButton1Click() -- dokununca (ya da üzerine gelince) balon açılır
+	assert(rawget(tipFrame, "Visible") == true, "karta dokununca balon açılmalı: " .. index)
+	local shown = textsIn(tipFrame, {})
+	assert(shown[title] and shown[body], "balonda başlık ve açıklama yazmalı: " .. index)
+	if Catalog.PotionByKind[reward.kind] then
+		sawPotion = true
+		assert(string.find(body, Catalog.PotionByKind[reward.kind].description, 1, true) and string.find(body, "USE", 1, true), "iksirin ne işe yaradığı ve USE yazmalı: " .. reward.kind)
+	elseif reward.kind == "pet" then
+		sawPet = true
+		assert(string.find(body, Format.petBonus(Catalog.PetById[reward.pet].mult) .. " Pet Multiplier", 1, true), "petin verdiği çarpan yazmalı: " .. reward.pet)
+	end
+	rawget(tipFrame, "_handlers").MouseButton1Click() -- balona dokunmak kapatır
+	assert(rawget(tipFrame, "Visible") == false, "balona dokununca kapanmalı")
+end
+assert(sawPotion and sawPet, "Gifts'te hem iksir hem pet ödülü olmalı")
+print("GiftsPanel reward tips ok")
+
 -- ---- Robux 'Unlock Next / Unlock All' düğmeleri (sahibi 'bunları eklemeyi unutmuşuz' dedi): gerçek Developer Product satın alma penceresini açar; açılacak ödül yoksa Robux boşa gitmesin diye pencere AÇILMAZ
 local function descendants(instance, list)
 	for _, child in rawget(instance, "_children") do

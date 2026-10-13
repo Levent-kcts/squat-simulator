@@ -53,6 +53,24 @@ local function describe(reward)
 	return Color3.fromRGB(250, 160, 40), "🧪", "Potion", ""
 end
 
+-- KART BİLGİSİ (2026-10-13, sahibi 'potionların üzerine gelince veya tıklayınca ne işe yaradığı yazsın, petlere tıklayınca ne kadar çarpan verdiği yazsın' dedi): kartın üstüne gelince / dokununca çıkan balonun başlığı ve açıklaması
+function GiftsPanel.rewardInfo(reward)
+	if reward.kind == "muscle" then
+		return `+{Format.compact(reward.amount)} Leg Muscle`, `Adds {Format.number(reward.amount)} Leg Muscle right away: more muscle means more damage and higher levels!`
+	elseif reward.kind == "wins" then
+		return `+{Format.number(reward.amount)} Wins`, "Wins are your money: spend them on pets, shoes, skins and more!"
+	elseif reward.kind == "pet" then
+		local pet = Catalog.PetById[reward.pet]
+		return `{pet.name} Pet`, `{Format.petBonus(pet.mult)} Pet Multiplier when equipped. Equip up to {Config.MaxEquippedPets} pets: their bonuses add up!`
+	end
+	local potion = Catalog.PotionByKind[reward.kind]
+	if potion then
+		local minutes = potion.fixedMinutes or reward.minutes or Config.BoostMinutes
+		return `{potion.name} ({minutes} min)`, `{potion.effect}: {potion.description} It goes to Shop > Potions: press USE to drink it.`
+	end
+	return "Reward", ""
+end
+
 local function formatTime(seconds)
 	seconds = math.max(0, math.ceil(seconds))
 	return string.format("%02d:%02d", seconds // 60, seconds % 60)
@@ -127,6 +145,60 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		TextColor3 = Color3.fromRGB(255, 232, 150),
 	}, 2)
 
+	-- Bilgi balonu: kartın üstüne gelince (ya da dokununca) ne işe yaradığı yazar; balona dokunmak kapatır. İlk satırdaki kartlarda kartın altında, ikinci satırdakilerde üstünde çıkar (ızgara ölçüleri sabit: hücre 116x158, aralık 8, alan (10, 66))
+	local TIP_WIDTH, TIP_HEIGHT = 340, 104
+	local tip = create("TextButton", {
+		Name = "RewardTip",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Size = UDim2.fromOffset(TIP_WIDTH, TIP_HEIGHT),
+		Text = "",
+		AutoButtonColor = false,
+		BackgroundColor3 = Color3.fromRGB(34, 38, 60),
+		Visible = false,
+		ZIndex = 30,
+	}, panel)
+	create("UIStroke", { Thickness = 3, Color = Color3.fromRGB(255, 214, 60) }, tip)
+	UIStyle.soften(tip, { radius = 12, strength = 0.2, shine = false })
+	local tipTitle = makeText(tip, {
+		Position = UDim2.fromOffset(12, 6),
+		Size = UDim2.new(1, -24, 0, 28),
+		Text = "",
+		TextColor3 = Color3.fromRGB(255, 226, 120),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 31,
+	}, 2)
+	local tipBody = create("TextLabel", {
+		Position = UDim2.fromOffset(12, 36),
+		Size = UDim2.new(1, -24, 0, 62),
+		BackgroundTransparency = 1,
+		Font = Enum.Font.GothamMedium,
+		TextScaled = true,
+		TextWrapped = true,
+		Text = "",
+		TextColor3 = Color3.fromRGB(235, 238, 255),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		ZIndex = 31,
+	}, tip)
+	local tipIndex = nil
+	local function hideTip()
+		tipIndex = nil
+		tip.Visible = false
+	end
+	local function showTip(index)
+		local title, body = GiftsPanel.rewardInfo(Config.GiftRewards[index])
+		tipTitle.Text = title
+		tipBody.Text = body
+		local column = (index - 1) % 5
+		local row = (index - 1) // 5
+		local cellX = 10 + column * (116 + 8)
+		local cellY = 66 + row * (158 + 8)
+		tip.Position = UDim2.fromOffset(math.clamp(cellX + 58, 10 + TIP_WIDTH / 2, 630 - TIP_WIDTH / 2), if row == 0 then cellY + 112 else cellY - TIP_HEIGHT - 6)
+		tipIndex = index
+		tip.Visible = true
+	end
+	tip.MouseButton1Click:Connect(hideTip)
+
 	local cells = {} -- [index] = { statusButton, statusLabel }
 	for index, reward in Config.GiftRewards do
 		local color, icon, text, image, rewardPet = describe(reward)
@@ -161,6 +233,27 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			Text = text,
 			TextColor3 = Color3.new(1, 1, 1),
 		}, 2)
+
+		-- Karta gelince/dokununca bilgi balonu (şeffaf düğme kartın üstünü kaplar; Claim düğmesi kartın altındadır, karışmaz)
+		local info = create("TextButton", {
+			Name = "Info_" .. index,
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Text = "",
+			AutoButtonColor = false,
+			ZIndex = 10,
+		}, card)
+		info.MouseEnter:Connect(function()
+			showTip(index)
+		end)
+		info.MouseLeave:Connect(function()
+			if tipIndex == index then
+				hideTip()
+			end
+		end)
+		info.MouseButton1Click:Connect(function()
+			showTip(index)
+		end)
 
 		local status = create("TextButton", {
 			Position = UDim2.fromOffset(0, 114),
@@ -278,6 +371,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	end)
 
 	return function()
+		hideTip()
 		PanelManager.toggle(panel)
 		if PanelManager.isOpen(panel) then
 			update()
