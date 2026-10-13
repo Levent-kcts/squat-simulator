@@ -407,9 +407,25 @@ function GuideTour.init(screenGui, showToast)
 			end
 			local viewWidth, viewHeight = viewportSize(callout.overlay)
 			local pad = callout.pad
-			container.Position = UDim2.fromOffset(position.X - pad, position.Y - pad)
+			-- KONUM ÖLÇÜMLE DÜZELTİLİR: AbsolutePosition'ın hangi başlangıç noktasına göre olduğu (üst çubuk payı, IgnoreGuiInset) ScreenGui'ye göre değişiyor;
+			-- ilk denemede sağ üst dairelerin halkası ~58 px yukarı kaçıp ekran dışına taşmıştı. Bu yüzden kapsayıcının GERÇEK AbsolutePosition'ı okunur ve hedefinkine eşitlenene kadar kaydırılır
+			-- (iki tarafta da aynı özellik okunduğu için hangi modelde olursa olsun doğru çıkar). Düzelme gerçekleşene kadar (ilk ölçüm) gizli kalır, yanlış yerde göz kırpmaz.
+			local wantX, wantY = position.X - pad, position.Y - pad
+			local setX, setY = wantX, wantY
+			if callout.calibrating then
+				local actual = container.AbsolutePosition
+				if type(actual.X) == "number" and type(actual.Y) == "number" then
+					setX = callout.lastX + (wantX - actual.X)
+					setY = callout.lastY + (wantY - actual.Y)
+				end
+			end
+			callout.lastX, callout.lastY = setX, setY
+			container.Position = UDim2.fromOffset(setX, setY)
 			container.Size = UDim2.fromOffset(size.X + pad * 2, size.Y + pad * 2)
-			container.Visible = true
+			if callout.calibrating then
+				container.Visible = true
+			end
+			callout.calibrating = true
 			local cx = (position.X + size.X / 2) / viewWidth
 			local cy = (position.Y + size.Y / 2) / viewHeight
 			local dir = pickDirection(cx, cy)
@@ -509,9 +525,10 @@ function GuideTour.init(screenGui, showToast)
 		applyDirection(callout, "above", 0.5)
 		place(callout)
 		task.spawn(function()
+			task.wait(0.05) -- ilk ölçüm için bir iki kare bekle (konum düzeltmesi), sonra düzenli izle
 			while callout.alive do
-				task.wait(FOLLOW_INTERVAL)
 				place(callout)
+				task.wait(FOLLOW_INTERVAL)
 			end
 		end)
 		return callout
@@ -776,6 +793,11 @@ function GuideTour.init(screenGui, showToast)
 	GuideTour._card = card
 	GuideTour._introBar = introBar
 	GuideTour._timing = timing
+	GuideTour._place = function()
+		if activeCallout then
+			place(activeCallout)
+		end
+	end
 	GuideTour._state = function()
 		return { current = current, callout = activeCallout, intro = intro, overlays = overlays }
 	end

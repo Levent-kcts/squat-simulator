@@ -192,6 +192,14 @@ assert(claimState.current and claimState.current.claim and claimState.callout, "
 assert(calloutText() == "Quest complete! Tap to claim", "ok balonu 'görev tamamlandı' demeli: " .. tostring(calloutText()))
 assert(hasText(claimState.callout.bubble, "Next: " .. second.text), "balon sıradaki görevi söylemeli")
 assert(claimState.callout.target == button("QuestsButton"), "ok Quests düğmesini göstermeli")
+-- Konum düzeltmesi: ilk yerleştirme hedefin AbsolutePosition'ına göredir, sonrakiler kapsayıcının GERÇEK konumunu ölçüp farkı kapatır (üst çubuk payı yüzünden halka kaçmasın)
+local callout = claimState.callout
+local pad = callout.pad
+local wantX = 540 - pad -- QuestsButton'un sol kenarı (600x400'lük sahte ekranda) - pay
+assert(callout.lastX == wantX, "ilk yerleştirme hedefin konumu olmalı: " .. tostring(callout.lastX))
+GuideTour._place()
+assert(callout.lastX == wantX + (wantX - 600), "ikinci yerleştirme kapsayıcının ölçülen konumuna göre düzeltilmeli (sahte ölçüm 600): " .. tostring(callout.lastX))
+assert(rawget(callout.container, "Visible") == true, "ölçümden sonra ok görünür olmalı")
 click(button("QuestsButton")) -- oyuncu Quests'e basar
 assert(GuideTour._state().callout == nil and GuideTour._state().current == nil, "Quests'e basınca ok kalkmalı")
 GuideTour._tick()
