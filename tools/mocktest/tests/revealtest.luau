@@ -55,14 +55,14 @@ end
 
 local egg = Config.Eggs[1]
 
--- 1) TEK yumurta + yumurta verildi: önce yumurta ekranın önünde (arkasında ışık, ortasında çatlak çizgisi hazır), parıltı ve kart henüz yok; eski kahverengi çubuk çatlaklar YOK
+-- 1) TEK yumurta + yumurta verildi: önce yumurta ekranın önünde, parıltı ve kart henüz yok; çatlak çizgileri ve gri ışık dairesi YOK (sahibi 'kırılma çizgileri çok kötü, kaldır' dedi)
 local root = S.newInstance("Frame")
 Reveal.show(root, petResults(1), {}, egg)
 local reveal = find(root, "HatchReveal")
 assert(reveal, "açılış ekranı kurulmalı")
 local eggFrame = find(reveal, "HatchEgg")
-assert(eggFrame and find(eggFrame, "HatchEggWhole") and find(eggFrame, "HatchGlow"), "tek yumurtada önce bütün yumurta ve arkasında ışık görünmeli")
-assert(count(eggFrame, "HatchCrack") == 1 and count(eggFrame, "HatchCrackPiece") >= 5, "yumurtanın ortasında zikzak çatlak çizgisi olmalı")
+assert(eggFrame and find(eggFrame, "HatchEggWhole"), "tek yumurtada önce bütün yumurta görünmeli")
+assert(count(eggFrame, "HatchCrack") == 0 and count(eggFrame, "HatchCrackPiece") == 0 and not find(eggFrame, "HatchGlow"), "yumurtada çatlak çizgisi ve gri ışık dairesi olmamalı")
 assert(not find(reveal, "HatchFlash"), "yumurta kırılmadan parıltı olmamalı")
 assert(Reveal.EggIntroSeconds > Reveal.EggBreakAt and Reveal.EggBreakAt > 0.5, "kırılma anı ve toplam süre tanımlı olmalı")
 -- 2) KIRILMA anı: bütün yumurta kalkar, çatlak çizgisinden İKİ YARI ayrılır (üst + alt), ışık patlar
@@ -110,6 +110,7 @@ assert(overlayReveal and not find(hudRoot, "HatchReveal"), "açılış ana aray�
 local dim = find(overlayReveal, "HatchDim")
 assert(dim and rawget(dim, "Parent") == overlayReveal, "karartma ölçeksiz tam ekran kökte olmalı")
 local content = find(overlayReveal, "HatchContent")
+assert(rawget(content, "ZIndex") > rawget(dim, "ZIndex"), "ürünler (yumurta, pet kartları) karartmanın ÜSTÜNDE olmalı: karartılmaz, aydınlık kalır")
 assert(content and find(content, "HatchCards"), "kartlar ölçekli içerikte olmalı")
 assert(rawget(rawget(content, "_children").UIScale, "Scale") == 1.3, "içerik ana arayüzün ölçeğini kopyalamalı")
 print("reveal full screen ok")

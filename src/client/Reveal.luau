@@ -86,7 +86,8 @@ end
 
 -- Yumurta görseli (EGG_SIZE kare): Blender modeli varsa ViewportFrame, yoksa çizilmiş yumurta. Konumu çağıran verir.
 local function makeEggVisual(parent, egg)
-	local viewport = UIStyle.eggModelIcon(parent, egg, { Size = UDim2.fromOffset(EGG_SIZE, EGG_SIZE) })
+	-- Ürün AYDINLIK görünsün (sahibi 'yumurta da aydınlık olmalı, ekranı karart sadece ürünleri aydınlık bırak' dedi): ortam ışığı yüksek, ışık beyaz
+	local viewport = UIStyle.eggModelIcon(parent, egg, { Size = UDim2.fromOffset(EGG_SIZE, EGG_SIZE), Ambient = Color3.fromRGB(235, 235, 240), LightColor = Color3.new(1, 1, 1) })
 	if viewport then
 		return viewport
 	end
@@ -119,39 +120,7 @@ local function makeHalf(holder, egg, top)
 	return clip
 end
 
--- Orta çizgideki parlak çatlak: kısa eğik parçalardan oluşan zikzak, iç ışığı beyaz-sarı, koyu ince kenarlı (kırılma çizgisiyle AYNI yerde)
-local function buildCrack(holder)
-	local crack = Instance.new("Frame")
-	crack.Name = "HatchCrack"
-	crack.AnchorPoint = Vector2.new(0.5, 0.5)
-	crack.Position = UDim2.fromScale(0.5, 0.5)
-	crack.Size = UDim2.fromOffset(EGG_SIZE - 40, 40)
-	crack.BackgroundTransparency = 1
-	crack.Visible = false
-	crack.ZIndex = 8
-	crack.Parent = holder
-	local segments = 7
-	local step = (EGG_SIZE - 60) / segments
-	for index = 1, segments do
-		local piece = Instance.new("Frame")
-		piece.Name = "HatchCrackPiece"
-		piece.AnchorPoint = Vector2.new(0.5, 0.5)
-		piece.Position = UDim2.fromOffset(30 + (index - 0.5) * step, 20 + (if index % 2 == 0 then 7 else -7))
-		piece.Size = UDim2.fromOffset(step * 0.95, 6)
-		piece.Rotation = if index % 2 == 0 then -32 else 32
-		piece.BackgroundColor3 = Color3.fromRGB(255, 252, 215)
-		piece.BorderSizePixel = 0
-		piece.ZIndex = 9
-		local stroke = Instance.new("UIStroke")
-		stroke.Thickness = 2
-		stroke.Color = Color3.fromRGB(120, 70, 30)
-		stroke.Parent = piece
-		piece.Parent = crack
-	end
-	return crack
-end
-
--- Yumurtayı ekranın önüne koyar, sallar, çatlatır ve ikiye ayırır. Dönüş: bittiği zamana kadar süre (sn); sonunda yumurta kendiliğinden kalkar
+-- Yumurtayı ekranın önüne koyar, sallar ve ikiye ayırır. Dönüş: bittiği zamana kadar süre (sn); sonunda yumurta kendiliğinden kalkar
 local function playEggIntro(root, egg, fullScreen)
 	local holder = Instance.new("Frame")
 	holder.Name = "HatchEgg"
@@ -161,15 +130,6 @@ local function playEggIntro(root, egg, fullScreen)
 	holder.BackgroundTransparency = 1
 	holder.ZIndex = 5
 	holder.Parent = root
-
-	-- Arkada büyüyen ışık: kırılma yaklaştıkça yumurtanın içinden ışık sızıyor gibi
-	local glow = round(holder, EGG_SIZE / 2, EGG_SIZE / 2, EGG_SIZE * 1.1, EGG_SIZE * 1.1, egg.accent:Lerp(Color3.new(1, 1, 1), 0.6))
-	glow.Name = "HatchGlow"
-	glow.BackgroundTransparency = 0.92
-	glow.ZIndex = 4
-	local glowScale = Instance.new("UIScale")
-	glowScale.Scale = 0.6
-	glowScale.Parent = glow
 
 	-- Bütün yumurta (kırılana kadar)
 	local whole = Instance.new("Frame")
@@ -183,9 +143,8 @@ local function playEggIntro(root, egg, fullScreen)
 	local visual = makeEggVisual(whole, egg)
 	visual.AnchorPoint = Vector2.new(0.5, 0.5)
 	visual.Position = UDim2.fromScale(0.5, 0.5)
-	local crack = buildCrack(whole)
 
-	-- Küçükten belirir, sallanırken büyür
+	-- Küçükten belirir, sallanırken büyür; model yumurtası sallanırken giderek PARLAR (ışığı artar, beyaza yaklaşır: kırılmadan önce içeriden ışık sızıyor gibi)
 	local scale = Instance.new("UIScale")
 	scale.Scale = 0
 	scale.Parent = holder
@@ -193,15 +152,9 @@ local function playEggIntro(root, egg, fullScreen)
 	task.delay(EGG_POP, function()
 		if holder.Parent then
 			TweenService:Create(scale, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.25 }):Play()
-			TweenService:Create(glow, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { BackgroundTransparency = 0.45 }):Play()
-			TweenService:Create(glowScale, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.5 }):Play()
-		end
-	end)
-	-- Çatlak çizgisi: sallanmanın ~%60'ında belirir
-	task.delay(EGG_POP + EGG_WOBBLE * 0.6, function()
-		if holder.Parent then
-			crack.Visible = true
-			sfx("EggKnock")
+			if visual:IsA("ViewportFrame") then
+				TweenService:Create(visual, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Ambient = Color3.new(1, 1, 1) }):Play()
+			end
 		end
 	end)
 	-- Sallanma: her yön değişiminde tok bir 'tık'
@@ -219,7 +172,7 @@ local function playEggIntro(root, egg, fullScreen)
 		end
 	end)
 
-	-- KIRILMA: bütün yumurta kalkar, iki yarı çatlak çizgisinden ayrılıp savrulur, beyaz ışık patlar
+	-- KIRILMA: bütün yumurta kalkar, iki yarı ortadan ayrılıp savrulur, beyaz ışık patlar
 	task.delay(EGG_BREAK_AT, function()
 		if not holder.Parent then
 			return
@@ -231,9 +184,6 @@ local function playEggIntro(root, egg, fullScreen)
 		local flyInfo = TweenInfo.new(EGG_BREAK, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 		TweenService:Create(top, flyInfo, { Position = UDim2.new(0.5, -70, 0.5, -90) }):Play()
 		TweenService:Create(bottom, flyInfo, { Position = UDim2.new(0.5, 70, 0.5, 90) }):Play()
-		-- Kırılma ışığı: ışık halkası büyüyüp sönerken kısa bir beyaz patlama
-		TweenService:Create(glowScale, flyInfo, { Scale = 2.4 }):Play()
-		TweenService:Create(glow, flyInfo, { BackgroundTransparency = 1 }):Play()
 		local burst = Instance.new("Frame")
 		burst.Name = "HatchBurst"
 		burst.Size = UDim2.fromScale(1, 1)
@@ -415,6 +365,7 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 		content = Instance.new("Frame")
 		content.Name = "HatchContent"
 		content.BackgroundTransparency = 1
+		content.ZIndex = 3 -- karartmanın (ZIndex 1) ÜSTÜNDE: yumurta ve pet kartları karartılmaz, aydınlık kalır (içerik karartmadan önce kurulunca eşit ZIndex'te karartma üstte kalıp ürünleri karartıyordu)
 		content.Size = UDim2.fromScale(1 / uiScale, 1 / uiScale)
 		content.Parent = root
 		local contentScale = Instance.new("UIScale")
@@ -438,8 +389,9 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 	dim.BackgroundColor3 = Color3.new(0, 0, 0)
 	dim.BackgroundTransparency = 1
 	dim.BorderSizePixel = 0
+	dim.ZIndex = 1
 	dim.Parent = root
-	TweenService:Create(dim, TweenInfo.new(0.2), { BackgroundTransparency = 0.55 }):Play()
+	TweenService:Create(dim, TweenInfo.new(0.2), { BackgroundTransparency = 0.3 }):Play() -- tüm ekran belirgin karanlık, sadece ürünler aydınlık
 
 	-- Açılış parıltısı: ilk kartla birlikte beyaz bir çakma (nadir peti varsa nadirlik renginde)
 	local function spawnFlash()
