@@ -67,6 +67,20 @@ local pets1 = petCount(kid)
 PlayerStats.dev(kid, "MaxLevel")
 assert(stat(kid, Config.StatWins) == wins3 and petCount(kid) == pets1, "alınmış ödül ikinci kez verilmemeli")
 
+-- ---- 3b) REBIRTH SADECE level ve bacak kasını sıfırlar (2026-10-13, sahibi istedi): Win, ayakkabı, skin, pet KALIR
+PlayerStats.dev(kid, "AddWins", 1000)
+assert(select(1, PlayerStats.buyItem(kid, Config.Items[1].id)) == true, "ayakkabı alınmalı")
+assert(select(1, PlayerStats.buySkin(kid, Config.Skins[1].id)) == true, "skin alınmalı")
+local winsBeforeRebirth = stat(kid, Config.StatWins)
+local petsBeforeRebirth = petCount(kid)
+local okRebirth = PlayerStats.rebirth(kid)
+assert(okRebirth == true, "rebirth yapılabilmeli (level sınırında)")
+assert(stat(kid, Config.StatLevel) == 1 and stat(kid, Config.StatLegMuscle) == 0 and stat(kid, Config.StatRebirths) == 1, "level 1, kas 0, rebirth 1 olmalı")
+assert(stat(kid, Config.StatWins) == winsBeforeRebirth, "Win'ler KALMALI: " .. stat(kid, Config.StatWins) .. " / " .. winsBeforeRebirth)
+assert(kid:GetAttribute("OwnedItems") == Config.Items[1].id and kid:GetAttribute("OwnedSkins") == Config.Skins[1].id, "ayakkabı ve skin KALMALI: " .. tostring(kid:GetAttribute("OwnedItems")) .. " / " .. tostring(kid:GetAttribute("OwnedSkins")))
+assert(petCount(kid) == petsBeforeRebirth, "petler KALMALI")
+assert(kid:GetAttribute("EquippedItem") == Config.Items[1].id or kid:GetAttribute("EquippedItem") ~= "", "takılı ayakkabı kalmalı")
+
 -- ---- 4) Kayıt: bayraklar kalıcı, deneme süresi çevrimdışıyken AKMAZ
 now += 300 -- 5 dakika oynadı
 assert(PlayerStats.saveNow(kid) == true, "kayıt başarılı olmalı")
@@ -79,10 +93,10 @@ local funnelSet = {}
 for _, step in record.Funnel do
 	funnelSet[step] = true
 end
-for _, name in { "Joined", "Clicked30", "FirstPet", "Level12" } do
+for _, name in { "Joined", "Clicked30", "FirstPet", "Level12", "FirstSkin", "FirstRebirth" } do
 	assert(funnelSet[table.find(Config.Funnel, name)], "huni adımı kayıtlı olmalı: " .. name)
 end
-assert(not funnelSet[table.find(Config.Funnel, "FirstRebirth")], "rebirth yapılmadan o adım gönderilmemeli")
+assert(not funnelSet[table.find(Config.Funnel, "FirstWall")], "duvar kırılmadan o adım gönderilmemeli")
 now += 100000 -- uzun süre çevrimdışı kaldı
 local kidAgain = join(9301, "NewKidAgain")
 assert(kidAgain:GetAttribute("AutoClickTrialUntil") == now + Config.AutoClick.TrialSeconds - 300, "dönünce kalan süre devam etmeli (çevrimdışıyken akmaz): " .. tostring(kidAgain:GetAttribute("AutoClickTrialUntil")))

@@ -124,8 +124,8 @@ function RebirthPanel.init(screenGui, showToast)
 	makeText(panel, {
 		Position = UDim2.new(0.03, 0, 0, 228),
 		Size = UDim2.new(0.94, 0, 0, 28),
-		Text = "[WARNING] Rebirth resets your leg muscle, wins & levels!",
-		TextColor3 = Color3.fromRGB(255, 70, 70),
+		Text = "Resets your level & leg muscle. You KEEP Wins, shoes, skins & pets!",
+		TextColor3 = Color3.fromRGB(255, 214, 90),
 	}, 2)
 
 	-- Level çubuğu

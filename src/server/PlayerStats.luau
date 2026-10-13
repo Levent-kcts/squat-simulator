@@ -1132,11 +1132,7 @@ function PlayerStats.rebirth(player, force)
 	levelStat.Value = 1
 	profile.taps = 0
 	muscle.Value = 0
-	wins.Value = 0 -- rebirth tüm Win'leri de sıfırlar
-	profile.items = {} -- ve ayakkabıları, skinleri de (petler, iz ve aura korunur)
-	profile.equippedShoe = ""
-	profile.skins = {}
-	profile.equippedSkin = ""
+	-- 2026-10-13 (sahibi 'rebirthde sadece level ve kas gücü sıfırlansın' dedi): Win, ayakkabı, skin, pet, iz ve aura KALIR. (Eskiden Win, ayakkabı ve skinler de sıfırlanırdı: ilk rebirth ceza gibi hissettiriyordu.)
 	PlayerStats.questEvent(player, "rebirth", 1)
 	refresh(player)
 	requestSave(player)

@@ -285,11 +285,13 @@ class Player:
         self._pet_cache_len = -1
 
     def rebirth(self):
+        """2026-10-13: rebirth SADECE level ve bacak kasını sıfırlar; Win, ayakkabı ve skin KALIR (sahibi istedi). Eski davranış: rebirth=old"""
         self.rebirths += 1
         self.muscle = 0.0
-        self.wins = 0.0
-        self.shoe = 1.0
-        self.skin = 0.0
+        if OVERRIDES.get("rebirth") == "old":
+            self.wins = 0.0
+            self.shoe = 1.0
+            self.skin = 0.0
         self.level = 1
         self.progress = 0.0
 

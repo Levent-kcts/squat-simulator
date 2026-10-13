@@ -545,8 +545,8 @@ return {
 	-- Skinler (Lobi sol duvar, ayakkabı rafının yanındaki raf): Win ile alınır, karakter o renge boyanır.
 	-- bonus = tıklama başı bacak kası kazancına eklenen SABİT sayı ('+100 Power'; çarpan DEĞİL, sahibi çarpan gibi yazılmasını istemedi). Takılı olan geçerlidir, toplanmaz.
 	-- Pet/level/rebirth/aura çarpanlarından SONRA eklenir, süreli 2x güçlendirmeyle, arkadaş ve Index yüzdeleriyle çarpılır (PlayerStats.refresh). Sabit sayı olduğu için
-	-- oyun ilerledikçe (çarpanlar büyüdükçe) etkisi azalır; rebirth skinleri zaten sıfırlar, her turda yeniden alınır. Değerler fiyatın ~0.7. kuvvetine göre seçildi.
-	-- Rebirth ayakkabılar gibi skinleri de sıfırlar. Sadece fantezi renkler var (gerçek ten tonları fiyat/güç sıralamasına girmesin diye).
+	-- oyun ilerledikçe (çarpanlar büyüdükçe) etkisi azalır; rebirth skinleri SIFIRLAMAZ (2026-10-13), skin bir kez alınır. Değerler fiyatın ~0.7. kuvvetine göre seçildi.
+	-- Rebirth skinleri ve ayakkabıları SIFIRLAMAZ. Sadece fantezi renkler var (gerçek ten tonları fiyat/güç sıralamasına girmesin diye).
 	Skins = {
 		{ id = "mint", name = "Mint", price = 3, bonus = 1, color = Color3.fromRGB(150, 235, 190) },
 		{ id = "lemon", name = "Lemon", price = 15, bonus = 3, color = Color3.fromRGB(255, 240, 110) },

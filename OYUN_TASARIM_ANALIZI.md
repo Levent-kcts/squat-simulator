@@ -35,7 +35,7 @@ Karar yokluğu şu anlama gelir: oyuncu zihinsel olarak "oynamıyor", sadece zam
 | **Endowed progress (başlangıç avantajı)**: yarı dolu ilerleme, sıfırdan başlamaktan çok daha motive eder | Eskiden 0 Win, 0 pet ile başlıyordu | YAPILDI: 8 Win + ilk pet + ilk skin hemen |
 | **Goal-gradient (hedefe yaklaştıkça hızlanma)** | Level çubuğu var ama hedef (rebirth) görünür değildi | YAPILDI: üst şerit "Goal: reach level 25 to REBIRTH! (N/25)" |
 | **Variable ratio ödül** (slot makinesi etkisi, yumurta açma) | Pet şansları 50/30/13/5/2: iyi ama açılış sönüktü | YAPILDI: açılışta parıltı, dönen kartlar, nadirlik başlığı. Sıradaki: nadir pet = daha havalı model (Blender) |
-| **Kayıptan kaçınma (loss aversion)** | Rebirth ayakkabı, skin, Win'leri sıfırlıyor ve kırmızı uyarı yazıyor: ilk rebirth'te oyuncu "cezalandırılıyor" | RİSK, bkz. 4.2 |
+| **Kayıptan kaçınma (loss aversion)** | Rebirth ayakkabı, skin, Win'leri sıfırlıyordu ve kırmızı uyarı yazıyordu: ilk rebirth ceza gibiydi | ÇÖZÜLDÜ (2026-10-13): rebirth sadece level ve kası sıfırlar, ekran 'ne kalır' diye anlatır; bkz. 4.2 |
 | **Zeigarnik etkisi (yarım kalan iş akılda kalır)** | Görevler, hediye sayacı, Pet Index 3/30 var | İyi. Index tamamlama ödülü ekle (karar bekliyor) |
 | **Randevu mekaniği (appointment)** | Free Reward sayacı (40 dk tur), günlük çark | İyi; süreler uzun, kısaltma önerisi (karar bekliyor) |
 | **Sosyal kanıt / statü** | Sıralama panosu sadece ilk 10; gerçek oyuncu çoğu orada yok | Arkadaş sıralaması ve "senin sıran" göster |
@@ -51,7 +51,9 @@ Level maliyeti kuvvet yasasıyla (^4,9) büyüyor: level 20 → 477, level 24 �
 - Sıradaki: **aralık ödülleri**: her 100/250/500 duvar hasarı gibi. Ya da "Golden Brick": duvarın üstünde ara sıra beliren altın tuğla, tıklayana bonus (aktif oyunu ödüllendirir).
 - Maliyet eğrisini yumuşatmak (CostPower 4,9 → ~4,3): ilk 20 level çok hızlı, sonrası daha az sert. Önce `tools/simulate.py` ile tempo ölç; rebirth süreleri kayacağı için denge dosyalarını (CLAUDE.md "DENGE HEDEFİ") birlikte güncelle.
 
-### 4.2 Rebirth: ilk rebirth ödül değil ceza gibi hissettirebilir
+### 4.2 Rebirth: ilk rebirth ödül değil ceza gibi hissettirebilirdi (ÇÖZÜLDÜ: 2026-10-13)
+**Sahibinin kararı:** rebirth artık SADECE level ve bacak kasını sıfırlar; Win, ayakkabı, skin, pet, iz ve aura kalır. Tempo `tools/simulate.py` ile ölçüldü: oyunun sonu ve rebirth süreleri %1-2 değişti (denge bozulmadı). Rebirth ekranındaki kırmızı uyarı 'You KEEP Wins, shoes, skins & pets!' diye değişti. Aşağıdaki eski çözüm önerileri artık gereksiz; tarihî not olarak duruyor.
+
 Rebirth bacak kası, Win, ayakkabı VE skinleri sıfırlıyor. İlk rebirth ~5-10. dakikada: oyuncu yeni aldığı skin ve ayakkabıyı kaybediyor. Kayıptan kaçınma yüzünden "rebirth yapmam, kaybederim" diyip duran oyuncu olur.
 - Rebirth ekranı "ne kaybedersin" yerine **"ne kazanırsın ve ne kalır"** diye çerçevelensin: kalıcı çarpan, yeni ped, daha yüksek level sınırı; petler, iz, aura korunur.
 - İlk rebirth için **başlangıç paketi**: Win ve ayakkabılar sıfırlansa da ilk 5 dakikada hızla geri alınabilir (ucuz ilk ayakkabılar zaten var); ilk rebirth'te kısa bir "2x Win" iksiri hediye.
@@ -112,7 +114,7 @@ Ayrıca **D1 retention** (ertesi gün dönüş) ve **ortalama oturum süresi**. 
 |---|---|---|---|
 | 1 | Bu turdaki retention değişikliklerini yayınla, funnel'ı izle | Çok yüksek | Bitti |
 | 2 | Promosyon kodları + rozetler | Yüksek (büyüme) | Orta |
-| 3 | Rebirth ekranını "kazanç/korunan" diye yeniden çerçevele, ilk rebirth hediyesi | Yüksek | Küçük |
+| 3 | ~~Rebirth ekranını yeniden çerçevele~~ YAPILDI (sadece level ve kas sıfırlanır) | Yüksek | Bitti |
 | 4 | Free Reward sürelerini ~%30 kısalt | Orta | Çok küçük |
 | 5 | Golden Brick (aktif oyun ödülü) + kritik vuruş | Orta-yüksek | Orta |
 | 6 | Index tamamlama ödülü, davet ödülü | Orta | Küçük |
