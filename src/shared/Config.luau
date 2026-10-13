@@ -343,21 +343,37 @@ return {
 		{ id = "wheel", text = "Spin the Daily Wheel", hint = "Next to the eggs: walk up to the wheel and press E.", metric = "wheel", goal = 1, rewards = { { kind = "wins", amount = 20 } } },
 		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, then press Rebirth on the left. You keep Wins, shoes, skins and pets!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 } } },
 	},
-	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen'), tek kartta.
-	-- when: start / clicks (eğitim tıklamaları bitti) / winsFirst (ilk Win) / pet / skin / level:N / nearMax (level sınırına 2 kala). target: arayüz öğesinin adı (vurgulanır, yoksa sadece kart). Yeni adım SONA eklenir.
+	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen').
+	-- when: start / clicks (eğitim tıklamaları bitti) / winsFirst (ilk Win) / pet / skin / level:N / nearMax (level sınırına 2 kala); 'start' ve 'clicks' dışındakiler eğitim tıklamaları (ClickGoal) bitmeden çıkmaz (eğitim görevi bitmeden ikinci bir görev kartı açılmasın).
+	-- target: arayüz öğesinin adı (büyük ok + konuşma balonu ile işaretlenir; balon yazısı pointer, yoksa 'Tap here!'), yoksa sadece kart. button: kartın yeşil düğmesinin yazısı. intro = true: kart değil, GuideIntro'daki HIZLI OK TURU. Yeni adım SONA eklenir (id'ler sunucuda doğrulanır).
 	GuideTour = {
-		{ id = "welcome", when = "start", title = "Welcome, Squat Hero!", text = "Click or tap anywhere to squat and grow stronger. Every squat gives you Leg Muscle!" },
+		{ id = "welcome", when = "start", button = "Show me!", title = "Welcome, Squat Hero!", text = "Tap anywhere to squat and grow stronger! Want a quick tour of the buttons?" },
+		{ id = "intro", when = "start", intro = true, gap = 0.2, title = "Quick tour", text = "A fast tour of every button with arrows." },
 		{ id = "wall", when = "clicks", title = "Smash the walls!", text = "Walk into the corridor ahead and tap near the walls. Your damage is your total Leg Muscle. Broken walls give you Wins!" },
-		{ id = "wins", when = "winsFirst", target = "WinsChip", title = "Wins = money", text = "Wins buy pets, shoes, skins and more. You got a free gift of Wins to start!" },
-		{ id = "pets", when = "pet", target = "PetsButton", title = "Your first pet!", text = "Open Pets to equip pets, merge 3 matching pets into a stronger one, and manage your team." },
-		{ id = "quests", when = "skin", target = "QuestsButton", title = "Quests", text = "Tap the scroll at the top right: NEW PLAYER quests teach you the game for free rewards, DAILY quests refresh every day." },
-		{ id = "gifts", when = "level:6", target = "GiftsButton", title = "Free gifts", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
-		{ id = "auto", when = "level:9", target = "AutoClickButton", title = "Auto Click", text = "Auto Click squats for you! You have a free trial, then you can keep it forever in the Shop." },
-		{ id = "index", when = "level:11", target = "IndexButton", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
-		{ id = "backpack", when = "level:13", target = "BackpackButton", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
-		{ id = "shop", when = "level:15", target = "ShopButton", title = "Shop and Settings", text = "The Shop sells potions and Win packs. Settings has the Guide switch if you want to turn tips off." },
+		{ id = "wins", when = "winsFirst", target = "WinsChip", pointer = "Your Wins!", title = "Wins = money", text = "Wins buy pets, shoes, skins and more. You got a free gift of Wins to start!" },
+		{ id = "pets", when = "pet", target = "PetsButton", pointer = "Open Pets", title = "Your first pet!", text = "Open Pets to equip pets, merge 3 matching pets into a stronger one, and manage your team." },
+		{ id = "gifts", when = "level:6", target = "GiftsButton", pointer = "Free gifts!", title = "Free gifts", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
+		{ id = "auto", when = "level:9", target = "AutoClickButton", pointer = "Auto Click", title = "Auto Click", text = "Auto Click squats for you! You have a free trial, then you can keep it forever in the Shop." },
+		{ id = "index", when = "level:11", target = "IndexButton", pointer = "Pet Index", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
+		{ id = "backpack", when = "level:13", target = "BackpackButton", pointer = "Backpack", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
+		{ id = "shop", when = "level:15", target = "ShopButton", pointer = "Shop", title = "Shop and Settings", text = "The Shop sells potions and Win packs. Settings has the Guide switch if you want to turn tips off." },
 		{ id = "training", when = "level:17", title = "Training Area", text = "On the right wall, stand on a Coach pad to squat automatically with a big multiplier. Better pads unlock with Rebirths." },
-		{ id = "rebirth", when = "nearMax", target = "RebirthButton", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier!" },
+		{ id = "rebirth", when = "nearMax", target = "RebirthButton", pointer = "Rebirth now!", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier!" },
+	},
+	-- HIZLI OK TURU (2026-10-13, sahibi 'çok sade kalıyor, hızlı bir tanıtım yapıp oklarla göstersin' dedi): GuideTour'daki 'intro' adımı bu listeyi sırayla gezer; her durakta hedef düğmeye büyük zıplayan ok + kısa balon, GuideIntroSeconds sn'de bir kendiliğinden ilerler ('Next' hızlandırır, 'Skip' bitirir).
+	-- Son durak Quests'tir: görevlerle bağ kurar (görev bitince Quests düğmesine 'claim' oku çıkar). Hedef adı arayüzde yoksa o durak atlanır.
+	GuideIntroSeconds = 2.6,
+	GuideIntro = {
+		{ target = "WinsChip", text = "WINS = money. Smash walls to earn them!" },
+		{ target = "ShopButton", text = "SHOP: potions and Win packs" },
+		{ target = "RebirthButton", text = "REBIRTH: reset, keep your stuff, get stronger!" },
+		{ target = "SettingsButton", text = "SETTINGS: sounds and the Guide on/off switch" },
+		{ target = "BackpackButton", text = "BACKPACK: trails and auras" },
+		{ target = "PetsButton", text = "PETS: hatch eggs and build your team" },
+		{ target = "GiftsButton", text = "GIFTS: free rewards while you play" },
+		{ target = "AutoClickButton", text = "AUTO CLICK squats for you (free trial!)" },
+		{ target = "IndexButton", text = "PET INDEX: find every pet for bonuses" },
+		{ target = "QuestsButton", text = "QUESTS: finish NEW PLAYER quests for free rewards!" },
 	},
 	-- LEVEL KİLOMETRE TAŞI ÖDÜLLERİ (2026-10-13, retention: 1K güçten sonra level başına 500-1200 kas gerekir, ödül yoktu): bir hesapta bir kez, level'a ilk ulaşınca otomatik verilir (bildirim 'RewardToast').
 	-- kind: wins (amount Win), boostMuscle / boostWins / boostLuck / boostRainbow (iksir HEMEN başlar, minutes dk), pet (egg: o yumurtanın havuzundan ücretsiz rastgele pet; envanter doluysa atlanır). Eski oyuncuya geriye dönük verilmez.
