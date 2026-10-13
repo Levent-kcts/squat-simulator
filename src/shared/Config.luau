@@ -351,7 +351,7 @@ return {
 	-- Bilgi (tip = true) kartları ancak güncel hedefin kartı beklemiyorsa ve 30 tıklama bittiyse çıkar. target: arayüz öğesinin adı (büyük ok + konuşma balonu; balon yazısı pointer, yoksa 'Tap here!'), yoksa sadece kart.
 	-- tag: kartın başlık etiketi (yoksa GUIDE). button: yeşil düğmenin yazısı. intro = true: kart değil, GuideIntro'daki HIZLI OK TURU. Liste sırası öncelik sırasıdır (aynı anda birden çok adım uygunsa ilki gösterilir); id'ler sunucuda doğrulanır, yeni id eklemek yeterli.
 	GuideTour = {
-		{ id = "welcome", when = "start", button = "Show me!", title = "Welcome, Squat Hero!", text = "Tap anywhere to squat and grow stronger! Want a quick tour of the buttons?" },
+		{ id = "welcome", when = "start", button = "Show me!", title = "Welcome to +1 Squat Evolution!", text = "Tap anywhere to squat and grow stronger! Want a quick tour of the buttons?" },
 		{ id = "intro", when = "start", intro = true, gap = 0.2, title = "Quick tour", text = "A fast tour of every button with arrows." },
 		{ id = "q_claim", when = "quest:claim", tag = "NEW QUEST", target = "QuestsButton", pointer = "Claim here!", title = "Quest complete!", text = "Quests give free rewards! Tap the 📜 Quests button, open the NEW PLAYER tab and press CLAIM to collect it." },
 		{ id = "q_pet", when = "quest:pet", tag = "NEW QUEST", title = "Hatch your first pet!", text = "Your quest reward pays for it! Step on the Starter Egg pad at the back wall and press E. Then open Pets on the left to equip it." },
