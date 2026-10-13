@@ -45,30 +45,22 @@ local okClaimSquat = PlayerStats.claimStarter(kid, "squat")
 assert(okClaimSquat == true and stat(kid, Config.StatWins) == winsBefore + squatQuest.rewards[1].amount, "ödül Quests'ten CLAIM ile alınmalı: " .. stat(kid, Config.StatWins))
 assert(select(1, PlayerStats.claimStarter(kid, "squat")) == false, "ödül ikinci kez alınamaz")
 
--- ---- 3) Level kilometre taşı ödülleri (hepsi bir kez): Config.LevelRewards sırasıyla, her eşiğe DEV ile çıkılır
-for _, reward in Config.LevelRewards do
-	local winsNow = stat(kid, Config.StatWins)
-	local petsNow = petCount(kid)
-	PlayerStats.dev(kid, "AddLevel", reward.level - stat(kid, Config.StatLevel))
-	assert(stat(kid, Config.StatLevel) >= reward.level, "level " .. reward.level .. "'e çıkılmalı (sınır " .. Config.Level.BaseMaxLevel .. "): " .. stat(kid, Config.StatLevel))
-	assert(reward.kind ~= "wins", `level {reward.level} ödülü Win vermemeli (Win sadece Quests'ten: sahibi 'level atlayarak Win almayı kapat' dedi)`)
-	assert(stat(kid, Config.StatWins) == winsNow, `level {reward.level}: Win değişmemeli: ` .. stat(kid, Config.StatWins))
-	if reward.kind == "boostMuscle" then
-		assert(kid:GetAttribute("MuscleBoostUntil") and kid:GetAttribute("MuscleBoostUntil") > 0, `level {reward.level}: Muscle Potion başlamalı`)
-	elseif reward.kind == "boostLuck" then
-		assert(kid:GetAttribute("LuckBoostUntil") and kid:GetAttribute("LuckBoostUntil") > 0, `level {reward.level}: Luck Potion başlamalı`)
-	elseif reward.kind == "boostRainbow" then
-		assert(kid:GetAttribute("RainbowBoostUntil") and kid:GetAttribute("RainbowBoostUntil") > 0, `level {reward.level}: Rainbow Potion başlamalı`)
-	elseif reward.kind == "pet" then
-		assert(petCount(kid) == petsNow + 1, `level {reward.level}: ücretsiz pet verilmeli`)
-	end
-	assert(string.find(tostring(kid:GetAttribute("RewardToast")), `Level {reward.level} reward`, 1, true), `level {reward.level} ödül bildirimi: ` .. tostring(kid:GetAttribute("RewardToast")))
-end
--- Aynı ödüller tekrar verilmez (rebirth sonrası da)
-local wins3 = stat(kid, Config.StatWins)
-local pets1 = petCount(kid)
+-- ---- 3) LEVEL KİLOMETRE TAŞI ÖDÜLÜ YOK (sahibi 'hiçbir şey vermesin, zaten quest yardımcı oluyor, komple kaldır' dedi): level atlamak Win, iksir ya da pet VERMEZ, bildirim çıkmaz
+assert(Config.LevelRewards == nil, "Config.LevelRewards kaldırılmış olmalı")
+local winsLevel = stat(kid, Config.StatWins)
+local petsLevel = petCount(kid)
+local toastLevel = tostring(kid:GetAttribute("RewardToast"))
 PlayerStats.dev(kid, "MaxLevel")
-assert(stat(kid, Config.StatWins) == wins3 and petCount(kid) == pets1, "alınmış ödül ikinci kez verilmemeli")
+assert(stat(kid, Config.StatLevel) >= Config.Level.BaseMaxLevel, "level sınıra çıkmalı (sınır " .. Config.Level.BaseMaxLevel .. "): " .. stat(kid, Config.StatLevel))
+assert(stat(kid, Config.StatWins) == winsLevel and petCount(kid) == petsLevel, "level atlamak Win ya da pet vermemeli")
+for _, attribute in { "MuscleBoostUntil", "LuckBoostUntil", "RainbowBoostUntil", "WinBoostUntil" } do
+	assert((kid:GetAttribute(attribute) or 0) <= os.time(), "level atlamak iksir başlatmamalı: " .. attribute)
+end
+assert(tostring(kid:GetAttribute("RewardToast")) == toastLevel and not string.find(tostring(kid:GetAttribute("RewardToast")), "Level", 1, true), "level atlayınca ödül bildirimi çıkmamalı")
+
+-- (İlk pet artık level ödülünden gelmez: yumurtadan açılır; huni 'FirstPet' adımı ve sonraki bölümler için)
+PlayerStats.dev(kid, "AddWins", 50)
+assert(PlayerStats.hatchEgg(kid, Config.Eggs[1].id, 1) == true, "ilk yumurta açılmalı")
 
 -- ---- 3b) REBIRTH SADECE level ve bacak kasını sıfırlar (2026-10-13, sahibi istedi): Win, ayakkabı, skin, pet KALIR
 PlayerStats.dev(kid, "AddWins", 1000)
@@ -106,7 +98,6 @@ assert(PlayerStats.saveNow(kid) == true, "kayıt başarılı olmalı")
 local record = S.datastore["Player_9301"]
 assert(record, "kayıt yazılmış olmalı")
 assert(record.AutoTrial == 0, "deneme süresi kayıtlı olmamalı: " .. tostring(record.AutoTrial))
-assert(#record.LevelRewards == #Config.LevelRewards, "alınan level ödülleri kayıtlı olmalı: " .. #record.LevelRewards)
 assert(#record.IndexRewards == #Config.Index.Rewards, "alınan Index ödülleri kayıtlı olmalı: " .. #record.IndexRewards)
 -- İlk oyun hunisi: yaşanan adımlar kayıtlı (bir kez gönderilir)
 local funnelSet = {}

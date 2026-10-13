@@ -396,17 +396,8 @@ return {
 		{ target = "IndexButton", text = "PET INDEX: find every pet for bonuses" },
 		{ target = "QuestsButton", text = "QUESTS: finish NEW PLAYER quests for free rewards!" },
 	},
-	-- LEVEL KİLOMETRE TAŞI ÖDÜLLERİ (2026-10-13, retention: 1K güçten sonra level başına 500-1200 kas gerekir, ödül yoktu): bir hesapta bir kez, level'a ilk ulaşınca otomatik verilir (bildirim 'RewardToast').
-	-- kind: wins (amount Win), boostMuscle / boostWins / boostLuck / boostRainbow (iksir HEMEN başlar, minutes dk), pet (egg: o yumurtanın havuzundan ücretsiz rastgele pet; envanter doluysa atlanır). Eski oyuncuya geriye dönük verilmez.
-	LevelRewards = {
-		-- (2026-10-13: ilk level sınırı 22 oldu; hepsi ilk rebirth'ten ÖNCE alınabilir)
-		-- WIN VERİLMEZ (sahibi 'hala sadece tıklayarak [level atlayarak] Win alabiliyoruz, onu kapat, yumurta ve diğer eşyalar için Win sadece Quests'ten gelsin' dedi: eskiden level 6/14/22'de +8/+20/+30 Win vardı); yerine iksir/pet.
-		{ level = 6, kind = "boostLuck", minutes = 15 },
-		{ level = 10, kind = "boostMuscle", minutes = 15 },
-		{ level = 14, kind = "boostLuck", minutes = 15 },
-		{ level = 18, kind = "pet", egg = "starter" },
-		{ level = 22, kind = "boostRainbow", minutes = 15 },
-	},
+	-- (LEVEL KİLOMETRE TAŞI ÖDÜLLERİ mekaniği 2026-10-13'te TAMAMEN KALDIRILDI: sahibi 'hiçbir şey vermesin, zaten quest yardımcı oluyor, komple kaldır' dedi; level atlamak artık ödül vermez, geri ekleme.
+	-- Oyuncuyu ödüllendiren yol yeni oyuncu görevleridir: StarterQuests, Quests penceresi > NEW PLAYER, CLAIM ile alınır.)
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
 	CameraMaxZoom = 40,

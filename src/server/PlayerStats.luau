@@ -231,7 +231,7 @@ end
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
 	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
-		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, LevelRewards = {}, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
+		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -405,17 +405,6 @@ local function sanitize(raw)
 		data.AutoTrial = math.clamp(math.floor(raw.AutoTrial), 0, Config.AutoClick.TrialSeconds or 0)
 	elseif data.TutorialDone then
 		data.AutoTrial = 0
-	end
-	if type(raw.LevelRewards) == "table" then
-		for _, level in raw.LevelRewards do
-			if type(level) == "number" then
-				data.LevelRewards[math.floor(level)] = true
-			end
-		end
-	elseif data.TutorialDone then
-		for _, reward in Config.LevelRewards do
-			data.LevelRewards[reward.level] = true
-		end
 	end
 	-- Pet Index ödülleri: geriye dönük VERİLİR (eski oyuncu ulaştığı eşiklerin ödülünü bir sonraki yenilemede alır)
 	if type(raw.IndexRewards) == "table" then
@@ -602,7 +591,6 @@ local function publishStarter(player, profile)
 	return newlyDone
 end
 
-local grantLevelRewards -- level kilometre taşı ödülleri; startBoost / rollPet tanımlandıktan sonra aşağıda atanır
 local grantIndexRewards -- Pet Index ödülleri; giveItem tanımlandıktan sonra aşağıda atanır
 
 -- Level, TOPLAM bacak kasından hesaplanır (rebirth üst sınırı geçilmez). Dönüş: level atladı mı, yeni level
@@ -618,9 +606,6 @@ local function syncLevel(player)
 	local level, progress = Progression.levelFromMuscle(muscle.Value, Progression.maxLevel(rebirthStat.Value))
 	levelStat.Value = level
 	profile.taps = progress -- çubuktaki ilerleme (bu level içinde kazanılan kas)
-	if level > before and grantLevelRewards and profile.loaded then
-		grantLevelRewards(player, profile, level)
-	end
 	if level >= 12 and profile.loaded then
 		funnel(player, profile, "Level12")
 	end
@@ -846,13 +831,6 @@ local function save(player, mode)
 			return list
 		end)(),
 		AutoTrial = math.max(0, math.floor(profile.trialUntil - workspace:GetServerTimeNow())),
-		LevelRewards = (function()
-			local list = {}
-			for level in profile.levelRewards do
-				table.insert(list, level)
-			end
-			return list
-		end)(),
 		Quests = profile.quests,
 		WheelDay = profile.wheelDay,
 		PetSlots = profile.petSlots,
@@ -1079,7 +1057,6 @@ local function setup(player)
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		starterWins = false, -- başlangıç Win hediyesi verildi mi (kayıtlı)
 		trialUntil = 0, -- ücretsiz Auto Click denemesinin bitişi (sunucu saati, GetServerTimeNow); kayıtta KALAN saniye tutulur (çevrimdışıyken akmaz)
-		levelRewards = {}, -- ödülü alınmış level kilometre taşları [level] = true (kayıtlı)
 		indexRewards = {}, -- ödülü alınmış Pet Index eşikleri [tür sayısı] = true (kayıtlı)
 		starterDone = {}, -- biten yeni oyuncu görevleri [id] = true (kilitlenir: level/rebirth sıfırlansa da kalır; kayıtlı)
 		starterClaimed = {}, -- ödülü alınmış yeni oyuncu görevleri (kayıtlı)
@@ -1111,7 +1088,6 @@ local function setup(player)
 	profile.tutorialDone = data.TutorialDone
 	profile.tutorialClicks = data.TutorialClicks
 	profile.starterWins = data.StarterWins
-	profile.levelRewards = data.LevelRewards
 	profile.funnel = data.Funnel
 	profile.indexRewards = data.IndexRewards
 	profile.starterDone = data.StarterDone
@@ -1725,43 +1701,6 @@ local function rollPet(egg, luck)
 		end
 	end
 	return Catalog.PetById[egg.pets[#egg.pets].id]
-end
-
--- LEVEL KİLOMETRE TAŞI ÖDÜLLERİ (Config.LevelRewards): ilk kez o levele ulaşınca bir kez verilir; iksir HEMEN başlar (oyuncu Shop'a girmek zorunda kalmasın), pet ücretsiz ve rastgeledir (ücretli değil, yüzde gerekmez)
-grantLevelRewards = function(player, profile, level)
-	local wins = getStat(player, Config.StatWins)
-	if not wins then
-		return
-	end
-	local messages = {}
-	for _, reward in Config.LevelRewards do
-		if level >= reward.level and not profile.levelRewards[reward.level] then
-			profile.levelRewards[reward.level] = true
-			if reward.kind == "wins" then
-				wins.Value += reward.amount
-				table.insert(messages, `+{reward.amount} Wins`)
-			elseif POTION_FIELD[reward.kind] then
-				startBoost(player, profile, reward.kind, reward.minutes)
-				local potion = Catalog.PotionByKind[reward.kind]
-				table.insert(messages, `{potion.name} active: {potion.effect} for {reward.minutes or Config.BoostMinutes} min`)
-			elseif reward.kind == "pet" then
-				local egg = Catalog.EggById[reward.egg]
-				if egg and #profile.pets < petCapacity(profile) then
-					local pet = rollPet(egg, 1)
-					table.insert(profile.pets, pet.id)
-					if #profile.equipped < Config.MaxEquippedPets then
-						table.insert(profile.equipped, pet.id)
-					end
-					table.insert(messages, `free pet: {pet.name}`)
-				end
-			end
-		end
-	end
-	if #messages > 0 then
-		sendToast(player, profile, `Level {level} reward! {table.concat(messages, ", ")}`)
-		refresh(player)
-		requestSave(player)
-	end
 end
 
 -- PET INDEX ÖDÜLLERİ (Config.Index.Rewards): keşfedilen tür sayısı eşiğe ulaşınca bir kez; iksir ENVANTERE girer (giveItem), Win hemen eklenir
@@ -2564,7 +2503,6 @@ function PlayerStats.dev(player, command, amount)
 		profile.tutorialClicks = 0
 		player:SetAttribute("TutorialClicks", 0)
 		profile.starterWins = false
-		profile.levelRewards = {}
 		profile.starterDone = {}
 		profile.starterClaimed = {}
 		profile.wallsBroken = 0
@@ -2602,7 +2540,6 @@ function PlayerStats.dev(player, command, amount)
 		profile.tutorialClicks = 0
 		player:SetAttribute("TutorialClicks", 0)
 		profile.starterWins = false
-		profile.levelRewards = {}
 		profile.starterDone = {}
 		profile.starterClaimed = {}
 		profile.wallsBroken = 0
