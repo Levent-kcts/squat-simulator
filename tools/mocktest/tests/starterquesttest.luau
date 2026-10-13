@@ -118,6 +118,32 @@ local again = join(9401, "StarterKidAgain")
 assert(state(again).rebirth.claimed and state(again).wall.claimed, "tekrar girişte alınanlar korunmalı")
 assert(select(1, claim(again, "squat")) == false, "tekrar girişte ödül ikinci kez alınamaz")
 
+-- 8b) DEV 'RestartTutorial': yeni oyuncu durumuna döner (kas/level/rebirth/Win/pet/skin/görev/rehber sıfır, deneme yeniden, Guide açık); iz/aura/iksir kalır
+PlayerStats.dev(again, "DiscoverAll")
+PlayerStats.dev(again, "PotionLuck")
+PlayerStats.dev(again, "AddWins", 100)
+PlayerStats.dev(again, "AddRebirth")
+PlayerStats.setSetting(again, "GuideOn", false)
+local okRestart, restartMessage = PlayerStats.dev(again, "RestartTutorial")
+assert(okRestart and string.find(restartMessage, "Tutorial restarted", 1, true), "RestartTutorial başarılı olmalı: " .. tostring(restartMessage))
+assert(again:GetAttribute("TutorialDone") == false and again:GetAttribute("TutorialClicks") == 0, "eğitim baştan başlamalı")
+assert(stat(again, Config.StatWins) == 0 and stat(again, Config.StatLevel) == 1 and stat(again, Config.StatRebirths) == 0 and stat(again, Config.StatLegMuscle) == 0, "kas, level, rebirth ve Win sıfırlanmalı")
+assert((again:GetAttribute("OwnedPets") or "") == "" and (again:GetAttribute("OwnedSkins") or "") == "" and (again:GetAttribute("OwnedItems") or "") == "", "pet, skin ve ayakkabı sıfırlanmalı")
+assert((again:GetAttribute("GuideSeen") or "x") == "", "rehber kaydı sıfırlanmalı (tur baştan)")
+for _, quest in quests do
+	local entry = state(again)[quest.id]
+	assert(entry and not entry.done and not entry.claimed, "yeni oyuncu görevleri sıfırlanmalı: " .. quest.id)
+end
+assert(again:GetAttribute("GuideOn") == true, "kapalı Guide tekrar açılmalı")
+assert(again:GetAttribute("AutoClickTrialUntil") > 0, "ücretsiz Auto Click denemesi yeniden başlamalı")
+assert(string.find(again:GetAttribute("PotionItems") or "", "luck", 1, true), "iksir kalmalı")
+assert((again:GetAttribute("DiscoveredPets") or "x") == "", "keşfedilen petler sıfırlanmalı ('ilk pet' görevi buna bakar)")
+local restartWins = stat(again, Config.StatWins)
+for _ = 1, Config.Tutorial.ClickGoal do
+	PlayerStats.tutorialClick(again)
+end
+assert(stat(again, Config.StatWins) == restartWins + Config.Tutorial.StarterWins, "30 tıklamada başlangıç Win'i yeniden verilmeli")
+
 -- 9) Eski oyuncu: görevler 'alınmış', rehber 'görülmüş' sayılır (geriye dönük ödül ve tur YOK)
 S.datastore["Player_9402"] = { Muscle = 5000, Wins = 10, Level = 5, Rebirths = 1 }
 local veteran = join(9402, "Veteran")

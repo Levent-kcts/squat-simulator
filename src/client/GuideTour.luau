@@ -836,6 +836,16 @@ function GuideTour.init(screenGui, showToast)
 			hide()
 		end
 	end)
+	-- Sunucu rehber kaydını sıfırladıysa (DEV 'RESTART TUTORIAL'): bu oturumda gösterilmiş sayılanlar da unutulur, açık kart/ok/tur kapanır ve rehber baştan başlar
+	player:GetAttributeChangedSignal("GuideSeen"):Connect(function()
+		if (player:GetAttribute("GuideSeen") or "") == "" and (next(shownThisSession) ~= nil or next(announced) ~= nil) then
+			table.clear(shownThisSession)
+			table.clear(announced)
+			if current then
+				hide()
+			end
+		end
+	end)
 	-- Gösterilen görev oku: görev alınınca (ya da başka yoldan) kaybolur
 	player:GetAttributeChangedSignal("StarterState"):Connect(function()
 		local step = current

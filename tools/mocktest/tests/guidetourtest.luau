@@ -338,6 +338,12 @@ assert(GuideTour._state().intro == nil and GuideTour._state().callout == nil and
 assert(S.localPlayer:GetAttribute("GuideOn") ~= false, "tur 'Skip'i rehberin tamamını kapatmamalı")
 assert(S.lastInvoke and S.lastInvoke[2] == "intro", "atlanan tur da görüldü sayılmalı")
 
+-- 9b) DEV 'RESTART TUTORIAL': sunucu GuideSeen'i sıfırlayınca bu oturumda gösterilmiş sayılan adımlar da unutulur, rehber baştan başlar
+S.localPlayer:SetAttribute("GuideSeen", "welcome,intro")
+S.localPlayer:SetAttribute("GuideSeen", "")
+GuideTour._tick()
+assert(rawget(card2, "Visible") == true and hasText(card2, Config.GuideTour[1].title), "rehber sıfırlanınca hoş geldin kartı yeniden gelmeli")
+
 -- 10) İlk rebirth yapıldıysa tur hiç çıkmaz
 S.localPlayer:SetAttribute("GuideSeen", "")
 stats[Config.StatRebirths].Value = 1

@@ -8,6 +8,7 @@ local DevPanel = {}
 
 -- { buton yazısı, komut, miktar }
 local BUTTONS = {
+	{ "RESTART TUTORIAL", "RestartTutorial" },
 	{ "Level +1", "AddLevel", 1 },
 	{ "Level +10", "AddLevel", 10 },
 	{ "Max Level", "MaxLevel" },

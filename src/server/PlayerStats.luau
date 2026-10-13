@@ -2479,6 +2479,39 @@ function PlayerStats.dev(player, command, amount)
 		profile.offlineSeconds = 0
 		publishOffline(player, profile)
 		message = "Pending offline earnings cleared"
+	elseif command == "RestartTutorial" then
+		-- Eğitimi ve rehberi (hızlı ok turu, kartlar, yeni oyuncu görevleri, başlangıç Win'i, ücretsiz Auto Click denemesi) baştan denemek için YENİ OYUNCU durumuna döner:
+		-- kas, level, rebirth, Win, ayakkabı, skin, pet ve görev/rehber kayıtları sıfırlanır (rebirth > 0 iken rehber zaten çıkmaz, pet/skin varken ilgili adımlar atlanır).
+		-- 'İlk pet' görevi keşfedilen pet türlerine, 'çark' görevi çark gününe bakar: ikisi de sıfırlanır (Pet Index ödülleri de yeniden denenebilsin diye). İz, aura, iksir ve günlük görevler KALIR (RESET ALL hepsini sıfırlar).
+		muscle.Value = 0
+		wins.Value = 0
+		levelStat.Value = 1
+		rebirthStat.Value = 0
+		profile.taps = 0
+		profile.items = {}
+		profile.equippedShoe = ""
+		profile.skins = {}
+		profile.equippedSkin = ""
+		profile.pets = {}
+		profile.autoDelete = {}
+		profile.equipped = {}
+		profile.discovered = {}
+		profile.indexRewards = {}
+		profile.wheelDay = 0
+		profile.tutorialDone = false
+		profile.tutorialClicks = 0
+		player:SetAttribute("TutorialClicks", 0)
+		profile.starterWins = false
+		profile.levelRewards = {}
+		profile.starterDone = {}
+		profile.starterClaimed = {}
+		profile.wallsBroken = 0
+		profile.flags = {}
+		profile.guideSeen = {}
+		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
+		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
+		PlayerStats.setSetting(player, "GuideOn", true) -- Guide anahtarı kapalıysa tekrar açılır
+		message = "Tutorial restarted: you are a new player again (level, Wins, shoes, skins, pets and quests reset)"
 	elseif command == "Reset" then
 		muscle.Value = 0
 		wins.Value = 0

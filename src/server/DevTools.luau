@@ -72,7 +72,7 @@ function DevTools.init(notifyEvent)
 		else
 			ok, message = PlayerStats.dev(player, command, amount)
 			-- Rebirth ve sıfırlama duvarları da baştan kurmalı
-			if ok and (command == "AddRebirth" or command == "Reset") then
+			if ok and (command == "AddRebirth" or command == "Reset" or command == "RestartTutorial") then
 				WallService.resetPlayer(player)
 			end
 		end
