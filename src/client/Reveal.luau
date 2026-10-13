@@ -33,19 +33,20 @@ local RARITY_TITLE = { Epic = "EPIC!", Legendary = "LEGENDARY!", Mythic = "MYTHI
 local current = nil -- açık olan açılış ekranı (yenisi gelince eskisi kaldırılır)
 
 -- YUMURTA KIRILMA ANİMASYONU (2026-10-13, sahibi 'her yumurta satın aldığında [multi alımlar hariç] yumurta ekranın önüne UI olarak gelsin, sallansın, sonra şu anki animasyon oynasın' dedi; ilk sürümdeki kahverengi çubuk çatlaklar
--- 'çok kötü' bulundu, bu yüzden yeniden yapıldı: çubuk çatlak YOK): TEK yumurta açılışında yumurta ekranın ortasında belirir, DÖRT vuruşla büyür (her vuruşta bir yana sarsılır, bir kademe büyür ve tok bir 'dum' çalar; vuruştan vuruşa
+-- 'çok kötü' bulundu, bu yüzden yeniden yapıldı: çubuk çatlak YOK): TEK yumurta açılışında yumurta ekranın ortasında belirir, BEŞ vuruşla büyür (her vuruşta bir yana sarsılır, bir kademe büyür ve tok bir 'dum' çalar; vuruştan vuruşa
 -- ses ve perde yükselir, yumurta giderek parlar), sonra ortadan ikiye ayrılır (üst yarı sola-yukarı, alt yarı sağa-aşağı savrulur; döndürülmez çünkü Roblox döndürülmüş çerçevede ClipsDescendants'ı kırpmaz) ve beyaz bir ışık patlamasıyla
--- yumuşak bir 'puf' sesi çalıp mevcut açılış (hafif ışık + pet kartı) başlar: 'dum dum dum dum puf' (sahibi öyle istedi, lego kırılma sesini KAPATTIRDI, geri ekleme; sesler Config.Sounds EggDum/EggPuf).
+-- yumuşak bir 'puf' sesi çalıp mevcut açılış (hafif ışık + pet kartı) başlar: 'dum dum dum dum dum puf' (sahibi öyle istedi, sonra bir 'dum' daha ekletti, lego kırılma sesini KAPATTIRDI, geri ekleme; sesler Config.Sounds EggDum/EggPuf).
 -- Çoklu (x3/x10) ve otomatik açmada oynamaz (hız kesmesin).
 local EGG_POP = 0.2 -- yumurtanın belirme süresi
 -- Büyüme vuruşları: at = belirmeden sonraki an (sn), angle = sarsılma açısı (derece), scale = o vuruştaki boyut, volume/pitch = 'dum' sesinin çarpanları (giderek yükselir)
 local EGG_BEATS = {
-	{ at = 0, angle = -10, scale = 1.06, volume = 0.6, pitch = 0.88 },
-	{ at = 0.3, angle = 14, scale = 1.12, volume = 0.75, pitch = 0.96 },
-	{ at = 0.57, angle = -18, scale = 1.18, volume = 0.9, pitch = 1.04 },
-	{ at = 0.82, angle = 22, scale = 1.25, volume = 1, pitch = 1.12 },
+	{ at = 0, angle = -10, scale = 1.05, volume = 0.55, pitch = 0.86 },
+	{ at = 0.3, angle = 13, scale = 1.1, volume = 0.7, pitch = 0.93 },
+	{ at = 0.57, angle = -16, scale = 1.15, volume = 0.82, pitch = 1 },
+	{ at = 0.82, angle = 19, scale = 1.2, volume = 0.92, pitch = 1.07 },
+	{ at = 1.05, angle = -22, scale = 1.25, volume = 1, pitch = 1.14 },
 }
-local EGG_WOBBLE = 1.12 -- son vuruştan sonra kısa bir soluk, sonra kırılma ('puf')
+local EGG_WOBBLE = 1.35 -- son vuruştan sonra kısa bir soluk, sonra kırılma ('puf')
 local EGG_BREAK = 0.35 -- iki yarının savrulma süresi
 local EGG_BREAK_AT = EGG_POP + EGG_WOBBLE -- kırılma anı (açılıştan itibaren sn)
 local EGG_INTRO = EGG_BREAK_AT + EGG_BREAK -- yumurta animasyonunun toplam süresi: pet açılışı bu kadar sonra başlar
