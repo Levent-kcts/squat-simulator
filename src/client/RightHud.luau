@@ -307,6 +307,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		end
 	end
 	player:GetAttributeChangedSignal("QuestData"):Connect(refreshQuestBadge)
+	player:GetAttributeChangedSignal("StarterState"):Connect(refreshQuestBadge) -- yeni oyuncu görevleri de sayıya girer
 	refreshQuestBadge()
 
 	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------

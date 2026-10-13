@@ -117,6 +117,9 @@ for stage = 1, 20 do
 	Juice.addWallAmbient(part, theme)
 end
 Juice.burst(S.Vector3.new(0, 5, 0), S.Vector3.new(4, 4, 4), S.Color3.new(1, 1, 1), 50)
+-- Duvara vuruş efekti (D6): geri sekme + kırıntı + hafif titreme; hafif modda sadece geri sekme
+Juice.wallHit(part, Layout.theme(1), false)
+Juice.wallHit(part, Layout.theme(10), true)
 for _, hb in S.heartbeat do
 	hb(0.05)
 end
@@ -176,6 +179,24 @@ local function click(button)
 	handlers.MouseButton1Click()
 end
 rawget(S.replicated, "_children")["Shop"] = S.remoteFunction
+-- QuestPanel > NEW PLAYER sekmesi (2026-10-13): sekmeler, görev satırları, ilerleme/CLAIM durumu ve rozet sayısı
+S.localPlayer:SetAttribute("StarterState", "squat,30,1,0;wall,1,0,0;rebirth,0,0,0")
+assert(QuestPanel.starterClaimable(S.localPlayer) == 1, "biten ve alınmamış 1 yeni oyuncu görevi sayılmalı: " .. QuestPanel.starterClaimable(S.localPlayer))
+assert(QuestPanel.claimable(S.localPlayer) >= 1, "rozet sayısı yeni oyuncu görevini de içermeli")
+local rootQ = S.newInstance("Frame") -- (Shop uzaktan çağrısı artık kayıtlı: yeni örnek)
+local toggleQ = QuestPanel.init(rootQ, toast)
+toggleQ() -- aç: alınmamış görev varsa NEW PLAYER sekmesi gelir
+local qt = textsUnder(rootQ, {})
+assert(qt["NEW PLAYER"] and qt["DAILY"], "iki sekme olmalı")
+for _, quest in Config.StarterQuests do
+	assert(qt[quest.text] or qt["✔ " .. quest.text], "yeni oyuncu görevi listede olmalı: " .. quest.text)
+	assert(qt[quest.hint], "görevin nerede/nasıl yapılacağı (hint) yazmalı: " .. quest.id)
+end
+assert(qt["✔ Squat 30 times"] and qt["30 / 30"] and qt["CLAIM!"] and qt["1 / 3"], "biten görev işaretli, ilerleme ve CLAIM görünmeli")
+S.lastInvoke = nil
+click(buttonNamed(buttonNamed(rootQ, "Starter_squat"), "TextButton"))
+assert(S.lastInvoke and S.lastInvoke[1] == "ClaimStarter" and S.lastInvoke[2] == "squat", "CLAIM sunucuya ClaimStarter(squat) yollamalı: " .. tostring(S.lastInvoke and S.lastInvoke[1]))
+print("QuestPanel NEW PLAYER tab ok")
 local PetsPanel = require("./PetsPanel")
 local function openPets(owned, equipped)
 	S.localPlayer:SetAttribute("OwnedPets", owned)

@@ -9,6 +9,8 @@ Bu belge bir YOL HARİTASIDIR: neyin neden işlemediğini ve sırayla neyi yapma
 
 **En büyük sorun:** oyun ilk 2-3 dakikada hızlı, sonra bir "sessiz bölgeye" giriyor ve oyuncuyu elinde tutacak ödül anı yok. Elle tıklayan oyuncu 2,5. dakikada 1.000 kasa (level 18/25) ulaşıyor; sonraki level başına 500-1.200 kas gerekiyor ve ilk rebirth ~10. dakikada. Bu arada ilk pet bile ~6. dakikaya kalıyordu. Oyuncular tam burada bırakıyor.
 
+**(2026-10-13 sonrası: oyun kısaltıldı, ilk rebirth çok hızlı; yeni oyuncu görevleri ve rehber turu eklendi, bkz. CLAUDE.md.)**
+
 **Bu turda yapılanlar (retention):** başlangıç Win hediyesi (ilk pet 1. dakikada), 10 dakika ücretsiz Auto Click, level 6/12/18/22/25 ödülleri, ilk rebirth'e kadar hedef şeridi + rehber çizgisi, daha gösterişli yumurta açılışı, ilk oyun hunisi analitiği.
 
 ## 2. Oyun teorisi gözüyle: oyun "çözülmüş" bir oyun

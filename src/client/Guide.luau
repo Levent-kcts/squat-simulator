@@ -155,7 +155,8 @@ function Guide.init(wallClient)
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local training = (player:GetAttribute("TrainingArea") or "") ~= ""
-		local inTutorial = player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false
+		-- Settings'teki 'Guide' anahtarı (GuideOn = false) kapalıysa yol gösterici çizgi de kapalıdır
+		local inTutorial = player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false and player:GetAttribute("GuideOn") ~= false
 		if not root or not startAttachment or not inTutorial or training then
 			beam.Enabled = false
 			return

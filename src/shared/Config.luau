@@ -22,9 +22,9 @@ return {
 		-- (eski ayarla 12. rebirth 2.5 saatte geliyordu). OYUNUN SONU (20. aşama, 100. duvar) günde 1 saat oynayan için 10-15 günde gelsin diye duvar canı büyümesi 5 -> 3.2 yapıldı (Wall.HealthGrowthAfter).
 		-- Tempoyu değiştirirsen önce `python tools/simulate.py 14 poly=... base_max=... hp_growth=...` ile dene (çıktının sonunda aşama kilometre taşları var).
 		-- (2026-10-13 YENİ DENGE: level N = xN çarpanı olduğu için tıklama başı kazanç eskisinin ~7-20 katı; maliyet ve duvar canı buna göre yeniden ayarlandı: tools/simulate.py ile oyunun sonu ~12 sa, 1. rebirth ~6 dk)
-		CostPower = 8, -- 2026-10-13: TAM SAYI çarpanlara (level N = xN, rebirth +1, tam sayı pet/aura/ayakkabı) geçince 4.9 -> 8 (level maliyeti çok daha dik; tools/simulate.py ile ayarlandı)
+		CostPower = 7.7, -- 2026-10-13: TAM SAYI çarpanlara (level N = xN, rebirth +1, tam sayı pet/aura/ayakkabı) geçince 4.9 -> 8 (level maliyeti çok daha dik; tools/simulate.py ile ayarlandı)
 		TapsAtLevel10 = 22,
-		BaseMaxLevel = 25, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level
+		BaseMaxLevel = 22, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level (2026-10-13: 25 -> 22, ilk rebirth çok hızlı olsun: Auto Click'li ~2 dk, elle ~5 dk)
 		MaxLevelPerRebirth = 10, -- her rebirth bu kadar yüksek level izni verir
 		MultiplierPerLevel = 1, -- level N = xN (level 25 = x25); TAM SAYI çarpan (2026-10-13, sahibi 'ondalıklı çarpan olmasın, en az 2 olsun' dedi)
 	},
@@ -268,6 +268,7 @@ return {
 		{ key = "ShowGain", name = "Gain numbers", detail = "The +N that pops up on your screen" },
 		{ key = "CameraShake", name = "Screen shake", detail = "Shake when walls break" },
 		{ key = "NameTags", name = "Name tags", detail = "Power and name above players" },
+		{ key = "GuideOn", name = "Guide", detail = "Tips, arrows and the tour for new players (until your first Rebirth)" },
 	},
 
 	-- Sol menüdeki ve sayaçtaki ikonlar. Roblox'a yüklenmiş görsellerin "rbxassetid://..." değeri; BOŞ ikon emoji olarak görünür.
@@ -327,14 +328,46 @@ return {
 	-- İLK OYUN HUNİSİ (2026-10-13): oyuncunun ilk dakikalarda nereye kadar geldiği Roblox Analytics > Funnels'a gönderilir (AnalyticsService:LogOnboardingFunnelStepEvent). Sıra = adım numarası; her adım
 	-- bir oyuncu için BİR KEZ (kayıtlı) gönderilir; eski oyuncu için hiç gönderilmez. Yeni adım eklersen SONA koy (numaralar değişmesin).
 	Funnel = { "Joined", "Clicked30", "FirstWall", "FirstPet", "FirstSkin", "Level12", "FirstRebirth" },
+	-- YENİ OYUNCU GÖREVLERİ (2026-10-13, sahibi 'görevler kısmına yeni oyuncu görevleri sekmesi' istedi): 📜 penceresinde 'NEW PLAYER' sekmesi. Sunucu ilerlemeyi hesaplar (PlayerStats), biten görev bir kez 'kilitlenir' (latch: rebirth/level sıfırlansa da kalır)
+	-- ve CLAIM ile ödülü alınır; her görev oyunu tanıtır (hint = nerede/nasıl). metric: clicks (eğitim tıklamaları) / walls (ömür boyu kırılan duvar) / pets (ilk pet) / skins / shoes / level (ulaşılan level) / gifts (bir Playtime ödülü alındı) / train (antrenman alanına girdi)
+	-- / wheel (çarkı çevirdi) / rebirths. rewards: { kind = wins | boostLuck | boostMuscle | boostWins | boostRainbow, amount | minutes }. Eski oyuncuya (eğitimi bitmiş) geriye dönük verilmez. Yeni görev eklersen SONA koy (id değişmesin).
+	StarterQuests = {
+		{ id = "squat", text = "Squat 30 times", hint = "Click or tap anywhere to squat!", metric = "clicks", goal = 30, rewards = { { kind = "wins", amount = 5 } } },
+		{ id = "wall", text = "Break 3 walls", hint = "Walk into the corridor ahead and tap near the walls to kick them.", metric = "walls", goal = 3, rewards = { { kind = "wins", amount = 10 } } },
+		{ id = "pet", text = "Hatch your first pet", hint = "Back wall: step on the Starter Egg pad and press E.", metric = "pets", goal = 1, rewards = { { kind = "wins", amount = 10 } } },
+		{ id = "skin", text = "Buy your first skin", hint = "Left wall, SKIN shelf: step on a pad you can afford.", metric = "skins", goal = 1, rewards = { { kind = "wins", amount = 5 } } },
+		{ id = "shoes", text = "Buy your first shoes", hint = "Left wall, SHOE shelf: shoes multiply your wall damage.", metric = "shoes", goal = 1, rewards = { { kind = "wins", amount = 10 } } },
+		{ id = "level10", text = "Reach level 10", hint = "Keep squatting: every level makes each squat stronger.", metric = "level", goal = 10, rewards = { { kind = "wins", amount = 15 } } },
+		{ id = "gift", text = "Claim a Playtime Reward", hint = "Gifts button on the left, or the FREE REWARD box on the right.", metric = "gifts", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
+		{ id = "train", text = "Visit the Training Area", hint = "Right wall: step on a Coach pad to squat automatically.", metric = "train", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
+		{ id = "wheel", text = "Spin the Daily Wheel", hint = "Next to the eggs: walk up to the wheel and press E.", metric = "wheel", goal = 1, rewards = { { kind = "wins", amount = 20 } } },
+		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, then press Rebirth on the left. You keep Wins, shoes, skins and pets!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 } } },
+	},
+	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen'), tek kartta.
+	-- when: start / clicks (eğitim tıklamaları bitti) / winsFirst (ilk Win) / pet / skin / level:N / nearMax (level sınırına 2 kala). target: arayüz öğesinin adı (vurgulanır, yoksa sadece kart). Yeni adım SONA eklenir.
+	GuideTour = {
+		{ id = "welcome", when = "start", title = "Welcome, Squat Hero!", text = "Click or tap anywhere to squat and grow stronger. Every squat gives you Leg Muscle!" },
+		{ id = "wall", when = "clicks", title = "Smash the walls!", text = "Walk into the corridor ahead and tap near the walls. Your damage is your total Leg Muscle. Broken walls give you Wins!" },
+		{ id = "wins", when = "winsFirst", target = "WinsChip", title = "Wins = money", text = "Wins buy pets, shoes, skins and more. You got a free gift of Wins to start!" },
+		{ id = "pets", when = "pet", target = "PetsButton", title = "Your first pet!", text = "Open Pets to equip pets, merge 3 matching pets into a stronger one, and manage your team." },
+		{ id = "quests", when = "skin", target = "QuestsButton", title = "Quests", text = "Tap the scroll at the top right: NEW PLAYER quests teach you the game for free rewards, DAILY quests refresh every day." },
+		{ id = "gifts", when = "level:6", target = "GiftsButton", title = "Free gifts", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
+		{ id = "auto", when = "level:9", target = "AutoClickButton", title = "Auto Click", text = "Auto Click squats for you! You have a free trial, then you can keep it forever in the Shop." },
+		{ id = "index", when = "level:11", target = "IndexButton", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
+		{ id = "backpack", when = "level:13", target = "BackpackButton", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
+		{ id = "shop", when = "level:15", target = "ShopButton", title = "Shop and Settings", text = "The Shop sells potions and Win packs. Settings has the Guide switch if you want to turn tips off." },
+		{ id = "training", when = "level:17", title = "Training Area", text = "On the right wall, stand on a Coach pad to squat automatically with a big multiplier. Better pads unlock with Rebirths." },
+		{ id = "rebirth", when = "nearMax", target = "RebirthButton", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier!" },
+	},
 	-- LEVEL KİLOMETRE TAŞI ÖDÜLLERİ (2026-10-13, retention: 1K güçten sonra level başına 500-1200 kas gerekir, ödül yoktu): bir hesapta bir kez, level'a ilk ulaşınca otomatik verilir (bildirim 'RewardToast').
 	-- kind: wins (amount Win), boostMuscle / boostWins / boostLuck / boostRainbow (iksir HEMEN başlar, minutes dk), pet (egg: o yumurtanın havuzundan ücretsiz rastgele pet; envanter doluysa atlanır). Eski oyuncuya geriye dönük verilmez.
 	LevelRewards = {
+		-- (2026-10-13: ilk level sınırı 22 oldu; hepsi ilk rebirth'ten ÖNCE alınabilir)
 		{ level = 6, kind = "wins", amount = 8 },
-		{ level = 12, kind = "boostMuscle", minutes = 15 },
-		{ level = 18, kind = "wins", amount = 20 },
-		{ level = 22, kind = "pet", egg = "starter" },
-		{ level = 25, kind = "wins", amount = 30 },
+		{ level = 10, kind = "boostMuscle", minutes = 15 },
+		{ level = 14, kind = "wins", amount = 20 },
+		{ level = 18, kind = "pet", egg = "starter" },
+		{ level = 22, kind = "wins", amount = 30 },
 	},
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
@@ -438,11 +471,11 @@ return {
 		-- 1. grup 25, 2. grup 250, 3. grup 3000. Listede olmayan sonraki gruplar, bir öncekinin
 		-- HealthGrowthAfter katı olur (3. grup 3000 ise 4. grup 3000 x 5 = 15000).
 		-- Sonraki grupları oyunun ekonomisine (çarpanlar, rebirth) göre ayrıca dengelemek gerekecek.
-		GroupHealth = { 25, 2500, 300000 }, -- (2026-10-13: tam sayı çarpanlara geçince 25, 250, 3000 idi; 1. aşama eğitim için aynı kaldı)
+		GroupHealth = { 25, 1500, 75000 }, -- (2026-10-13: tam sayı çarpanlara geçince 25, 250, 3000 idi; 1. aşama eğitim için aynı kaldı)
 		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
 		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
 		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
-		HealthGrowthAfter = 4.6, -- 4. grup 3000 x 3.75 = 11250, 5. grup ~42K ... 20. grup ~17 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
+		HealthGrowthAfter = 4.9, -- 4. grup 3000 x 3.75 = 11250, 5. grup ~42K ... 20. grup ~17 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
 		-- 2026-10-09 ('duvarlar çok zayıf geldi'): simülasyon artık oyuncunun bir aşamayı en çok 40 tekmede (duvar başına ~8) kırmayı göze aldığını varsayar (eskiden 12: sınırdaki 5 duvar ~5 tekmede, yani duvar başına 1 tekmede düşüyordu);
 		-- 3.2'den 3.5'e çıkınca duvarlar 10. aşamada 1.8, 20. aşamada 4.8 kat dayanıklı olur ve oyunun sonu yine ~10 saatte kalır. 2026-10-10: aura'lar öne çekilince (aşağıdaki Auras) oyun 7.6 saate düşmüştü, 3.5 -> 3.75 ile geri toplandı.
 		-- Güncel süreler (simülasyon): 5. aşama 6.3 dk, 10. aşama 47 dk, 15. aşama 4.05 sa, 20. aşama 10.2 sa (27. rebirth);

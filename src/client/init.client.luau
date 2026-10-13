@@ -249,6 +249,9 @@ local function makeStatChip(order, icon, imageId)
 end
 local rebirthLabel = makeStatChip(1, "🔄", Config.Icons.Rebirth)
 local winLabel = makeStatChip(2, "🏆", Config.Icons.Wins)
+if winLabel.Parent then
+	winLabel.Parent.Name = "WinsChip" -- rehber turu (GuideTour) bu adla işaretler
+end
 
 -- =====================================================================
 -- SOL: 2 sütun x 3 satır kare butonlar (Shop, Rebirth, Settings, Backpack, Pets, Gifts)
@@ -260,6 +263,7 @@ local BORDER = 4
 -- iconSize: görselin kenarı (varsayılan 56). Kenarlara kadar dolu görseller (Auras alevi) taşmasın diye küçültülür (Config.IconSizes)
 local function makeSquareButton(position, icon, label, accent, imageId, iconSize)
 	local button = create("TextButton", {
+		Name = label .. "Button", -- ShopButton, RebirthButton, PetsButton...: rehber turu (GuideTour) bu adlarla işaretler
 		Position = position,
 		Size = UDim2.fromOffset(74, 74),
 		Text = "",
@@ -488,6 +492,7 @@ local rowLeft = -rowWidth / 2
 local autoLeft = rowLeft + #quickProducts * (QUICK_WIDTH + QUICK_GAP)
 
 local autoButton = create("TextButton", {
+	Name = "AutoClickButton", -- rehber turu (GuideTour) işaretler
 	AnchorPoint = Vector2.new(0, 0),
 	Position = UDim2.new(0.5, autoLeft, 0, ROW_Y),
 	Size = UDim2.fromOffset(AUTO_WIDTH, 40),
@@ -679,6 +684,11 @@ local progressText = bannerText.Text
 -- Deneyimli oyuncuda yazı gizlidir; sadece antrenman alanındayken 'Training with...' bilgisi için görünür.
 local firstSkin = Config.Skins[1]
 
+-- Settings'teki 'Guide' anahtarı: kapalıysa (GuideOn = false) üstteki yönerge/hedef şeridi, yol gösterici çizgi ve tanıtım kartları görünmez
+local function guideOn()
+	return player:GetAttribute("GuideOn") ~= false
+end
+
 local function tutorialActive()
 	return player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == false
 end
@@ -742,11 +752,11 @@ local function refreshBanner()
 	if area then
 		banner.Visible = true
 		bannerText.Text = `Training with {area.trainer}: x{string.format("%g", area.mult)} Squat!`
-	elseif tutorialActive() then
+	elseif guideOn() and tutorialActive() then
 		banner.Visible = true
 		bannerText.Text = tutorialText()
 		showBar = tutorialClicks() < Config.Tutorial.ClickGoal
-	elseif goalActive() then
+	elseif guideOn() and goalActive() then
 		banner.Visible = true
 		bannerText.Text = goalText()
 		showBar = true
@@ -774,6 +784,7 @@ local function onProgress(frontier)
 	refreshBanner()
 end
 player:GetAttributeChangedSignal("TrainingArea"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("GuideOn"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("TutorialDone"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("TutorialClicks"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshBanner)
@@ -995,7 +1006,7 @@ do
 	local function checkTutorialEnd()
 		local active = tutorialActive()
 		if wasActive and not active and player:GetAttribute("TutorialDone") == true then
-			showToast(true, "Great! Keep breaking walls, and open Daily Quests (📜 top right) for free rewards!")
+			showToast(true, "Great! Open Quests (📜 top right): NEW PLAYER quests give free rewards. Keep breaking walls!")
 		end
 		wasActive = active
 	end
@@ -1211,6 +1222,7 @@ shopButton.MouseButton1Click:Connect(function()
 end)
 -- Yumurta paneli: Win yetmeyince Shop'u Win paketleri bölümünde aç, ücretli düğmeler bildirim göstersin
 eggHooks.showToast = showToast
+safeInit("GuideTour", loadOptional("GuideTour"), screenGui, showToast) -- yeni oyuncu rehber turu: ilk rebirth'e kadar arayüzü tanıtan kartlar (Config.GuideTour)
 
 -- Sunucunun gönderdiği ödül bildirimleri (başlangıç hediyesi, level kilometre taşı ödülleri): 'RewardToast' = '<sayaç>|<mesaj>'
 player:GetAttributeChangedSignal("RewardToast"):Connect(function()

@@ -47,6 +47,9 @@ local function setActive(player, area)
 	active[player] = area
 	player:SetAttribute("TrainingArea", if area then area.id else "")
 	player:SetAttribute("AreaMultiplier", if area then area.mult else 1)
+	if area then
+		PlayerStats.markTrained(player) -- Yeni oyuncu görevi: 'Visit the Training Area'
+	end
 end
 
 function TrainingArea.init(notifyEvent)

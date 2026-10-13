@@ -210,7 +210,7 @@ end
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
 	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
-		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, LevelRewards = {}, Funnel = {}, IndexRewards = {} }
+		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, LevelRewards = {}, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -404,6 +404,44 @@ local function sanitize(raw)
 			end
 		end
 	end
+	-- YENİ OYUNCU GÖREVLERİ ve REHBER TURU (2026-10-13): kayıtlı kimlikler doğrulanır; eski oyuncuda (eğitimi bitmiş) görevler 'alınmış', rehber adımları 'görülmüş' sayılır (geriye dönük ödül/tur YOK)
+	local function readIds(source, target, valid)
+		if type(source) ~= "table" then
+			return false
+		end
+		for _, id in source do
+			if type(id) == "string" and valid[id] then
+				target[id] = true
+			end
+		end
+		return true
+	end
+	local validQuests, validSteps = {}, {}
+	for _, quest in Config.StarterQuests do
+		validQuests[quest.id] = true
+	end
+	for _, step in Config.GuideTour do
+		validSteps[step.id] = true
+	end
+	local hadClaimed = readIds(raw.StarterClaimed, data.StarterClaimed, validQuests)
+	readIds(raw.StarterDone, data.StarterDone, validQuests)
+	if not hadClaimed and data.TutorialDone then
+		for id in validQuests do
+			data.StarterClaimed[id] = true
+		end
+	end
+	for id in data.StarterClaimed do
+		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
+	end
+	readIds(raw.Flags, data.Flags, { gift = true, train = true })
+	if type(raw.WallsBroken) == "number" then
+		data.WallsBroken = math.max(0, math.floor(raw.WallsBroken))
+	end
+	if not readIds(raw.GuideSeen, data.GuideSeen, validSteps) and data.TutorialDone then
+		for id in validSteps do
+			data.GuideSeen[id] = true
+		end
+	end
 	-- Hüni adımları: eski oyuncuda hepsi 'gönderilmiş' sayılır (analitiği kirletmesin)
 	if type(raw.Funnel) == "table" then
 		for _, step in raw.Funnel do
@@ -464,6 +502,18 @@ local function sendToast(player, profile, message)
 	player:SetAttribute("RewardToast", `{profile.toastSeq}|{message}`)
 end
 
+-- {anahtar = true} kümesini kayıt listesine çevirir
+local function setToList(set)
+	local list = {}
+	for key in set do
+		table.insert(list, key)
+	end
+	table.sort(list, function(a, b)
+		return tostring(a) < tostring(b)
+	end)
+	return list
+end
+
 -- İlk oyun hunisi (Config.Funnel): adımı bu oyuncu için bir kez Roblox Analytics'e gönderir (hata verirse oyunu etkilemez)
 local function funnel(player, profile, name)
 	local step = table.find(Config.Funnel, name)
@@ -474,6 +524,61 @@ local function funnel(player, profile, name)
 	pcall(function()
 		AnalyticsService:LogOnboardingFunnelStepEvent(player, step, name)
 	end)
+end
+
+-- YENİ OYUNCU GÖREVLERİ (Config.StarterQuests): ilerleme sunucuda hesaplanır, biten görev KİLİTLENİR (starterDone) ve 'StarterState' özniteliğine 'id,ilerleme,bitti,alındı;...' diye yazılır (istemci QuestPanel > NEW PLAYER sekmesi)
+local function starterProgress(player, profile, quest)
+	local metric = quest.metric
+	if metric == "clicks" then
+		return profile.tutorialClicks
+	elseif metric == "walls" then
+		return profile.wallsBroken
+	elseif metric == "pets" then
+		return if next(profile.discovered) ~= nil then 1 else 0
+	elseif metric == "skins" then
+		return #profile.skins
+	elseif metric == "shoes" then
+		return #profile.items
+	elseif metric == "level" then
+		local levelStat = getStat(player, Config.StatLevel)
+		return if levelStat then levelStat.Value else 0
+	elseif metric == "gifts" then
+		return if profile.flags.gift then 1 else 0
+	elseif metric == "train" then
+		return if profile.flags.train then 1 else 0
+	elseif metric == "wheel" then
+		return if profile.wheelDay > 0 then 1 else 0
+	elseif metric == "rebirths" then
+		local rebirthStat = getStat(player, Config.StatRebirths)
+		return if rebirthStat then rebirthStat.Value else 0
+	end
+	return 0
+end
+
+local function publishStarter(player, profile)
+	local parts = {}
+	local newlyDone = 0
+	for _, quest in Config.StarterQuests do
+		local progress = starterProgress(player, profile, quest)
+		if progress >= quest.goal and not profile.starterDone[quest.id] then
+			profile.starterDone[quest.id] = true
+			newlyDone += 1
+		end
+		local done = profile.starterDone[quest.id] == true
+		local claimed = profile.starterClaimed[quest.id] == true
+		table.insert(parts, `{quest.id},{if done then quest.goal else math.min(progress, quest.goal)},{if done then 1 else 0},{if claimed then 1 else 0}`)
+	end
+	local text = table.concat(parts, ";")
+	if player:GetAttribute("StarterState") ~= text then
+		player:SetAttribute("StarterState", text)
+	end
+	-- Rehber turu: görülen adımlar (istemci tekrar göstermesin)
+	local seen = table.concat(setToList(profile.guideSeen), ",")
+	if player:GetAttribute("GuideSeen") ~= seen then
+		player:SetAttribute("GuideSeen", seen)
+	end
+	-- (Biten görev bildirimini istemci verir: RightHud alınabilir görev sayısı artınca 'Quest complete!' der; burada tekrar bildirim yok)
+	return newlyDone
 end
 
 local grantLevelRewards -- level kilometre taşı ödülleri; startBoost / rollPet tanımlandıktan sonra aşağıda atanır
@@ -631,6 +736,7 @@ local function refresh(player)
 		if rebirthStat and rebirthStat.Value >= 1 then
 			funnel(player, profile, "FirstRebirth")
 		end
+		publishStarter(player, profile)
 	end
 	player:SetAttribute("PetCapacity", Config.MaxOwnedPets + profile.petSlots)
 	player:SetAttribute("EquippedPets", table.concat(equipped, ","))
@@ -685,6 +791,11 @@ local function save(player, mode)
 		TutorialDone = profile.tutorialDone,
 		TutorialClicks = profile.tutorialClicks,
 		StarterWins = profile.starterWins,
+		StarterDone = setToList(profile.starterDone),
+		StarterClaimed = setToList(profile.starterClaimed),
+		WallsBroken = profile.wallsBroken,
+		Flags = setToList(profile.flags),
+		GuideSeen = setToList(profile.guideSeen),
 		IndexRewards = (function()
 			local list = {}
 			for count in profile.indexRewards do
@@ -921,6 +1032,11 @@ local function setup(player)
 		trialUntil = 0, -- ücretsiz Auto Click denemesinin bitişi (sunucu saati, GetServerTimeNow); kayıtta KALAN saniye tutulur (çevrimdışıyken akmaz)
 		levelRewards = {}, -- ödülü alınmış level kilometre taşları [level] = true (kayıtlı)
 		indexRewards = {}, -- ödülü alınmış Pet Index eşikleri [tür sayısı] = true (kayıtlı)
+		starterDone = {}, -- biten yeni oyuncu görevleri [id] = true (kilitlenir: level/rebirth sıfırlansa da kalır; kayıtlı)
+		starterClaimed = {}, -- ödülü alınmış yeni oyuncu görevleri (kayıtlı)
+		wallsBroken = 0, -- ömür boyu kırılan duvar sayısı (kayıtlı)
+		flags = {}, -- tek seferlik işaretler: gift (bir Playtime ödülü aldı), train (antrenman alanına girdi) (kayıtlı)
+		guideSeen = {}, -- gösterilmiş rehber turu adımları [id] = true (kayıtlı)
 		funnel = {}, -- analitik hunisine gönderilmiş adımlar [adım numarası] = true (kayıtlı, Config.Funnel)
 		toastSeq = 0, -- oyuncuya giden 'RewardToast' bildirim sayacı
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
@@ -949,6 +1065,11 @@ local function setup(player)
 	profile.levelRewards = data.LevelRewards
 	profile.funnel = data.Funnel
 	profile.indexRewards = data.IndexRewards
+	profile.starterDone = data.StarterDone
+	profile.starterClaimed = data.StarterClaimed
+	profile.wallsBroken = data.WallsBroken
+	profile.flags = data.Flags
+	profile.guideSeen = data.GuideSeen
 	profile.trialUntil = if data.AutoTrial > 0 then workspace:GetServerTimeNow() + data.AutoTrial else 0
 	player:SetAttribute("AutoClickTrialUntil", profile.trialUntil) -- istemci Auto Click'i deneme süresince açık sayar
 	profile.quests = data.Quests
@@ -1228,6 +1349,7 @@ local function giveGift(player, profile, index, force)
 	end
 
 	profile.claimedGifts[index] = true
+	profile.flags.gift = true -- Yeni oyuncu görevi 'Claim a Playtime Reward'
 	local claimedCount = 0
 	for _ in profile.claimedGifts do
 		claimedCount += 1
@@ -1355,6 +1477,7 @@ function PlayerStats.tutorialClick(player)
 	if profile.tutorialClicks < Config.Tutorial.ClickGoal then
 		profile.tutorialClicks += 1
 		player:SetAttribute("TutorialClicks", profile.tutorialClicks)
+		publishStarter(player, profile) -- Yeni oyuncu görevi 'Squat 30 times' ilerlemesi
 		-- Başlangıç hediyesi (retention): ilk adım bitince yeni oyuncuya bir kez Win verilir, ilk yumurta ve ilk skin hemen alınabilir
 		local wins = getStat(player, Config.StatWins)
 		if profile.tutorialClicks >= Config.Tutorial.ClickGoal and not profile.starterWins and wins then
@@ -1378,6 +1501,8 @@ function PlayerStats.questEvent(player, kind, amount)
 	ensureQuestDay(profile)
 	if kind == "walls" then
 		funnel(player, profile, "FirstWall")
+		profile.wallsBroken += math.max(1, math.floor(amount or 1)) -- ömür boyu kırılan duvar (Yeni oyuncu görevi)
+		publishStarter(player, profile)
 	end
 	local changed = false
 	for slot, quest in questsForDay(profile.quests.day) do
@@ -1613,6 +1738,85 @@ grantIndexRewards = function(player, profile, count)
 	if #messages > 0 then
 		sendToast(player, profile, `Pet Index {count}/{#Config.Pets} reward! {table.concat(messages, ", ")}`)
 		refresh(player)
+		requestSave(player)
+	end
+end
+
+-- Ödül listesini verir (Config.StarterQuests[].rewards): wins hemen eklenir, iksir HEMEN başlar. Dönüş: oyuncuya gösterilecek parçalar
+local function grantRewardList(player, profile, rewards)
+	local wins = getStat(player, Config.StatWins)
+	local messages = {}
+	for _, reward in rewards do
+		if reward.kind == "wins" and wins then
+			wins.Value += reward.amount
+			table.insert(messages, `+{reward.amount} Wins`)
+		elseif POTION_FIELD[reward.kind] then
+			startBoost(player, profile, reward.kind, reward.minutes)
+			local potion = Catalog.PotionByKind[reward.kind]
+			table.insert(messages, `{potion.name} active for {reward.minutes or Config.BoostMinutes} min`)
+		end
+	end
+	return messages
+end
+
+-- Yeni oyuncu görevinin ödülünü alır (sunucu görevin bittiğini kendi hesabıyla doğrular). Dönüş: başarılı mı, mesaj
+function PlayerStats.claimStarter(player, id)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	local quest = nil
+	for _, candidate in Config.StarterQuests do
+		if candidate.id == id then
+			quest = candidate
+		end
+	end
+	if not quest then
+		return false, "That quest does not exist."
+	end
+	publishStarter(player, profile) -- bitiş durumunu güncelle (kilitle)
+	if profile.starterClaimed[id] then
+		return false, "You already claimed this reward."
+	end
+	if not profile.starterDone[id] then
+		return false, "Finish the quest first!"
+	end
+	profile.starterClaimed[id] = true
+	local messages = grantRewardList(player, profile, quest.rewards)
+	refresh(player)
+	requestSave(player)
+	return true, `Quest reward: {table.concat(messages, ", ")}`
+end
+
+-- Rehber turu adımı gösterildi/kapatıldı: bir daha gösterilmesin (kayıtlı). Dönüş: başarılı mı
+function PlayerStats.guideSeen(player, id)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	local valid = false
+	for _, step in Config.GuideTour do
+		if step.id == id then
+			valid = true
+		end
+	end
+	if not valid then
+		return false, "Unknown guide step."
+	end
+	if not profile.guideSeen[id] then
+		profile.guideSeen[id] = true
+		publishStarter(player, profile) -- 'GuideSeen' özniteliğini de yeniler
+		requestSave(player)
+	end
+	return true, ""
+end
+
+-- Oyuncu bir antrenman alanına girdi (Yeni oyuncu görevi 'Visit the Training Area'): TrainingArea sunucusu çağırır
+function PlayerStats.markTrained(player)
+	local profile = profiles[player]
+	if profile and profile.loaded and not profile.flags.train then
+		profile.flags.train = true
+		publishStarter(player, profile)
 		requestSave(player)
 	end
 end
@@ -2303,6 +2507,11 @@ function PlayerStats.dev(player, command, amount)
 		player:SetAttribute("TutorialClicks", 0)
 		profile.starterWins = false
 		profile.levelRewards = {}
+		profile.starterDone = {}
+		profile.starterClaimed = {}
+		profile.wallsBroken = 0
+		profile.flags = {}
+		profile.guideSeen = {}
 		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
 		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
 		profile.quests = newQuestState(currentQuestDay())

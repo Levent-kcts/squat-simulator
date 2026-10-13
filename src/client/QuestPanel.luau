@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Catalog"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 -- Ses (isteğe bağlı): ödül alınınca kısa jingle
@@ -46,13 +47,37 @@ function QuestPanel.read(player)
 	return nil
 end
 
--- Alınmayı bekleyen ödül sayısı (biten ve alınmamış görevler + hazır bonus): sağ üstteki daire rozeti bunu gösterir
+-- Yeni oyuncu görevleri: sunucunun 'StarterState' özniteliği 'id,ilerleme,bitti,alındı;...' (PlayerStats.publishStarter). Döner: { [id] = { progress, done, claimed } }
+function QuestPanel.readStarter(player)
+	local result = {}
+	for entry in string.gmatch(player:GetAttribute("StarterState") or "", "[^;]+") do
+		local id, progress, done, claimed = string.match(entry, "^([^,]+),(%d+),(%d),(%d)$")
+		if id then
+			result[id] = { progress = tonumber(progress), done = done == "1", claimed = claimed == "1" }
+		end
+	end
+	return result
+end
+
+-- Alınmayı bekleyen yeni oyuncu görevi ödülü sayısı
+function QuestPanel.starterClaimable(player)
+	local count = 0
+	for _, entry in QuestPanel.readStarter(player) do
+		if entry.done and not entry.claimed then
+			count += 1
+		end
+	end
+	return count
+end
+
+-- Alınmayı bekleyen ödül sayısı (biten ve alınmamış günlük görevler + hazır bonus + yeni oyuncu görevleri): sağ üstteki daire rozeti bunu gösterir
 function QuestPanel.claimable(player)
+	local starter = QuestPanel.starterClaimable(player)
 	local data = QuestPanel.read(player)
 	if not data or not data.quests then
-		return 0
+		return starter
 	end
-	local count = 0
+	local count = starter
 	local allClaimed = true
 	for _, quest in data.quests do
 		if not quest.claimed then
@@ -68,6 +93,20 @@ function QuestPanel.claimable(player)
 	return count
 end
 
+-- Ödül listesini kısa yazıya çevirir ('+10 Wins', 'Rainbow Potion 15 min')
+local function rewardText(rewards)
+	local parts = {}
+	for _, reward in rewards do
+		if reward.kind == "wins" then
+			table.insert(parts, `+{reward.amount} Wins`)
+		else
+			local potion = Catalog.PotionByKind[reward.kind]
+			table.insert(parts, `{if potion then potion.name else "Potion"} {reward.minutes or Config.BoostMinutes}m`)
+		end
+	end
+	return table.concat(parts, " + ")
+end
+
 local function formatTime(seconds)
 	seconds = math.max(0, math.floor(seconds))
 	return string.format("%02d:%02d:%02d", seconds // 3600, (seconds % 3600) // 60, seconds % 60)
@@ -81,7 +120,7 @@ function QuestPanel.init(screenGui, showToast)
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(620, 470),
+		Size = UDim2.fromOffset(620, 540), -- (sekmeler için biraz yüksek)
 		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
 		Active = true, -- pencereye tıklamak hareket başlatmasın
 		Visible = false,
@@ -98,7 +137,7 @@ function QuestPanel.init(screenGui, showToast)
 	makeText(header, {
 		Position = UDim2.fromOffset(68, 8),
 		Size = UDim2.fromOffset(250, 40),
-		Text = "DAILY QUESTS",
+		Text = "QUESTS",
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 3)
@@ -125,12 +164,56 @@ function QuestPanel.init(screenGui, showToast)
 		PanelManager.hide(panel)
 	end)
 
+	-- SEKMELER (2026-10-13, sahibi 'görevlere yeni oyuncu görevleri sekmesi' istedi): NEW PLAYER (Config.StarterQuests, ilk rebirth'e kadar rehber) ve DAILY
+	local tabs = {}
+	local currentTab = nil
+	local function makeTab(name, title, x, color)
+		local button = create("TextButton", {
+			Name = "Tab_" .. name,
+			Position = UDim2.fromOffset(x, 62),
+			Size = UDim2.fromOffset(190, 36),
+			Text = "",
+			BackgroundColor3 = color,
+		}, panel)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 10, strength = 0.28 })
+		local label = makeText(button, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = title, TextColor3 = Color3.new(1, 1, 1) }, 2)
+		local dot = create("Frame", {
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -8, 0.5, 0),
+			Size = UDim2.fromOffset(14, 14),
+			BackgroundColor3 = Color3.fromRGB(120, 255, 140),
+			Visible = false,
+			ZIndex = 5,
+		}, button)
+		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, dot)
+		create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, dot)
+		tabs[name] = { button = button, label = label, color = color, dot = dot }
+		return button
+	end
+	local starterTab = makeTab("starter", "NEW PLAYER", 12, Color3.fromRGB(70, 190, 255))
+	local dailyTab = makeTab("daily", "DAILY", 210, Color3.fromRGB(255, 160, 40))
+
 	local list = create("Frame", {
-		Position = UDim2.fromOffset(12, 66),
-		Size = UDim2.new(1, -24, 1, -78),
+		Position = UDim2.fromOffset(12, 108),
+		Size = UDim2.new(1, -24, 1, -120),
 		BackgroundTransparency = 1,
 	}, panel)
 	create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, list)
+
+	-- YENİ OYUNCU görev listesi (kaydırılır): her satır görevin adı, nerede/nasıl yapılacağı (hint), ilerleme çubuğu, ödül ve CLAIM
+	local starterList = create("ScrollingFrame", {
+		Name = "StarterList",
+		Position = UDim2.fromOffset(12, 108),
+		Size = UDim2.new(1, -24, 1, -120),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 8,
+		CanvasSize = UDim2.new(),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		Visible = false,
+	}, panel)
+	create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, starterList)
 
 	local function claimButton(parent, position, size)
 		local button = create("TextButton", {
@@ -250,6 +333,77 @@ function QuestPanel.init(screenGui, showToast)
 		invoke("ClaimQuestBonus", "")
 	end)
 
+	-- Yeni oyuncu satırları bir kez kurulur; renderStarter sadece değerleri günceller
+	local starterRows = {}
+	for index, quest in Config.StarterQuests do
+		local row = create("Frame", {
+			Name = "Starter_" .. quest.id,
+			LayoutOrder = index,
+			Size = UDim2.new(1, -10, 0, 74),
+			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
+		}, starterList)
+		UIStyle.soften(row, { radius = 12, strength = 0.12, shine = false })
+		local title = makeText(row, {
+			Position = UDim2.fromOffset(12, 4),
+			Size = UDim2.new(0.6, -12, 0, 24),
+			Text = quest.text,
+			TextColor3 = Color3.new(1, 1, 1),
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, 2)
+		makeText(row, {
+			Position = UDim2.fromOffset(12, 28),
+			Size = UDim2.new(0.6, -12, 0, 16),
+			Text = quest.hint,
+			TextColor3 = Color3.fromRGB(190, 196, 220),
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, 1)
+		local bar = create("Frame", {
+			Position = UDim2.fromOffset(12, 50),
+			Size = UDim2.new(0.6, -12, 0, 16),
+			BackgroundColor3 = Color3.fromRGB(25, 27, 38),
+		}, row)
+		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bar)
+		create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, bar)
+		local fill = create("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.fromRGB(110, 255, 140), BorderSizePixel = 0 }, bar)
+		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fill)
+		local amount = makeText(bar, { Position = UDim2.fromScale(0.05, 0.05), Size = UDim2.fromScale(0.9, 0.9), Text = "", TextColor3 = Color3.new(1, 1, 1), ZIndex = 2 }, 1.2)
+		makeText(row, {
+			Position = UDim2.new(0.6, 6, 0, 6),
+			Size = UDim2.new(0.4, -16, 0, 24),
+			Text = `🎁 {rewardText(quest.rewards)}`,
+			TextColor3 = Color3.fromRGB(255, 225, 110),
+		}, 2)
+		local button, buttonLabel = claimButton(row, UDim2.new(0.6, 6, 0, 36), UDim2.new(0.4, -16, 0, 30))
+		button.MouseButton1Click:Connect(function()
+			invoke("ClaimStarter", quest.id)
+		end)
+		starterRows[quest.id] = { title = title, fill = fill, amount = amount, button = button, buttonLabel = buttonLabel, quest = quest }
+	end
+
+	local function renderStarter()
+		local state = QuestPanel.readStarter(player)
+		local ready = 0
+		local open = 0
+		for _, row in starterRows do
+			local entry = state[row.quest.id] or { progress = 0, done = false, claimed = false }
+			local progress = math.min(entry.progress, row.quest.goal)
+			row.fill.Size = UDim2.fromScale(math.clamp(progress / row.quest.goal, 0, 1), 1)
+			row.amount.Text = `{progress} / {row.quest.goal}`
+			row.title.Text = if entry.done then `✔ {row.quest.text}` else row.quest.text
+			if entry.claimed then
+				styleClaim(row.button, row.buttonLabel, "claimed")
+			else
+				open += 1
+				if entry.done then
+					ready += 1
+				end
+				styleClaim(row.button, row.buttonLabel, if entry.done then "ready" else "progress")
+			end
+		end
+		tabs.starter.dot.Visible = ready > 0
+		return open
+	end
+
 	local resetAt = 0
 
 	local function updateTimer()
@@ -266,6 +420,14 @@ function QuestPanel.init(screenGui, showToast)
 			timerText.Text = "Loading..."
 			return
 		end
+		-- DAILY sekmesindeki nokta: alınmayı bekleyen günlük ödül varsa yanar
+		local dailyReady = 0
+		for _, quest in data.quests do
+			if not quest.claimed and quest.progress >= quest.goal then
+				dailyReady += 1
+			end
+		end
+		tabs.daily.dot.Visible = dailyReady > 0
 		resetAt = data.resetAt or 0
 		local allClaimed = true
 		for slot, quest in data.quests do
@@ -295,11 +457,39 @@ function QuestPanel.init(screenGui, showToast)
 		updateTimer()
 	end
 
-	player:GetAttributeChangedSignal("QuestData"):Connect(function()
-		if PanelManager.isOpen(panel) then
-			render()
+	local function renderAll()
+		render()
+		renderStarter()
+	end
+
+	-- Sekme değiştir: yalnız seçilen listenin içeriği görünür; geri sayım yazısı sadece DAILY'de
+	local function setTab(name)
+		currentTab = name
+		list.Visible = name == "daily"
+		starterList.Visible = name == "starter"
+		timerText.Visible = name == "daily"
+		for tabName, tab in tabs do
+			local active = tabName == name
+			tab.button.BackgroundColor3 = if active then tab.color else Color3.fromRGB(80, 84, 104)
+			tab.label.TextTransparency = if active then 0 else 0.35
 		end
+		renderAll()
+	end
+	starterTab.MouseButton1Click:Connect(function()
+		setTab("starter")
 	end)
+	dailyTab.MouseButton1Click:Connect(function()
+		setTab("daily")
+	end)
+	setTab("daily")
+
+	for _, name in { "QuestData", "StarterState" } do
+		player:GetAttributeChangedSignal(name):Connect(function()
+			if PanelManager.isOpen(panel) then
+				renderAll()
+			end
+		end)
+	end
 
 	-- Açıkken geri sayım saniyede bir güncellenir
 	task.spawn(function()
@@ -311,10 +501,25 @@ function QuestPanel.init(screenGui, showToast)
 		end
 	end)
 
+	local openedOnce = false
 	return function()
 		PanelManager.toggle(panel)
 		if PanelManager.isOpen(panel) then
-			render()
+			-- İlk açılışta, alınmamış yeni oyuncu görevi varsa NEW PLAYER sekmesi açılır (yeni oyuncu doğrudan görür), yoksa DAILY
+			if not openedOnce then
+				openedOnce = true
+				local state = QuestPanel.readStarter(player)
+				local anyOpen = false
+				for _, quest in Config.StarterQuests do
+					local entry = state[quest.id]
+					if not entry or not entry.claimed then
+						anyOpen = true
+					end
+				end
+				setTab(if anyOpen then "starter" else "daily")
+			else
+				renderAll()
+			end
 		end
 	end
 end

@@ -312,6 +312,10 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return PlayerStats.claimQuest(player, id)
 	elseif action == "ClaimQuestBonus" then
 		return PlayerStats.claimQuestBonus(player)
+	elseif action == "ClaimStarter" and type(id) == "string" then
+		return PlayerStats.claimStarter(player, id) -- Yeni oyuncu görevi ödülü
+	elseif action == "GuideSeen" and type(id) == "string" then
+		return PlayerStats.guideSeen(player, id) -- rehber turu adımı görüldü
 	elseif action == "SpinWheel" then
 		return PlayerStats.spinWheel(player) -- günlük çark: ok, mesaj, dilim sırası
 	elseif action == "FusePet" and type(id) == "string" then

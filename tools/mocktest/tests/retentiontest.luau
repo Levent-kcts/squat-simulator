@@ -45,22 +45,21 @@ assert(stat(kid, Config.StatWins) == winsBefore + Config.Tutorial.StarterWins, "
 -- Ilk yumurta ve ilk skin birlikte alınabilmeli
 assert(Config.Tutorial.StarterWins >= Config.Eggs[1].price + Config.Skins[1].price, "başlangıç Win'i ilk yumurta + ilk skine yetmeli")
 
--- ---- 3) Level kilometre taşı ödülleri (hepsi bir kez)
-local wins0 = stat(kid, Config.StatWins)
-PlayerStats.dev(kid, "AddLevel", 5) -- level 6
-assert(stat(kid, Config.StatLevel) >= 6 and stat(kid, Config.StatWins) == wins0 + 8, "level 6: +8 Win: " .. stat(kid, Config.StatWins) .. " / level " .. stat(kid, Config.StatLevel))
-assert(string.find(tostring(kid:GetAttribute("RewardToast")), "Level 6 reward", 1, true), "level ödülü bildirimi: " .. tostring(kid:GetAttribute("RewardToast")))
-PlayerStats.dev(kid, "AddLevel", 6) -- level 12: Muscle Potion HEMEN başlar
-assert(kid:GetAttribute("MuscleBoostUntil") and kid:GetAttribute("MuscleBoostUntil") > 0, "level 12: Muscle Potion başlamalı")
-local wins1 = stat(kid, Config.StatWins)
-PlayerStats.dev(kid, "AddLevel", 6) -- level 18: +20 Win
-assert(stat(kid, Config.StatWins) == wins1 + 20, "level 18: +20 Win")
-local pets0 = petCount(kid)
-PlayerStats.dev(kid, "AddLevel", 4) -- level 22: ücretsiz pet
-assert(petCount(kid) == pets0 + 1, "level 22: ücretsiz pet verilmeli")
-local wins2 = stat(kid, Config.StatWins)
-PlayerStats.dev(kid, "AddLevel", 3) -- level 25 (sınır)
-assert(stat(kid, Config.StatWins) == wins2 + 30, "level 25: +30 Win")
+-- ---- 3) Level kilometre taşı ödülleri (hepsi bir kez): Config.LevelRewards sırasıyla, her eşiğe DEV ile çıkılır
+for _, reward in Config.LevelRewards do
+	local winsNow = stat(kid, Config.StatWins)
+	local petsNow = petCount(kid)
+	PlayerStats.dev(kid, "AddLevel", reward.level - stat(kid, Config.StatLevel))
+	assert(stat(kid, Config.StatLevel) >= reward.level, "level " .. reward.level .. "'e çıkılmalı (sınır " .. Config.Level.BaseMaxLevel .. "): " .. stat(kid, Config.StatLevel))
+	if reward.kind == "wins" then
+		assert(stat(kid, Config.StatWins) == winsNow + reward.amount, `level {reward.level}: +{reward.amount} Win: ` .. stat(kid, Config.StatWins))
+	elseif reward.kind == "boostMuscle" then
+		assert(kid:GetAttribute("MuscleBoostUntil") and kid:GetAttribute("MuscleBoostUntil") > 0, `level {reward.level}: Muscle Potion başlamalı`)
+	elseif reward.kind == "pet" then
+		assert(petCount(kid) == petsNow + 1, `level {reward.level}: ücretsiz pet verilmeli`)
+	end
+	assert(string.find(tostring(kid:GetAttribute("RewardToast")), `Level {reward.level} reward`, 1, true), `level {reward.level} ödül bildirimi: ` .. tostring(kid:GetAttribute("RewardToast")))
+end
 -- Aynı ödüller tekrar verilmez (rebirth sonrası da)
 local wins3 = stat(kid, Config.StatWins)
 local pets1 = petCount(kid)
