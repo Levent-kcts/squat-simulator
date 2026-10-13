@@ -529,9 +529,29 @@ local autoPrice = makeText(autoButton, {
 	Visible = false,
 	ZIndex = 6,
 }, 22, 3)
--- Auto Click kilitli mi: pass satılıyor ve sunucu 'sahip değil' (ya da henüz bilmiyor) diyor
+-- ÜCRETSİZ DENEME (Config.AutoClick.TrialSeconds): yeni oyuncuya ilk dakikalarda Auto Click açık; kalan süreyi sunucu 'AutoClickTrialUntil' (sunucu saati) olarak verir, düğmede 'FREE m:ss' yazar
+local function trialSecondsLeft()
+	local untilTime = player:GetAttribute("AutoClickTrialUntil")
+	if type(untilTime) ~= "number" then
+		return 0
+	end
+	return math.max(0, untilTime - workspace:GetServerTimeNow())
+end
+local function trialActive()
+	return player:GetAttribute("HasAutoClick") ~= true and trialSecondsLeft() > 0
+end
+local autoTrial = makeText(autoButton, {
+	AnchorPoint = Vector2.new(1, 0.5),
+	Position = UDim2.new(1, -2, 0, 1),
+	Size = UDim2.fromOffset(70, 22),
+	Text = "FREE",
+	TextColor3 = Color3.fromRGB(110, 255, 130),
+	Visible = false,
+	ZIndex = 6,
+}, 18, 3)
+-- Auto Click kilitli mi: pass satılıyor, sunucu 'sahip değil' (ya da henüz bilmiyor) diyor ve ücretsiz deneme sürmüyor
 local function autoLocked()
-	return (Config.AutoClick.GamePassId or 0) > 0 and player:GetAttribute("HasAutoClick") ~= true
+	return (Config.AutoClick.GamePassId or 0) > 0 and player:GetAttribute("HasAutoClick") ~= true and trialSecondsLeft() <= 0
 end
 
 -- Hızlı satın alma düğmeleri: kırmızı-pembe, kalın siyah çerçeveli, sağ altında bacak simgesi; sağdaki yeşil '+' Shop'u açar
@@ -629,6 +649,9 @@ local function refresh()
 	autoClick = autoClick and not locked
 	autoBadge.Visible = not locked
 	autoPrice.Visible = locked
+	local trialLeft = if trialActive() then math.ceil(trialSecondsLeft()) else 0
+	autoTrial.Visible = trialLeft > 0
+	autoTrial.Text = string.format("FREE %d:%02d", trialLeft // 60, trialLeft % 60)
 	autoBadge.Text = if autoClick then "ON" else "OFF"
 	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
 	warning.Visible = RunService:IsStudio() and player:GetAttribute("DataError") == true
@@ -664,6 +687,11 @@ local function tutorialClicks()
 	return player:GetAttribute("TutorialClicks") or 0
 end
 
+-- Hiç pet'i var mı (OwnedPets virgüllü liste)
+local function ownsAnyPet()
+	return (player:GetAttribute("OwnedPets") or "") ~= ""
+end
+
 local function tutorialText()
 	-- 1. adım: squat say. Sunucu hareket başlatılınca sayar; ClickGoal kez olunca oyuncu duvara yönlendirilir
 	local goal = Config.Tutorial.ClickGoal
@@ -671,13 +699,38 @@ local function tutorialText()
 		return `Click anywhere to squat and get stronger!  ({tutorialClicks()}/{goal})`
 	end
 	local wins = winValue.Value
+	-- 2. adım (retention): ilk PET. Başlangıç hediyesi Win'i ilk yumurtaya yeter; ilk pet 1. dakikada gelsin (sahibi: oyuncular 1K güçte bırakıyor)
+	local starterEgg = Config.Eggs[1]
+	if not ownsAnyPet() and wins >= starterEgg.price then
+		return `You have {Format.number(wins)} Wins! Hatch your FIRST PET: step on the {starterEgg.name} pad at the back wall and press E!`
+	end
 	if wins >= firstSkin.price then
 		return `You have {Format.number(wins)} Wins! Go to the SKIN shelf on the left wall and step on the {firstSkin.name} pad!`
 	end
 	return progressText
 end
 
+-- İLK REBIRTH HEDEFİ (retention): eğitim bitince (ilk skin) ilk rebirth'e kadar üstteki şerit hedefi gösterir: 'level N/25' ve çubuk; seviyeye gelince Rebirth'i işaret eder
+local function goalActive()
+	return Config.Tutorial.RebirthGoal == true and player:GetAttribute("DataLoaded") == true and player:GetAttribute("TutorialDone") == true and rebirthValue.Value == 0
+end
+
+local function goalLevels()
+	local level = levelValue.Value
+	local maxLevel = math.max(1, player:GetAttribute("MaxLevel") or level)
+	return level, maxLevel
+end
+
+local function goalText()
+	local level, maxLevel = goalLevels()
+	if level >= maxLevel then
+		return "MAX LEVEL! Open REBIRTH on the left to grow stronger forever!"
+	end
+	return `Goal: reach level {maxLevel} to REBIRTH!  ({level}/{maxLevel})`
+end
+
 local function refreshBanner()
+	local goalFraction = nil -- ilk rebirth hedefi gösteriliyorsa level doluluğu, yoksa nil (eğitim çubuğu tıklama sayar)
 	local areaId = player:GetAttribute("TrainingArea") or ""
 	local area = nil
 	for _, candidate in Config.Training.Areas do
@@ -693,11 +746,16 @@ local function refreshBanner()
 		banner.Visible = true
 		bannerText.Text = tutorialText()
 		showBar = tutorialClicks() < Config.Tutorial.ClickGoal
+	elseif goalActive() then
+		banner.Visible = true
+		bannerText.Text = goalText()
+		showBar = true
+		goalFraction = math.clamp(select(1, goalLevels()) / select(2, goalLevels()), 0, 1)
 	else
 		banner.Visible = false
 	end
 	bannerBar.Visible = showBar
-	bannerFill.Size = UDim2.fromScale(math.clamp(tutorialClicks() / Config.Tutorial.ClickGoal, 0, 1), 1)
+	bannerFill.Size = UDim2.fromScale(if goalFraction then goalFraction else math.clamp(tutorialClicks() / Config.Tutorial.ClickGoal, 0, 1), 1)
 end
 
 local function onProgress(frontier)
@@ -719,6 +777,10 @@ player:GetAttributeChangedSignal("TrainingArea"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("TutorialDone"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("TutorialClicks"):Connect(refreshBanner)
 player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("OwnedPets"):Connect(refreshBanner)
+player:GetAttributeChangedSignal("MaxLevel"):Connect(refreshBanner)
+levelValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)
+rebirthValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)
 winValue:GetPropertyChangedSignal("Value"):Connect(refreshBanner)
 refreshBanner()
 
@@ -1149,6 +1211,31 @@ shopButton.MouseButton1Click:Connect(function()
 end)
 -- Yumurta paneli: Win yetmeyince Shop'u Win paketleri bölümünde aç, ücretli düğmeler bildirim göstersin
 eggHooks.showToast = showToast
+
+-- Sunucunun gönderdiği ödül bildirimleri (başlangıç hediyesi, level kilometre taşı ödülleri): 'RewardToast' = '<sayaç>|<mesaj>'
+player:GetAttributeChangedSignal("RewardToast"):Connect(function()
+	local value = player:GetAttribute("RewardToast")
+	local message = if type(value) == "string" then string.match(value, "^%d+|(.*)$") else nil
+	if message and message ~= "" then
+		showToast(true, message)
+	end
+end)
+
+-- Ücretsiz Auto Click denemesi: geri sayım her saniye yenilenir; bitince düğme normal (fiyat) hâline döner ve oyuncuya bir kez haber verilir
+task.spawn(function()
+	local wasTrial = false
+	while true do
+		local trialOn = trialActive()
+		if trialOn or wasTrial then
+			refresh()
+		end
+		if wasTrial and not trialOn and player:GetAttribute("HasAutoClick") ~= true and (Config.AutoClick.GamePassId or 0) > 0 then
+			showToast(true, `Free Auto Click ended! Get it for R$ {Config.AutoClick.Robux} to keep it forever.`)
+		end
+		wasTrial = trialOn
+		task.wait(1)
+	end
+end)
 eggHooks.openShop = function(section)
 	if toggleShop then
 		toggleShop(section)

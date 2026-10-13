@@ -120,11 +120,16 @@ assert(hasText("Click anywhere to squat and get stronger!  (7/" .. Config.Tutori
 -- 2. adım: sayaç doldu, Win yok: duvar yönergesi (Win yetmedi)
 S.localPlayer:SetAttribute("TutorialClicks", Config.Tutorial.ClickGoal)
 assert(not hasText("Click anywhere"), "sayaç dolunca ilk adım yazısı kalkmalı")
+-- 2b. adım (retention): hiç peti yokken ilk yumurtaya yetecek Win: ilk pet yönergesi (ilk skinden ÖNCE)
+wins.Value = Config.Eggs[1].price + Config.Skins[1].price
+refreshBanner()
+assert(hasText("You have " .. wins.Value .. " Wins! Hatch your FIRST PET"), "ilk pet yönergesi yok")
 -- 3. adım: ilk skinin fiyatına yetecek Win: skin rafına yönlendirme
 wins.Value = Config.Skins[1].price
 refreshBanner()
 assert(hasText("You have " .. Config.Skins[1].price .. " Wins! Go to the SKIN shelf"), "3. adım yazısı yok")
--- Eğitim bitti: yönerge yazıları kalkar
+-- Eğitim bitti: yönerge yazıları kalkar (ilk rebirth hedefi şeridi kapalıyken; açık hâli aşağıda ayrıca denenir)
+Config.Tutorial.RebirthGoal = false
 S.localPlayer:SetAttribute("TutorialDone", true)
 -- (yazı metni silinmez, yönerge çerçevesi gizlenir: etiketin ebeveyni Visible = false olmalı)
 local function labelWith(prefix)
@@ -143,11 +148,19 @@ local function labelWith(prefix)
 end
 local label = labelWith("You have")
 assert(label and rawget(rawget(label, "Parent"), "Visible") == false, "eğitim bitince yönerge çerçevesi gizlenmeli")
+-- İlk rebirth hedefi (varsayılan açık): eğitim bitince şerit 'Goal: reach level N to REBIRTH!' gösterir, level sınırına gelince Rebirth'i işaret eder
+Config.Tutorial.RebirthGoal = true
+S.localPlayer:SetAttribute("MaxLevel", 25)
+refreshBanner()
+assert(hasText("Goal: reach level 25 to REBIRTH!"), "ilk rebirth hedefi yazısı yok")
+S.localPlayer:SetAttribute("MaxLevel", 1) -- level (en az 1) sınıra eşit: hedef 'MAX LEVEL' der
+refreshBanner()
+assert(hasText("MAX LEVEL! Open REBIRTH"), "level sınırında Rebirth'i işaret eden yazı yok")
 print("tutorial banner states ok")
 
 -- Alt satır: Auto Click'in solunda 3 hızlı satın alma düğmesi, sağında '+' (Shop); ürün ID'si yokken tıklayınca 'coming soon' bildirimi (hata vermemeli)
-for _, text in { "+1K Power", "+10K Power", "+100K Power" } do
-	assert(hasText(text), "hızlı satın alma düğmesi yok: " .. text)
+for _, text in { "+1K", "+10K", "+100K", "POWER" } do
+	assert(hasText(text), "hızlı satın alma düğmesi yazısı yok: " .. text)
 end
 local quickCount = 0
 for _, product in Config.Shop.Products do

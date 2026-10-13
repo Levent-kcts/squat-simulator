@@ -3,6 +3,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local AnalyticsService = game:GetService("AnalyticsService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -208,7 +209,8 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0) }
+	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, LevelRewards = {}, Funnel = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -374,6 +376,38 @@ local function sanitize(raw)
 		and (data.Muscle > 0 or data.Wins > 0 or data.Rebirths > 0 or #data.Items > 0 or #data.Skins > 0 or #data.Pets > 0) then
 		data.TutorialDone = true
 	end
+	-- RETENTION (2026-10-13): başlangıç Win hediyesi, ücretsiz Auto Click denemesi ve level kilometre taşı ödülleri YENİ oyuncuya (eğitimi bitmemiş) verilir; eski oyuncuya geriye dönük VERİLMEZ
+	if raw.StarterWins == true or (raw.StarterWins == nil and data.TutorialDone) then
+		data.StarterWins = true
+	end
+	if type(raw.AutoTrial) == "number" then
+		data.AutoTrial = math.clamp(math.floor(raw.AutoTrial), 0, Config.AutoClick.TrialSeconds or 0)
+	elseif data.TutorialDone then
+		data.AutoTrial = 0
+	end
+	if type(raw.LevelRewards) == "table" then
+		for _, level in raw.LevelRewards do
+			if type(level) == "number" then
+				data.LevelRewards[math.floor(level)] = true
+			end
+		end
+	elseif data.TutorialDone then
+		for _, reward in Config.LevelRewards do
+			data.LevelRewards[reward.level] = true
+		end
+	end
+	-- Hüni adımları: eski oyuncuda hepsi 'gönderilmiş' sayılır (analitiği kirletmesin)
+	if type(raw.Funnel) == "table" then
+		for _, step in raw.Funnel do
+			if type(step) == "number" then
+				data.Funnel[math.floor(step)] = true
+			end
+		end
+	elseif data.TutorialDone then
+		for step = 1, #Config.Funnel do
+			data.Funnel[step] = true
+		end
+	end
 
 	return data
 end
@@ -416,6 +450,26 @@ local function loadData(player)
 	end
 end
 
+-- Oyuncuya kısa bildirim (istemci 'RewardToast' özniteliği değişince gösterir: '<sayaç>|<mesaj>'; sayaç aynı mesaj art arda gelse de değişim olsun diye)
+local function sendToast(player, profile, message)
+	profile.toastSeq += 1
+	player:SetAttribute("RewardToast", `{profile.toastSeq}|{message}`)
+end
+
+-- İlk oyun hunisi (Config.Funnel): adımı bu oyuncu için bir kez Roblox Analytics'e gönderir (hata verirse oyunu etkilemez)
+local function funnel(player, profile, name)
+	local step = table.find(Config.Funnel, name)
+	if not step or profile.funnel[step] then
+		return
+	end
+	profile.funnel[step] = true
+	pcall(function()
+		AnalyticsService:LogOnboardingFunnelStepEvent(player, step, name)
+	end)
+end
+
+local grantLevelRewards -- level kilometre taşı ödülleri; startBoost / rollPet tanımlandıktan sonra aşağıda atanır
+
 -- Level, TOPLAM bacak kasından hesaplanır (rebirth üst sınırı geçilmez). Dönüş: level atladı mı, yeni level
 local function syncLevel(player)
 	local profile = profiles[player]
@@ -429,6 +483,12 @@ local function syncLevel(player)
 	local level, progress = Progression.levelFromMuscle(muscle.Value, Progression.maxLevel(rebirthStat.Value))
 	levelStat.Value = level
 	profile.taps = progress -- çubuktaki ilerleme (bu level içinde kazanılan kas)
+	if level > before and grantLevelRewards and profile.loaded then
+		grantLevelRewards(player, profile, level)
+	end
+	if level >= 12 and profile.loaded then
+		funnel(player, profile, "Level12")
+	end
 	return level > before, level
 end
 
@@ -544,6 +604,19 @@ local function refresh(player)
 	player:SetAttribute("EquippedSkin", profile.equippedSkin)
 	player:SetAttribute("SkinBonus", skinBonus)
 	player:SetAttribute("OwnedPets", table.concat(profile.pets, ","))
+	-- İlk oyun hunisi (analitik): ilk pet, ilk skin ve ilk rebirth (her biri bir kez)
+	if profile.loaded then
+		if #profile.pets > 0 then
+			funnel(player, profile, "FirstPet")
+		end
+		if #profile.skins > 0 then
+			funnel(player, profile, "FirstSkin")
+		end
+		local rebirthStat = getStat(player, Config.StatRebirths)
+		if rebirthStat and rebirthStat.Value >= 1 then
+			funnel(player, profile, "FirstRebirth")
+		end
+	end
 	player:SetAttribute("PetCapacity", Config.MaxOwnedPets + profile.petSlots)
 	player:SetAttribute("EquippedPets", table.concat(equipped, ","))
 	player:SetAttribute("OwnedTrails", table.concat(profile.trails, ","))
@@ -596,6 +669,22 @@ local function save(player, mode)
 		Settings = profile.settings,
 		TutorialDone = profile.tutorialDone,
 		TutorialClicks = profile.tutorialClicks,
+		StarterWins = profile.starterWins,
+		Funnel = (function()
+			local list = {}
+			for step in profile.funnel do
+				table.insert(list, step)
+			end
+			return list
+		end)(),
+		AutoTrial = math.max(0, math.floor(profile.trialUntil - workspace:GetServerTimeNow())),
+		LevelRewards = (function()
+			local list = {}
+			for level in profile.levelRewards do
+				table.insert(list, level)
+			end
+			return list
+		end)(),
 		Quests = profile.quests,
 		WheelDay = profile.wheelDay,
 		PetSlots = profile.petSlots,
@@ -806,6 +895,11 @@ local function setup(player)
 		potionItems = {}, -- iksir envanteri [sku] = adet (çark / Gifts / görev bonusundan çıkanlar; Shop > Potions'ta 'USE xN' görünür; kayıtlı)
 		wheelDay = 0, -- günlük çarkın son çevrildiği UTC gün (os.time() / 86400); bugüne eşitse bugünkü hak kullanılmış demektir (kayıtlı)
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
+		starterWins = false, -- başlangıç Win hediyesi verildi mi (kayıtlı)
+		trialUntil = 0, -- ücretsiz Auto Click denemesinin bitişi (sunucu saati, GetServerTimeNow); kayıtta KALAN saniye tutulur (çevrimdışıyken akmaz)
+		levelRewards = {}, -- ödülü alınmış level kilometre taşları [level] = true (kayıtlı)
+		funnel = {}, -- analitik hunisine gönderilmiş adımlar [adım numarası] = true (kayıtlı, Config.Funnel)
+		toastSeq = 0, -- oyuncuya giden 'RewardToast' bildirim sayacı
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
 		receipts = {}, -- işlenmiş Robux satın alma kimlikleri (aynı satın alma iki kez ödül vermesin)
 		sessionStart = workspace:GetServerTimeNow(),
@@ -828,6 +922,11 @@ local function setup(player)
 	profile.equippedSkin = data.EquippedSkin
 	profile.tutorialDone = data.TutorialDone
 	profile.tutorialClicks = data.TutorialClicks
+	profile.starterWins = data.StarterWins
+	profile.levelRewards = data.LevelRewards
+	profile.funnel = data.Funnel
+	profile.trialUntil = if data.AutoTrial > 0 then workspace:GetServerTimeNow() + data.AutoTrial else 0
+	player:SetAttribute("AutoClickTrialUntil", profile.trialUntil) -- istemci Auto Click'i deneme süresince açık sayar
 	profile.quests = data.Quests
 	profile.wheelDay = data.WheelDay
 	profile.petSlots = data.PetSlots
@@ -879,6 +978,7 @@ local function setup(player)
 	end
 
 	profile.loaded = true
+	funnel(player, profile, "Joined")
 	refresh(player)
 
 	-- Çevrimdışı kazanç: uzakta geçen süre için bacak kası birikir ve oyuncu açılan pencerede CLAIM'e basınca verilir (claimOffline).
@@ -1235,6 +1335,17 @@ function PlayerStats.tutorialClick(player)
 	if profile.tutorialClicks < Config.Tutorial.ClickGoal then
 		profile.tutorialClicks += 1
 		player:SetAttribute("TutorialClicks", profile.tutorialClicks)
+		-- Başlangıç hediyesi (retention): ilk adım bitince yeni oyuncuya bir kez Win verilir, ilk yumurta ve ilk skin hemen alınabilir
+		local wins = getStat(player, Config.StatWins)
+		if profile.tutorialClicks >= Config.Tutorial.ClickGoal and not profile.starterWins and wins then
+			profile.starterWins = true
+			wins.Value += Config.Tutorial.StarterWins
+			sendToast(player, profile, `Free gift: {Config.Tutorial.StarterWins} Wins! Hatch your first pet at the Starter Egg!`)
+			requestSave(player)
+		end
+		if profile.tutorialClicks >= Config.Tutorial.ClickGoal then
+			funnel(player, profile, "Clicked30")
+		end
 	end
 end
 
@@ -1245,6 +1356,9 @@ function PlayerStats.questEvent(player, kind, amount)
 		return
 	end
 	ensureQuestDay(profile)
+	if kind == "walls" then
+		funnel(player, profile, "FirstWall")
+	end
 	local changed = false
 	for slot, quest in questsForDay(profile.quests.day) do
 		if quest.id == kind and not profile.quests.claimed[slot] and profile.quests.progress[slot] < quest.goal then
@@ -1415,6 +1529,43 @@ local function rollPet(egg, luck)
 		end
 	end
 	return Catalog.PetById[egg.pets[#egg.pets].id]
+end
+
+-- LEVEL KİLOMETRE TAŞI ÖDÜLLERİ (Config.LevelRewards): ilk kez o levele ulaşınca bir kez verilir; iksir HEMEN başlar (oyuncu Shop'a girmek zorunda kalmasın), pet ücretsiz ve rastgeledir (ücretli değil, yüzde gerekmez)
+grantLevelRewards = function(player, profile, level)
+	local wins = getStat(player, Config.StatWins)
+	if not wins then
+		return
+	end
+	local messages = {}
+	for _, reward in Config.LevelRewards do
+		if level >= reward.level and not profile.levelRewards[reward.level] then
+			profile.levelRewards[reward.level] = true
+			if reward.kind == "wins" then
+				wins.Value += reward.amount
+				table.insert(messages, `+{reward.amount} Wins`)
+			elseif POTION_FIELD[reward.kind] then
+				startBoost(player, profile, reward.kind, reward.minutes)
+				local potion = Catalog.PotionByKind[reward.kind]
+				table.insert(messages, `{potion.name} active: {potion.effect} for {reward.minutes or Config.BoostMinutes} min`)
+			elseif reward.kind == "pet" then
+				local egg = Catalog.EggById[reward.egg]
+				if egg and #profile.pets < petCapacity(profile) then
+					local pet = rollPet(egg, 1)
+					table.insert(profile.pets, pet.id)
+					if #profile.equipped < Config.MaxEquippedPets then
+						table.insert(profile.equipped, pet.id)
+					end
+					table.insert(messages, `free pet: {pet.name}`)
+				end
+			end
+		end
+	end
+	if #messages > 0 then
+		sendToast(player, profile, `Level {level} reward! {table.concat(messages, ", ")}`)
+		refresh(player)
+		requestSave(player)
+	end
 end
 
 -- Pet listesini "Dragon x1, Cat x2" şeklinde özetler (en güçlüden başlayarak)
@@ -2101,6 +2252,10 @@ function PlayerStats.dev(player, command, amount)
 		profile.tutorialDone = false -- eğitim yeniden başlar
 		profile.tutorialClicks = 0
 		player:SetAttribute("TutorialClicks", 0)
+		profile.starterWins = false
+		profile.levelRewards = {}
+		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
+		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
 		profile.quests = newQuestState(currentQuestDay())
 		profile.wheelDay = 0
 		publishQuests(player)

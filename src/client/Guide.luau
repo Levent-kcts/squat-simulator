@@ -1,5 +1,6 @@
 -- Yeni oyuncular için yol gösterici çizgi (EĞİTİM): karakterden hedefe giden parlak bir şerit.
 --   * İlk skinin fiyatına yetecek Win yokken: sıradaki duvarın önündeki noktaya (duvara yaklaşınca kaybolur); aşama bitince o aşamanın sarı Win pedine
+--   * Hiç peti yokken ilk yumurtaya (Config.Eggs[1]) yetecek Win olunca: o yumurtanın pedine (2026-10-13)
 --   * Yetecek Win olunca: skin rafındaki İLK skinin (Config.Skins[1]) pedine (pedin yanına gelince kaybolur)
 -- Sadece oyuncunun 'TutorialDone' = false olduğu sürece (yani ilk skinini alana kadar) gösterilir; sunucu bayrağı ilk skin alınınca true yapar. Tamamen görsel.
 local Players = game:GetService("Players")
@@ -38,6 +39,18 @@ function Guide.init(wallClient)
 			end
 		end
 		return nil
+	end
+
+	-- İlk yumurtanın pedi (EggShop klasöründe 'Pad_<yumurta id>'); bulunana kadar nil
+	local starterEgg = Config.Eggs[1]
+	local eggPad = nil
+	local function findEggPad()
+		if eggPad and eggPad.Parent then
+			return eggPad
+		end
+		local folder = Workspace:FindFirstChild("EggShop")
+		eggPad = folder and folder:FindFirstChild(`Pad_{starterEgg.id}`) or nil
+		return eggPad
 	end
 
 	-- Hedef noktası: görünmez, sabit bir parça; çizginin ucu buna bağlanır
@@ -92,6 +105,14 @@ function Guide.init(wallClient)
 	local function pickTarget(position)
 		-- Eğitimin ilk adımı (squat say): duvara yönlendirme, ilk Config.Tutorial.ClickGoal tıklama bitene kadar çizgi yok
 		if (player:GetAttribute("TutorialClicks") or 0) < Config.Tutorial.ClickGoal then
+			return nil
+		end
+		-- Hiç peti yoksa ve ilk yumurtaya yetecek Win varsa: ilk yumurtanın pedine (ilk pet 1. dakikada; retention)
+		if (player:GetAttribute("OwnedPets") or "") == "" and wins.Value >= starterEgg.price then
+			local pad = findEggPad()
+			if pad and (pad.Position - position).Magnitude > 8 then
+				return pad.Position + Vector3.new(0, 1.2, 0)
+			end
 			return nil
 		end
 		-- İlk skine yetecek Win varsa: skin rafındaki ilk pede

@@ -101,7 +101,9 @@ return {
 	-- (Creator Hub > Monetization > Passes'te 'Auto Click' geçişi aç, ID'yi robux_ids.txt'te autoclick= satırına yaz, tools/set_robux_ids.py işler). GamePassId = 0 iken herkese serbesttir.
 	-- Robux = düğmede ve Shop kartında GÖSTERİLEN fiyat (en çok 150; asıl fiyatı Creator Hub'daki pass belirler, aynı yaz). Sahiplik sunucuda sorulur (server/AutoClickPass, 'HasAutoClick' özniteliği);
 	-- pass olmayan oyuncu elle tıklar (sunucu hız sınırı ClickLimit herkese aynı) ya da antrenman pedinin kendi squat'ını kullanır. Tempo (tools/simulate.py): Auto Click'li oyun sonu ~11 sa, elle 5/sn ~19 sa, pasif ped ~41 sa.
-	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 149 },
+	-- TrialSeconds: YENİ oyuncuya ilk bu kadar saniye (oynadığı süre; çevrimdışıyken akmaz, kayıtlı) ÜCRETSİZ Auto Click (2026-10-13, playtest: 'insanlar 1k güçte bırakıyor': elle tıklamak 2,5. dakikadan sonra yorucu,
+	-- oyuncu Auto Click'in hızını önce yaşasın, süre bitince fiyatı görsün; server/PlayerStats 'AutoClickTrialUntil' özniteliği, düğmede 'FREE m:ss'). Eski oyuncuya verilmez. 0 = deneme yok.
+	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 149, TrialSeconds = 600 },
 	-- YUMURTA GAME PASS'LERİ (sahibi 'yumurtada R auto ve T multi ücretli olsun, üzerlerinde Robux fiyatları olsun, bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi): yumurta panelinde İKİ ücretli özellik vardır:
 	-- Auto Open (R tuşu: otomatik açma) ve Multi Open (T tuşu: x3 ve x10 modları; oyuncu T ile modu değiştirip açar). E ile tek yumurta açmak her zaman ücretsizdir. Her biri BİR game pass'tir (kalıcı).
 	-- (Önce üç pass'ti: Auto, Triple x3, Multi/Mega x10; sahibi Triple'ı Multi'ye çevirdi, 'eggtriple' kodunu eggmulti olarak kullan dedi: tek Multi pass'i HEM x3 HEM x10 modunu açar.)
@@ -302,7 +304,23 @@ return {
 	-- eski kayıtlarda ilerleme varsa (kas, Win, rebirth, eşya, pet, skin) eğitim bitmiş sayılır. Adımlar: duvarları kır, Win pedine bas, ilk skin fiyatına (Config.Skins[1]) yetince skin rafına git ve al.
 	-- Çizgi ve yazı client/Guide ve init.client'tadır.
 	-- İlk adım: oyun başında 'Click to squat and get stronger! (0/30)': ClickGoal kez tıklayınca (hareket başlayınca, sunucu sayar, kayıtlı) oyuncu duvara yönlendirilir.
-	Tutorial = { ClickGoal = 30 },
+	-- StarterWins: ClickGoal tıklama bitince yeni oyuncuya BİR KEZ verilen Win (2026-10-13): ilk yumurta (Starter 5) + ilk skin (3) = 8, böylece ilk pet 1. dakikada gelir
+	-- (eskiden ilk yumurta 3. aşama kırılınca, elle tıklayanda ~6. dakikada alınabiliyordu; playtest: oyuncular 2-3. dakikada bırakıyordu).
+	-- RebirthGoal: eğitim bitince ilk rebirth'e kadar üstteki şerit 'Goal: reach level 25 to REBIRTH! (N/25)' + çubuk gösterir (2026-10-13 retention; sahibi 'üstte oyuncu ilerleme şeridi istemem' demişti, bu SADECE ilk rebirth'e kadar
+	-- ve eğitim şeridinin devamıdır: istemezse false yap).
+	Tutorial = { ClickGoal = 30, StarterWins = 8, RebirthGoal = true },
+	-- İLK OYUN HUNİSİ (2026-10-13): oyuncunun ilk dakikalarda nereye kadar geldiği Roblox Analytics > Funnels'a gönderilir (AnalyticsService:LogOnboardingFunnelStepEvent). Sıra = adım numarası; her adım
+	-- bir oyuncu için BİR KEZ (kayıtlı) gönderilir; eski oyuncu için hiç gönderilmez. Yeni adım eklersen SONA koy (numaralar değişmesin).
+	Funnel = { "Joined", "Clicked30", "FirstWall", "FirstPet", "FirstSkin", "Level12", "FirstRebirth" },
+	-- LEVEL KİLOMETRE TAŞI ÖDÜLLERİ (2026-10-13, retention: 1K güçten sonra level başına 500-1200 kas gerekir, ödül yoktu): bir hesapta bir kez, level'a ilk ulaşınca otomatik verilir (bildirim 'RewardToast').
+	-- kind: wins (amount Win), boostMuscle / boostWins / boostLuck / boostRainbow (iksir HEMEN başlar, minutes dk), pet (egg: o yumurtanın havuzundan ücretsiz rastgele pet; envanter doluysa atlanır). Eski oyuncuya geriye dönük verilmez.
+	LevelRewards = {
+		{ level = 6, kind = "wins", amount = 8 },
+		{ level = 12, kind = "boostMuscle", minutes = 15 },
+		{ level = 18, kind = "wins", amount = 20 },
+		{ level = 22, kind = "pet", egg = "starter" },
+		{ level = 25, kind = "wins", amount = 30 },
+	},
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
 	CameraMaxZoom = 40,
