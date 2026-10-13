@@ -310,7 +310,7 @@ return {
 		Backpack = "rbxassetid://139523703798238",
 		Pets = "rbxassetid://122036590660446",
 		Gifts = "rbxassetid://107783706209695",
-		Potions = { luck = "rbxassetid://91056972058738", muscle = "rbxassetid://98486348856459", wins = "rbxassetid://85296637105560", rainbow = "rbxassetid://120946113586884" }, -- iksir görselleri (assets/icons/potion_<id>.png, Gemini çizimi, 2026-10-09): sahibinin yüklediği Image'lar, doğrulandı. Boş bırakılırsa kodla çizilen şişe (UIStyle.potionIcon)
+		Potions = { luck = "rbxassetid://91056972058738", muscle = "rbxassetid://98486348856459", wins = "rbxassetid://85296637105560", rainbow = "rbxassetid://120946113586884", auto = "rbxassetid://87846780771308" }, -- iksir görselleri (assets/icons/potion_<id>.png, Gemini çizimi, 2026-10-09): sahibinin yüklediği Image'lar, doğrulandı. Boş bırakılırsa kodla çizilen şişe (UIStyle.potionIcon)
 		Click = "rbxassetid://138038526402176", -- Auto Click düğmesinin ortasındaki (yazının arkasında) tıklama simgesi: sahibinin yüklediği görsel (Image türü, doğrulandı). Boş bırakılırsa simge çizilmez
 		Trails = "rbxassetid://127034765324159", -- Backpack > Trails düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/trails.png, Image türü, doğrulandı). Boş bırakılırsa ✨ emojisi
 		Auras = "rbxassetid://80241008587441", -- Backpack > Auras düğmesinin simgesi: sahibinin yüklediği görsel (assets/icons/auras.png, Image türü, doğrulandı). Boş bırakılırsa 🔮 emojisi

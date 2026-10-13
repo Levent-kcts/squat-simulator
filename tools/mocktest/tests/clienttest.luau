@@ -181,6 +181,34 @@ refreshBanner()
 assert(hasText("MAX LEVEL! Open REBIRTH"), "level sınırında Rebirth'i işaret eden yazı yok")
 print("tutorial banner states ok")
 
+-- Büyüyüp küçülen (nabız atan / basınca küçülen) düğmeler ORTADAN ölçeklenir: AnchorPoint (0.5, 0.5) olmalı (sahibi 'tek tarafı sabit kalıp diğer taraftan büyüyor' dedi)
+local function findNamed(root, name)
+	for _, child in rawget(root, "_children") do
+		if rawget(child, "Name") == name then
+			return child
+		end
+		local deeper = findNamed(child, name)
+		if deeper then
+			return deeper
+		end
+	end
+	return nil
+end
+local function centered(instance)
+	local anchor = rawget(instance, "AnchorPoint")
+	return anchor ~= nil and anchor.X == 0.5 and anchor.Y == 0.5
+end
+for _, name in { "ShopButton", "RebirthButton", "SettingsButton", "BackpackButton", "PetsButton", "GiftsButton" } do
+	local squareButton = findNamed(S.localPlayer, name)
+	assert(squareButton and centered(squareButton), "sol menü düğmesi ortadan ölçeklenmeli (AnchorPoint 0.5, 0.5): " .. name)
+end
+for _, name in { "QuestsButton", "IndexButton", "StatsButton" } do
+	local circle = findNamed(S.localPlayer, name)
+	local disc = circle and findNamed(circle, "Disc")
+	assert(disc and centered(disc), "sağ üst daire ortadan nabız atmalı: " .. name)
+end
+print("centered scaling ok")
+
 -- Alt satır: Auto Click'in solunda 3 hızlı satın alma düğmesi, sağında '+' (Shop); ürün ID'si yokken tıklayınca 'coming soon' bildirimi (hata vermemeli)
 for _, text in { "+1K", "+10K", "+100K", "POWER" } do
 	assert(hasText(text), "hızlı satın alma düğmesi yazısı yok: " .. text)

@@ -108,6 +108,26 @@ function UIStyle.soften(obj, opts)
 	return obj
 end
 
+-- ORTADAN BÜYÜYÜP KÜÇÜLSÜN (2026-10-13, sahibi 'butonlar tek tarafı sabit kalıp diğer taraftan büyüyüp küçülüyor, hareket edecekse olduğu yerde her yöne doğru büyüt küçült' dedi):
+-- UIScale / Size animasyonu nesnenin AnchorPoint'inden büyür; varsayılan (0, 0) sol-üst köşeyi sabit tutar. Bu yardımcı nesneyi YERİNDE bırakıp AnchorPoint'ini (0.5, 0.5) yapar (konumu buna göre kaydırır);
+-- nabız atan, basınca küçülen ya da büyüyen HER düğme animasyondan ÖNCE bunu çağırmalı. Düzen (UIListLayout/UIGridLayout) içindeki nesnelerde kullanma: onlar sabit boyutlu bir tutucunun içinde ortalanır (RightHud FREE REWARD gibi).
+function UIStyle.anchorCenter(obj)
+	local ok, err = pcall(function()
+		local size, position, anchor = obj.Size, obj.Position, obj.AnchorPoint
+		obj.AnchorPoint = Vector2.new(0.5, 0.5)
+		obj.Position = UDim2.new(
+			position.X.Scale + (0.5 - anchor.X) * size.X.Scale,
+			position.X.Offset + (0.5 - anchor.X) * size.X.Offset,
+			position.Y.Scale + (0.5 - anchor.Y) * size.Y.Scale,
+			position.Y.Offset + (0.5 - anchor.Y) * size.Y.Offset
+		)
+	end)
+	if not ok then
+		warn(`[UIStyle] Ortalanamadı: {err}`)
+	end
+	return obj
+end
+
 -- =====================================================================
 -- PET SİMGESİ: pet renginde sevimli bir yüz (kulak, göz, burun, yanak). Kare bir Frame döner.
 -- props: Frame özellikleri (Position, Size, AnchorPoint ...) ve dim = true (silinen pet için solgun renk)

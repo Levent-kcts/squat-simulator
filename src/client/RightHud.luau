@@ -187,6 +187,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 			BackgroundColor3 = Color3.fromRGB(16, 17, 24),
 			BackgroundTransparency = 0.04,
 		}, column)
+		UIStyle.anchorCenter(disc) -- Index / Quests dairesi nabız atar: ortadan büyüyüp küçülsün (sol-üst köşe sabit kalmasın)
 		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
 		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(70, 74, 98) }, disc)
 		if imageId and imageId ~= "" then
@@ -350,8 +351,8 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		text(iconBox, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(34, 34), Text = "👥" }, 0)
 	end
 	local percentLabel = text(friends, {
-		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 41),
+		AnchorPoint = Vector2.new(0.5, 0.5), -- yeni arkadaşta büyüyüp yerine oturur: ortadan
+		Position = UDim2.new(0.5, 0, 0, 59),
 		Size = UDim2.fromOffset(62, 36),
 		Text = "0%",
 		TextColor3 = Color3.fromRGB(255, 214, 46),
@@ -442,12 +443,12 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 			percentLabel.Text = "INVITE"
 			percentLabel.TextColor3 = Color3.fromRGB(150, 205, 255)
 			percentLabel.Size = UDim2.fromOffset(60, 18)
-			percentLabel.Position = UDim2.new(0.5, 0, 0, 48)
+			percentLabel.Position = UDim2.new(0.5, 0, 0, 57)
 		else
 			percentLabel.Text = `{percent}%`
 			percentLabel.TextColor3 = Color3.fromRGB(255, 214, 46)
 			percentLabel.Size = UDim2.fromOffset(62, 36)
-			percentLabel.Position = UDim2.new(0.5, 0, 0, 41)
+			percentLabel.Position = UDim2.new(0.5, 0, 0, 59)
 		end
 		tooltipCount.Text = `{friendCount} / {Config.Friends.MaxFriends} friends here (max +{Config.Friends.MaxFriends * Config.Friends.PercentPerFriend}%)`
 		if percent > lastPercent then

@@ -270,6 +270,7 @@ local function makeSquareButton(position, icon, label, accent, imageId, iconSize
 		AutoButtonColor = false,
 		BackgroundColor3 = Color3.new(1, 1, 1),
 	}, screenGui)
+	UIStyle.anchorCenter(button) -- Rebirth nabzı gibi büyüme/küçülme animasyonları ortadan olsun (sol-üst köşe sabit kalmasın)
 	create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
 	local borderGradient = create("UIGradient", { Color = ColorSequence.new(accent[1], accent[2]), Rotation = 45 }, button)
@@ -410,8 +411,8 @@ local multiplierLabel = makeText(bottom, {
 
 -- Bacak kası yazısı (referanstaki '3.6M Punch' gibi sade): eskiden 36 punto ve 40 yüksekliğindi, ekranı çok kaplıyordu (sahibi 'referansa göre bunaltıcı' dedi)
 local muscleLabel = makeText(bottom, {
-	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.fromScale(0.5, 0),
+	AnchorPoint = Vector2.new(0.5, 0.5), -- her kas artışında hafifçe 'pop' yapar: ortadan büyüyüp küçülsün
+	Position = UDim2.new(0.5, 0, 0, 17),
 	Size = UDim2.new(0.7, 0, 0, 34),
 	TextColor3 = Color3.new(1, 1, 1),
 }, 28, 2.5)

@@ -207,6 +207,7 @@ function MusicPlayer.init(screenGui)
 			BackgroundColor3 = Color3.new(1, 1, 1),
 			BackgroundTransparency = 1,
 		}, body)
+		UIStyle.anchorCenter(button) -- basınca küçülür: ortadan
 		create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
 		local scale = create("UIScale", { Scale = 1 }, button)
 		button.MouseEnter:Connect(function()
@@ -247,6 +248,7 @@ function MusicPlayer.init(screenGui)
 		AutoButtonColor = false,
 		BackgroundColor3 = ICON_COLOR,
 	}, body)
+	UIStyle.anchorCenter(playButton) -- basınca küçülür: ortadan
 	create("UICorner", { CornerRadius = UDim.new(1, 0) }, playButton)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, playButton)
 	UIStyle.soften(playButton, { radius = UDim.new(1, 0), strength = 0.15, shine = false })
