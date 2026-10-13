@@ -1066,6 +1066,7 @@ local function setup(player)
 		boostRainbowUntil = 0,
 		boostAutoUntil = 0, -- Auto Click Potion bitişi (os.time; Rainbow kapsamaz)
 		claimedGifts = {}, -- oyun süresi ödülleri (bu oturum)
+		unlockedGifts = {}, -- Robux 'Unlock' ile AÇILAN ama henüz ALINMAYAN ödüller [sıra] = true (bu tur; süre beklemeden alınabilir, oyuncu CLAIM eder)
 		offlinePending = 0, -- alınmayı bekleyen çevrimdışı kazanç (bacak kası) ve uzakta geçen süre (saniye)
 		offlineSeconds = 0,
 		musicLevel = nil, -- teypteki müzik ses kademesi (nil = kaydedilmemiş, istemci varsayılanı kullanır)
@@ -1344,19 +1345,27 @@ local function publishClaimedGifts(player, profile)
 	end
 	table.sort(list)
 	player:SetAttribute("ClaimedGifts", table.concat(list, ","))
+	-- Robux ile açılan (alınmayı bekleyen) ödüller: istemci bunları süresi dolmuş gibi 'Claim' gösterir
+	local unlocked = {}
+	for index in profile.unlockedGifts do
+		table.insert(unlocked, index)
+	end
+	table.sort(unlocked)
+	player:SetAttribute("UnlockedGifts", table.concat(unlocked, ","))
 end
 
 -- 10 ödülün HEPSİ alınınca tur BAŞTAN başlar (sahibi 'playtime rewards fullendikten sonra baştan başlasın' dedi): sayaç o andan sıfırlanır, ödüller yeniden kilitlenir.
 -- 'GiftCycle' özniteliği her yeni turda artar: istemci kendi 'Claimed' bilgisini yarış durumunda yanlış turda işaretlemesin diye bunu karşılaştırır
 local function restartGifts(player, profile)
 	profile.claimedGifts = {}
+	profile.unlockedGifts = {}
 	profile.sessionStart = workspace:GetServerTimeNow()
 	player:SetAttribute("SessionStart", profile.sessionStart)
 	player:SetAttribute("GiftCycle", (player:GetAttribute("GiftCycle") or 0) + 1)
 end
 
--- index. ödülü verir. force = true süre kontrolünü atlar (Robux 'Unlock' ürünleri: oyuncu beklemeyi satın aldı). Dönüş: başarılı mı, mesaj
-local function giveGift(player, profile, index, force)
+-- index. ödülü verir (oyuncunun CLAIM'i). Süresi dolmuş ya da Robux 'Unlock' ile açılmış (profile.unlockedGifts) olmalı. Dönüş: başarılı mı, mesaj
+local function giveGift(player, profile, index)
 	local muscle = getStat(player, Config.StatLegMuscle)
 	local wins = getStat(player, Config.StatWins)
 	if not muscle or not wins then
@@ -1369,7 +1378,7 @@ local function giveGift(player, profile, index, force)
 	if profile.claimedGifts[index] then
 		return false, "You already claimed this reward."
 	end
-	if not force and workspace:GetServerTimeNow() - profile.sessionStart < reward.time then
+	if not profile.unlockedGifts[index] and workspace:GetServerTimeNow() - profile.sessionStart < reward.time then
 		return false, "This reward is not ready yet."
 	end
 
@@ -1397,6 +1406,7 @@ local function giveGift(player, profile, index, force)
 	end
 
 	profile.claimedGifts[index] = true
+	profile.unlockedGifts[index] = nil
 	profile.flags.gift = true -- Yeni oyuncu görevi 'Claim a Playtime Reward'
 	local claimedCount = 0
 	for _ in profile.claimedGifts do
@@ -1412,27 +1422,25 @@ local function giveGift(player, profile, index, force)
 	return true, message
 end
 
--- Robux 'Unlock' ürünleri: mode = 'next' (sıradaki KİLİTLİ ödül; hazır ama alınmamış ödüller oyuncuya kalır) ya da 'all' (alınmamış hepsi). Pet envanteri doluysa o pet atlanır (sonra elle alınır).
--- Hiçbir şey açılamazsa (hepsi alınmış) satın alma boşa gitmesin diye bir aşamanın Win ödülü verilir. Dönüş: açılan ödül sayısı
+-- Robux 'Unlock' ürünleri (2026-10-13, sahibi 'unlock all olduğunda ya da süre bittiğinde süre başa sarması için TÜM itemlerin claimlenmesi gerekiyor' dedi): ürün ödülleri VERMEZ, sadece AÇAR (süre beklemeden 'Claim' olur);
+-- oyuncu her ödülü kendisi CLAIM eder ve tur (süre sayacı) ancak 10 ödülün HEPSİ alınınca baştan başlar. mode = 'next' (sıradaki KİLİTLİ ödülü açar; süresi dolmuş ödüller zaten alınabilir) ya da 'all' (hâlâ kilitli olan hepsini açar).
+-- Açılacak kilitli ödül yoksa satın alma boşa gitmesin diye bir aşamanın Win ödülü verilir. Dönüş: açılan ödül sayısı
 local function unlockGifts(player, profile, mode)
 	local elapsed = workspace:GetServerTimeNow() - profile.sessionStart
 	local opened = 0
-	-- Hedefler ÖNCEDEN toplanır: son ödül verilince tur başa sarar (claimedGifts sıfırlanır), döngü yeni turdan ödül dağıtmasın
-	local targets = {}
 	for index, reward in Config.GiftRewards do
-		if not profile.claimedGifts[index] and (mode == "all" or elapsed < reward.time) then
-			table.insert(targets, index)
-		end
-	end
-	for _, index in targets do
-		if giveGift(player, profile, index, true) then
+		if not profile.claimedGifts[index] and not profile.unlockedGifts[index] and elapsed < reward.time then
+			profile.unlockedGifts[index] = true
 			opened += 1
 			if mode == "next" then
 				break
 			end
 		end
 	end
-	if opened == 0 then
+	if opened > 0 then
+		publishClaimedGifts(player, profile)
+		sendToast(player, profile, `{if mode == "all" then "All gifts unlocked" else "Gift unlocked"}! Open Gifts and press CLAIM. Claim all {#Config.GiftRewards} rewards and the list starts over!`)
+	else
 		local wins = getStat(player, Config.StatWins)
 		if wins then
 			wins.Value += estimatedStageReward(player)
@@ -2398,7 +2406,7 @@ function PlayerStats.claimGift(player, index)
 	if not profile or not profile.loaded then
 		return false, "Loading your data, please wait."
 	end
-	return giveGift(player, profile, index, false)
+	return giveGift(player, profile, index)
 end
 
 -- TEST ARAÇLARI: sadece DevTools modülü, sahiplik kontrolünden sonra çağırır.

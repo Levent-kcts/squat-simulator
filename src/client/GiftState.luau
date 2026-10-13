@@ -25,6 +25,17 @@ end
 player:GetAttributeChangedSignal("ClaimedGifts"):Connect(syncClaimed)
 syncClaimed()
 
+-- [ödül sırası] = true: Robux 'Unlock' ile AÇILAN (süre beklemeden 'Claim' olan) ama henüz alınmayan ödüller; sunucu 'UnlockedGifts' ('2,3,4') ile bildirir
+GiftState.unlocked = {}
+local function syncUnlocked()
+	table.clear(GiftState.unlocked)
+	for index in string.gmatch(player:GetAttribute("UnlockedGifts") or "", "%d+") do
+		GiftState.unlocked[tonumber(index)] = true
+	end
+end
+player:GetAttributeChangedSignal("UnlockedGifts"):Connect(syncUnlocked)
+syncUnlocked()
+
 -- Oyuna girişten bu yana geçen süre (sunucu saatiyle; SessionStart veri yüklenince gelir)
 function GiftState.elapsed()
 	local start = player:GetAttribute("SessionStart")
@@ -39,7 +50,7 @@ function GiftState.ready()
 	local list = {}
 	local elapsed = GiftState.elapsed()
 	for index, reward in Config.GiftRewards do
-		if not GiftState.claimed[index] and elapsed >= reward.time then
+		if not GiftState.claimed[index] and (elapsed >= reward.time or GiftState.unlocked[index]) then
 			table.insert(list, index)
 		end
 	end
@@ -52,7 +63,7 @@ function GiftState.nextRemaining()
 	local best = nil
 	for index, reward in Config.GiftRewards do
 		if not GiftState.claimed[index] then
-			local remaining = math.max(0, reward.time - elapsed)
+			local remaining = if GiftState.unlocked[index] then 0 else math.max(0, reward.time - elapsed)
 			if best == nil or remaining < best then
 				best = remaining
 			end

@@ -193,3 +193,29 @@ assert(GiftState.claimed[1] and GiftState.claimed[2] and GiftState.claimed[4] an
 S.localPlayer:SetAttribute("ClaimedGifts", "")
 assert(next(GiftState.claimed) == nil, "yeni turda eski 'Claimed'lar silinmeli")
 print("GiftState round restart ok")
+
+-- 7) Robux 'Unlock' ile AÇILAN ödüller ('UnlockedGifts'): süresi dolmasa da alınabilir ('Claim'), hazır sayılır; Unlock butonları açılmışları 'kilitli' saymaz (açılacak bir şey yoksa Robux harcatmaz)
+rawset(workspaceService, "GetServerTimeNow", function()
+	return 1000 -- oturum başı: hiçbir ödülün süresi dolmadı
+end)
+assert(#GiftState.ready() == 0, "süre dolmadan hazır ödül yok")
+S.localPlayer:SetAttribute("UnlockedGifts", "4,5")
+assert(GiftState.unlocked[4] and GiftState.unlocked[5] and not GiftState.unlocked[6], "açılan ödüller istemcide görünmeli")
+local readyList = GiftState.ready()
+assert(#readyList == 2 and readyList[1] == 4 and readyList[2] == 5, "açılan ödüller 'hazır' sayılmalı")
+assert(GiftState.nextRemaining() == 0, "açılmış ödül varken sıradaki süre 0 (FREE REWARD READY)")
+local allIndices = {}
+for index in Config.GiftRewards do
+	table.insert(allIndices, index)
+end
+S.localPlayer:SetAttribute("UnlockedGifts", table.concat(allIndices, ","))
+local beforePrompts = #prompted
+toasts = {}
+panel = newPanel(toasts)
+click(panel, "Unlock Next")
+click(panel, "Unlock All")
+assert(#prompted == beforePrompts, "hepsi açılmışken satın alma açılmamalı (Robux boşa gitmesin)")
+assert(string.find(toasts[1], "Nothing is locked", 1, true), "açılmışları kilitli saymamalı: " .. tostring(toasts[1]))
+S.localPlayer:SetAttribute("UnlockedGifts", "")
+assert(next(GiftState.unlocked) == nil, "yeni turda açılanlar silinmeli")
+print("GiftState unlocked ok")

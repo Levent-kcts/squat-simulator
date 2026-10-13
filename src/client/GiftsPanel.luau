@@ -82,6 +82,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	local player = Players.LocalPlayer
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 	local claimed = GiftState.claimed -- bu oturumda alınan ödüller (lobideki sandık ve sağdaki kutuyla ortak; sunucu zaten kontrol eder)
+	local unlocked = GiftState.unlocked -- Robux 'Unlock' ile açılan, alınmayı bekleyen ödüller (süre beklemeden 'Claim' olur; oyuncu kendisi alır)
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -272,7 +273,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 
 		status.MouseButton1Click:Connect(function()
 			local elapsed = Workspace:GetServerTimeNow() - (player:GetAttribute("SessionStart") or 0)
-			if claimed[index] or elapsed < reward.time then
+			if claimed[index] or (elapsed < reward.time and not unlocked[index]) then
 				return
 			end
 			task.spawn(function()
@@ -317,7 +318,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			for index, reward in Config.GiftRewards do
 				if not claimed[index] then
 					unclaimed += 1
-					if elapsed < reward.time then
+					if elapsed < reward.time and not unlocked[index] then
 						locked += 1
 					end
 				end
@@ -347,7 +348,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			if claimed[index] then
 				cell.label.Text = "Claimed"
 				cell.button.BackgroundColor3 = Color3.fromRGB(70, 70, 80)
-			elseif elapsed >= reward.time then
+			elseif elapsed >= reward.time or unlocked[index] then
 				claimable += 1
 				cell.label.Text = "Claim"
 				cell.button.BackgroundColor3 = Color3.fromRGB(60, 200, 40)
