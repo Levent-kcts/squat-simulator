@@ -8,6 +8,7 @@ Auto Click KAPALI ve antrenman pedindeyken pedin kendi otomatik squat'ı hareket
 HARCAMA (2026-10-09): oyuncu önce en iyi ayakkabıyı (Win'in %60'ına kadar; duvar hasarı), sonra yumurtayı (Win'in yarısını geçmeyen en pahalı) ve skini alır, aura'yı fiyatı yetince alır (`spend=old` eski sıra: ayakkabıyı neredeyse hiç almazdı,
 `shoe_share=`, `egg_share=`). Çıktının son satırları aşama KİLOMETRE TAŞLARIDIR (5/10/15/20. aşamaya ilk ulaşılan zaman ve rebirth sayısı): 20. aşama = oyunun sonu.
 Hedef (aktif oyuncu = Auto Click'li): oyunun sonu (20. aşama) günde 1 saat oynayan için 10-15 günde, yani ~10-14 saat; 5. aşama ~5-8 dk, 10. ~1 sa, 15. ~5 sa, 20. ~10 sa; 1. rebirth ~5 dk, 5. ~1.4 sa, 20. ~10 sa.
+Denge denemeleri için ek geçersiz kılmalar (2026-10-13 tam sayı çarpan dengelemesi): `hp_scale=` (aşama tabanı canlarını katlar), `hp1=`/`hp2=`/`hp3=` (ilk üç aşamanın tabanı), `pet_scale=` (pet çarpanlarını katlar), `rebirth=old` (eski rebirth: Win/ayakkabı/skin sıfırlanır).
 `max_hits=` oyuncunun bir aşamayı kırmak için katlanacağı en çok tekme sayısıdır (varsayılan 40: sınırdaki duvar başına ~8 tekme); küçük değer duvarları 'zayıf' hissettirir.
 """
 import math
@@ -116,6 +117,13 @@ if "levels_per_rebirth" in OVERRIDES:
     MAX_LEVEL_PER_REBIRTH = float(OVERRIDES["levels_per_rebirth"])
 if "hp_growth" in OVERRIDES:
     HEALTH_GROWTH = float(OVERRIDES["hp_growth"])
+if "hp_scale" in OVERRIDES:  # aşama tabanı canlarını (GroupHealth) bu kadar katla (2026-10-13 tam sayı çarpan dengelemesi)
+    GROUP_HEALTH = [x * float(OVERRIDES["hp_scale"]) for x in GROUP_HEALTH]
+for _index in (1, 2, 3):  # hp1 / hp2 / hp3: aşama tabanı canlarını tek tek belirle (ilk üç aşama: Config.Wall.GroupHealth)
+    if f"hp{_index}" in OVERRIDES and len(GROUP_HEALTH) >= _index:
+        GROUP_HEALTH[_index - 1] = float(OVERRIDES[f"hp{_index}"])
+if "pet_scale" in OVERRIDES:  # pet çarpanlarını bu kadar katla (deneme amaçlı)
+    PETS = {k: v * float(OVERRIDES["pet_scale"]) for k, v in PETS.items()}
 if "price_scale" in OVERRIDES:
     scale = float(OVERRIDES["price_scale"])
     ITEMS = [(p * scale, d) for p, d in ITEMS]

@@ -9,6 +9,7 @@ local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 local Progression = require(Shared:WaitForChild("Progression"))
+local Format = require(Shared:WaitForChild("Format"))
 
 local RebirthPanel = {}
 
@@ -181,8 +182,8 @@ function RebirthPanel.init(screenGui, showToast)
 
 	local function render()
 		local rebirths, level, maxLevel = currentState()
-		beforeMultiplier.Text = `{string.format("%.2f", Progression.rebirthMultiplier(rebirths))}x Multiplier`
-		afterMultiplier.Text = `{string.format("%.2f", Progression.rebirthMultiplier(rebirths + 1))}x Multiplier`
+		beforeMultiplier.Text = `{Format.multiplier(Progression.rebirthMultiplier(rebirths))}x Multiplier`
+		afterMultiplier.Text = `{Format.multiplier(Progression.rebirthMultiplier(rebirths + 1))}x Multiplier`
 		beforeMax.Text = `Max Level {maxLevel}`
 		afterMax.Text = `Max Level {Progression.maxLevel(rebirths + 1)}`
 		barText.Text = `Level: {level}/{maxLevel}`

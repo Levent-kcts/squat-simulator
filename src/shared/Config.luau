@@ -21,11 +21,12 @@ return {
 		-- 2026-10-09: her tıklama kası anında verdiği ve Auto Click saniyede 10 tıklama attığı için (eskiden saniyede ~2 varsayılırdı) CostPower 4.2 -> 4.9 ve BaseMaxLevel 20 -> 25 yapıldı
 		-- (eski ayarla 12. rebirth 2.5 saatte geliyordu). OYUNUN SONU (20. aşama, 100. duvar) günde 1 saat oynayan için 10-15 günde gelsin diye duvar canı büyümesi 5 -> 3.2 yapıldı (Wall.HealthGrowthAfter).
 		-- Tempoyu değiştirirsen önce `python tools/simulate.py 14 poly=... base_max=... hp_growth=...` ile dene (çıktının sonunda aşama kilometre taşları var).
-		CostPower = 4.9,
+		-- (2026-10-13 YENİ DENGE: level N = xN çarpanı olduğu için tıklama başı kazanç eskisinin ~7-20 katı; maliyet ve duvar canı buna göre yeniden ayarlandı: tools/simulate.py ile oyunun sonu ~12 sa, 1. rebirth ~6 dk)
+		CostPower = 8, -- 2026-10-13: TAM SAYI çarpanlara (level N = xN, rebirth +1, tam sayı pet/aura/ayakkabı) geçince 4.9 -> 8 (level maliyeti çok daha dik; tools/simulate.py ile ayarlandı)
 		TapsAtLevel10 = 22,
 		BaseMaxLevel = 25, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level
 		MaxLevelPerRebirth = 10, -- her rebirth bu kadar yüksek level izni verir
-		MultiplierPerLevel = 0.1, -- level 25 = x3.4
+		MultiplierPerLevel = 1, -- level N = xN (level 25 = x25); TAM SAYI çarpan (2026-10-13, sahibi 'ondalıklı çarpan olmasın, en az 2 olsun' dedi)
 	},
 
 	-- Görünüm: oyuncunun KENDİ skini (ten rengi, gömlek, pantolon) korunur. Sadece bacakların üstünde görünen
@@ -73,7 +74,7 @@ return {
 	-- Rebirth: level 1'e, bacak kası ve Win 0'a döner; ayakkabı ve petler korunur.
 	-- Karşılığında kalıcı çarpan: 1 rebirth = x1.5, 2 rebirth = x2.0 ...
 	Rebirth = {
-		MultiplierPerRebirth = 0.5,
+		MultiplierPerRebirth = 1, -- 1. rebirth x2, 2. x3 ...; TAM SAYI (2026-10-13)
 		-- "SKIP?" butonu: Robux ile level şartını atlayıp rebirth yapma. SkipProductId 0 ise buton "yakında" olarak kalır.
 		SkipRobuxPrice = 119,
 		SkipProductId = 3717471329,
@@ -437,11 +438,11 @@ return {
 		-- 1. grup 25, 2. grup 250, 3. grup 3000. Listede olmayan sonraki gruplar, bir öncekinin
 		-- HealthGrowthAfter katı olur (3. grup 3000 ise 4. grup 3000 x 5 = 15000).
 		-- Sonraki grupları oyunun ekonomisine (çarpanlar, rebirth) göre ayrıca dengelemek gerekecek.
-		GroupHealth = { 25, 250, 3000 },
+		GroupHealth = { 25, 2500, 300000 }, -- (2026-10-13: tam sayı çarpanlara geçince 25, 250, 3000 idi; 1. aşama eğitim için aynı kaldı)
 		-- Bir aşamadaki 5 duvarın canı kendi içinde de artar (sahibi: 25, 30, 40, 50, 60 gibi): her duvarın canı = aşama canı x GroupHealthSteps[sırası].
 		-- 1. aşama 25, 30, 40, 50, 60; 2. aşama 250, 300, 400, 500, 600 ... Dengelemesi sonra yapılacak (sahibi 'dengelemeyi sonra yaparız' dedi). Taşan hasar yine aşama sonunu geçmez.
 		GroupHealthSteps = { 1, 1.2, 1.6, 2, 2.4 },
-		HealthGrowthAfter = 3.75, -- 4. grup 3000 x 3.75 = 11250, 5. grup ~42K ... 20. grup ~17 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
+		HealthGrowthAfter = 4.6, -- 4. grup 3000 x 3.75 = 11250, 5. grup ~42K ... 20. grup ~17 trilyon. OYUNUN SONU = 20. aşama: günde 1 saat oynayan 10-15 günde bitirsin (sahibi istedi; hızlı oyun, sonra portalla 2. dünya).
 		-- 2026-10-09 ('duvarlar çok zayıf geldi'): simülasyon artık oyuncunun bir aşamayı en çok 40 tekmede (duvar başına ~8) kırmayı göze aldığını varsayar (eskiden 12: sınırdaki 5 duvar ~5 tekmede, yani duvar başına 1 tekmede düşüyordu);
 		-- 3.2'den 3.5'e çıkınca duvarlar 10. aşamada 1.8, 20. aşamada 4.8 kat dayanıklı olur ve oyunun sonu yine ~10 saatte kalır. 2026-10-10: aura'lar öne çekilince (aşağıdaki Auras) oyun 7.6 saate düşmüştü, 3.5 -> 3.75 ile geri toplandı.
 		-- Güncel süreler (simülasyon): 5. aşama 6.3 dk, 10. aşama 47 dk, 15. aşama 4.05 sa, 20. aşama 10.2 sa (27. rebirth);
@@ -539,20 +540,20 @@ return {
 		Size = { 0.55, 0.65, 0.8, 1.0 },
 	},
 	Items = {
-		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 1.5, color = Color3.fromRGB(170, 255, 70) },
-		{ id = "canvas", name = "Canvas Shoes", price = 15, damage = 2, color = Color3.fromRGB(120, 170, 255) },
-		{ id = "running", name = "Running Shoes", price = 40, damage = 3, color = Color3.fromRGB(255, 140, 60) },
-		{ id = "trail", name = "Trail Boots", price = 90, damage = 4, color = Color3.fromRGB(0, 230, 170) },
-		{ id = "hightops", name = "High-Tops", price = 200, damage = 6, color = Color3.fromRGB(255, 70, 160) },
-		{ id = "cleats", name = "Cleats", price = 450, damage = 8, color = Color3.fromRGB(60, 220, 90) },
-		{ id = "jump", name = "Jump Shoes", price = 900, damage = 12, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "speed", name = "Speed Sneakers", price = 1800, damage = 16, color = Color3.fromRGB(60, 200, 255) },
-		{ id = "power", name = "Power Boots", price = 3600, damage = 25, color = Color3.fromRGB(255, 70, 70) },
-		{ id = "titan", name = "Titan Boots", price = 7000, damage = 35, color = Color3.fromRGB(40, 80, 255) },
-		{ id = "neon", name = "Neon Kicks", price = 14000, damage = 50, color = Color3.fromRGB(255, 60, 230) },
-		{ id = "golden", name = "Golden Sneakers", price = 28000, damage = 75, color = Color3.fromRGB(255, 200, 40) },
-		{ id = "crystal", name = "Crystal Kicks", price = 56000, damage = 100, color = Color3.fromRGB(150, 240, 255) },
-		{ id = "thunder", name = "Thunder Boots", price = 110000, damage = 150, color = Color3.fromRGB(170, 90, 255) },
+		{ id = "oldsneakers", name = "Old Sneakers", price = 3, damage = 2, color = Color3.fromRGB(170, 255, 70) },
+		{ id = "canvas", name = "Canvas Shoes", price = 15, damage = 3, color = Color3.fromRGB(120, 170, 255) },
+		{ id = "running", name = "Running Shoes", price = 40, damage = 4, color = Color3.fromRGB(255, 140, 60) },
+		{ id = "trail", name = "Trail Boots", price = 90, damage = 6, color = Color3.fromRGB(0, 230, 170) },
+		{ id = "hightops", name = "High-Tops", price = 200, damage = 8, color = Color3.fromRGB(255, 70, 160) },
+		{ id = "cleats", name = "Cleats", price = 450, damage = 12, color = Color3.fromRGB(60, 220, 90) },
+		{ id = "jump", name = "Jump Shoes", price = 900, damage = 16, color = Color3.fromRGB(255, 230, 60) },
+		{ id = "speed", name = "Speed Sneakers", price = 1800, damage = 25, color = Color3.fromRGB(60, 200, 255) },
+		{ id = "power", name = "Power Boots", price = 3600, damage = 35, color = Color3.fromRGB(255, 70, 70) },
+		{ id = "titan", name = "Titan Boots", price = 7000, damage = 50, color = Color3.fromRGB(40, 80, 255) },
+		{ id = "neon", name = "Neon Kicks", price = 14000, damage = 75, color = Color3.fromRGB(255, 60, 230) },
+		{ id = "golden", name = "Golden Sneakers", price = 28000, damage = 100, color = Color3.fromRGB(255, 200, 40) },
+		{ id = "crystal", name = "Crystal Kicks", price = 56000, damage = 150, color = Color3.fromRGB(150, 240, 255) },
+		{ id = "thunder", name = "Thunder Boots", price = 110000, damage = 200, color = Color3.fromRGB(170, 90, 255) },
 		{ id = "radiant", name = "Radiant Shoes", price = 220000, damage = 250, color = Color3.fromRGB(255, 255, 140) },
 	},
 
@@ -598,7 +599,7 @@ return {
 		-- Prism ~200-270, Shadow ~235-310 eder; Prism rebirth ile de açılabildiği için daha ucuz: 199 ve 299. Bu iki pass '150 Robux'u geçmesin' kuralının (egg pass'leri gibi) İSTİSNASIDIR (pricetest 150 < fiyat <= 400 denetler).
 		Areas = {
 			{ id = "green", name = "Green Zone", trainer = "Coach Sprout", outfit = "leaf", mult = 1, rebirths = 0, color = Color3.fromRGB(60, 220, 90) },
-			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 1.5, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
+			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 2, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
 			{ id = "red", name = "Red Zone", trainer = "Coach Blaze", outfit = "flame", mult = 3, rebirths = 3, color = Color3.fromRGB(255, 50, 50) },
 			{ id = "orange", name = "Orange Zone", trainer = "Coach Ember", outfit = "ember", mult = 5, rebirths = 5, color = Color3.fromRGB(255, 150, 30) },
 			{ id = "magenta", name = "Magenta Zone", trainer = "Coach Pixel", outfit = "pixel", mult = 9, rebirths = 8, color = Color3.fromRGB(255, 50, 230) },
@@ -610,13 +611,13 @@ return {
 		},
 	},
 
-	-- Petler. mult = bacak kası çarpanına eklenen oran (0.1 = +%10). Hangi yumurtadan çıktıkları aşağıdaki Eggs listesindedir.
+	-- Petler. mult = bacak kası çarpanına eklenen TAM SAYI (1 = +1; takılı petlerin toplamı + 1 = pet çarpanı: tek bir Cat bile x2 yapar). 2026-10-13: ondalık yok, en küçük 1. Hangi yumurtadan çıktıkları aşağıdaki Eggs listesindedir.
 	-- Pet nadirliği (çarpanına göre): yumurta açılış ekranında kart rengi ve etiket. maxMult: bu değerin ALTINDAKİ petler bu sınıftadır.
 	Rarities = {
-		{ name = "Common", maxMult = 0.3, color = Color3.fromRGB(185, 190, 205) },
-		{ name = "Rare", maxMult = 0.7, color = Color3.fromRGB(70, 170, 255) },
-		{ name = "Epic", maxMult = 1.2, color = Color3.fromRGB(180, 90, 255) },
-		{ name = "Legendary", maxMult = 3.5, color = Color3.fromRGB(255, 190, 40) },
+		{ name = "Common", maxMult = 5, color = Color3.fromRGB(185, 190, 205) },
+		{ name = "Rare", maxMult = 10, color = Color3.fromRGB(70, 170, 255) },
+		{ name = "Epic", maxMult = 19, color = Color3.fromRGB(180, 90, 255) },
+		{ name = "Legendary", maxMult = 63, color = Color3.fromRGB(255, 190, 40) },
 		{ name = "Mythic", maxMult = math.huge, color = Color3.fromRGB(255, 70, 140) },
 	},
 	-- BLENDER MODELLERİ (tools/blender, shared/ModelLibrary + ModelInfo): ReplicatedStorage > GameModels klasöründe adı 'pet_<id>' / 'egg_<id>' olan model varsa oyun onu kullanır, yoksa eski küre/kod yumurtası.
@@ -698,7 +699,7 @@ return {
 	PetFusion = {
 		Cost = 3,
 		MaxTier = 4,
-		PowerFactor = 1.3,
+		PowerFactor = 2, -- (2026-10-13: TAM SAYI; eskiden 1.3) Small x1, Normal x2, Big x4, Boss x8
 		BossShell = false, -- Boss petin etrafındaki nabız gibi atan saydam kabuk (hale): sahibi 'çok kötü duruyor, kapat' dedi; true yapılırsa geri gelir (sadece parıltı parçacıkları ve ince çizgi kalır)
 		-- Boylar: Small (yumurtadan çıkan), Normal, Big (en büyük boy) ve Boss (Big ile aynı boy, üstüne parlayan efekt: PetFollowers, Pets menüsü). Sahibi 'en büyük hali big, boss da üzerine efekt' dedi.
 		TierNames = { "Small", "Normal", "Big", "Boss" },
@@ -707,41 +708,41 @@ return {
 	},
 	Pets = {
 		-- Starter Egg
-		{ id = "cat", name = "Cat", mult = 0.1, color = Color3.fromRGB(255, 190, 120) },
-		{ id = "chick", name = "Chick", mult = 0.12, color = Color3.fromRGB(255, 225, 90) },
-		{ id = "dog", name = "Dog", mult = 0.15, color = Color3.fromRGB(170, 120, 80) },
-		{ id = "hamster", name = "Hamster", mult = 0.18, color = Color3.fromRGB(240, 200, 150) },
-		{ id = "bunny", name = "Bunny", mult = 0.2, color = Color3.fromRGB(250, 220, 235) },
+		{ id = "cat", name = "Cat", mult = 1, color = Color3.fromRGB(255, 190, 120) },
+		{ id = "chick", name = "Chick", mult = 1, color = Color3.fromRGB(255, 225, 90) },
+		{ id = "dog", name = "Dog", mult = 2, color = Color3.fromRGB(170, 120, 80) },
+		{ id = "hamster", name = "Hamster", mult = 2, color = Color3.fromRGB(240, 200, 150) },
+		{ id = "bunny", name = "Bunny", mult = 3, color = Color3.fromRGB(250, 220, 235) },
 		-- Forest Egg
-		{ id = "frog", name = "Frog", mult = 0.25, color = Color3.fromRGB(80, 210, 110) },
-		{ id = "deer", name = "Deer", mult = 0.3, color = Color3.fromRGB(205, 150, 90) },
-		{ id = "fox", name = "Fox", mult = 0.35, color = Color3.fromRGB(255, 120, 40) },
-		{ id = "owl", name = "Owl", mult = 0.42, color = Color3.fromRGB(160, 130, 100) },
-		{ id = "panda", name = "Panda", mult = 0.5, color = Color3.fromRGB(235, 235, 235) },
+		{ id = "frog", name = "Frog", mult = 3, color = Color3.fromRGB(80, 210, 110) },
+		{ id = "deer", name = "Deer", mult = 4, color = Color3.fromRGB(205, 150, 90) },
+		{ id = "fox", name = "Fox", mult = 5, color = Color3.fromRGB(255, 120, 40) },
+		{ id = "owl", name = "Owl", mult = 6, color = Color3.fromRGB(160, 130, 100) },
+		{ id = "panda", name = "Panda", mult = 7, color = Color3.fromRGB(235, 235, 235) },
 		-- Desert Egg
-		{ id = "snake", name = "Snake", mult = 0.55, color = Color3.fromRGB(120, 190, 100) },
-		{ id = "scorpion", name = "Scorpion", mult = 0.65, color = Color3.fromRGB(170, 60, 50) },
-		{ id = "camel", name = "Camel", mult = 0.72, color = Color3.fromRGB(225, 195, 140) },
-		{ id = "tiger", name = "Tiger", mult = 0.8, color = Color3.fromRGB(255, 170, 40) },
-		{ id = "lion", name = "Lion", mult = 0.9, color = Color3.fromRGB(235, 190, 100) },
+		{ id = "snake", name = "Snake", mult = 8, color = Color3.fromRGB(120, 190, 100) },
+		{ id = "scorpion", name = "Scorpion", mult = 9, color = Color3.fromRGB(170, 60, 50) },
+		{ id = "camel", name = "Camel", mult = 10, color = Color3.fromRGB(225, 195, 140) },
+		{ id = "tiger", name = "Tiger", mult = 11, color = Color3.fromRGB(255, 170, 40) },
+		{ id = "lion", name = "Lion", mult = 12, color = Color3.fromRGB(235, 190, 100) },
 		-- Ice Egg
-		{ id = "penguin", name = "Penguin", mult = 0.85, color = Color3.fromRGB(45, 55, 85) },
-		{ id = "seal", name = "Seal", mult = 0.92, color = Color3.fromRGB(150, 165, 185) },
-		{ id = "wolf", name = "Wolf", mult = 1.0, color = Color3.fromRGB(140, 150, 170) },
-		{ id = "polarbear", name = "Polar Bear", mult = 1.15, color = Color3.fromRGB(245, 248, 255) },
-		{ id = "yeti", name = "Yeti", mult = 1.3, color = Color3.fromRGB(170, 215, 245) },
+		{ id = "penguin", name = "Penguin", mult = 13, color = Color3.fromRGB(45, 55, 85) },
+		{ id = "seal", name = "Seal", mult = 14, color = Color3.fromRGB(150, 165, 185) },
+		{ id = "wolf", name = "Wolf", mult = 16, color = Color3.fromRGB(140, 150, 170) },
+		{ id = "polarbear", name = "Polar Bear", mult = 18, color = Color3.fromRGB(245, 248, 255) },
+		{ id = "yeti", name = "Yeti", mult = 20, color = Color3.fromRGB(170, 215, 245) },
 		-- Lava Egg
-		{ id = "salamander", name = "Salamander", mult = 1.4, color = Color3.fromRGB(255, 150, 60) },
-		{ id = "dragon", name = "Dragon", mult = 1.5, color = Color3.fromRGB(180, 60, 255) },
-		{ id = "lavacrab", name = "Lava Crab", mult = 1.75, color = Color3.fromRGB(225, 70, 50) },
-		{ id = "phoenix", name = "Phoenix", mult = 2.0, color = Color3.fromRGB(255, 80, 40) },
-		{ id = "golem", name = "Magma Golem", mult = 2.4, color = Color3.fromRGB(110, 95, 110) },
+		{ id = "salamander", name = "Salamander", mult = 23, color = Color3.fromRGB(255, 150, 60) },
+		{ id = "dragon", name = "Dragon", mult = 26, color = Color3.fromRGB(180, 60, 255) },
+		{ id = "lavacrab", name = "Lava Crab", mult = 30, color = Color3.fromRGB(225, 70, 50) },
+		{ id = "phoenix", name = "Phoenix", mult = 35, color = Color3.fromRGB(255, 80, 40) },
+		{ id = "golem", name = "Magma Golem", mult = 42, color = Color3.fromRGB(110, 95, 110) },
 		-- Galaxy Egg
-		{ id = "unicorn", name = "Unicorn", mult = 3.0, color = Color3.fromRGB(255, 130, 230) },
-		{ id = "alien", name = "Alien", mult = 3.5, color = Color3.fromRGB(140, 235, 160) },
-		{ id = "robot", name = "Robot", mult = 4.0, color = Color3.fromRGB(100, 220, 255) },
-		{ id = "galaxy", name = "Galaxy Cat", mult = 6.0, color = Color3.fromRGB(120, 80, 255) },
-		{ id = "titan", name = "Titan", mult = 10.0, color = Color3.fromRGB(255, 220, 60) },
+		{ id = "unicorn", name = "Unicorn", mult = 50, color = Color3.fromRGB(255, 130, 230) },
+		{ id = "alien", name = "Alien", mult = 62, color = Color3.fromRGB(140, 235, 160) },
+		{ id = "robot", name = "Robot", mult = 80, color = Color3.fromRGB(100, 220, 255) },
+		{ id = "galaxy", name = "Galaxy Cat", mult = 120, color = Color3.fromRGB(120, 80, 255) },
+		{ id = "titan", name = "Titan", mult = 200, color = Color3.fromRGB(255, 220, 60) },
 	},
 
 	-- Yumurta paneli: "T" tuşu bu seçenekler arasında geçiş yapar (bir seferde kaç yumurta açılacağı)
@@ -814,12 +815,12 @@ return {
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
-		{ id = "red", name = "Red Aura", mult = 1.5, winPrice = 15, robuxPrice = 15, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 1.75, winPrice = 100, robuxPrice = 20, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 2.0, winPrice = 400, robuxPrice = 25, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 2.3, winPrice = 1600, robuxPrice = 40, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 2.6, winPrice = 6500, robuxPrice = 85, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 3.0, winPrice = 26000, robuxPrice = 145, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Aura", mult = 2, winPrice = 15, robuxPrice = 15, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "green", name = "Green Aura", mult = 3, winPrice = 100, robuxPrice = 20, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 4, winPrice = 400, robuxPrice = 25, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 5, winPrice = 1600, robuxPrice = 40, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 6, winPrice = 6500, robuxPrice = 85, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 8, winPrice = 26000, robuxPrice = 145, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.

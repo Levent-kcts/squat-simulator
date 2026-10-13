@@ -1690,7 +1690,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 
 	if #kept == 1 and #deleted == 0 then
 		local pet = kept[1]
-		return true, `Hatched {pet.name}! (+{math.floor(pet.mult * 100 + 0.5)}% muscle)`, results
+		return true, `Hatched {pet.name}! ({Format.petBonus(pet.mult)} multiplier)`, results
 	end
 	if #kept == 0 and #deleted == 1 then
 		return true, `{deleted[1].name} was auto-deleted`, results
@@ -2020,7 +2020,7 @@ function PlayerStats.fusePet(player, petId)
 	local nextPet = fuseOnce(player, profile, petId)
 	refresh(player)
 	requestSave(player)
-	return true, `Merged! You got {nextPet.label} (+{math.floor(nextPet.mult * 100 + 0.5)}% muscle)`, nextPet.id
+	return true, `Merged! You got {nextPet.label} ({Format.petBonus(nextPet.mult)} multiplier)`, nextPet.id
 end
 
 -- Elde fuse edilebilecek ne varsa birleştirir (yeni oluşan boylar da kendi içinde birleşebilir). Dönüş: başarılı mı, mesaj
@@ -2054,7 +2054,7 @@ function PlayerStats.fuseAllPets(player)
 	end
 	refresh(player)
 	requestSave(player)
-	return true, `Merged {fusions} time{if fusions == 1 then "" else "s"}! Best: {best.label} (+{math.floor(best.mult * 100 + 0.5)}% muscle)`
+	return true, `Merged {fusions} time{if fusions == 1 then "" else "s"}! Best: {best.label} ({Format.petBonus(best.mult)} multiplier)`
 end
 
 -- ---------- Günlük çark (Config.Wheel) ----------

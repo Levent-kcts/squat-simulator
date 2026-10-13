@@ -21,14 +21,15 @@ function Format.compact(n, decimals)
 	return text .. SUFFIXES[power]
 end
 
--- Çarpan yazısı (x işareti çağıranda): 1.5 -> "1.50", 250 -> "250.0", 2704825.32 -> "2.7M". Çok büyük çarpanlar ham ondalıkla taşmasın diye kısaltılır.
+-- Çarpan yazısı (x işareti çağıranda): HER ZAMAN TAM SAYI (2026-10-13, sahibi 'çarpanlarda ondalık olmasın' dedi): 2.4 -> "2", 250.6 -> "251", 2704825 -> "2.7M".
+-- (Arkadaş/Index/iksir yüzde bonusları toplam çarpanı ondalık yapabilir; gösterimde yuvarlanır, hesap ondalıkla yapılır.)
 function Format.multiplier(value)
-	if value >= 1000 then
-		return Format.compact(value)
-	elseif value >= 100 then
-		return string.format("%.1f", value)
-	end
-	return string.format("%.2f", value)
+	return Format.compact(math.max(0, math.floor(value + 0.5)))
+end
+
+-- Pet bonusu yazısı: petin çarpana eklediği TAM SAYI ('+3'; büyük sayılar kısalır: 1600 -> '+1.6K')
+function Format.petBonus(mult)
+	return "+" .. Format.compact(mult)
 end
 
 return Format

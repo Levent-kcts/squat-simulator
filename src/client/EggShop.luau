@@ -373,7 +373,7 @@ function EggShop.init(screenGui, hooks)
 			makeText(card, {
 				Position = UDim2.fromScale(0.05, 0.02),
 				Size = UDim2.fromScale(0.9, 0.2),
-				Text = `+{math.floor(pet.mult * 100 + 0.5)}%`,
+				Text = Format.petBonus(pet.mult),
 				TextColor3 = Color3.new(1, 1, 1),
 			}, 2)
 			-- Pet simgesi: pet renginde sevimli yüz (UIStyle.petIcon)

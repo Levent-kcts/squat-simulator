@@ -234,15 +234,15 @@ local trashIcon = buttonNamed(buttonNamed(root2, "TrashButton"), "TrashIcon")
 assert(trashIcon, "alt çöp kutusu düğmesinde simge olmalı")
 local trashImage = rawget(trashIcon, "_children")["ImageLabel"]
 assert(trashImage and rawget(trashImage, "Image") == "rbxassetid://72909566398443", "yüklenen çöp kutusu görseli kullanılmalı")
-assert(t2["+10% Leg Muscle when equipped"] and not t2["+10%"], "takılı olmayan petin kartında yüzde olmamalı, ayrıntıda '+10% Leg Muscle when equipped' yazmalı (playtest: neyin yüzde 10 olduğu yazmıyordu)")
+assert(t2["+1 Pet Multiplier when equipped"] and not t2["+1"], "takılı olmayan petin kartında bonus olmamalı, ayrıntıda '+1 Pet Multiplier when equipped' yazmalı (playtest: neyin arttığı yazmıyordu)")
 print("PetsPanel merge/equip/delete ok")
 
--- 2b) Takılı kopyalar: 3 kediden 2'si takılıysa iki kartta tek 'E' rozeti ve '+10%' yazısı vardır; 'E2' / 'x3' yoktur
+-- 2b) Takılı kopyalar: 3 kediden 2'si takılıysa iki kartta tek 'E' rozeti ve '+1' yazısı vardır; 'E2' / 'x3' yoktur
 local root2b = openPets("cat,cat,cat", "cat,cat")
 local t2b = textsUnder(root2b, {})
 assert(not t2b["E2"] and not t2b["x3"], "toplu rozet olmamalı")
 assert(countText(root2b, "E") == 2, "iki takılı kopya = iki 'E' rozeti: " .. countText(root2b, "E"))
-assert(countText(root2b, "+10%") == 2, "yüzde yazısı sadece takılı iki kartta olmalı: " .. countText(root2b, "+10%"))
+assert(countText(root2b, "+1") == 2, "bonus yazısı sadece takılı iki kartta olmalı: " .. countText(root2b, "+1"))
 assert(countText(root2b, "Small Cat") == 4, "takılı olsun olmasın üç kart + ayrıntı adı")
 -- 2c) Silme modu kart başınadır: çöp kutusu > bir kartı işaretle > çöp kutusu = o türden TEK pet silinir (DeletePet)
 local root2c = openPets("cat,cat,dog", "")
@@ -265,7 +265,7 @@ assert(S.lastInvoke == nil and toasts3[#toasts3] and string.find(toasts3[#toasts
 local root4, toasts4 = openPets("dog@4", "dog@4")
 local t4 = textsUnder(root4, {})
 assert(t4["MAX SIZE"] and t4["Boss Dog"] and t4["Unequip"], "Boss pet ekranı hatalı")
-assert(t4["+33%"] and t4["+33% Leg Muscle"], "takılı petin kartında ve ayrıntısında yüzde olmalı")
+assert(t4["+16"] and t4["+16 Pet Multiplier"], "takılı petin kartında ve ayrıntısında bonus olmalı (dog 2 x 2^3 = 16)")
 click(buttonWith(root4, "MAX SIZE"))
 assert(string.find(toasts4[#toasts4], "maximum size"), "Boss için 'maximum size' mesajı gelmeli")
 

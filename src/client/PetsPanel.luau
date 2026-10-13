@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("Catalog"))
+local Format = require(Shared:WaitForChild("Format"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 -- Kutlama efekti ve ses (isteğe bağlı): yüklenemezse birleştirme yine çalışır
@@ -160,8 +161,8 @@ local function addTrashIcon(parent, pixels)
 	return holder
 end
 
-local function percent(pet)
-	return math.floor(pet.mult * 100 + 0.5)
+local function bonus(pet)
+	return Format.petBonus(pet.mult)
 end
 
 -- showToast(ok, mesaj): kısa bildirim. Dönüş: paneli açıp kapatan fonksiyon.
@@ -437,7 +438,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			Position = UDim2.fromOffset(8, 196),
 			Size = UDim2.fromOffset(DETAIL_WIDTH - 16, 24),
 			-- Sadece TAKILI petler kas kazancına yüzde verir (sunucu hesabı): takılı değilse 'takılınca' diye soluk yazılır
-			Text = if equippedCount > 0 then `+{percent(pet)}% Leg Muscle` else `+{percent(pet)}% Leg Muscle when equipped`,
+			Text = if equippedCount > 0 then `{bonus(pet)} Pet Multiplier` else `{bonus(pet)} Pet Multiplier when equipped`,
 			TextColor3 = if equippedCount > 0 then Color3.fromRGB(130, 255, 140) else Color3.fromRGB(175, 182, 205),
 		}, 2)
 		makeText(detail, {
@@ -603,7 +604,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 			makeText(card, {
 				Position = UDim2.fromOffset(5, 4),
 				Size = UDim2.fromOffset(52, 15),
-				Text = `+{percent(pet)}%`,
+				Text = bonus(pet),
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Color3.fromRGB(150, 255, 150),
 			}, 1.5)
@@ -769,7 +770,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 		end
 		local equippedTotal = #equippedList
 
-		multiplierText.Text = `x{string.format("%.2f", player:GetAttribute("PetMultiplier") or 1)} Pet Multiplier`
+		multiplierText.Text = `x{Format.multiplier(player:GetAttribute("PetMultiplier") or 1)} Pet Multiplier`
 		countText.Text = `{ownedTotal}/{player:GetAttribute("PetCapacity") or Config.MaxOwnedPets}`
 		teamTitle.Text = `Pet Team ({equippedTotal}/{Config.MaxEquippedPets} Pets)`
 

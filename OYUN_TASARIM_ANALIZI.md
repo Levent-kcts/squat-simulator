@@ -46,7 +46,7 @@ Karar yokluğu şu anlama gelir: oyuncu zihinsel olarak "oynamıyor", sadece zam
 ## 4. Geliştirilmesi gereken yerler (öncelik sırasıyla)
 
 ### 4.1 Orta oyun sessizliği (en yüksek etki)
-Level maliyeti kuvvet yasasıyla (^4,9) büyüyor: level 20 → 477, level 24 → 1.200 kas. Elle 3 tık/sn ve ~3 kas/tık ile bir level 3-7 dakika. Bu arada ekranda değişen tek şey bir sayı.
+Level maliyeti kuvvet yasasıyla büyüyor (2026-10-13'te tam sayı çarpanlara geçince ^4,9 → ^8 oldu: level 20 → ~4,7K, level 24 → ~22K kas; level çarpanı da level'a eşit olduğu için kazanç aynı oranda arttı). Yine de level başına süre dakikalarla ölçülüyor ve ekranda değişen tek şey bir sayı.
 - YAPILDI: level 6/12/18/22/25 ödülleri (Win, iksir, pet).
 - Sıradaki: **aralık ödülleri**: her 100/250/500 duvar hasarı gibi. Ya da "Golden Brick": duvarın üstünde ara sıra beliren altın tuğla, tıklayana bonus (aktif oyunu ödüllendirir).
 - Maliyet eğrisini yumuşatmak (CostPower 4,9 → ~4,3): ilk 20 level çok hızlı, sonrası daha az sert. Önce `tools/simulate.py` ile tempo ölç; rebirth süreleri kayacağı için denge dosyalarını (CLAUDE.md "DENGE HEDEFİ") birlikte güncelle.

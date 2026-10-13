@@ -1,11 +1,14 @@
 -- Sayı biçimleri: büyük çarpanlar ve tıklama başı kazanç ham ondalıkla taşmaz (alt ortadaki istatistik satırı)
 local Format = require("./Format")
 local cases = {
-	{ Format.multiplier, 1.5, "1.50" },
-	{ Format.multiplier, 12.345, "12.35" },
-	{ Format.multiplier, 250, "250.0" },
-	{ Format.multiplier, 999.94, "999.9" },
+	-- Çarpanlar HER ZAMAN tam sayı (2026-10-13): 1.5 -> 2, 12.345 -> 12, 250 -> 250, 999.94 -> 1K, 2704825.32 -> 2.7M
+	{ Format.multiplier, 1.5, "2" },
+	{ Format.multiplier, 12.345, "12" },
+	{ Format.multiplier, 250, "250" },
+	{ Format.multiplier, 999.94, "1K" },
 	{ Format.multiplier, 2704825.32, "2.7M" },
+	{ Format.petBonus, 3, "+3" },
+	{ Format.petBonus, 1600, "+1.6K" },
 	{ Format.compact, 5, "5" },
 	{ Format.compact, 1000, "1K" },
 	{ Format.compact, 10000, "10K" },

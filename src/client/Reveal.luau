@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Catalog = require(Shared:WaitForChild("Catalog"))
+local Format = require(Shared:WaitForChild("Format"))
 local UIStyle = require(script.Parent.UIStyle)
 
 local Reveal = {}
@@ -71,7 +72,7 @@ local function buildCard(parent, entry, isNew, order)
 	label(card, {
 		Position = UDim2.fromScale(0.05, 0.03),
 		Size = UDim2.fromScale(0.9, 0.17),
-		Text = `+{math.floor(pet.mult * 100 + 0.5)}%`,
+		Text = Format.petBonus(pet.mult),
 		TextColor3 = Color3.new(1, 1, 1),
 	}, 2)
 
@@ -138,7 +139,7 @@ function Reveal.show(screenGui, results, ownedBefore)
 			if rank > bestRank then
 				best, bestRank = rarity, rank
 			end
-			if pet.mult >= 1.2 then
+			if rank >= 3 then -- Epic ve üstü
 				task.delay(0.3, sfx, "Rare")
 			end
 		end

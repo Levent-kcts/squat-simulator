@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Catalog"))
+local Format = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Format"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 
@@ -31,7 +32,6 @@ local function text(parent, props, strokeThickness)
 	return label
 end
 
--- Kart rengi: çarpan büyüdükçe daha nadir renk (Pets menüsüyle aynı)
 -- Bir Index ödülünü kısa yazıya çevirir ('+150 Wins', '60 min Luck Potion')
 local function describeReward(reward)
 	if reward.kind == "wins" then
@@ -49,19 +49,6 @@ local function nextRewardText(count)
 		end
 	end
 	return `Index complete! +{Config.Index.CompletionPercent}% Leg Muscle forever!`
-end
-
-local function cardColor(mult)
-	if mult < 0.2 then
-		return Color3.fromRGB(70, 200, 70)
-	elseif mult < 0.6 then
-		return Color3.fromRGB(40, 190, 230)
-	elseif mult < 1.2 then
-		return Color3.fromRGB(170, 60, 230)
-	elseif mult < 3 then
-		return Color3.fromRGB(250, 170, 30)
-	end
-	return Color3.fromRGB(240, 50, 130)
 end
 
 -- Döner: pencereyi açıp kapatan fonksiyon
@@ -166,7 +153,7 @@ function IndexPanel.init(screenGui)
 			end
 			local card = create("Frame", {
 				LayoutOrder = order,
-				BackgroundColor3 = if known then cardColor(pet.mult) else Color3.fromRGB(58, 62, 82),
+				BackgroundColor3 = if known then Catalog.rarityOf(pet).color else Color3.fromRGB(58, 62, 82),
 			}, grid)
 			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 			UIStyle.soften(card, { radius = 10, strength = 0.3 })
@@ -174,7 +161,7 @@ function IndexPanel.init(screenGui)
 			text(card, {
 				Position = UDim2.fromScale(0.05, 0.03),
 				Size = UDim2.fromScale(0.9, 0.17),
-				Text = if known then `+{math.floor(pet.mult * 100 + 0.5)}%` else "+???",
+				Text = if known then Format.petBonus(pet.mult) else "+???",
 				TextColor3 = if known then Color3.new(1, 1, 1) else Color3.fromRGB(150, 156, 180),
 			}, 2)
 			UIStyle.safePetIcon(card, pet, {
