@@ -817,6 +817,9 @@ return {
 		Mult = 2,
 		Durations = { 15, 60 }, -- Shop'ta satılan süreler (dakika); çark/Gifts/görev bonusu iksirleri bunlardan birindedir (BoostMinutes)
 		AutoMinutes = 30, -- Auto Click Potion'ın SABİT süresi (dakika)
+		-- Auto Click game pass'ine SAHİP oyuncu (ya da pass satışı olmadığı için Auto Click'i serbest olan) için Auto Click Potion anlamsızdır: bu iksirin çıktığı HER YERDE (günlük görev bonusu, çark, DEV, envanterdeki eski iksirler,
+		-- Shop kartı) yerine bu iksir verilir (sahibi 'eğer kişi auto clicki satın aldıysa bu potion olan her yerde rainbow potion gelsin' dedi). minutes: Rainbow ürünlerinden biri olmalı (15 ya da 60).
+		AutoOwnerReplacement = { kind = "boostRainbow", minutes = 15 },
 		List = {
 			{ id = "luck", kind = "boostLuck", attribute = "LuckBoostUntil", name = "Luck Potion", effect = "2x Egg Luck", description = "Rare pets hatch from eggs up to 2x more often.", emoji = "🍀", color = Color3.fromRGB(70, 210, 90) },
 			{ id = "muscle", kind = "boostMuscle", attribute = "MuscleBoostUntil", name = "Muscle Potion", effect = "2x Leg Muscle", description = "Doubles the Leg Muscle you get from every squat.", emoji = "💪", color = Color3.fromRGB(255, 120, 50) },

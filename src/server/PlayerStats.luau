@@ -80,6 +80,20 @@ local function potionActive(profile, field)
 	return now < profile[field] or now < profile.boostRainbowUntil
 end
 
+-- AUTO CLICK POTION SAHİBİ KURALI (2026-10-13, sahibi 'eğer kişi auto clicki satın aldıysa bu potion olan her yerde rainbow potion gelsin' dedi): Auto Click game pass'i olan (HasAutoClick, server/AutoClickPass; pass satışı yokken herkes)
+-- oyuncuya Auto Click Potion yerine Config.Potions.AutoOwnerReplacement (Rainbow Potion) verilir: günlük görev bonusu, çark, DEV ve envanterdeki eski iksirler.
+local function ownsAutoPass(player)
+	return player:GetAttribute("HasAutoClick") == true
+end
+-- Auto Click Potion yerine verilecek iksir: dönüş (kind, dakika)
+local function autoPotionReward(player)
+	if ownsAutoPass(player) then
+		local replacement = Config.Potions.AutoOwnerReplacement
+		return replacement.kind, replacement.minutes
+	end
+	return "boostAuto", Config.Potions.AutoMinutes
+end
+
 -- 'Luck Potion! 2x Egg Luck for 10 minutes!' gibi ödül mesajı
 local function potionMessage(kind, minutes)
 	local potion = Catalog.PotionByKind[kind]
@@ -195,7 +209,10 @@ local function publishQuests(player)
 			resetAt = (state.day + 1) * 86400,
 			quests = entries,
 			bonusClaimed = state.bonus,
-			bonusText = `Rainbow Potion {Config.Quests.BonusBoostMinutes}m + Auto Click Potion {Config.Potions.AutoMinutes}m`,
+			bonusText = (function()
+				local autoKind, autoMinutes = autoPotionReward(player)
+				return `Rainbow Potion {Config.Quests.BonusBoostMinutes}m + {Catalog.PotionByKind[autoKind].name} {autoMinutes}m`
+			end)(),
 		})
 	)
 end
@@ -752,6 +769,19 @@ local function refresh(player)
 	player:SetAttribute("LuckBoostUntil", profile.boostLuckUntil)
 	player:SetAttribute("RainbowBoostUntil", profile.boostRainbowUntil)
 	player:SetAttribute("AutoBoostUntil", profile.boostAutoUntil) -- Auto Click Potion: istemci süresince Auto Click'i açık sayar
+	-- Auto Click game pass'i olanın envanterindeki Auto Click Potion'lar Rainbow Potion'a döner (pass sonradan alınmış ya da eski kayıttan kalmış olabilir)
+	local autoItems = profile.potionItems.auto30
+	if autoItems and autoItems > 0 and ownsAutoPass(player) then
+		local replacementKind, replacementMinutes = autoPotionReward(player)
+		local replacementSku = Catalog.potionSkuFor(replacementKind, replacementMinutes)
+		if replacementSku then
+			profile.potionItems.auto30 = nil
+			profile.potionItems[replacementSku] = math.min((profile.potionItems[replacementSku] or 0) + autoItems, 9999)
+			if profile.loaded then
+				sendToast(player, profile, `Auto Click owner perk: your Auto Click Potion became a {Catalog.PotionByKind[replacementKind].name}! Open Shop > Potions.`)
+			end
+		end
+	end
 	local itemList = {}
 	for sku, count in profile.potionItems do
 		table.insert(itemList, `{sku}:{count}`)
@@ -925,6 +955,9 @@ end
 -- Dönüş: oyuncuya gösterilecek mesaj. Ürün bulunamazsa (yapılandırma hatası) iksir hemen içilir.
 local function giveItem(player, profile, kind, minutes)
 	minutes = minutes or Config.BoostMinutes
+	if kind == "boostAuto" then
+		kind, minutes = autoPotionReward(player) -- Auto Click pass'i olana Rainbow Potion (her kaynakta: görev bonusu, çark, DEV)
+	end
 	local fixed = Catalog.PotionByKind[kind]
 	if fixed and fixed.fixedMinutes then
 		minutes = fixed.fixedMinutes -- Auto Click Potion hep 30 dk (hangi kaynaktan gelirse gelsin)
@@ -1569,10 +1602,11 @@ function PlayerStats.claimQuestBonus(player)
 	end
 	profile.quests.bonus = true
 	giveItem(player, profile, "boostRainbow", Config.Quests.BonusBoostMinutes)
-	giveItem(player, profile, "boostAuto", Config.Potions.AutoMinutes)
+	local autoKind, autoMinutes = autoPotionReward(player) -- Auto Click pass'i olana Rainbow Potion
+	giveItem(player, profile, autoKind, autoMinutes)
 	refresh(player)
 	requestSave(player)
-	return true, `Bonus! Rainbow Potion ({Config.Quests.BonusBoostMinutes} min) and Auto Click Potion ({Config.Potions.AutoMinutes} min) added to your potions: open Shop > Potions and press USE!`
+	return true, `Bonus! Rainbow Potion ({Config.Quests.BonusBoostMinutes} min) and {Catalog.PotionByKind[autoKind].name} ({autoMinutes} min) added to your potions: open Shop > Potions and press USE!`
 end
 
 -- Ayakkabıdan gelen duvar hasar çarpanı (ayakkabı yoksa 1)
@@ -1925,6 +1959,14 @@ function PlayerStats.setSetting(player, key, value)
 	player:SetAttribute(key, value)
 	requestSave(player)
 	return true
+end
+
+-- Auto Click game pass sahipliği değişince (server/AutoClickPass): envanterdeki Auto Click Potion'ları Rainbow'a çevirir, görev bonusu yazısını yeniler
+function PlayerStats.autoPassChanged(player)
+	local profile = profiles[player]
+	if profile and profile.loaded then
+		refresh(player)
+	end
 end
 
 -- Çevrimdışı kazancı verir (CLAIM butonu). Miktarı sunucu tutar, istemci miktar yollamaz. Dönüş: başarılı mı, mesaj

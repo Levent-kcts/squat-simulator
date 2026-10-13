@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local PlayerStats = require(script.Parent.PlayerStats)
 
 local AutoClickPass = {}
 
@@ -15,6 +16,9 @@ local checkPlayer -- init içinde kurulur; DEV 'Passes Lock' değişince yeniden
 local function publish(player, owns)
 	if player.Parent then
 		player:SetAttribute("HasAutoClick", owns)
+		if owns then
+			pcall(PlayerStats.autoPassChanged, player) -- Auto Click Potion'lar Rainbow'a döner (pass sahibi için bu iksir anlamsız)
+		end
 	end
 end
 

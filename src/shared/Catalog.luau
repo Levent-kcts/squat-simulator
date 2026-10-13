@@ -47,6 +47,30 @@ function Catalog.potionSkuFor(kind, minutes)
 	return if id and Catalog.PotionSkuById[id] then id else nil
 end
 
+-- Çarkın dilimleri: Auto Click game pass'i olan oyuncu için 'Auto Click Potion' dilimi 'Rainbow Potion' görünür (sunucu da öyle verir: Config.Potions.AutoOwnerReplacement); diğerleri Config.Wheel.Prizes ile aynı
+function Catalog.wheelPrizes(ownsAutoPass)
+	if not ownsAutoPass then
+		return Config.Wheel.Prizes
+	end
+	local replacement = Config.Potions.AutoOwnerReplacement
+	local potion = Catalog.PotionByKind[replacement.kind]
+	local list = {}
+	for _, prize in Config.Wheel.Prizes do
+		if prize.kind == "boostAuto" then
+			local copy = table.clone(prize)
+			copy.kind = replacement.kind
+			copy.minutes = replacement.minutes
+			copy.potion = potion.id
+			copy.icon = potion.emoji
+			copy.label = potion.name
+			table.insert(list, copy)
+		else
+			table.insert(list, prize)
+		end
+	end
+	return list
+end
+
 -- Petler: ilk boy (Small) Config.Pets'ten gelir; birleştirilmiş (büyümüş) boylar 'id@boy' kimliğiyle burada üretilir (boy adı, çarpan ve boy Config.PetFusion'dan).
 -- Her petin alanları: tier (1-4), tierName (Small/Normal/Big/Boss), tierColor, scale, name (ilk boyda 'Cat', diğerlerinde 'Normal Cat') ve label (hep boy adlı: 'Small Cat').
 local fusion = Config.PetFusion

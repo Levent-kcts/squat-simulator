@@ -78,6 +78,42 @@ S.events.PlayerRemoving(player)
 local again = join(9501, "AutoPotionAgain")
 assert(again:GetAttribute("AutoBoostUntil") > os.time(), "tekrar girişte Auto Click Potion sürmeli")
 
+-- AUTO CLICK GAME PASS SAHİBİ: bu iksirin çıktığı her yerde Rainbow Potion gelir (Config.Potions.AutoOwnerReplacement)
+local replacement = Config.Potions.AutoOwnerReplacement
+local replacementSku = Catalog.potionSkuFor(replacement.kind, replacement.minutes)
+assert(replacement.kind == "boostRainbow" and replacementSku, "pass sahibine verilen iksir geçerli bir Rainbow ürünü olmalı")
+local owner = join(9504, "PassOwner")
+owner:SetAttribute("HasAutoClick", true)
+PlayerStats.dev(owner, "PotionAuto") -- (çark ve görev bonusu da aynı giveItem'dan geçer)
+assert(itemCount(owner, "auto30") == 0 and itemCount(owner, replacementSku) == 1, "pass sahibine Auto Click Potion yerine Rainbow verilmeli: " .. tostring(owner:GetAttribute("PotionItems")))
+PlayerStats.dev(owner, "QuestsComplete")
+for slot = 1, Config.Quests.PerDay do
+	PlayerStats.claimQuest(owner, slot)
+end
+assert(string.find(owner:GetAttribute("QuestData"), "Rainbow Potion 15m + Rainbow Potion 15m", 1, true), "pass sahibinde görev bonusu yazısı iki Rainbow demeli: " .. tostring(owner:GetAttribute("QuestData")))
+local ownerBonusOk = PlayerStats.claimQuestBonus(owner)
+assert(ownerBonusOk == true and itemCount(owner, "auto30") == 0 and itemCount(owner, replacementSku) == 1 + 2, "pass sahibinde görev bonusu iki Rainbow vermeli: " .. tostring(owner:GetAttribute("PotionItems")))
+assert((owner:GetAttribute("AutoBoostUntil") or 0) <= os.time(), "pass sahibine Auto Click iksiri etkinleşmemeli")
+-- Pass SONRADAN alınırsa envanterdeki Auto Click Potion Rainbow'a döner (ve bildirim gelir)
+local buyer = join(9505, "LateBuyer")
+PlayerStats.dev(buyer, "PotionAuto")
+PlayerStats.dev(buyer, "PotionAuto")
+assert(itemCount(buyer, "auto30") == 2, "pass yokken iksir envantere girer")
+buyer:SetAttribute("HasAutoClick", true)
+PlayerStats.autoPassChanged(buyer)
+assert(itemCount(buyer, "auto30") == 0 and itemCount(buyer, replacementSku) == 2, "pass alınınca Auto Click Potion'lar Rainbow'a dönmeli: " .. tostring(buyer:GetAttribute("PotionItems")))
+assert(string.find(tostring(buyer:GetAttribute("RewardToast")), "Rainbow", 1, true), "dönüşünce bildirim gelmeli")
+-- Çark dilimleri: pass sahibi için Auto Click dilimi Rainbow görünür (8 dilim, ağırlıklar aynı)
+local ownerPrizes = Catalog.wheelPrizes(true)
+assert(#ownerPrizes == 8 and Catalog.wheelPrizes(false) == Config.Wheel.Prizes, "çark dilimleri")
+local sawRainbow, sawAuto = false, false
+for index, prize in ownerPrizes do
+	assert(prize.weight == Config.Wheel.Prizes[index].weight, "ağırlık aynı kalmalı")
+	sawRainbow = sawRainbow or (prize.kind == "boostRainbow" and prize.label == "Rainbow Potion")
+	sawAuto = sawAuto or prize.kind == "boostAuto"
+end
+assert(sawRainbow and not sawAuto, "pass sahibi için çarkta Auto Click dilimi Rainbow görünmeli")
+
 -- RESET ALL iksiri de sıfırlar
 PlayerStats.dev(again, "Reset")
 assert((again:GetAttribute("AutoBoostUntil") or 0) <= os.time(), "Reset Auto Click Potion'ı silmeli")

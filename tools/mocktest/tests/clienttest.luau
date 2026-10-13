@@ -342,6 +342,8 @@ end
 assert(clicksSent == lockedAgain, "iksir bitince Auto Click yine kilitli olmalı")
 S.localPlayer:SetAttribute("HasAutoClick", true) -- satın alındı
 assert(hasText("OWNED FOREVER"), "pass alınınca iksir kartının düğmesi 'OWNED FOREVER' demeli")
+local ownedLabel = labelWith("OWNED FOREVER")
+assert(ownedLabel and rawget(rawget(rawget(ownedLabel, "Parent"), "Parent"), "Visible") == false, "pass sahibinde Auto Click Potion kartı gizlenmeli (yerine Rainbow verilir)")
 for _ = 1, 4 do
 	for _, hb in S.heartbeat do
 		pcall(hb, 0.5)

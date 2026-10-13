@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local WheelFace = require(Shared:WaitForChild("WheelFace"))
+local Catalog = require(Shared:WaitForChild("Catalog"))
 local UIStyle = require(script.Parent.UIStyle)
 
 local WheelPanel = {}
@@ -85,7 +86,25 @@ function WheelPanel.init(screenGui, onSpin)
 		ZIndex = 41,
 	}, backdrop)
 	create("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Height }, holder)
-	local face = WheelFace.build(holder, Config.Wheel.Prizes, { rim = true, hub = true, upright = true, image = Config.Icons.WheelFace })
+	-- Çarkın yüzü: Auto Click game pass'i olan oyuncuda 'Auto Click Potion' dilimi 'Rainbow Potion' görünür (sunucu da öyle verir); pass bilgisi sonradan gelince/satın alınınca yüz yeniden çizilir
+	local face
+	local faceAngle = 0
+	local faceForOwner = nil
+	local function buildFace()
+		local owner = Players.LocalPlayer:GetAttribute("HasAutoClick") == true
+		if face and owner == faceForOwner then
+			return
+		end
+		faceForOwner = owner
+		local old = holder:FindFirstChild("WheelFace")
+		if old then
+			old:Destroy()
+		end
+		face = WheelFace.build(holder, Catalog.wheelPrizes(owner), { rim = true, hub = true, upright = true, image = Config.Icons.WheelFace })
+		face.place(faceAngle)
+	end
+	buildFace()
+	Players.LocalPlayer:GetAttributeChangedSignal("HasAutoClick"):Connect(buildFace)
 
 	-- İbre: çarkın üstünde sabit, aşağı bakan beyaz üçgen
 	makeText(holder, {
@@ -155,6 +174,7 @@ function WheelPanel.init(screenGui, onSpin)
 	end
 	-- Çarkı açıya (derece, saat yönü) döndürür
 	function panel.place(angle)
+		faceAngle = angle
 		face.place(angle)
 	end
 	-- hazır: bugünkü hak var mı; yazı: altındaki durum yazısı (boşsa değişmez); meşgul: çark dönüyor ya da sunucudan yanıt bekleniyor

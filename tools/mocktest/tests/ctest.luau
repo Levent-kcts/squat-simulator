@@ -517,6 +517,14 @@ local wheelTexts = textsUnder(wheelRoot, {})
 for _, label in { "DAILY WHEEL", "Spin! (1)", "Wins", "Muscle", "Pet!", "JACKPOT", "24%", "1%", "5%" } do
 	assert(wheelTexts[label], "çark arayüzünde yazı yok: " .. label)
 end
+assert(wheelTexts["Auto Click Potion"] and not wheelTexts["Rainbow Potion"], "pass yokken çarkta Auto Click Potion dilimi görünmeli")
+-- Auto Click game pass'i olan oyuncuda o dilim Rainbow Potion görünür (yüz yeniden çizilir); pass bilgisi kalkınca eskiye döner
+S.localPlayer:SetAttribute("HasAutoClick", true)
+wheelTexts = textsUnder(wheelRoot, {})
+assert(wheelTexts["Rainbow Potion"] and not wheelTexts["Auto Click Potion"], "pass sahibinde çarkta Rainbow Potion dilimi görünmeli")
+S.localPlayer:SetAttribute("HasAutoClick", nil)
+wheelTexts = textsUnder(wheelRoot, {})
+assert(wheelTexts["Auto Click Potion"] and not wheelTexts["Rainbow Potion"], "pass bilgisi kalkınca Auto Click Potion dilimi geri gelmeli")
 click(buttonNamed(wheelRoot, "SpinButton"))
 assert(spins == 1, "Spin düğmesi onSpin çağırmalı")
 wheelPanel.place(123)

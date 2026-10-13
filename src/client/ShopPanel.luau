@@ -187,7 +187,7 @@ function ShopPanel.init(screenGui, showToast)
 			TextColor3 = Color3.new(1, 1, 1),
 			ZIndex = 6,
 		}, 2)
-		table.insert(potionRows, { sku = sku, button = button, label = label })
+		table.insert(potionRows, { sku = sku, button = button, label = label, card = card })
 
 		button.MouseButton1Click:Connect(function()
 			if (parseItems()[sku.id] or 0) > 0 then
@@ -223,6 +223,8 @@ function ShopPanel.init(screenGui, showToast)
 		local items = parseItems()
 		for _, row in potionRows do
 			local owned = items[row.sku.id] or 0
+			-- Auto Click game pass'i olana Auto Click Potion anlamsızdır (yerine Rainbow verilir): kart gizlenir
+			row.card.Visible = not (row.sku.forSale == false and player:GetAttribute("HasAutoClick") == true)
 			if owned > 0 then
 				row.label.Text = `USE  x{owned}`
 				row.button.BackgroundColor3 = USE_BLUE
