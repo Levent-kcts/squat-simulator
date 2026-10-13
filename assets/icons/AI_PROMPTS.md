@@ -28,6 +28,7 @@ Ortak şişe: A round-bottom glass potion flask with a short neck, thick glass w
 - `potion_muscle.png`: [ortak şişe] red-orange liquid, a dumbbell on the tag. Meaning: 2x leg muscle.
 - `potion_wins.png`: [ortak şişe] golden-yellow liquid, a small gold trophy on the tag. Meaning: 2x Wins.
 - `potion_rainbow.png`: [ortak şişe] liquid in smooth rainbow bands (red, orange, yellow, green, blue, purple), a few extra sparkles, a gold star on the tag. Meaning: all three boosts at once.
+- `potion_auto.png`: [ortak şişe] glowing electric-blue liquid with a few cyan sparkles, a white mouse cursor arrow with three small yellow click rays around its tip on the tag. Meaning: free Auto Click for 30 minutes (Auto Click Potion, 2026-10-13; oyunda Config.Icons.Potions.auto, JOBS tablosuna 'potion_auto' satırı ekle, 'potions' ortak ölçek grubu).
 
 Ek (şu an emoji; istersen yaptır):
 
