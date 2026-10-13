@@ -1171,7 +1171,7 @@ end)
 -- Shop: Robux ürünleri penceresi (korumalı yüklenir: hata verirse buton "coming soon" der)
 local ShopPanelModule = loadOptional("ShopPanel")
 if ShopPanelModule then
-	local okShop, result = pcall(ShopPanelModule.init, screenGui, showToast)
+	local okShop, result = pcall(ShopPanelModule.init, screenGui, showToast, shopButton)
 	if okShop then
 		toggleShop = result
 	else

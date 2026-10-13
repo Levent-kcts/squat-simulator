@@ -261,6 +261,10 @@ S.localPlayer:SetAttribute("PotionItems", "")
 assert(not hasText("USE  x"), "envanter boşalınca fiyat dönmeli")
 print("shop potions ok")
 
+-- YENİ İKSİR ROZETİ: Shop düğmesinde var (ayrıntılı davranış shopbadgetest.luau'da)
+assert(findNamed(S.localPlayer, "PotionBadge"), "Shop düğmesinde yeni iksir rozeti olmalı")
+print("shop potion badge present")
+
 -- Shop PACKS kartları: Config.Icons'ta görsel varsa (Power kartları LegMuscle) emoji yerine ImageLabel görünür
 local function countImages(image)
 	local count = 0

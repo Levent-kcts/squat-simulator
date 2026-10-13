@@ -12,6 +12,7 @@ local Config = require(Shared:WaitForChild("Config"))
 require(Shared:WaitForChild("Catalog")) -- iksir ürünlerine (Config.Shop.Potions) .def / .kind alanlarını ekler
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
+local TweenService = game:GetService("TweenService")
 
 local ShopPanel = {}
 
@@ -39,8 +40,8 @@ local function text(parent, props, strokeThickness)
 	return label
 end
 
--- Döner: pencereyi açıp kapatan fonksiyon
-function ShopPanel.init(screenGui, showToast)
+-- Döner: pencereyi açıp kapatan fonksiyon. shopButton (isteğe bağlı): soldaki Shop düğmesi; yeni iksir gelince köşesinde kırmızı yuvarlak (sayı) belirir
+function ShopPanel.init(screenGui, showToast, shopButton)
 	local player = Players.LocalPlayer
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 
@@ -242,6 +243,73 @@ function ShopPanel.init(screenGui, showToast)
 	player:GetAttributeChangedSignal("HasAutoClick"):Connect(refreshPotions)
 	player:GetAttributeChangedSignal("PotionItems"):Connect(refreshPotions)
 	refreshPotions()
+
+	-- YENİ İKSİR ROZETİ (2026-10-13, sahibi 'alınan potionlar markete gittiğinde marketin köşesinde kırmızı bir yuvarlak olsun, yeni potion geldiğini göstermek için' dedi):
+	-- çark / Gifts / görev bonusu / Index ödülünden envantere iksir girince Shop düğmesinin sağ üst köşesinde kırmızı yuvarlak (yeni iksir sayısı) çıkar,
+	-- Shop açılınca kalkar (iksirler orada 'USE xN' yazar). İçmek (USE) sayıyı düşürür ama rozet çıkarmaz; girişte zaten envanterde olanlar 'yeni' sayılmaz (DataLoaded'dan sonra ölçülür).
+	if shopButton then
+		local badge = create("Frame", {
+			Name = "PotionBadge",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(1, -4, 0, 4),
+			Size = UDim2.fromOffset(26, 26),
+			BackgroundColor3 = Color3.fromRGB(232, 38, 52),
+			Visible = false,
+			ZIndex = 9,
+		}, shopButton)
+		create("UICorner", { CornerRadius = UDim.new(1, 0) }, badge)
+		create("UIStroke", { Thickness = 2.5, Color = Color3.new(1, 1, 1) }, badge)
+		UIStyle.soften(badge, { radius = 13, strength = 0.3, shine = false })
+		local badgeText = text(badge, {
+			Size = UDim2.fromScale(1, 1),
+			Text = "1",
+			TextColor3 = Color3.new(1, 1, 1),
+			ZIndex = 10,
+		}, 1.5)
+		local badgeScale = create("UIScale", { Scale = 1 }, badge) -- AnchorPoint ortada: nabız köşeye kaymadan her yöne büyür
+		local badgePulse = TweenService:Create(badgeScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.15 })
+		local pulsing = false
+
+		local function totalItems()
+			local total = 0
+			for _, count in parseItems() do
+				total += count
+			end
+			return total
+		end
+		local baselineSet = false
+		local seen = 0 -- şimdiye kadar görülen (Shop'ta ya da girişte envanterde bulunan) iksir sayısı
+		local function updateBadge()
+			if not baselineSet then
+				if player:GetAttribute("DataLoaded") ~= true then
+					return -- kayıt yüklenmeden envanter boş görünür: oturum başında gelen iksirler 'yeni' sayılmasın
+				end
+				baselineSet = true
+				seen = totalItems()
+			end
+			local total = totalItems()
+			if PanelManager.isOpen(panel) or total < seen then
+				seen = total -- Shop açık (görüyor) ya da iksir içildi
+			end
+			local fresh = total - seen
+			badge.Visible = fresh > 0
+			if fresh > 0 then
+				badgeText.Text = if fresh > 9 then "9+" else tostring(fresh)
+				if not pulsing then
+					pulsing = true
+					badgePulse:Play()
+				end
+			elseif pulsing then
+				pulsing = false
+				badgePulse:Cancel()
+				badgeScale.Scale = 1
+			end
+		end
+		player:GetAttributeChangedSignal("PotionItems"):Connect(updateBadge)
+		player:GetAttributeChangedSignal("DataLoaded"):Connect(updateBadge)
+		panel:GetAttributeChangedSignal("PanelOpen"):Connect(updateBadge)
+		updateBadge()
+	end
 
 	-- ------------------------------------------------------------ PACKS & MORE
 	local packsHeader = addHeader(3, "PACKS & MORE")
