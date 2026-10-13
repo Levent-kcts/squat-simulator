@@ -21,6 +21,10 @@ local function childText(instance)
 		if rawget(child, "ClassName") == "TextLabel" then
 			return rawget(child, "Text")
 		end
+		local deeper = childText(child)
+		if deeper then
+			return deeper
+		end
 	end
 	return nil
 end
@@ -37,11 +41,27 @@ assert(badge, "Shop düğmesinde yeni iksir rozeti olmalı")
 local function visible()
 	return rawget(badge, "Visible") == true
 end
+-- sabit tutucu + içinde ortadan büyüyen yuvarlak (sahibi 'her yerinden büyüsün, tek yerinden değil' dedi); sayı yuvarlağa değmeyecek kadar küçük (sahibi 'kesişiyor, küçült' dedi)
+local core = find(badge, "Core")
+assert(core, "rozetin içinde 'Core' yuvarlağı olmalı")
+local holderAnchor = rawget(badge, "AnchorPoint")
+assert(holderAnchor.X == 0.5 and holderAnchor.Y == 0.5, "tutucu köşeye ortadan bağlı olmalı")
+local coreAnchor = rawget(core, "AnchorPoint")
+assert(coreAnchor.X == 0.5 and coreAnchor.Y == 0.5, "yuvarlak tutucunun ortasında, AnchorPoint ortada olmalı (her yöne eşit büyüsün)")
 local hasCorner = false
-for _, child in rawget(badge, "_children") do
+for _, child in rawget(core, "_children") do
 	hasCorner = hasCorner or rawget(child, "ClassName") == "UICorner"
 end
 assert(hasCorner, "rozet yuvarlak (UICorner) olmalı")
+local numberLabel
+for _, child in rawget(core, "_children") do
+	if rawget(child, "ClassName") == "TextLabel" then
+		numberLabel = child
+	end
+end
+assert(numberLabel, "sayı yuvarlağın İÇİNDE (Core'un çocuğu) olmalı; boyutu ShopPanel'de yuvarlağın %58'i (UDim2 taklidi sayısal değer tutmadığı için burada ölçülmez)")
+local numberAnchor = rawget(numberLabel, "AnchorPoint")
+assert(numberAnchor.X == 0.5 and numberAnchor.Y == 0.5, "sayı yuvarlağın ortasında olmalı")
 assert(not visible(), "kayıt yüklenmeden rozet görünmemeli")
 
 player:SetAttribute("DataLoaded", true)

@@ -21,6 +21,7 @@ local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel 
 local BUY_GREEN = Color3.fromRGB(72, 205, 40)
 local USE_BLUE = Color3.fromRGB(60, 160, 255)
 local CARD_ICON = 80 -- PACKS kartlarındaki simge kenarı (piksel)
+local CORE_SIZE = 25 -- yeni iksir rozetindeki kırmızı yuvarlağın kenarı (piksel); nabızda +5 büyür
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -248,26 +249,37 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 	-- çark / Gifts / görev bonusu / Index ödülünden envantere iksir girince Shop düğmesinin sağ üst köşesinde kırmızı yuvarlak (yeni iksir sayısı) çıkar,
 	-- Shop açılınca kalkar (iksirler orada 'USE xN' yazar). İçmek (USE) sayıyı düşürür ama rozet çıkarmaz; girişte zaten envanterde olanlar 'yeni' sayılmaz (DataLoaded'dan sonra ölçülür).
 	if shopButton then
+		-- İki katman: PotionBadge = sabit boyutlu, görünmez tutucu (köşede durur, hiç hareket etmez); Core = içindeki kırmızı yuvarlak. Nabızda SADECE Core'un Size'ı büyür/küçülür ve
+		-- AnchorPoint ortada olduğu için her yöne eşit büyür (sahibi 'her yerinden büyüsün, tek yerinden değil' dedi: yuvarlağın kendisi değil sabit tutucu köşeye bağlıdır).
 		local badge = create("Frame", {
 			Name = "PotionBadge",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(1, -4, 0, 4),
-			Size = UDim2.fromOffset(26, 26),
-			BackgroundColor3 = Color3.fromRGB(232, 38, 52),
+			Size = UDim2.fromOffset(34, 34),
+			BackgroundTransparency = 1,
 			Visible = false,
 			ZIndex = 9,
 		}, shopButton)
-		create("UICorner", { CornerRadius = UDim.new(1, 0) }, badge)
-		create("UIStroke", { Thickness = 2.5, Color = Color3.new(1, 1, 1) }, badge)
-		UIStyle.soften(badge, { radius = 13, strength = 0.3, shine = false })
-		local badgeText = text(badge, {
-			Size = UDim2.fromScale(1, 1),
+		local core = create("Frame", {
+			Name = "Core",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(CORE_SIZE, CORE_SIZE),
+			BackgroundColor3 = Color3.fromRGB(232, 38, 52),
+			ZIndex = 9,
+		}, badge)
+		create("UIStroke", { Thickness = 2.5, Color = Color3.new(1, 1, 1) }, core)
+		UIStyle.soften(core, { radius = UDim.new(0.5, 0), strength = 0.3, shine = false }) -- yarıçap kenarın yarısı (ORAN): büyüyünce de tam daire kalır
+		-- Sayı yuvarlağın içine rahat sığar (kenara değmez): yuvarlağın ~%58'i kadar, ortada
+		local badgeText = text(core, {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.58, 0.58),
 			Text = "1",
 			TextColor3 = Color3.new(1, 1, 1),
 			ZIndex = 10,
-		}, 1.5)
-		local badgeScale = create("UIScale", { Scale = 1 }, badge) -- AnchorPoint ortada: nabız köşeye kaymadan her yöne büyür
-		local badgePulse = TweenService:Create(badgeScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.15 })
+		}, 1)
+		local badgePulse = TweenService:Create(core, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Size = UDim2.fromOffset(CORE_SIZE + 5, CORE_SIZE + 5) })
 		local pulsing = false
 
 		local function totalItems()
@@ -302,7 +314,7 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 			elseif pulsing then
 				pulsing = false
 				badgePulse:Cancel()
-				badgeScale.Scale = 1
+				core.Size = UDim2.fromOffset(CORE_SIZE, CORE_SIZE)
 			end
 		end
 		player:GetAttributeChangedSignal("PotionItems"):Connect(updateBadge)
