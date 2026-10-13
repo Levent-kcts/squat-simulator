@@ -94,14 +94,16 @@ function QuestPanel.claimable(player)
 end
 
 -- Ödül listesini kısa yazıya çevirir ('+10 Wins', 'Rainbow Potion 15 min')
-local function rewardText(rewards)
+local function rewardText(rewards, ownsAutoPass)
 	local parts = {}
 	for _, reward in rewards do
 		if reward.kind == "wins" then
 			table.insert(parts, `+{reward.amount} Wins`)
 		else
-			local potion = Catalog.PotionByKind[reward.kind]
-			table.insert(parts, `{if potion then potion.name else "Potion"} {reward.minutes or Config.BoostMinutes}m`)
+			-- (Auto Click game pass'i olana Auto Click Potion yerine Rainbow: Catalog.ownerPotion)
+			local kind, minutes = Catalog.ownerPotion(reward.kind, reward.minutes, ownsAutoPass)
+			local potion = Catalog.PotionByKind[kind]
+			table.insert(parts, `{if potion then potion.name else "Potion"} {(potion and potion.fixedMinutes) or minutes or Config.BoostMinutes}m`)
 		end
 	end
 	return table.concat(parts, " + ")
@@ -373,17 +375,17 @@ function QuestPanel.init(screenGui, showToast)
 		local fill = create("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.fromRGB(110, 255, 140), BorderSizePixel = 0 }, bar)
 		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fill)
 		local amount = makeText(bar, { Position = UDim2.fromScale(0.05, 0.05), Size = UDim2.fromScale(0.9, 0.9), Text = "", TextColor3 = Color3.new(1, 1, 1), ZIndex = 2 }, 1.2)
-		makeText(row, {
+		local rewardLabel = makeText(row, {
 			Position = UDim2.new(0.6, 6, 0, 6),
 			Size = UDim2.new(0.4, -16, 0, 24),
-			Text = `🎁 {rewardText(quest.rewards)}`,
+			Text = `🎁 {rewardText(quest.rewards, player:GetAttribute("HasAutoClick") == true)}`,
 			TextColor3 = Color3.fromRGB(255, 225, 110),
 		}, 2)
 		local button, buttonLabel = claimButton(row, UDim2.new(0.6, 6, 0, 36), UDim2.new(0.4, -16, 0, 30))
 		button.MouseButton1Click:Connect(function()
 			invoke("ClaimStarter", quest.id)
 		end)
-		starterRows[quest.id] = { frame = row, title = title, fill = fill, amount = amount, button = button, buttonLabel = buttonLabel, quest = quest }
+		starterRows[quest.id] = { frame = row, rewardLabel = rewardLabel, title = title, fill = fill, amount = amount, button = button, buttonLabel = buttonLabel, quest = quest }
 	end
 
 	local function renderStarter()
@@ -392,6 +394,7 @@ function QuestPanel.init(screenGui, showToast)
 		local open = 0
 		for _, row in starterRows do
 			local entry = state[row.quest.id] or { progress = 0, done = false, claimed = false }
+			row.rewardLabel.Text = `🎁 {rewardText(row.quest.rewards, player:GetAttribute("HasAutoClick") == true)}` -- Auto Click game pass'i olana Auto Click Potion yerine Rainbow görünür
 			local progress = math.min(entry.progress, row.quest.goal)
 			row.fill.Size = UDim2.fromScale(math.clamp(progress / row.quest.goal, 0, 1), 1)
 			row.amount.Text = `{progress} / {row.quest.goal}`

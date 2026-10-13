@@ -80,9 +80,17 @@ statesWithUnclaimed({ squat = true }, "none")
 assert(read({ wins = Config.Eggs[1].price }).id == "pet", "ödül alınınca zincir sürmeli")
 statesWithUnclaimed({ squat = true, pet = true }, "pet")
 assert(read({ wins = 99 }).id == "claim" and read({ wins = 99 }).quest.id == "pet", "her biten görev sırayla claim hedefi olur")
--- (rebirth görevi hariç: rebirth'ten sonra şerit zaten kapanır)
-statesWithUnclaimed({ squat = true, pet = true, skin = true, wall = true, shoes = true, level10 = true, gift = true, train = true, wheel = true, rebirth = true }, "rebirth")
-assert(read({ level = 2 }).id == "rebirth", "rebirth görevinin ödülü 'claim' hedefi yapmaz")
+-- İLK REBIRTH: ödülü (Win + Rainbow + Auto Click Potion) de Quests'ten alınır; rebirth'ten sonra SADECE bu 'claim' hedefi kalır
+local everything = { squat = true, pet = true, skin = true, wall = true, shoes = true, level10 = true, gift = true, train = true, wheel = true, rebirth = true }
+statesWithUnclaimed(everything, "rebirth")
+objective = read({ level = 1, rebirths = 1 })
+assert(objective.id == "claim" and objective.quest.id == "rebirth" and string.find(objective.text, "Auto Click Potion 30m", 1, true), "rebirth sonrası ödülü Quests'ten al hedefi çıkmalı (Auto Click Potion yazmalı): " .. tostring(objective and objective.text))
+player:SetAttribute("HasAutoClick", true) -- Auto Click game pass'i olana ödül yazısı Rainbow görünür
+assert(string.find(read({ level = 1, rebirths = 1 }).text, "Rainbow Potion 15m + Rainbow Potion 15m", 1, true) or string.find(read({ level = 1, rebirths = 1 }).text, "Rainbow Potion 15m", 1, true), "pass sahibine yazı Rainbow demeli")
+assert(not string.find(read({ level = 1, rebirths = 1 }).text, "Auto Click Potion", 1, true), "pass sahibine Auto Click Potion yazılmamalı")
+player:SetAttribute("HasAutoClick", nil)
+statesWithUnclaimed(everything, "none")
+assert(read({ level = 1, rebirths = 1 }) == nil, "ödül alınınca rebirth sonrası hedef kalmamalı")
 
 -- Eski oyuncu (tüm görevler 'alınmış', rebirth yok): hedef yine rebirth; rebirth yapınca hedef kalmaz
 local allDone = {}

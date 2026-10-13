@@ -762,7 +762,7 @@ function GuideTour.init(screenGui, showToast)
 			timing.snoozeUntil = os.clock() + CLAIM_SNOOZE
 			dismiss()
 		end
-		local ok = pcall(setCallout, target, "Quest complete! Tap to claim", "Reward: " .. Objective.rewardText(quest.rewards), opened)
+		local ok = pcall(setCallout, target, "Quest complete! Tap to claim", "Reward: " .. Objective.rewardText(quest.rewards, player:GetAttribute("HasAutoClick") == true), opened)
 		if not ok then
 			current = nil
 			return false
@@ -771,10 +771,10 @@ function GuideTour.init(screenGui, showToast)
 	end
 
 	-- Rehber açık mı ve yeni oyuncu mu: ilk rebirth'e kadar, veri yüklendikten sonra
+	-- (İlk rebirth'ten sonra kartlar/tur çıkmaz; sadece 'ilk rebirth ödülünü Quests'ten al' oku kalır)
 	local function active()
 		return player:GetAttribute("DataLoaded") == true
 			and player:GetAttribute("GuideOn") ~= false
-			and rebirthValue.Value == 0
 			and player:GetAttribute("GuideSeen") ~= nil
 	end
 
@@ -786,6 +786,9 @@ function GuideTour.init(screenGui, showToast)
 			return
 		end
 		if current then
+			if rebirthValue.Value > 0 and not current.claim then
+				hide() -- ilk rebirth yapıldı: açık kart/tur kapanır (sadece 'ödülünü Quests'ten al' oku kalır)
+			end
 			return
 		end
 		local seen = seenSet()
@@ -807,6 +810,9 @@ function GuideTour.init(screenGui, showToast)
 			end
 		end
 		for _, step in Config.GuideTour do
+			if rebirthValue.Value > 0 then
+				break -- rebirth sonrası kart yok
+			end
 			if not seen[step.id] and not shownThisSession[step.id] and conditionMet(player, step, levelValue.Value, objective, cardPending) then
 				if sinceDismiss >= math.min(step.gap or timing.gap, timing.gap) then
 					show(step)

@@ -535,7 +535,7 @@ local autoPrice = makeText(autoButton, {
 	Visible = false,
 	ZIndex = 6,
 }, 22, 3)
--- ÜCRETSİZ DENEME (Config.AutoClick.TrialSeconds): yeni oyuncuya ilk dakikalarda Auto Click açık; kalan süreyi sunucu 'AutoClickTrialUntil' (sunucu saati) olarak verir, düğmede 'FREE m:ss' yazar
+-- (Ücretsiz deneme KAPALI: Config.AutoClick.TrialSeconds = 0; düğmede zamanlayıcı YAZMAZ, sahibi istemedi. Kalan iksir süresi sol alttaki iksir şişesinde görünür.)
 -- AUTO CLICK POTION (Config.Potions, 2026-10-13): iksir süresince de Auto Click pass'siz açıktır ('AutoBoostUntil'); ücretsiz süre = deneme ya da iksir, hangisi daha uzunsa
 local function trialSecondsLeft()
 	local best = 0
@@ -550,15 +550,6 @@ end
 local function trialActive()
 	return player:GetAttribute("HasAutoClick") ~= true and trialSecondsLeft() > 0
 end
-local autoTrial = makeText(autoButton, {
-	AnchorPoint = Vector2.new(1, 0.5),
-	Position = UDim2.new(1, -2, 0, 1),
-	Size = UDim2.fromOffset(70, 22),
-	Text = "FREE",
-	TextColor3 = Color3.fromRGB(110, 255, 130),
-	Visible = false,
-	ZIndex = 6,
-}, 18, 3)
 -- Auto Click kilitli mi: pass satılıyor, sunucu 'sahip değil' (ya da henüz bilmiyor) diyor ve ücretsiz deneme sürmüyor
 local function autoLocked()
 	return (Config.AutoClick.GamePassId or 0) > 0 and player:GetAttribute("HasAutoClick") ~= true and trialSecondsLeft() <= 0
@@ -659,9 +650,6 @@ local function refresh()
 	autoClick = autoClick and not locked
 	autoBadge.Visible = not locked
 	autoPrice.Visible = locked
-	local trialLeft = if trialActive() then math.ceil(trialSecondsLeft()) else 0
-	autoTrial.Visible = trialLeft > 0
-	autoTrial.Text = string.format("FREE %d:%02d", trialLeft // 60, trialLeft % 60)
 	autoBadge.Text = if autoClick then "ON" else "OFF"
 	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
 	warning.Visible = RunService:IsStudio() and player:GetAttribute("DataError") == true
@@ -700,10 +688,11 @@ local function tutorialActive()
 end
 
 local function currentObjective()
-	if not guideOn() or player:GetAttribute("DataLoaded") ~= true or rebirthValue.Value > 0 then
+	if not guideOn() or player:GetAttribute("DataLoaded") ~= true then
 		return nil
 	end
-	if player:GetAttribute("TutorialDone") == true and Config.Tutorial.RebirthGoal ~= true then
+	-- (İlk rebirth'ten sonra SADECE 'ilk rebirth görevinin ödülünü Quests'ten al' hedefi kalır: Objective.read başka hedef döndürmez)
+	if rebirthValue.Value == 0 and player:GetAttribute("TutorialDone") == true and Config.Tutorial.RebirthGoal ~= true then
 		return nil
 	end
 	return Objective.read(player, {

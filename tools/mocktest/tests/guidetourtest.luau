@@ -372,4 +372,18 @@ S.localPlayer:SetAttribute("GuideSeen", "")
 stats[Config.StatRebirths].Value = 1
 GuideTour._tick()
 assert(rawget(card2, "Visible") ~= true and GuideTour._state().current == nil, "rebirth sonrası rehber turu çıkmamalı")
+-- 11) İlk rebirth ÖDÜLÜ (Win + Rainbow + Auto Click Potion) de Quests'ten alınır: rebirth sonrası kart/tur yok ama 'ödülü al' oku kalır
+S.localPlayer:SetAttribute("GuideSeen", "welcome,intro")
+local rebirthParts = {}
+for _, quest in Config.StarterQuests do
+	table.insert(rebirthParts, `{quest.id},{quest.goal},1,{if quest.id == "rebirth" then 0 else 1}`)
+end
+S.localPlayer:SetAttribute("StarterState", table.concat(rebirthParts, ";"))
+GuideTour._timing.snoozeUntil = 0
+GuideTour._tick()
+local rebirthClaim = GuideTour._state()
+assert(rebirthClaim.current and rebirthClaim.current.claim and rebirthClaim.current.questId == "rebirth" and rebirthClaim.callout, "rebirth sonrası ilk rebirth ödülü için Quests'e ok çıkmalı")
+assert(hasText(rebirthClaim.callout.bubble, "Reward: " .. Objective.rewardText(questById("rebirth").rewards)) and string.find(Objective.rewardText(questById("rebirth").rewards), "Auto Click Potion 30m", 1, true), "balon ödülü (Auto Click Potion dahil) yazmalı")
+S.localPlayer:SetAttribute("StarterState", string.gsub(table.concat(rebirthParts, ";"), "rebirth,(%d+),1,0", "rebirth,%1,1,1"))
+assert(GuideTour._state().current == nil and GuideTour._state().callout == nil, "ödül alınınca ok kalkmalı")
 print("guide tour ok")

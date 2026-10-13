@@ -114,6 +114,32 @@ for index, prize in ownerPrizes do
 end
 assert(sawRainbow and not sawAuto, "pass sahibi için çarkta Auto Click dilimi Rainbow görünmeli")
 
+-- İLK REBIRTH GÖREVİNİN ÖDÜLÜ Auto Click Potion içerir (ücretsiz deneme yerine, sahibi istedi): Quests'ten CLAIM ile alınır, 30 dk hemen başlar
+local firstRebirth = Config.StarterQuests[#Config.StarterQuests]
+assert(firstRebirth.id == "rebirth", "son görev ilk rebirth olmalı")
+local hasAutoReward = false
+for _, reward in firstRebirth.rewards do
+	if reward.kind == "boostAuto" and reward.minutes == 30 then
+		hasAutoReward = true
+	end
+end
+assert(hasAutoReward, "ilk rebirth görevinin ödülünde 30 dk Auto Click Potion olmalı")
+assert(Config.AutoClick.TrialSeconds == 0, "ücretsiz deneme kapalı olmalı")
+local rebirther = join(9506, "FirstRebirth")
+PlayerStats.dev(rebirther, "AddRebirth")
+local rebirthClaimed, rebirthMessage = PlayerStats.claimStarter(rebirther, "rebirth")
+assert(rebirthClaimed == true and string.find(rebirthMessage, "Auto Click Potion", 1, true), "rebirth ödülü Auto Click Potion vermeli: " .. tostring(rebirthMessage))
+local rebirthNow = os.time()
+assert(rebirther:GetAttribute("AutoBoostUntil") >= rebirthNow + 30 * 60 - 3, "Auto Click Potion 30 dk başlamalı")
+-- Auto Click game pass'i olana aynı ödülde Rainbow gelir
+local rebirther2 = join(9507, "FirstRebirthOwner")
+rebirther2:SetAttribute("HasAutoClick", true)
+PlayerStats.dev(rebirther2, "AddRebirth")
+local ownerClaimed, ownerMessage = PlayerStats.claimStarter(rebirther2, "rebirth")
+assert(ownerClaimed == true and not string.find(ownerMessage, "Auto Click Potion", 1, true), "pass sahibine Auto Click Potion yazılmamalı: " .. tostring(ownerMessage))
+assert((rebirther2:GetAttribute("AutoBoostUntil") or 0) <= os.time(), "pass sahibine Auto Click Potion başlamamalı")
+assert(rebirther2:GetAttribute("RainbowBoostUntil") >= os.time() + 29 * 60, "pass sahibine Rainbow gelmeli (15 + 15 dk)")
+
 -- RESET ALL iksiri de sıfırlar
 PlayerStats.dev(again, "Reset")
 assert((again:GetAttribute("AutoBoostUntil") or 0) <= os.time(), "Reset Auto Click Potion'ı silmeli")

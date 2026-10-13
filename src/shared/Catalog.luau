@@ -47,6 +47,15 @@ function Catalog.potionSkuFor(kind, minutes)
 	return if id and Catalog.PotionSkuById[id] then id else nil
 end
 
+-- Ödül yazısı/verilişi için: Auto Click game pass'i olan oyuncuda Auto Click Potion ödülü Rainbow olur (Config.Potions.AutoOwnerReplacement). Dönüş: kind, minutes
+function Catalog.ownerPotion(kind, minutes, ownsAutoPass)
+	if kind == "boostAuto" and ownsAutoPass then
+		local replacement = Config.Potions.AutoOwnerReplacement
+		return replacement.kind, replacement.minutes
+	end
+	return kind, minutes
+end
+
 -- Çarkın dilimleri: Auto Click game pass'i olan oyuncu için 'Auto Click Potion' dilimi 'Rainbow Potion' görünür (sunucu da öyle verir: Config.Potions.AutoOwnerReplacement); diğerleri Config.Wheel.Prizes ile aynı
 function Catalog.wheelPrizes(ownsAutoPass)
 	if not ownsAutoPass then

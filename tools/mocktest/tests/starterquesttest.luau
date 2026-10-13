@@ -135,7 +135,7 @@ for _, quest in quests do
 	assert(entry and not entry.done and not entry.claimed, "yeni oyuncu görevleri sıfırlanmalı: " .. quest.id)
 end
 assert(again:GetAttribute("GuideOn") == true, "kapalı Guide tekrar açılmalı")
-assert(again:GetAttribute("AutoClickTrialUntil") > 0, "ücretsiz Auto Click denemesi yeniden başlamalı")
+assert((again:GetAttribute("AutoClickTrialUntil") or 0) == 0, "ücretsiz Auto Click denemesi kapalı: süre verilmemeli")
 assert(string.find(again:GetAttribute("PotionItems") or "", "luck", 1, true), "iksir kalmalı")
 assert((again:GetAttribute("DiscoveredPets") or "x") == "", "keşfedilen petler sıfırlanmalı ('ilk pet' görevi buna bakar)")
 local restartWins = stat(again, Config.StatWins)

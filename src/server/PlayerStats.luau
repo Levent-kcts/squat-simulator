@@ -941,6 +941,10 @@ end
 
 -- İksiri içirir (kind: "boostLuck" / "boostMuscle" / "boostWins" / "boostRainbow"); iksir zaten etkiliyse süre ÜZERİNE eklenir. Süre bitince kazanç yeniden hesaplanır
 local function startBoost(player, profile, kind, minutes)
+	local fixed = Catalog.PotionByKind[kind]
+	if fixed and fixed.fixedMinutes then
+		minutes = fixed.fixedMinutes -- Auto Click Potion hep 30 dk
+	end
 	local seconds = (minutes or Config.BoostMinutes) * 60
 	local field = POTION_FIELD[kind]
 	profile[field] = math.max(os.time(), profile[field]) + seconds
@@ -1790,9 +1794,12 @@ local function grantRewardList(player, profile, rewards)
 			wins.Value += reward.amount
 			table.insert(messages, `+{reward.amount} Wins`)
 		elseif POTION_FIELD[reward.kind] then
-			startBoost(player, profile, reward.kind, reward.minutes)
-			local potion = Catalog.PotionByKind[reward.kind]
-			table.insert(messages, `{potion.name} active for {reward.minutes or Config.BoostMinutes} min`)
+			-- (Auto Click game pass'i olana Auto Click Potion yerine Rainbow: Catalog.ownerPotion)
+			local kind, minutes = Catalog.ownerPotion(reward.kind, reward.minutes, ownsAutoPass(player))
+			startBoost(player, profile, kind, minutes)
+			local potion = Catalog.PotionByKind[kind]
+			local shownMinutes = if potion.fixedMinutes then potion.fixedMinutes else (minutes or Config.BoostMinutes)
+			table.insert(messages, `{potion.name} active for {shownMinutes} min`)
 		end
 	end
 	return messages

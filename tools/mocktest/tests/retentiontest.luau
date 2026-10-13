@@ -26,10 +26,10 @@ local function petCount(player)
 	return if list == "" then 0 else #string.split(list, ",")
 end
 
--- ---- 1) Yeni oyuncu: ücretsiz Auto Click denemesi
+-- ---- 1) Ücretsiz Auto Click denemesi KAPALI (sahibi 'zamanlayıcı vermesin, ilk rebirth'inde Auto Click Potion versin' dedi): yeni oyuncuya deneme süresi verilmez
 local kid = join(9301, "NewKid")
-assert(Config.AutoClick.TrialSeconds == 600, "ayar değerleri beklenen gibi olmalı")
-assert(kid:GetAttribute("AutoClickTrialUntil") == now + Config.AutoClick.TrialSeconds, "yeni oyuncu 10 dakikalık deneme almalı: " .. tostring(kid:GetAttribute("AutoClickTrialUntil")))
+assert(Config.AutoClick.TrialSeconds == 0, "ücretsiz deneme kapalı olmalı")
+assert((kid:GetAttribute("AutoClickTrialUntil") or 0) == 0, "yeni oyuncu deneme süresi almamalı: " .. tostring(kid:GetAttribute("AutoClickTrialUntil")))
 
 -- ---- 2) Başlangıç Win'i SESSİZCE verilmez (sahibi istedi): 'Squat 30 times' görevinin ödülüdür, oyuncu Quests'ten CLAIM ile alır
 local winsBefore = stat(kid, Config.StatWins)
@@ -101,7 +101,7 @@ now += 300 -- 5 dakika oynadı
 assert(PlayerStats.saveNow(kid) == true, "kayıt başarılı olmalı")
 local record = S.datastore["Player_9301"]
 assert(record, "kayıt yazılmış olmalı")
-assert(record.AutoTrial == Config.AutoClick.TrialSeconds - 300, "kalan deneme süresi kayıtlı olmalı: " .. tostring(record.AutoTrial))
+assert(record.AutoTrial == 0, "deneme süresi kayıtlı olmamalı: " .. tostring(record.AutoTrial))
 assert(#record.LevelRewards == #Config.LevelRewards, "alınan level ödülleri kayıtlı olmalı: " .. #record.LevelRewards)
 assert(#record.IndexRewards == #Config.Index.Rewards, "alınan Index ödülleri kayıtlı olmalı: " .. #record.IndexRewards)
 -- İlk oyun hunisi: yaşanan adımlar kayıtlı (bir kez gönderilir)
@@ -115,7 +115,7 @@ end
 assert(not funnelSet[table.find(Config.Funnel, "FirstWall")], "duvar kırılmadan o adım gönderilmemeli")
 now += 100000 -- uzun süre çevrimdışı kaldı
 local kidAgain = join(9301, "NewKidAgain")
-assert(kidAgain:GetAttribute("AutoClickTrialUntil") == now + Config.AutoClick.TrialSeconds - 300, "dönünce kalan süre devam etmeli (çevrimdışıyken akmaz): " .. tostring(kidAgain:GetAttribute("AutoClickTrialUntil")))
+assert((kidAgain:GetAttribute("AutoClickTrialUntil") or 0) == 0, "tekrar girişte de deneme süresi olmamalı: " .. tostring(kidAgain:GetAttribute("AutoClickTrialUntil")))
 local winsAgain = stat(kidAgain, Config.StatWins)
 for _ = 1, Config.Tutorial.ClickGoal do
 	PlayerStats.tutorialClick(kidAgain)

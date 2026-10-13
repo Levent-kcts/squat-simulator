@@ -24,14 +24,16 @@ function Objective.readStates(player)
 end
 
 -- Ödül listesini kısa yazıya çevirir ('+8 Wins', 'Rainbow Potion 15m'); QuestPanel'deki ile aynı biçim
-function Objective.rewardText(rewards)
+-- ownsAutoPass: Auto Click game pass'i olana Auto Click Potion ödülü Rainbow görünür (Catalog.ownerPotion)
+function Objective.rewardText(rewards, ownsAutoPass)
 	local parts = {}
 	for _, reward in rewards do
 		if reward.kind == "wins" then
 			table.insert(parts, `+{reward.amount} Wins`)
 		else
-			local potion = Catalog.PotionByKind[reward.kind]
-			table.insert(parts, `{if potion then potion.name else "Potion"} {reward.minutes or Config.BoostMinutes}m`)
+			local kind, minutes = Catalog.ownerPotion(reward.kind, reward.minutes, ownsAutoPass)
+			local potion = Catalog.PotionByKind[kind]
+			table.insert(parts, `{if potion then potion.name else "Potion"} {(potion and potion.fixedMinutes) or minutes or Config.BoostMinutes}m`)
 		end
 	end
 	return table.concat(parts, " + ")
@@ -56,12 +58,16 @@ function Objective.read(player, ctx)
 	local total = #quests
 	local wins = ctx.wins or 0
 	-- Biten ama ödülü alınmamış görev varsa hedef: Quests'ten ödülü almak. Ödül SESSİZCE verilmez (sahibi istedi): oyuncu Quests penceresine yönlendirilir, oradan CLAIM eder, ardından zincir devam eder.
-	-- (rebirth görevi hariç: rebirth'ten sonra şerit/rehber zaten kapanır, ödülü Quests rozetinden alınır.)
+	-- İlk rebirth görevinin ödülü de böyle alınır (Auto Click Potion dahil); rebirth'ten sonra SADECE bu 'claim' hedefi kalır, başka hedef yok.
+	local ownsAutoPass = player:GetAttribute("HasAutoClick") == true
 	for _, quest in quests do
 		local state = states[quest.id]
-		if state and state.done and not state.claimed and quest.id ~= "rebirth" then
-			return { id = "claim", quest = quest, text = `Quest complete! Tap 📜 QUESTS (top right) and CLAIM {Objective.rewardText(quest.rewards)}!` }
+		if state and state.done and not state.claimed then
+			return { id = "claim", quest = quest, text = `Quest complete! Tap 📜 QUESTS (top right) and CLAIM {Objective.rewardText(quest.rewards, ownsAutoPass)}!` }
 		end
+	end
+	if (ctx.rebirths or 0) > 0 then
+		return nil
 	end
 	-- Level sınırına gelindiyse (ve ilk rebirth yapılmadıysa) sıradaki isteğe bağlı görevler ne olursa olsun hedef REBIRTH'tir: ilerleme orada tıkanıyor
 	local maxLevel = ctx.maxLevel or 0

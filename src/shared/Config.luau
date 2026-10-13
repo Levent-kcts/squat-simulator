@@ -104,7 +104,9 @@ return {
 	-- pass olmayan oyuncu elle tıklar (sunucu hız sınırı ClickLimit herkese aynı) ya da antrenman pedinin kendi squat'ını kullanır. Tempo (tools/simulate.py): Auto Click'li oyun sonu ~11 sa, elle 5/sn ~19 sa, pasif ped ~41 sa.
 	-- TrialSeconds: YENİ oyuncuya ilk bu kadar saniye (oynadığı süre; çevrimdışıyken akmaz, kayıtlı) ÜCRETSİZ Auto Click (2026-10-13, playtest: 'insanlar 1k güçte bırakıyor': elle tıklamak 2,5. dakikadan sonra yorucu,
 	-- oyuncu Auto Click'in hızını önce yaşasın, süre bitince fiyatı görsün; server/PlayerStats 'AutoClickTrialUntil' özniteliği, düğmede 'FREE m:ss'). Eski oyuncuya verilmez. 0 = deneme yok.
-	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 149, TrialSeconds = 600 },
+	-- (2026-10-13: sahibi 'zamanlayıcı vermesin, onun yerine ilk rebirth'inde Auto Click Potion versin' dedi: ücretsiz DENEME KAPATILDI [TrialSeconds = 0; düğmedeki 'FREE m:ss' zamanlayıcısı da kalktı]. Auto Click'e geçici erişim artık
+	-- AUTO CLICK POTION'la gelir: ilk rebirth görevinin ödülü [StarterQuests 'rebirth', 30 dk], günlük görev bonusu ve çark; bkz. Config.Potions.) Deneme kodu duruyor: TrialSeconds > 0 yapılırsa geri gelir.
+	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 149, TrialSeconds = 0 },
 	-- YUMURTA GAME PASS'LERİ (sahibi 'yumurtada R auto ve T multi ücretli olsun, üzerlerinde Robux fiyatları olsun, bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi): yumurta panelinde İKİ ücretli özellik vardır:
 	-- Auto Open (R tuşu: otomatik açma) ve Multi Open (T tuşu: x3 ve x10 modları; oyuncu T ile modu değiştirip açar). E ile tek yumurta açmak her zaman ücretsizdir. Her biri BİR game pass'tir (kalıcı).
 	-- (Önce üç pass'ti: Auto, Triple x3, Multi/Mega x10; sahibi Triple'ı Multi'ye çevirdi, 'eggtriple' kodunu eggmulti olarak kullan dedi: tek Multi pass'i HEM x3 HEM x10 modunu açar.)
@@ -344,7 +346,7 @@ return {
 		{ id = "gift", text = "Claim a Playtime Reward", hint = "Gifts button on the left, or the FREE REWARD box on the right.", metric = "gifts", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
 		{ id = "train", text = "Visit the Training Area", hint = "Right wall: step on a Coach pad to squat automatically.", metric = "train", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
 		{ id = "wheel", text = "Spin the Daily Wheel", hint = "Next to the eggs: walk up to the wheel and press E.", metric = "wheel", goal = 1, rewards = { { kind = "wins", amount = 20 } } },
-		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, then press Rebirth on the left. You keep Wins, shoes, skins and pets!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 } } },
+		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, press Rebirth on the left. You keep Wins, shoes, skins and pets, and win an Auto Click Potion!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 }, { kind = "boostAuto", minutes = 30 } } },
 	},
 	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen').
 	-- when: start / quest:<görev id> ('claim' = biten bir görevin ödülü alınmayı bekliyor; o görev GÜNCEL HEDEF olunca; üst şerit [client/Objective] de aynı hedefi yazar, böylece kart ile şerit çakışmaz: 2026-10-13 'iki görev çakışıyor' şikayeti) / level:N / nearMax (level sınırına 2 kala).
@@ -361,11 +363,11 @@ return {
 		{ id = "q_gift", when = "quest:gift", tag = "NEW QUEST", target = "GiftsButton", pointer = "Free gifts!", title = "Claim a free gift!", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
 		{ id = "q_train", when = "quest:train", tag = "NEW QUEST", title = "Training Area", text = "On the right wall, stand on a Coach pad to squat automatically with a big multiplier. Better pads unlock with Rebirths." },
 		{ id = "q_wheel", when = "quest:wheel", tag = "NEW QUEST", title = "Daily Wheel", text = "Next to the eggs: walk up to the wheel and press E for a free spin every day!" },
-		{ id = "auto", when = "level:9", tip = true, tag = "TIP", target = "AutoClickButton", pointer = "Auto Click", title = "Auto Click", text = "Auto Click squats for you! You have a free trial, then you can keep it forever in the Shop." },
+		{ id = "auto", when = "level:9", tip = true, tag = "TIP", target = "AutoClickButton", pointer = "Auto Click", title = "Auto Click", text = "Auto Click squats for you! Win an Auto Click Potion with your first Rebirth, or keep it forever with the pass in the Shop." },
 		{ id = "index", when = "level:11", tip = true, tag = "TIP", target = "IndexButton", pointer = "Pet Index", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
 		{ id = "backpack", when = "level:13", tip = true, tag = "TIP", target = "BackpackButton", pointer = "Backpack", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
 		{ id = "shop", when = "level:15", tip = true, tag = "TIP", target = "ShopButton", pointer = "Shop", title = "Shop and Settings", text = "The Shop sells potions and Win packs. Settings has the Guide switch if you want to turn tips off." },
-		{ id = "rebirth", when = "nearMax", tag = "NEW QUEST", target = "RebirthButton", pointer = "Rebirth now!", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier!" },
+		{ id = "rebirth", when = "nearMax", tag = "NEW QUEST", target = "RebirthButton", pointer = "Rebirth now!", title = "Time to Rebirth!", text = "At MAX level press Rebirth. Your level and muscle reset, but you KEEP Wins, shoes, skins and pets, and get a permanent bigger multiplier! Your first Rebirth also wins a free Auto Click Potion!" },
 	},
 	-- HIZLI OK TURU (2026-10-13, sahibi 'çok sade kalıyor, hızlı bir tanıtım yapıp oklarla göstersin' dedi): GuideTour'daki 'intro' adımı bu listeyi sırayla gezer; her durakta hedef düğmeye büyük zıplayan ok + kısa balon, GuideIntroSeconds sn'de bir kendiliğinden ilerler ('Next' hızlandırır, 'Skip' bitirir).
 	-- Son durak Quests'tir: görevlerle bağ kurar (görev bitince Quests düğmesine 'claim' oku çıkar). Hedef adı arayüzde yoksa o durak atlanır.
@@ -378,7 +380,7 @@ return {
 		{ target = "BackpackButton", text = "BACKPACK: trails and auras" },
 		{ target = "PetsButton", text = "PETS: hatch eggs and build your team" },
 		{ target = "GiftsButton", text = "GIFTS: free rewards while you play" },
-		{ target = "AutoClickButton", text = "AUTO CLICK squats for you (free trial!)" },
+		{ target = "AutoClickButton", text = "AUTO CLICK squats for you (free potion at 1st Rebirth!)" },
 		{ target = "IndexButton", text = "PET INDEX: find every pet for bonuses" },
 		{ target = "QuestsButton", text = "QUESTS: finish NEW PLAYER quests for free rewards!" },
 	},
