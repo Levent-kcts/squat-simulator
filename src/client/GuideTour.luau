@@ -26,7 +26,9 @@ local CLAIM_SECONDS = 15 -- sn: görev tamamlandı okunun kalma süresi
 local CHECK_INTERVAL = 0.5
 local FOLLOW_INTERVAL = 0.1 -- ok, hedefin konumunu bu aralıkla izler
 local OVERLAY_ORDER = 800 -- yükleme ekranının (1000) altında, diğer arayüzün üstünde
-local ARROW_GLYPH = { right = "◀", left = "▶", below = "▲", above = "▼" }
+local ARROW_FILL = Color3.fromRGB(255, 206, 52)
+local ARROW_OUTLINE = Color3.fromRGB(28, 24, 46)
+local ARROW_ROTATION = { above = 0, below = 180, right = 90, left = -90 } -- ok aşağı bakacak çizilir, yöne göre döndürülür
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -46,6 +48,39 @@ local function label(parent, props, strokeThickness)
 		create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, textLabel)
 	end
 	return textLabel
+end
+
+-- Yumuşak, kalın dış çizgili ok (aşağı bakar; yöne göre döndürülür): gövde + elmas uç, önce koyu çizgi katmanı, üstüne altın dolgu katmanı (iç içe binen çizgiler görünmesin)
+local function buildArrow(parent, size, scale)
+	local arrow = create("Frame", { Name = "Arrow", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.fromOffset(size, size), ZIndex = 3 }, parent)
+	local outline = math.max(2, math.floor(3 * scale))
+	local shaftWidth, shaftHeight, headSide = size * 0.34, size * 0.6, size * 0.5
+	for layer = 1, 2 do
+		local grow = if layer == 1 then outline * 2 else 0
+		local color = if layer == 1 then ARROW_OUTLINE else ARROW_FILL
+		local shaft = create("Frame", {
+			Name = if layer == 1 then "ShaftOutline" else "Shaft",
+			AnchorPoint = Vector2.new(0.5, 0),
+			Position = UDim2.fromOffset(size / 2, size * 0.04 - grow / 2),
+			Size = UDim2.fromOffset(shaftWidth + grow, shaftHeight + grow),
+			BackgroundColor3 = color,
+			BorderSizePixel = 0,
+			ZIndex = 2 + layer,
+		}, arrow)
+		create("UICorner", { CornerRadius = UDim.new(0, 6) }, shaft)
+		local head = create("Frame", {
+			Name = if layer == 1 then "HeadOutline" else "Head",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(size / 2, size * 0.62),
+			Size = UDim2.fromOffset(headSide + grow, headSide + grow),
+			Rotation = 45,
+			BackgroundColor3 = color,
+			BorderSizePixel = 0,
+			ZIndex = 2 + layer,
+		}, arrow)
+		create("UICorner", { CornerRadius = UDim.new(0, 6) }, head)
+	end
+	return arrow
 end
 
 -- Adı verilen arayüz öğesini bulur (PlayerGui altında, iç içe olabilir); yoksa nil
@@ -149,7 +184,7 @@ function GuideTour.init(screenGui, showToast)
 		Visible = false,
 		ZIndex = 60,
 	}, screenGui)
-	create("UIStroke", { Thickness = 4, Color = GOLD }, card)
+	create("UIStroke", { Thickness = 3, Color = GOLD }, card)
 	UIStyle.soften(card, { radius = 16, strength = 0.2, shine = false })
 	create("UISizeConstraint", { MaxSize = Vector2.new(430, 170), MinSize = Vector2.new(260, 170) }, card)
 
@@ -207,23 +242,23 @@ function GuideTour.init(screenGui, showToast)
 	UIStyle.soften(skip, { radius = 8, strength = 0.2, shine = false })
 	label(skip, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = "Skip guide", TextColor3 = Color3.fromRGB(225, 228, 245), ZIndex = 63 }, 1.5)
 
-	-- ---------- Hızlı tur çubuğu: 'Quick tour 3/10  [Skip] [Next >]' ----------
+	-- ---------- Hızlı tur çubuğu: 'Quick tour 3/10  [Skip] [Next >]' + altında ilerleme çizgisi ----------
 	local introBar = create("Frame", {
 		Name = "IntroBar",
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0.27, 0),
-		Size = UDim2.fromOffset(360, 48),
+		Size = UDim2.fromOffset(360, 56),
 		BackgroundColor3 = NAVY,
 		Active = true,
 		Visible = false,
 		ZIndex = 60,
 	}, screenGui)
-	create("UIStroke", { Thickness = 4, Color = GOLD }, introBar)
-	UIStyle.soften(introBar, { radius = 14, strength = 0.2, shine = false })
-	create("UISizeConstraint", { MaxSize = Vector2.new(360, 48), MinSize = Vector2.new(300, 48) }, introBar)
+	create("UIStroke", { Thickness = 3, Color = GOLD }, introBar)
+	UIStyle.soften(introBar, { radius = 18, strength = 0.22, shine = false })
+	create("UISizeConstraint", { MaxSize = Vector2.new(360, 56), MinSize = Vector2.new(300, 56) }, introBar)
 	local introCounter = label(introBar, {
-		Position = UDim2.fromOffset(12, 6),
-		Size = UDim2.fromOffset(160, 36),
+		Position = UDim2.fromOffset(14, 6),
+		Size = UDim2.fromOffset(170, 30),
 		Text = "",
 		TextColor3 = GOLD,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -231,28 +266,32 @@ function GuideTour.init(screenGui, showToast)
 	}, 2)
 	local introSkip = create("TextButton", {
 		Name = "IntroSkip",
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -112, 0.5, 0),
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -112, 0, 9),
 		Size = UDim2.fromOffset(62, 28),
 		Text = "",
 		BackgroundColor3 = Color3.fromRGB(86, 90, 112),
 		ZIndex = 62,
 	}, introBar)
 	create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, introSkip)
-	UIStyle.soften(introSkip, { radius = 8, strength = 0.2, shine = false })
+	UIStyle.soften(introSkip, { radius = 10, strength = 0.2, shine = false })
 	label(introSkip, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = "Skip", TextColor3 = Color3.fromRGB(225, 228, 245), ZIndex = 63 }, 1.5)
 	local introNext = create("TextButton", {
 		Name = "IntroNext",
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -8, 0.5, 0),
-		Size = UDim2.fromOffset(96, 34),
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -8, 0, 6),
+		Size = UDim2.fromOffset(96, 32),
 		Text = "",
 		BackgroundColor3 = Color3.fromRGB(60, 200, 90),
 		ZIndex = 62,
 	}, introBar)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, introNext)
-	UIStyle.soften(introNext, { radius = 10, strength = 0.28 })
+	create("UIStroke", { Thickness = 2.5, Color = Color3.new(0, 0, 0) }, introNext)
+	UIStyle.soften(introNext, { radius = 12, strength = 0.28 })
 	label(introNext, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = "Next ▶", TextColor3 = Color3.new(1, 1, 1), ZIndex = 63 }, 2)
+	local introTrack = create("Frame", { Name = "IntroTrack", Position = UDim2.new(0, 14, 1, -13), Size = UDim2.new(1, -28, 0, 6), BackgroundColor3 = Color3.fromRGB(18, 20, 36), BorderSizePixel = 0, ZIndex = 61 }, introBar)
+	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, introTrack)
+	local introFill = create("Frame", { Name = "IntroFill", Size = UDim2.fromScale(0, 1), BackgroundColor3 = GOLD, BorderSizePixel = 0, ZIndex = 62 }, introTrack)
+	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, introFill)
 
 	-- ---------- Durum ----------
 	local current = nil -- şu an gösterilen adım (kart, hızlı tur ya da görev oku)
@@ -351,37 +390,34 @@ function GuideTour.init(screenGui, showToast)
 		end
 		callout.bounceTweens = {}
 		local s = callout.scale
-		local gap = math.floor(4 * s)
-		local arrowSize = callout.arrowSize
-		local span = gap + arrowSize
-		local bob = math.floor(9 * s)
+		local gap = math.floor(6 * s)
+		local half = callout.arrowSize / 2
+		local span = gap + callout.arrowSize + 4
+		local bob = math.floor(8 * s)
 		local arrow, bubble = callout.arrow, callout.bubble
-		arrow.Text = ARROW_GLYPH[dir]
+		arrow.Rotation = ARROW_ROTATION[dir]
+		arrow.AnchorPoint = Vector2.new(0.5, 0.5)
 		local from, to
 		if dir == "right" then
-			arrow.AnchorPoint = Vector2.new(0, 0.5)
 			bubble.AnchorPoint = Vector2.new(0, 0.5)
-			from, to = UDim2.new(1, gap, 0.5, 0), UDim2.new(1, gap - bob, 0.5, 0)
-			bubble.Position = UDim2.new(1, span + 2, 0.5, 0)
+			from, to = UDim2.new(1, gap + half, 0.5, 0), UDim2.new(1, gap + half - bob, 0.5, 0)
+			bubble.Position = UDim2.new(1, span, 0.5, 0)
 		elseif dir == "left" then
-			arrow.AnchorPoint = Vector2.new(1, 0.5)
 			bubble.AnchorPoint = Vector2.new(1, 0.5)
-			from, to = UDim2.new(0, -gap, 0.5, 0), UDim2.new(0, -gap + bob, 0.5, 0)
-			bubble.Position = UDim2.new(0, -span - 2, 0.5, 0)
+			from, to = UDim2.new(0, -(gap + half), 0.5, 0), UDim2.new(0, -(gap + half) + bob, 0.5, 0)
+			bubble.Position = UDim2.new(0, -span, 0.5, 0)
 		elseif dir == "below" then
-			arrow.AnchorPoint = Vector2.new(0.5, 0)
 			bubble.AnchorPoint = Vector2.new(align, 0)
-			from, to = UDim2.new(0.5, 0, 1, gap), UDim2.new(0.5, 0, 1, gap - bob)
+			from, to = UDim2.new(0.5, 0, 1, gap + half), UDim2.new(0.5, 0, 1, gap + half - bob)
 			bubble.Position = UDim2.new(align, 0, 1, span)
 		else
-			arrow.AnchorPoint = Vector2.new(0.5, 1)
 			bubble.AnchorPoint = Vector2.new(align, 1)
-			from, to = UDim2.new(0.5, 0, 0, -gap), UDim2.new(0.5, 0, 0, -gap + bob)
+			from, to = UDim2.new(0.5, 0, 0, -(gap + half)), UDim2.new(0.5, 0, 0, -(gap + half) + bob)
 			bubble.Position = UDim2.new(align, 0, 0, -span)
 		end
 		arrow.Position = from
 		local ok, tween = pcall(function()
-			return TweenService:Create(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Position = to })
+			return TweenService:Create(arrow, TweenInfo.new(0.42, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Position = to })
 		end)
 		if ok and tween then
 			table.insert(callout.bounceTweens, tween)
@@ -426,6 +462,11 @@ function GuideTour.init(screenGui, showToast)
 				container.Visible = true
 			end
 			callout.calibrating = true
+			-- Uzun dikey hedef (daire + altındaki sayı) hap şeklinde, diğerleri yumuşak yuvarlak köşeli sarılır
+			local radius = if size.Y / size.X > 1.25 then 0.5 else 0.28
+			for _, corner in callout.corners do
+				corner.CornerRadius = UDim.new(radius, 0)
+			end
 			local cx = (position.X + size.X / 2) / viewWidth
 			local cy = (position.Y + size.Y / 2) / viewHeight
 			local dir = pickDirection(cx, cy)
@@ -452,7 +493,7 @@ function GuideTour.init(screenGui, showToast)
 			overlay = overlay,
 			scale = s,
 			pad = math.floor(5 * s),
-			arrowSize = math.floor(54 * s),
+			arrowSize = math.floor(48 * s),
 			alive = true,
 			tweens = {},
 			bounceTweens = {},
@@ -460,40 +501,49 @@ function GuideTour.init(screenGui, showToast)
 		local container = create("Frame", { Name = "GuideCallout", BackgroundTransparency = 1, Size = UDim2.fromOffset(10, 10), Visible = false }, overlay)
 		callout.container = container
 
-		local ring = create("Frame", { Name = "Ring", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 1 }, container)
-		create("UICorner", { CornerRadius = UDim.new(0, math.floor(14 * s)) }, ring)
-		local stroke = create("UIStroke", { Thickness = 4, Color = GOLD }, ring)
-		local okPulse, pulse = pcall(function()
-			return TweenService:Create(stroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Thickness = 9 })
+		-- Halka: hafif altın dolgulu yumuşak çerçeve + dışa yayılıp sönen dalga (kaba kalın çerçeve değil)
+		callout.corners = {}
+		local ring = create("Frame", { Name = "Ring", BackgroundColor3 = GOLD, BackgroundTransparency = 0.88, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1), ZIndex = 1 }, container)
+		table.insert(callout.corners, create("UICorner", { CornerRadius = UDim.new(0.28, 0) }, ring))
+		create("UIStroke", { Thickness = 3, Color = GOLD }, ring)
+		local ripple = create("Frame", {
+			Name = "Ripple",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			ZIndex = 1,
+		}, container)
+		table.insert(callout.corners, create("UICorner", { CornerRadius = UDim.new(0.28, 0) }, ripple))
+		local rippleStroke = create("UIStroke", { Thickness = 3, Color = GOLD, Transparency = 0 }, ripple)
+		local okRipple, grow, fade = pcall(function()
+			local info = TweenInfo.new(0.95, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, -1, false)
+			return TweenService:Create(ripple, info, { Size = UDim2.new(1, math.floor(26 * s), 1, math.floor(26 * s)) }), TweenService:Create(rippleStroke, info, { Transparency = 1 })
 		end)
-		if okPulse and pulse then
-			table.insert(callout.tweens, pulse)
+		if okRipple and grow and fade then
+			table.insert(callout.tweens, grow)
+			table.insert(callout.tweens, fade)
 			pcall(function()
-				pulse:Play()
+				grow:Play()
+				fade:Play()
 			end)
 		end
 
-		callout.arrow = label(container, {
-			Name = "Arrow",
-			Size = UDim2.fromOffset(callout.arrowSize, callout.arrowSize),
-			Text = "▼",
-			TextColor3 = GOLD,
-			ZIndex = 3,
-		}, 3)
+		callout.arrow = buildArrow(container, callout.arrowSize, s)
 
-		local bubbleHeight = math.floor((if subText then 70 else 50) * s)
+		local bubbleHeight = math.floor((if subText then 66 else 48) * s)
 		local bubble = create("Frame", {
 			Name = "Bubble",
-			Size = UDim2.fromOffset(math.floor(260 * s), bubbleHeight),
+			Size = UDim2.fromOffset(math.floor(270 * s), bubbleHeight),
 			BackgroundColor3 = NAVY,
 			ZIndex = 2,
 		}, container)
-		create("UIStroke", { Thickness = 3, Color = GOLD }, bubble)
-		UIStyle.soften(bubble, { radius = 12, strength = 0.2, shine = false })
+		create("UIStroke", { Thickness = 2.5, Color = GOLD }, bubble)
+		UIStyle.soften(bubble, { radius = 14, strength = 0.25, shine = false })
 		label(bubble, {
 			Name = "Text",
-			Position = UDim2.fromScale(0.04, 0.06),
-			Size = UDim2.fromScale(0.92, if subText then 0.56 else 0.88),
+			Position = UDim2.fromScale(0.05, 0.08),
+			Size = UDim2.fromScale(0.9, if subText then 0.52 else 0.84),
 			Text = text,
 			TextColor3 = Color3.new(1, 1, 1),
 			TextWrapped = true,
@@ -502,8 +552,8 @@ function GuideTour.init(screenGui, showToast)
 		if subText then
 			label(bubble, {
 				Name = "SubText",
-				Position = UDim2.fromScale(0.04, 0.64),
-				Size = UDim2.fromScale(0.92, 0.3),
+				Position = UDim2.fromScale(0.05, 0.62),
+				Size = UDim2.fromScale(0.9, 0.3),
 				Text = subText,
 				Font = BODY_FONT,
 				TextColor3 = Color3.fromRGB(205, 212, 245),
@@ -610,6 +660,7 @@ function GuideTour.init(screenGui, showToast)
 		state.stopToken += 1
 		local mine = state.stopToken
 		introCounter.Text = `Quick tour  {index}/{#state.stops}`
+		introFill.Size = UDim2.fromScale(index / #state.stops, 1)
 		local target = findTarget(player, stop.target)
 		local ok = target ~= nil and pcall(setCallout, target, stop.text, nil, advanceIntro)
 		if not ok then
