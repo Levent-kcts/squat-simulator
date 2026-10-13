@@ -41,7 +41,7 @@ assert(player:GetAttribute("ClaimedGifts") == "1,2", "ikinci Next ikinci ödül�
 assert(select(1, PlayerStats.claimGift(player, 2)) == false, "açılan ödül elle tekrar alınamaz")
 
 -- ---- Süresi dolmuş (hazır) ödül Next'in hedefi DEĞİL: Next sıradaki KİLİTLİ ödülü açar, hazır olan oyuncuya kalır (ücretsiz alınır)
-now += 300 -- 3. ödül (270 sn) hazır, 4. (420) kilitli
+now += (Config.GiftRewards[3].time + Config.GiftRewards[4].time) // 2 -- 3. ödül hazır, 4. kilitli (süreler Config'ten: ayar değişse de test bozulmasın)
 assert(PlayerStats.processPurchase(player, "n3", { kind = "giftNext" }) == true)
 assert(player:GetAttribute("ClaimedGifts") == "1,2,4", "hazır 3. atlanıp kilitli 4. açılmalı: " .. tostring(player:GetAttribute("ClaimedGifts")))
 assert(select(1, PlayerStats.claimGift(player, 3)) == true, "hazır ödül elle alınabilir")

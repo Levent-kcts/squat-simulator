@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Catalog"))
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 
@@ -31,6 +32,25 @@ local function text(parent, props, strokeThickness)
 end
 
 -- Kart rengi: çarpan büyüdükçe daha nadir renk (Pets menüsüyle aynı)
+-- Bir Index ödülünü kısa yazıya çevirir ('+150 Wins', '60 min Luck Potion')
+local function describeReward(reward)
+	if reward.kind == "wins" then
+		return `+{reward.amount} Wins`
+	end
+	local potion = Catalog.PotionByKind[reward.kind]
+	return `{reward.minutes or Config.BoostMinutes} min {if potion then potion.name else "potion"}`
+end
+
+-- Sıradaki ödül satırı (playtest isteği: Pet Index tamamlama ödülü): ulaşılmamış ilk eşik, hepsi bitince tamamlama bonusu
+local function nextRewardText(count)
+	for _, reward in Config.Index.Rewards do
+		if count < reward.count then
+			return `Next reward at {reward.count} pets: {describeReward(reward)}`
+		end
+	end
+	return `Index complete! +{Config.Index.CompletionPercent}% Leg Muscle forever!`
+end
+
 local function cardColor(mult)
 	if mult < 0.2 then
 		return Color3.fromRGB(70, 200, 70)
@@ -94,11 +114,11 @@ function IndexPanel.init(screenGui)
 		PanelManager.hide(panel)
 	end)
 
-	text(panel, {
+	local subtitle = text(panel, {
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 62),
-		Size = UDim2.fromOffset(520, 24),
-		Text = `Discover every pet! Each new kind gives +{Config.Index.PercentPerPet}% Leg Muscle forever.`,
+		Size = UDim2.fromOffset(600, 24),
+		Text = `Each new pet = +{Config.Index.PercentPerPet}% Leg Muscle forever`,
 		TextColor3 = Color3.fromRGB(215, 222, 255),
 	}, 2)
 
@@ -183,6 +203,7 @@ function IndexPanel.init(screenGui)
 			}, 2)
 		end
 		counter.Text = `{discovered}/{#pets}  +{player:GetAttribute("IndexBonus") or 0}%`
+		subtitle.Text = `+{Config.Index.PercentPerPet}% per pet  |  {nextRewardText(discovered)}`
 	end
 
 	for _, name in { "DiscoveredPets", "IndexBonus" } do

@@ -242,7 +242,21 @@ return {
 
 	-- Pet Index (koleksiyon defteri, sağ üstteki kitap simgesi): sahip olunan her YENİ pet türü kalıcı olarak keşfedilir (pet silinse de kalır);
 	-- keşfedilen her tür bacak kası kazancına +PercentPerPet yüzdesi ekler (13 tür = en çok +%13). Küçük tutuldu, dengeyi bozmasın diye.
-	Index = { PercentPerPet = 1 },
+	-- Rewards (2026-10-13 playtest isteği 'Pet Index: tamamlama ödülü'): keşfedilen tür sayısı count'a ulaşınca BİR KEZ verilir (geriye dönük de: zaten ulaşmış oyuncu bir sonraki yenilemede alır).
+	-- kind: wins (amount Win) ya da boostLuck / boostRainbow (60 dk iksir ENVANTERE girer, Shop > Potions'ta kullanılır). CompletionPercent: HEPSİ keşfedilince kas kazancına kalıcı ek %.
+	-- (Win Mega Paketi 4095 Win = 149 R$: en büyük ödül 2000 Win, paketin yarısı; 30 türün hepsini bulmak saatler/günler sürer.)
+	Index = {
+		PercentPerPet = 1,
+		CompletionPercent = 10,
+		Rewards = {
+			{ count = 5, kind = "wins", amount = 30 },
+			{ count = 10, kind = "wins", amount = 150 },
+			{ count = 15, kind = "boostLuck", minutes = 60 },
+			{ count = 20, kind = "wins", amount = 800 },
+			{ count = 25, kind = "boostRainbow", minutes = 60 },
+			{ count = 30, kind = "wins", amount = 2000 },
+		},
+	},
 
 	-- Oyuncu ayarları (sol menüdeki Settings penceresi, client/SettingsPanel). key = Player özniteliği: false kapalı, yoksa/true açık.
 	-- Sunucu bu anahtarları kaydeder (PlayerStats.setSetting; listede olmayan anahtar kabul edilmez). Yeni ayar eklemek için buraya satır ekle
@@ -813,16 +827,17 @@ return {
 	-- Ödüller her oyuna girişte yeniden başlar (kayıt edilmez). SkipRobux: "Unlock" butonları Robux yer tutucusu.
 	BoostMinutes = 15, -- Gifts / Çark / günlük bonus iksirlerinin süresi; Shop.Potions'taki SKU sürelerinden biri olmalı (15 ya da 60)
 	GiftRewards = {
-		{ time = 60, kind = "muscle", amount = 300 },
-		{ time = 150, kind = "wins", amount = 10 },
-		{ time = 270, kind = "muscle", amount = 1000 },
-		{ time = 420, kind = "wins", amount = 50 },
-		{ time = 600, kind = "pet", pet = "dragon" },
-		{ time = 780, kind = "muscle", amount = 5000 },
-		{ time = 1080, kind = "boostMuscle" },
-		{ time = 1380, kind = "boostLuck" },
-		{ time = 1800, kind = "boostWins" },
-		{ time = 2400, kind = "pet", pet = "phoenix" },
+		-- (2026-10-13 playtest: 'Muscle Potion ödülüne 4:44 kala sıkıldım': süreler ~%33 kısaltıldı; eskiden 60/150/270/420/600/780/1080/1380/1800/2400 sn, tur 40 dk, şimdi ~27 dk)
+		{ time = 45, kind = "muscle", amount = 300 },
+		{ time = 100, kind = "wins", amount = 10 },
+		{ time = 180, kind = "muscle", amount = 1000 },
+		{ time = 270, kind = "wins", amount = 50 },
+		{ time = 390, kind = "pet", pet = "dragon" },
+		{ time = 520, kind = "muscle", amount = 5000 },
+		{ time = 720, kind = "boostMuscle" },
+		{ time = 930, kind = "boostLuck" },
+		{ time = 1200, kind = "boostWins" },
+		{ time = 1600, kind = "pet", pet = "phoenix" },
 	},
 	-- ROBUX İLE KİLİT AÇMA (Gifts > Playtime Rewards altındaki 'Unlock Next' / 'Unlock All'; sahibi 'bunları eklemeyi unutmuşuz, fiyatları adil düzenle' dedi): iki Developer Product.
 	-- Unlock Next = ilk KİLİTLİ ödülü HEMEN verir (sırayla, hedeflenemez); Unlock All = alınmamış bütün ödülleri HEMEN verir (pet envanteri doluysa pet atlanır). Ödüller her oturum ücretsizdir, satılan şey BEKLEME süresidir.

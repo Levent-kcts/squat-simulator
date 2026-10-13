@@ -210,7 +210,7 @@ end
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
 	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
-		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, LevelRewards = {}, Funnel = {} }
+		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, LevelRewards = {}, Funnel = {}, IndexRewards = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -396,6 +396,14 @@ local function sanitize(raw)
 			data.LevelRewards[reward.level] = true
 		end
 	end
+	-- Pet Index ödülleri: geriye dönük VERİLİR (eski oyuncu ulaştığı eşiklerin ödülünü bir sonraki yenilemede alır)
+	if type(raw.IndexRewards) == "table" then
+		for _, count in raw.IndexRewards do
+			if type(count) == "number" then
+				data.IndexRewards[math.floor(count)] = true
+			end
+		end
+	end
 	-- Hüni adımları: eski oyuncuda hepsi 'gönderilmiş' sayılır (analitiği kirletmesin)
 	if type(raw.Funnel) == "table" then
 		for _, step in raw.Funnel do
@@ -469,6 +477,7 @@ local function funnel(player, profile, name)
 end
 
 local grantLevelRewards -- level kilometre taşı ödülleri; startBoost / rollPet tanımlandıktan sonra aşağıda atanır
+local grantIndexRewards -- Pet Index ödülleri; giveItem tanımlandıktan sonra aşağıda atanır
 
 -- Level, TOPLAM bacak kasından hesaplanır (rebirth üst sınırı geçilmez). Dönüş: level atladı mı, yeni level
 local function syncLevel(player)
@@ -556,6 +565,9 @@ local function refresh(player)
 		table.insert(discoveredIds, id)
 	end
 	local indexPercent = #discoveredIds * Config.Index.PercentPerPet
+	if #discoveredIds >= #Config.Pets then
+		indexPercent += Config.Index.CompletionPercent -- Index tamamlandı: kalıcı ek bonus
+	end
 
 	-- Arkadaş bonusu: sunucudaki her arkadaş için +%X (Config.Friends)
 	local friendsConfig = Config.Friends
@@ -579,6 +591,9 @@ local function refresh(player)
 	player:SetAttribute("FriendBonus", friendPercent)
 	player:SetAttribute("DiscoveredPets", table.concat(discoveredIds, ","))
 	player:SetAttribute("IndexBonus", indexPercent)
+	if profile.loaded and grantIndexRewards then
+		task.defer(grantIndexRewards, player, profile, #discoveredIds) -- ödül verilince refresh yeniden çağrılır; defer iç içe çağrıyı önler
+	end
 	-- Eğitim: ilk skin alınınca biter (eski/yeni fark etmez), bir daha dönmez
 	if #profile.skins > 0 and not profile.tutorialDone then
 		profile.tutorialDone = true -- kayıt, skini alan işlemdeki requestSave (buySkin) ya da sonraki otomatik kayıtla yapılır
@@ -670,6 +685,13 @@ local function save(player, mode)
 		TutorialDone = profile.tutorialDone,
 		TutorialClicks = profile.tutorialClicks,
 		StarterWins = profile.starterWins,
+		IndexRewards = (function()
+			local list = {}
+			for count in profile.indexRewards do
+				table.insert(list, count)
+			end
+			return list
+		end)(),
 		Funnel = (function()
 			local list = {}
 			for step in profile.funnel do
@@ -898,6 +920,7 @@ local function setup(player)
 		starterWins = false, -- başlangıç Win hediyesi verildi mi (kayıtlı)
 		trialUntil = 0, -- ücretsiz Auto Click denemesinin bitişi (sunucu saati, GetServerTimeNow); kayıtta KALAN saniye tutulur (çevrimdışıyken akmaz)
 		levelRewards = {}, -- ödülü alınmış level kilometre taşları [level] = true (kayıtlı)
+		indexRewards = {}, -- ödülü alınmış Pet Index eşikleri [tür sayısı] = true (kayıtlı)
 		funnel = {}, -- analitik hunisine gönderilmiş adımlar [adım numarası] = true (kayıtlı, Config.Funnel)
 		toastSeq = 0, -- oyuncuya giden 'RewardToast' bildirim sayacı
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
@@ -925,6 +948,7 @@ local function setup(player)
 	profile.starterWins = data.StarterWins
 	profile.levelRewards = data.LevelRewards
 	profile.funnel = data.Funnel
+	profile.indexRewards = data.IndexRewards
 	profile.trialUntil = if data.AutoTrial > 0 then workspace:GetServerTimeNow() + data.AutoTrial else 0
 	player:SetAttribute("AutoClickTrialUntil", profile.trialUntil) -- istemci Auto Click'i deneme süresince açık sayar
 	profile.quests = data.Quests
@@ -1559,6 +1583,35 @@ grantLevelRewards = function(player, profile, level)
 	end
 	if #messages > 0 then
 		sendToast(player, profile, `Level {level} reward! {table.concat(messages, ", ")}`)
+		refresh(player)
+		requestSave(player)
+	end
+end
+
+-- PET INDEX ÖDÜLLERİ (Config.Index.Rewards): keşfedilen tür sayısı eşiğe ulaşınca bir kez; iksir ENVANTERE girer (giveItem), Win hemen eklenir
+grantIndexRewards = function(player, profile, count)
+	if profiles[player] ~= profile or not profile.loaded then
+		return
+	end
+	local wins = getStat(player, Config.StatWins)
+	if not wins then
+		return
+	end
+	local messages = {}
+	for _, reward in Config.Index.Rewards do
+		if count >= reward.count and not profile.indexRewards[reward.count] then
+			profile.indexRewards[reward.count] = true
+			if reward.kind == "wins" then
+				wins.Value += reward.amount
+				table.insert(messages, `+{reward.amount} Wins`)
+			elseif POTION_FIELD[reward.kind] then
+				giveItem(player, profile, reward.kind, reward.minutes)
+				table.insert(messages, `{Catalog.PotionByKind[reward.kind].name} ({reward.minutes or Config.BoostMinutes} min) in your potions`)
+			end
+		end
+	end
+	if #messages > 0 then
+		sendToast(player, profile, `Pet Index {count}/{#Config.Pets} reward! {table.concat(messages, ", ")}`)
 		refresh(player)
 		requestSave(player)
 	end

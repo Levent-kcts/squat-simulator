@@ -81,6 +81,22 @@ assert(kid:GetAttribute("OwnedItems") == Config.Items[1].id and kid:GetAttribute
 assert(petCount(kid) == petsBeforeRebirth, "petler KALMALI")
 assert(kid:GetAttribute("EquippedItem") == Config.Items[1].id or kid:GetAttribute("EquippedItem") ~= "", "takılı ayakkabı kalmalı")
 
+-- ---- 3c) Pet Index ödülleri (2026-10-13): eşiğe ulaşınca bir kez; hepsi keşfedilince tamamlama bonusu
+local totalIndexWins = 0
+for _, reward in Config.Index.Rewards do
+	if reward.kind == "wins" then
+		totalIndexWins += reward.amount
+	end
+end
+local winsIdx = stat(kid, Config.StatWins)
+PlayerStats.dev(kid, "DiscoverAll")
+assert(stat(kid, Config.StatWins) - winsIdx == totalIndexWins, "Index ödüllerinin Win'leri verilmeli: " .. (stat(kid, Config.StatWins) - winsIdx) .. " / " .. totalIndexWins)
+assert(kid:GetAttribute("IndexBonus") == #Config.Pets * Config.Index.PercentPerPet + Config.Index.CompletionPercent, "tamamlama bonusu eklenmeli: " .. tostring(kid:GetAttribute("IndexBonus")))
+assert(string.find(tostring(kid:GetAttribute("RewardToast")), "Pet Index " .. #Config.Pets .. "/" .. #Config.Pets .. " reward", 1, true), "Index ödül bildirimi: " .. tostring(kid:GetAttribute("RewardToast")))
+local winsIdx2 = stat(kid, Config.StatWins)
+PlayerStats.dev(kid, "DiscoverAll")
+assert(stat(kid, Config.StatWins) == winsIdx2, "Index ödülü ikinci kez verilmemeli")
+
 -- ---- 4) Kayıt: bayraklar kalıcı, deneme süresi çevrimdışıyken AKMAZ
 now += 300 -- 5 dakika oynadı
 assert(PlayerStats.saveNow(kid) == true, "kayıt başarılı olmalı")
@@ -88,6 +104,7 @@ local record = S.datastore["Player_9301"]
 assert(record and record.StarterWins == true, "StarterWins kayıtlı olmalı")
 assert(record.AutoTrial == Config.AutoClick.TrialSeconds - 300, "kalan deneme süresi kayıtlı olmalı: " .. tostring(record.AutoTrial))
 assert(#record.LevelRewards == #Config.LevelRewards, "alınan level ödülleri kayıtlı olmalı: " .. #record.LevelRewards)
+assert(#record.IndexRewards == #Config.Index.Rewards, "alınan Index ödülleri kayıtlı olmalı: " .. #record.IndexRewards)
 -- İlk oyun hunisi: yaşanan adımlar kayıtlı (bir kez gönderilir)
 local funnelSet = {}
 for _, step in record.Funnel do

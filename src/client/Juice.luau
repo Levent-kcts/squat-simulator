@@ -387,6 +387,42 @@ function Juice.wallBroken(wallPart, theme)
 	Juice.shake(0.35, 0.3)
 end
 
+-- DUVARA VURUŞ (playtest D6: 'duvara vurma animasyonu iyileştirilmeli'): duvar darbe yönüne hafifçe geri sekip yerine döner, ön yüzünden kırıntı fırlar, çok hafif kamera titremesi.
+-- Duvar kırılmadığı her darbede çalışır (kırılınca wallBroken). Sadece görsel; yakın değilse çalışmaz. low = hafif grafik modu: sadece geri sekme (parçacık yok).
+-- Auto Click saniyede birkaç darbe attığı için her duvarın bir sonraki efekti en az 0.25 sn sonra çalışır.
+local hitStamp = setmetatable({}, { __mode = "k" })
+function Juice.wallHit(wallPart, theme, low)
+	local root = rootPart()
+	if not root or not wallPart or not wallPart.Parent then
+		return
+	end
+	local now = os.clock()
+	if hitStamp[wallPart] and now - hitStamp[wallPart] < 0.25 then
+		return
+	end
+	hitStamp[wallPart] = now
+	if (root.Position - wallPart.Position).Magnitude > 60 then
+		return
+	end
+	-- Geri sekme: duvar oyuncudan uzağa doğru küçük bir adım gider, esneyerek yerine döner (Anchored parça; CFrame ile oynatılır)
+	local home = wallPart:GetAttribute("HomeZ")
+	if type(home) ~= "number" then
+		home = wallPart.Position.Z
+		wallPart:SetAttribute("HomeZ", home)
+	end
+	local pushed = Vector3.new(wallPart.Position.X, wallPart.Position.Y, home - 0.35)
+	wallPart.Position = pushed
+	TweenService:Create(wallPart, TweenInfo.new(0.22, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), { Position = Vector3.new(pushed.X, pushed.Y, home) }):Play()
+	if low then
+		return
+	end
+	local fx = theme and theme.fx
+	-- Kırıntılar duvarın ÖN yüzünden (oyuncuya bakan taraf, +Z) fırlar
+	local face = Vector3.new(wallPart.Position.X, wallPart.Position.Y, home + wallPart.Size.Z / 2 + 0.4)
+	Juice.burst(face, Vector3.new(wallPart.Size.X * 0.5, wallPart.Size.Y * 0.35, 0.5), if theme then theme.color else wallPart.Color, 9, fx, theme and theme.accent)
+	Juice.shake(0.07, 0.08)
+end
+
 -- Karakterin etrafında yukarı fışkıran parıltılar (level atlama, rebirth)
 function Juice.celebrate(color, amount)
 	local root = rootPart()

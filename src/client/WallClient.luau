@@ -353,6 +353,7 @@ end
 
 local function setHp(wall, hp)
 	local wasAlive = wall.hp > 0
+	local before = wall.hp
 	wall.hp = hp
 	if hp <= 0 then
 		wall.part.CanCollide = false
@@ -362,6 +363,11 @@ local function setHp(wall, hp)
 			pcall(Juice.wallBroken, wall.part, wall.theme) -- kırılma patlaması + sarsıntı (yakındaysa)
 		end
 		return
+	end
+
+	-- Darbe: can azaldıysa (duvar hâlâ ayakta) vuruş efekti; sadece etkin pencerede, yani oyuncunun gördüğü duvarda
+	if wasAlive and hp < before and wall.active and okJuice and Juice.wallHit then
+		pcall(Juice.wallHit, wall.part, wall.theme, isLow())
 	end
 
 	local ratio = math.clamp(hp / wall.maxHp, 0, 1)
