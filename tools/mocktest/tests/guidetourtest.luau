@@ -83,6 +83,14 @@ local function addButton(name)
 	rawset(button, "AbsolutePosition", { X = place[1], Y = place[2] })
 	rawset(button, "AbsoluteSize", { X = place[3], Y = place[4] })
 	button.Parent = playerGui
+	if name == "QuestsButton" then
+		-- sağ üst daireler gibi: üstte daire ('Disc'), altında sayı; halka yalnız daireyi sarar
+		local disc = S.newInstance("Frame")
+		disc.Name = "Disc"
+		rawset(disc, "AbsolutePosition", { X = place[1] + 4, Y = place[2] })
+		rawset(disc, "AbsoluteSize", { X = 40, Y = 40 })
+		disc.Parent = button
+	end
 end
 for _, stop in Config.GuideIntro do
 	addButton(stop.target)
@@ -261,6 +269,7 @@ assert(callout.lastX == wantX, "ilk yerleştirme hedefin konumu olmalı: " .. to
 GuideTour._place()
 assert(callout.lastX == wantX + (wantX - 600), "ikinci yerleştirme kapsayıcının ölçülen konumuna göre düzeltilmeli (sahte ölçüm 600): " .. tostring(callout.lastX))
 assert(rawget(callout.container, "Visible") == true, "ölçümden sonra ok görünür olmalı")
+assert(callout.ringIsDisc and callout.ringTarget == rawget(button("QuestsButton"), "_children")["Disc"] and callout.holder, "halka yalnız 'Disc' dairesini sarmalı (altındaki sayıyı değil)")
 click(button("QuestsButton")) -- oyuncu Quests'e basar
 assert(GuideTour._state().callout == nil and GuideTour._state().current == nil, "Quests'e basınca ok kalkmalı")
 GuideTour._tick()

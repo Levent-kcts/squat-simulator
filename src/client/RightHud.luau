@@ -181,6 +181,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 			BackgroundTransparency = 1,
 		}, cornerRoot)
 		local disc = create("Frame", {
+			Name = "Disc", -- rehber halkası (client/GuideTour) yalnız bu daireyi sarar, altındaki sayıyı değil
 			Position = UDim2.fromOffset(4, 0),
 			Size = UDim2.fromOffset(52, 52),
 			BackgroundColor3 = Color3.fromRGB(16, 17, 24),

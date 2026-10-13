@@ -462,8 +462,18 @@ function GuideTour.init(screenGui, showToast)
 				container.Visible = true
 			end
 			callout.calibrating = true
-			-- Uzun dikey hedef (daire + altındaki sayı) hap şeklinde, diğerleri yumuşak yuvarlak köşeli sarılır
-			local radius = if size.Y / size.X > 1.25 then 0.5 else 0.28
+			-- Halka: 'Disc' varsa yalnız daireyi (tam yuvarlak), yoksa tüm hedefi sarar (uzun dikey hedef hap, diğerleri yumuşak yuvarlak köşeli)
+			local holder = callout.holder
+			if callout.ringIsDisc then
+				local discPosition, discSize = callout.ringTarget.AbsolutePosition, callout.ringTarget.AbsoluteSize
+				local ringPad = math.max(2, math.floor(pad * 0.6))
+				holder.Position = UDim2.fromOffset(discPosition.X - position.X + pad - ringPad, discPosition.Y - position.Y + pad - ringPad)
+				holder.Size = UDim2.fromOffset(discSize.X + ringPad * 2, discSize.Y + ringPad * 2)
+			else
+				holder.Position = UDim2.fromOffset(0, 0)
+				holder.Size = UDim2.fromScale(1, 1)
+			end
+			local radius = if callout.ringIsDisc or size.Y / size.X > 1.25 then 0.5 else 0.28
 			for _, corner in callout.corners do
 				corner.CornerRadius = UDim.new(radius, 0)
 			end
@@ -501,9 +511,22 @@ function GuideTour.init(screenGui, showToast)
 		local container = create("Frame", { Name = "GuideCallout", BackgroundTransparency = 1, Size = UDim2.fromOffset(10, 10), Visible = false }, overlay)
 		callout.container = container
 
-		-- Halka: hafif altın dolgulu yumuşak çerçeve + dışa yayılıp sönen dalga (kaba kalın çerçeve değil)
+		-- Halka: hafif altın dolgulu yumuşak çerçeve + dışa yayılıp sönen dalga (kaba kalın çerçeve değil).
+		-- Halka SADECE vurgulanan şekli sarar: hedefin 'Disc' adlı çocuğu varsa (sağ üst daireler: daire + altındaki sayı tek düğme) halka yalnız daireyi sarar (sahibi 'halka çok büyük, sadece çemberin etrafı sarı yansın' dedi);
+		-- ok ve balon yine tüm düğmenin dışında kalır (sayıyı kapatmasın).
 		callout.corners = {}
-		local ring = create("Frame", { Name = "Ring", BackgroundColor3 = GOLD, BackgroundTransparency = 0.88, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1), ZIndex = 1 }, container)
+		callout.ringTarget = target
+		callout.ringIsDisc = false
+		pcall(function()
+			local disc = target:FindFirstChild("Disc")
+			if disc and disc:IsA("GuiObject") then
+				callout.ringTarget = disc
+				callout.ringIsDisc = true
+			end
+		end)
+		local holder = create("Frame", { Name = "RingHolder", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 1 }, container)
+		callout.holder = holder
+		local ring = create("Frame", { Name = "Ring", BackgroundColor3 = GOLD, BackgroundTransparency = 0.88, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1), ZIndex = 1 }, holder)
 		table.insert(callout.corners, create("UICorner", { CornerRadius = UDim.new(0.28, 0) }, ring))
 		create("UIStroke", { Thickness = 3, Color = GOLD }, ring)
 		local ripple = create("Frame", {
@@ -513,12 +536,12 @@ function GuideTour.init(screenGui, showToast)
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			ZIndex = 1,
-		}, container)
+		}, holder)
 		table.insert(callout.corners, create("UICorner", { CornerRadius = UDim.new(0.28, 0) }, ripple))
 		local rippleStroke = create("UIStroke", { Thickness = 3, Color = GOLD, Transparency = 0 }, ripple)
 		local okRipple, grow, fade = pcall(function()
 			local info = TweenInfo.new(0.95, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, -1, false)
-			return TweenService:Create(ripple, info, { Size = UDim2.new(1, math.floor(26 * s), 1, math.floor(26 * s)) }), TweenService:Create(rippleStroke, info, { Transparency = 1 })
+			return TweenService:Create(ripple, info, { Size = UDim2.new(1, math.floor(14 * s), 1, math.floor(14 * s)) }), TweenService:Create(rippleStroke, info, { Transparency = 1 })
 		end)
 		if okRipple and grow and fade then
 			table.insert(callout.tweens, grow)
