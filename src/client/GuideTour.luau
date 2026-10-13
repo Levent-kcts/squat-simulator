@@ -790,8 +790,8 @@ function GuideTour.init(screenGui, showToast)
 			return
 		end
 		if current then
-			if rebirthValue.Value > 0 and not current.claim then
-				hide() -- ilk rebirth yapıldı: açık kart/tur kapanır (sadece 'ödülünü Quests'ten al' oku kalır)
+			if rebirthValue.Value > 0 and not current.claim and not (current.when and string.find(current.when, "^quest:")) then
+				hide() -- ilk rebirth yapıldı: açık kart/tur kapanır (sadece 'ödülünü Quests'ten al' oku ve son görev [çark] kartı kalır)
 				return
 			end
 			-- Görev kartı ('quest:<id>') anlattığı iş yapılınca (güncel hedef değişti) eskir: kendiliğinden kapanır ve görüldü sayılır ('Hatch your first pet' kartı pet çıkınca ekranda kalmasın)
@@ -817,8 +817,8 @@ function GuideTour.init(screenGui, showToast)
 			end
 		end
 		for _, step in Config.GuideTour do
-			if rebirthValue.Value > 0 then
-				break -- rebirth sonrası kart yok
+			if rebirthValue.Value > 0 and not string.find(step.when, "^quest:") then
+				continue -- rebirth sonrası sadece görev kartları (son görev: çark) çıkar
 			end
 			if not seen[step.id] and not shownThisSession[step.id] and conditionMet(player, step, levelValue.Value, objective, cardPending) then
 				if sinceDismiss >= math.min(step.gap or timing.gap, timing.gap) then

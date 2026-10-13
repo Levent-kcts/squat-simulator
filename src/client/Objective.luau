@@ -66,9 +66,7 @@ function Objective.read(player, ctx)
 			return { id = "claim", quest = quest, text = `Quest complete! Tap 📜 QUESTS (top right) and CLAIM {Objective.rewardText(quest.rewards, ownsAutoPass)}!` }
 		end
 	end
-	if (ctx.rebirths or 0) > 0 then
-		return nil
-	end
+	local rebirthed = (ctx.rebirths or 0) > 0
 	-- Level sınırına gelindiyse (ve ilk rebirth yapılmadıysa) sıradaki isteğe bağlı görevler ne olursa olsun hedef REBIRTH'tir: ilerleme orada tıkanıyor
 	local maxLevel = ctx.maxLevel or 0
 	if (ctx.rebirths or 0) == 0 and clicks >= goal and maxLevel > 0 and (ctx.level or 1) >= maxLevel then
@@ -79,6 +77,10 @@ function Objective.read(player, ctx)
 		end
 	end
 	for index, quest in quests do
+		-- İlk rebirth'ten SONRA sadece 'afterRebirth' görevler (çark) sorulur, öncesinde hiç sorulmaz (sahibi 'rebirth'ten sonra çarka yönlendirsin, görevler öyle bitsin' dedi)
+		if rebirthed ~= (quest.afterRebirth == true) then
+			continue
+		end
 		local state = states[quest.id]
 		local done = state ~= nil and state.done
 		local progress = if state then state.progress else 0

@@ -382,7 +382,7 @@ stats[Config.StatRebirths].Value = 1
 GuideTour._tick()
 assert(rawget(card2, "Visible") ~= true and GuideTour._state().current == nil, "rebirth sonrası rehber turu çıkmamalı")
 -- 11) İlk rebirth ÖDÜLÜ (Win + Rainbow + Auto Click Potion) de Quests'ten alınır: rebirth sonrası kart/tur yok ama 'ödülü al' oku kalır
-S.localPlayer:SetAttribute("GuideSeen", "welcome,intro")
+S.localPlayer:SetAttribute("GuideSeen", "welcome,intro,q_claim")
 local rebirthParts = {}
 for _, quest in Config.StarterQuests do
 	table.insert(rebirthParts, `{quest.id},{quest.goal},1,{if quest.id == "rebirth" then 0 else 1}`)
@@ -395,4 +395,18 @@ assert(rebirthClaim.current and rebirthClaim.current.claim and rebirthClaim.curr
 assert(hasText(rebirthClaim.callout.bubble, "Reward: " .. Objective.rewardText(questById("rebirth").rewards)) and string.find(Objective.rewardText(questById("rebirth").rewards), "Auto Click Potion 30m", 1, true), "balon ödülü (Auto Click Potion dahil) yazmalı")
 S.localPlayer:SetAttribute("StarterState", string.gsub(table.concat(rebirthParts, ";"), "rebirth,(%d+),1,0", "rebirth,%1,1,1"))
 assert(GuideTour._state().current == nil and GuideTour._state().callout == nil, "ödül alınınca ok kalkmalı")
+
+-- 12) İlk rebirth'ten sonra son görev: GÜNLÜK ÇARK (daha önce çevrilmediyse): üst şerit/hedef çark olur ve çark kartı gelir; çevrilince görevler biter
+local afterParts = {}
+for _, quest in Config.StarterQuests do
+	local isWheel = quest.id == "wheel"
+	table.insert(afterParts, `{quest.id},{if isWheel then 0 else quest.goal},{if isWheel then 0 else 1},{if isWheel then 0 else 1}`)
+end
+S.localPlayer:SetAttribute("StarterState", table.concat(afterParts, ";"))
+assert(objectiveId() == "wheel", "rebirth sonrası güncel hedef çark olmalı")
+GuideTour._tick()
+assert(rawget(card2, "Visible") == true and hasText(card2, stepById("q_wheel").title), "rebirth sonrası çark kartı gelmeli")
+click(find(card2, "GotIt"))
+S.localPlayer:SetAttribute("StarterState", string.gsub(table.concat(afterParts, ";"), "wheel,0,0,0", "wheel,1,1,1"))
+assert(objectiveId() == nil, "çark da çevrilince görevler bitmeli: hedef kalmamalı")
 print("guide tour ok")

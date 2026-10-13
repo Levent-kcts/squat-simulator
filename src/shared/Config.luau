@@ -355,8 +355,10 @@ return {
 		{ id = "level10", text = "Reach level 10", hint = "Keep squatting: every level makes each squat stronger.", metric = "level", goal = 10, rewards = { { kind = "wins", amount = 15 } } },
 		{ id = "gift", text = "Claim a Playtime Reward", hint = "Gifts button on the left, or the FREE REWARD box on the right.", metric = "gifts", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
 		{ id = "train", text = "Visit the Training Area", hint = "Right wall: step on a Coach pad to squat automatically.", metric = "train", goal = 1, rewards = { { kind = "wins", amount = 15 } } },
-		{ id = "wheel", text = "Spin the Daily Wheel", hint = "Next to the eggs: walk up to the wheel and press E.", metric = "wheel", goal = 1, rewards = { { kind = "wins", amount = 20 } } },
 		{ id = "rebirth", text = "Do your first Rebirth", hint = "Reach MAX level, press Rebirth on the left. You keep Wins, shoes, skins and pets, and win an Auto Click Potion!", metric = "rebirths", goal = 1, rewards = { { kind = "wins", amount = 100 }, { kind = "boostRainbow", minutes = 15 }, { kind = "boostAuto", minutes = 30 } } },
+		-- SON GÖREV (2026-10-13, sahibi 'ilk rebirth'ten sonra günlük çarka yönlendirsin [daha önce çevirilmediyse] ve görevler öyle bitsin' dedi): afterRebirth = true görevler ilk rebirth'ten SONRA sorulur, o zaman diğer
+		-- bitmemiş görevler atlanır (sadece çark kalır); çark daha önce çevrildiyse görev zaten bitmiştir. Yeni 'rebirth sonrası' görev eklersen buraya, afterRebirth = true ile koy.
+		{ id = "wheel", text = "Spin the Daily Wheel", hint = "Next to the eggs: walk up to the wheel and press E for a free spin.", metric = "wheel", goal = 1, afterRebirth = true, rewards = { { kind = "wins", amount = 20 } } },
 	},
 	-- REHBER TURU (client/GuideTour; Settings'teki 'Guide' anahtarı 'GuideOn' ile kapanır): yeni oyuncu İLK REBIRTH'e kadar oyun tarafından yönlendirilir; her adım bir kez gösterilir (kayıtlı 'GuideSeen').
 	-- when: start / quest:<görev id> ('claim' = biten bir görevin ödülü alınmayı bekliyor; o görev GÜNCEL HEDEF olunca; üst şerit [client/Objective] de aynı hedefi yazar, böylece kart ile şerit çakışmaz: 2026-10-13 'iki görev çakışıyor' şikayeti) / level:N / nearMax (level sınırına 2 kala).
@@ -372,7 +374,7 @@ return {
 		{ id = "q_shoes", when = "quest:shoes", tag = "NEW QUEST", title = "Buy your first shoes!", text = "Shoes multiply your wall damage. Step on a pad on the SHOE shelf (left wall)." },
 		{ id = "q_gift", when = "quest:gift", tag = "NEW QUEST", target = "GiftsButton", pointer = "Free gifts!", title = "Claim a free gift!", text = "Gifts gives free rewards while you play. The FREE REWARD box on the right shows when the next one is ready." },
 		{ id = "q_train", when = "quest:train", tag = "NEW QUEST", title = "Training Area", text = "On the right wall, stand on a Coach pad to squat automatically with a big multiplier. Better pads unlock with Rebirths." },
-		{ id = "q_wheel", when = "quest:wheel", tag = "NEW QUEST", title = "Daily Wheel", text = "Next to the eggs: walk up to the wheel and press E for a free spin every day!" },
+		{ id = "q_wheel", when = "quest:wheel", tag = "NEW QUEST", title = "Daily Wheel", text = "Your first Rebirth is done! Last quest: walk to the Daily Wheel next to the eggs and press E for a free spin (every day!)." },
 		{ id = "auto", when = "level:9", tip = true, tag = "TIP", target = "AutoClickButton", pointer = "Auto Click", title = "Auto Click", text = "Auto Click squats for you! Win an Auto Click Potion with your first Rebirth, or keep it forever with the pass in the Shop." },
 		{ id = "index", when = "level:11", tip = true, tag = "TIP", target = "IndexButton", pointer = "Pet Index", title = "Pet Index", text = "Find every kind of pet to unlock permanent bonuses and rewards (the book at the top right)." },
 		{ id = "backpack", when = "level:13", tip = true, tag = "TIP", target = "BackpackButton", pointer = "Backpack", title = "Backpack", text = "Trails make you run faster and Auras boost your muscle. Buy them with Wins." },
@@ -398,11 +400,12 @@ return {
 	-- kind: wins (amount Win), boostMuscle / boostWins / boostLuck / boostRainbow (iksir HEMEN başlar, minutes dk), pet (egg: o yumurtanın havuzundan ücretsiz rastgele pet; envanter doluysa atlanır). Eski oyuncuya geriye dönük verilmez.
 	LevelRewards = {
 		-- (2026-10-13: ilk level sınırı 22 oldu; hepsi ilk rebirth'ten ÖNCE alınabilir)
-		{ level = 6, kind = "wins", amount = 8 },
+		-- WIN VERİLMEZ (sahibi 'hala sadece tıklayarak [level atlayarak] Win alabiliyoruz, onu kapat, yumurta ve diğer eşyalar için Win sadece Quests'ten gelsin' dedi: eskiden level 6/14/22'de +8/+20/+30 Win vardı); yerine iksir/pet.
+		{ level = 6, kind = "boostLuck", minutes = 15 },
 		{ level = 10, kind = "boostMuscle", minutes = 15 },
-		{ level = 14, kind = "wins", amount = 20 },
+		{ level = 14, kind = "boostLuck", minutes = 15 },
 		{ level = 18, kind = "pet", egg = "starter" },
-		{ level = 22, kind = "wins", amount = 30 },
+		{ level = 22, kind = "boostRainbow", minutes = 15 },
 	},
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.

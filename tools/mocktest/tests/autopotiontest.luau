@@ -115,8 +115,13 @@ end
 assert(sawRainbow and not sawAuto, "pass sahibi için çarkta Auto Click dilimi Rainbow görünmeli")
 
 -- İLK REBIRTH GÖREVİNİN ÖDÜLÜ Auto Click Potion içerir (ücretsiz deneme yerine, sahibi istedi): Quests'ten CLAIM ile alınır, 30 dk hemen başlar
-local firstRebirth = Config.StarterQuests[#Config.StarterQuests]
-assert(firstRebirth.id == "rebirth", "son görev ilk rebirth olmalı")
+local firstRebirth = nil
+for _, quest in Config.StarterQuests do
+	if quest.id == "rebirth" then
+		firstRebirth = quest
+	end
+end
+assert(firstRebirth, "ilk rebirth görevi olmalı")
 local hasAutoReward = false
 for _, reward in firstRebirth.rewards do
 	if reward.kind == "boostAuto" and reward.minutes == 30 then

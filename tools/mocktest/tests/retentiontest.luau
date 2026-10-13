@@ -51,10 +51,14 @@ for _, reward in Config.LevelRewards do
 	local petsNow = petCount(kid)
 	PlayerStats.dev(kid, "AddLevel", reward.level - stat(kid, Config.StatLevel))
 	assert(stat(kid, Config.StatLevel) >= reward.level, "level " .. reward.level .. "'e çıkılmalı (sınır " .. Config.Level.BaseMaxLevel .. "): " .. stat(kid, Config.StatLevel))
-	if reward.kind == "wins" then
-		assert(stat(kid, Config.StatWins) == winsNow + reward.amount, `level {reward.level}: +{reward.amount} Win: ` .. stat(kid, Config.StatWins))
-	elseif reward.kind == "boostMuscle" then
+	assert(reward.kind ~= "wins", `level {reward.level} ödülü Win vermemeli (Win sadece Quests'ten: sahibi 'level atlayarak Win almayı kapat' dedi)`)
+	assert(stat(kid, Config.StatWins) == winsNow, `level {reward.level}: Win değişmemeli: ` .. stat(kid, Config.StatWins))
+	if reward.kind == "boostMuscle" then
 		assert(kid:GetAttribute("MuscleBoostUntil") and kid:GetAttribute("MuscleBoostUntil") > 0, `level {reward.level}: Muscle Potion başlamalı`)
+	elseif reward.kind == "boostLuck" then
+		assert(kid:GetAttribute("LuckBoostUntil") and kid:GetAttribute("LuckBoostUntil") > 0, `level {reward.level}: Luck Potion başlamalı`)
+	elseif reward.kind == "boostRainbow" then
+		assert(kid:GetAttribute("RainbowBoostUntil") and kid:GetAttribute("RainbowBoostUntil") > 0, `level {reward.level}: Rainbow Potion başlamalı`)
 	elseif reward.kind == "pet" then
 		assert(petCount(kid) == petsNow + 1, `level {reward.level}: ücretsiz pet verilmeli`)
 	end

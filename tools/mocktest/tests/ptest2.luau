@@ -73,6 +73,7 @@ try("addMuscle", PlayerStats.addMuscle, player, 1)
 try("processPurchase skip", PlayerStats.processPurchase, player, "r1", { kind = "skip" })
 try("processPurchase wins", PlayerStats.processPurchase, player, "r2", { kind = "wins", amount = 100 })
 -- İksirler: Luck / Muscle / Wins / Rainbow süreli güçlendirme; Rainbow hepsinin etkisini verir (EggLuck 2), süre üst üste eklenir
+try("dev Reset (level ödülü iksirleri temizlensin)", PlayerStats.dev, player, "Reset")
 assert(player:GetAttribute("EggLuck") == 1, "iksirsiz yumurta şansı 1 olmalı")
 try("processPurchase luck", PlayerStats.processPurchase, player, "p1", { kind = "boostLuck", minutes = 5 })
 assert(player:GetAttribute("LuckBoostUntil") > os.time() and player:GetAttribute("EggLuck") == 2, "Luck Potion EggLuck 2 yapmalı")

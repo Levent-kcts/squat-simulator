@@ -2,8 +2,10 @@
 --   * Hedef 'ilk pet': ilk yumurtanın pedine (Config.Eggs[1]; pedin yanına gelince kaybolur)
 --   * Hedef 'ilk skin': skin rafındaki ilk skinin (Config.Skins[1]) pedine
 --   * Hedef 'duvar' (Win kazanmak ya da 3 duvar görevi): sıradaki duvarın önündeki noktaya (duvara yaklaşınca kaybolur); aşama bitince o aşamanın sarı Win pedine
---   * Diğer hedeflerde (squat sayma, ayakkabı, level...) çizgi yok.
--- Sadece Guide açıkken ve ilk rebirth'e kadar gösterilir. Tamamen görsel.
+--   * Hedef 'ayakkabı' (2026-10-13, sahibi 'ayakkabılara yönlendirirken ok kullanmıyor, sadece ayakkabıya git diyor' dedi): ayakkabı rafındaki ilk ayakkabının (Config.Items[1]) pedine
+--   * Hedef 'antrenman': ücretsiz ilk antrenman pedine; hedef 'çark' (ilk rebirth'ten sonra): günlük çarkın önüne
+--   * Diğer hedeflerde (squat sayma, level, Gifts...) çizgi yok (Gifts'e arayüz oku var).
+-- Sadece Guide açıkken gösterilir. Tamamen görsel.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -44,6 +46,33 @@ function Guide.init(wallClient)
 			end
 		end
 		return nil
+	end
+
+	-- Bir rafın (ShoeShop / TrainingArea) belirli eşyasının pedi ('ItemId' özniteliği); bulunana kadar nil
+	local padCache = {}
+	local function findItemPad(folderName, itemId)
+		local key = folderName .. "/" .. itemId
+		local cached = padCache[key]
+		if cached and cached.Parent then
+			return cached
+		end
+		local folder = Workspace:FindFirstChild(folderName)
+		if folder then
+			for _, descendant in folder:GetDescendants() do
+				if descendant:IsA("BasePart") and descendant:GetAttribute("ItemId") == itemId then
+					padCache[key] = descendant
+					return descendant
+				end
+			end
+		end
+		return nil
+	end
+	-- Ücretsiz (rebirth ve Robux istemeyen) ilk antrenman alanı
+	local freeArea = nil
+	for _, area in Config.Training.Areas do
+		if not freeArea and (area.rebirths or 0) == 0 and not area.robuxOnly and not area.robux then
+			freeArea = area
+		end
 	end
 
 	-- İlk yumurtanın pedi (EggShop klasöründe 'Pad_<yumurta id>'); bulunana kadar nil
@@ -122,6 +151,33 @@ function Guide.init(wallClient)
 				return pad.Position + Vector3.new(0, 1.2, 0)
 			end
 			return nil
+		elseif objectiveId == "shoes" then
+			local pad = findItemPad("ShoeShop", Config.Items[1].id)
+			if pad and (pad.Position - position).Magnitude > 7 then
+				return pad.Position + Vector3.new(0, 1.2, 0)
+			end
+			return nil
+		elseif objectiveId == "train" then
+			local pad = freeArea and findItemPad("TrainingArea", freeArea.id)
+			if pad and (pad.Position - position).Magnitude > 9 then
+				return pad.Position + Vector3.new(0, 1.2, 0)
+			end
+			return nil
+		elseif objectiveId == "wheel" then
+			-- Çarkın önü: model lobinin ortasına (WheelFaceX/Z) bakar; çizgi oraya, çarkın ~6 stud önüne gider
+			local model = Workspace:FindFirstChild("DailyWheel")
+			local pivot = model and model.PrimaryPart
+			if not pivot then
+				return nil
+			end
+			local lobby = Config.Lobby
+			local toward = Vector3.new(lobby.WheelFaceX - pivot.Position.X, 0, lobby.WheelFaceZ - pivot.Position.Z)
+			local front = if toward.Magnitude > 0.1 then toward.Unit * 6 else Vector3.zero
+			local point = Vector3.new(pivot.Position.X + front.X, Layout.FloorTop + 0.6, pivot.Position.Z + front.Z)
+			if (point - position).Magnitude > 9 then
+				return point
+			end
+			return nil
 		elseif objectiveId ~= "wall" then
 			return nil
 		end
@@ -158,7 +214,7 @@ function Guide.init(wallClient)
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local training = (player:GetAttribute("TrainingArea") or "") ~= ""
 		-- Settings'teki 'Guide' anahtarı (GuideOn = false) kapalıysa yol gösterici çizgi de kapalıdır; ilk rebirth'ten sonra yok
-		local guiding = player:GetAttribute("DataLoaded") == true and player:GetAttribute("GuideOn") ~= false and rebirthValue.Value == 0
+		local guiding = player:GetAttribute("DataLoaded") == true and player:GetAttribute("GuideOn") ~= false
 		if not root or not startAttachment or not guiding or training then
 			beam.Enabled = false
 			return

@@ -26,7 +26,7 @@ for _, quest in Config.StarterQuests do
 	table.insert(order, quest.id)
 end
 assert(table.concat(order, ",", 1, 4) == "squat,pet,skin,wall", "görev sırası squat, pet, skin, wall ile başlamalı: " .. table.concat(order, ","))
-assert(order[#order] == "rebirth", "rebirth en son görev olmalı")
+assert(order[#order - 1] == "rebirth" and order[#order] == "wheel", "sıra ... rebirth, wheel ile bitmeli (çark ilk rebirth'ten SONRA, son görev)")
 
 states({})
 player:SetAttribute("TutorialClicks", 7)
@@ -91,6 +91,29 @@ assert(not string.find(read({ level = 1, rebirths = 1 }).text, "Auto Click Potio
 player:SetAttribute("HasAutoClick", nil)
 statesWithUnclaimed(everything, "none")
 assert(read({ level = 1, rebirths = 1 }) == nil, "ödül alınınca rebirth sonrası hedef kalmamalı")
+
+-- ÇARK SON GÖREV (sahibi 'ilk rebirth'ten sonra günlük çarka yönlendirsin, daha önce çevirilmediyse; görevler öyle bitsin' dedi)
+local wheelNotDone = {}
+for _, quest in Config.StarterQuests do
+	wheelNotDone[quest.id] = quest.id ~= "wheel"
+end
+states(wheelNotDone)
+assert(read({ level = 2 }).id == "rebirth", "rebirth'ten ÖNCE çark sorulmaz: hedef rebirth")
+objective = read({ level = 1, rebirths = 1 })
+assert(objective and objective.id == "wheel" and string.find(objective.text, "Spin the Daily Wheel", 1, true) and string.find(objective.text, "Quest " .. #order .. "/" .. #order, 1, true), "rebirth sonrası hedef çark olmalı: " .. tostring(objective and objective.text))
+-- Rebirth sonrası bitmemiş diğer isteğe bağlı görevler (Gifts, antrenman...) atlanır: sadece çark kalır
+local skippedOptional = {}
+for _, quest in Config.StarterQuests do
+	skippedOptional[quest.id] = quest.id == "rebirth" or quest.id == "squat" or quest.id == "pet" or quest.id == "skin"
+end
+states(skippedOptional)
+assert(read({ level = 1, rebirths = 1 }).id == "wheel", "rebirth sonrası bitmemiş diğer görevler atlanıp çark gösterilmeli")
+-- Çark daha önce çevrilmişse (görev bitti) rebirth sonrası hedef kalmaz; çevrilmiş ama alınmamışsa ödül alınır
+statesWithUnclaimed(everything, "wheel")
+objective = read({ level = 1, rebirths = 1 })
+assert(objective and objective.id == "claim" and objective.quest.id == "wheel", "çevrilmiş çarkın ödülü alınmayı beklerse hedef claim olmalı")
+statesWithUnclaimed(everything, "none")
+assert(read({ level = 1, rebirths = 1 }) == nil, "çark da bitince görevler biter: hedef kalmamalı")
 
 -- Eski oyuncu (tüm görevler 'alınmış', rebirth yok): hedef yine rebirth; rebirth yapınca hedef kalmaz
 local allDone = {}
