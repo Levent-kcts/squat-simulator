@@ -492,10 +492,15 @@ function EggShop.init(screenGui, hooks)
 		for id in string.gmatch(player:GetAttribute("OwnedPets") or "", "[^,]+") do
 			ownedBefore[id] = true
 		end
-		local ok, message, results = openFunction:InvokeServer(currentEgg.id, Config.EggMultiOptions[multiIndex], autoOn and not manual)
+		local hatchedEgg = currentEgg
+		local count = Config.EggMultiOptions[multiIndex]
+		local automatic = autoOn and not manual
+		local ok, message, results = openFunction:InvokeServer(hatchedEgg.id, count, automatic)
 		opening = false
 		if ok and results and okReveal then
-			local shown, err = pcall(Reveal.show, screenGui, results, ownedBefore)
+			-- Yumurta kırılma animasyonu SADECE elle açılan TEK yumurtada (çoklu x3/x10 ve otomatik açmada yok: sahibi istedi, hız kesmesin)
+			local animatedEgg = if count == 1 and not automatic then hatchedEgg else nil
+			local shown, err = pcall(Reveal.show, screenGui, results, ownedBefore, animatedEgg)
 			if not shown then
 				warn(`[Reveal] {err}`)
 			end

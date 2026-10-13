@@ -182,13 +182,9 @@ local DARK = Color3.fromRGB(60, 34, 42)
 -- 3B pet simgesi: ReplicatedStorage.GameModels'te 'pet_<tür>' modeli varsa küçük bir ViewportFrame'de (ön tarafından, hafif yandan ve yukarıdan) gösterir.
 -- Birleşmiş boylar ('cat@2') türün modelini kullanır (boy farkı simge boyutundan gelir). props.dim: keşfedilmemiş pet, koyu siluet.
 -- Model yoksa nil döner ve petIcon çizilmiş yüze düşer.
-function UIStyle.petModelIcon(parent, pet, props)
-	-- 'lite' (uzun listelerdeki kartlar: Pets menüsü, Pet Index): hafif grafik modunda (telefon) 3B ViewportFrame yerine çizilmiş yüz kullanılır; onlarca ViewportFrame aynı anda çizilince telefon takılıyordu
-	if props and props.lite and okPerf and Performance.low then
-		return nil
-	end
+local function modelViewportIcon(parent, modelName, props)
 	local config = Config.Models.PetIcon
-	local part, offset = ModelLibrary.create("pet_" .. (pet.baseId or pet.id), 1)
+	local part, offset = ModelLibrary.create(modelName, 1)
 	if not part then
 		return nil
 	end
@@ -224,6 +220,19 @@ function UIStyle.petModelIcon(parent, pet, props)
 
 	viewport.Parent = parent
 	return viewport
+end
+
+function UIStyle.petModelIcon(parent, pet, props)
+	-- 'lite' (uzun listelerdeki kartlar: Pets menüsü, Pet Index): hafif grafik modunda (telefon) 3B ViewportFrame yerine çizilmiş yüz kullanılır; onlarca ViewportFrame aynı anda çizilince telefon takılıyordu
+	if props and props.lite and okPerf and Performance.low then
+		return nil
+	end
+	return modelViewportIcon(parent, "pet_" .. (pet.baseId or pet.id), props)
+end
+
+-- 3B yumurta simgesi (yumurta açılış animasyonu, client/Reveal): GameModels'te 'egg_<yumurta id>' modeli varsa ViewportFrame'de gösterir; yoksa nil (çağıran çizilmiş yumurtaya düşer)
+function UIStyle.eggModelIcon(parent, egg, props)
+	return modelViewportIcon(parent, "egg_" .. egg.id, props)
 end
 
 function UIStyle.petIcon(parent, pet, props)

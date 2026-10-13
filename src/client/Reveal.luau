@@ -31,6 +31,123 @@ local RARITY_TITLE = { Epic = "EPIC!", Legendary = "LEGENDARY!", Mythic = "MYTHI
 
 local current = nil -- açık olan açılış ekranı (yenisi gelince eskisi kaldırılır)
 
+-- YUMURTA KIRILMA ANİMASYONU (2026-10-13, sahibi 'her yumurta satın aldığında [multi alımlar hariç] yumurta ekranın önüne UI olarak gelsin, sallansın, sonra şu anki animasyon oynasın' dedi): TEK yumurta açılışında önce yumurta
+-- ekranın ortasında belirir, giderek şiddetlenen sallanmayla çatlaklar çıkar, sonra beyaz parıltıyla kırılır ve mevcut açılış (parıltı + pet kartı) oynar. Çoklu (x3/x10) ve otomatik açmada oynamaz (hız kesmesin).
+local EGG_POP = 0.2 -- yumurtanın belirme süresi
+local EGG_SHAKE = { { -10, 0.12 }, { 10, 0.12 }, { -14, 0.11 }, { 14, 0.11 }, { -18, 0.1 }, { 18, 0.1 }, { -22, 0.09 }, { 22, 0.09 }, { -26, 0.08 }, { 26, 0.08 }, { 0, 0.1 } } -- { açı (derece), süre (sn) }
+local EGG_CRACKS = { { 0.35, 0.34, 28, 40, 0.45 }, { 0.46, 0.54, -42, 34, 0.7 }, { 0.58, 0.44, 52, 30, 0.9 } } -- { x, y (yumurtanın içinde, oran), eğim, uzunluk (px), belirme zamanı (sn, sallanma başından) }
+local EGG_INTRO = EGG_POP + (function()
+	local total = 0
+	for _, step in EGG_SHAKE do
+		total += step[2]
+	end
+	return total
+end)()
+
+local function round(parent, x, y, width, height, color, strokeColor)
+	local dot = Instance.new("Frame")
+	dot.AnchorPoint = Vector2.new(0.5, 0.5)
+	dot.Position = UDim2.fromOffset(x, y)
+	dot.Size = UDim2.fromOffset(width, height)
+	dot.BackgroundColor3 = color
+	dot.BorderSizePixel = 0
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = dot
+	if strokeColor then
+		local stroke = Instance.new("UIStroke")
+		stroke.Thickness = 4
+		stroke.Color = strokeColor
+		stroke.Parent = dot
+	end
+	dot.Parent = parent
+	return dot
+end
+
+-- Çizilmiş yumurta (Blender modeli yoksa): geniş alt daire + küçük üst daire = yumurta gibi, yumurtanın rengi ve beneği
+local function drawEgg(parent, egg)
+	local outline = UIStyle.darken(egg.color, 0.45)
+	round(parent, 95, 145, 190, 190, egg.color, outline)
+	round(parent, 95, 100, 138, 138, egg.color, outline)
+	round(parent, 95, 138, 178, 178, egg.color) -- iki dairenin birleşim çizgisini örter
+	for _, spot in { { 60, 150, 34 }, { 128, 170, 28 }, { 100, 92, 24 }, { 70, 200, 22 }, { 135, 120, 20 } } do
+		round(parent, spot[1], spot[2], spot[3], spot[3], egg.accent)
+	end
+	round(parent, 62, 92, 30, 52, Color3.new(1, 1, 1)).BackgroundTransparency = 0.55 -- parlama
+end
+
+-- Yumurtayı ekranın önüne koyar, sallar ve çatlatır. Dönüş: bittiği zamana kadar süre (sn); sonunda yumurta kendiliğinden kalkar
+local function playEggIntro(root, egg)
+	local holder = Instance.new("Frame")
+	holder.Name = "HatchEgg"
+	holder.AnchorPoint = Vector2.new(0.5, 0.5)
+	holder.Position = UDim2.fromScale(0.5, 0.42)
+	holder.Size = UDim2.fromOffset(190, 240)
+	holder.BackgroundTransparency = 1
+	holder.ZIndex = 5
+	holder.Parent = root
+
+	local viewport = UIStyle.eggModelIcon(holder, egg, {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(250, 250),
+	})
+	if not viewport then
+		drawEgg(holder, egg)
+	end
+
+	-- Çatlaklar: sallanırken sırayla belirir
+	local cracks = {}
+	for _, spec in EGG_CRACKS do
+		local crack = Instance.new("Frame")
+		crack.Name = "HatchCrack"
+		crack.AnchorPoint = Vector2.new(0.5, 0.5)
+		crack.Position = UDim2.fromOffset(spec[1] * 190, spec[2] * 240)
+		crack.Size = UDim2.fromOffset(6, spec[4])
+		crack.Rotation = spec[3]
+		crack.BackgroundColor3 = Color3.fromRGB(70, 45, 30)
+		crack.BackgroundTransparency = 1
+		crack.BorderSizePixel = 0
+		crack.ZIndex = 7
+		crack.Parent = holder
+		table.insert(cracks, { frame = crack, time = spec[5] })
+	end
+
+	-- Küçükten belirir, sallanırken hafifçe büyür
+	local scale = Instance.new("UIScale")
+	scale.Scale = 0
+	scale.Parent = holder
+	TweenService:Create(scale, TweenInfo.new(EGG_POP, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	task.delay(EGG_POP, function()
+		if holder.Parent then
+			TweenService:Create(scale, TweenInfo.new(EGG_INTRO - EGG_POP, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.2 }):Play()
+		end
+	end)
+	for _, crack in cracks do
+		task.delay(EGG_POP + crack.time, function()
+			if holder.Parent then
+				crack.frame.BackgroundTransparency = 0
+			end
+		end)
+	end
+	task.spawn(function()
+		task.wait(EGG_POP)
+		for _, step in EGG_SHAKE do
+			if not holder.Parent then
+				return
+			end
+			TweenService:Create(holder, TweenInfo.new(step[2], Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = step[1] }):Play()
+			task.wait(step[2])
+		end
+	end)
+	task.delay(EGG_INTRO, function()
+		if holder.Parent then
+			holder:Destroy() -- kırıldı: yerini beyaz parıltı ve pet kartı alır
+		end
+	end)
+	return EGG_INTRO
+end
+
 local function label(parent, props, strokeThickness)
 	props.BackgroundTransparency = 1
 	props.Font = Enum.Font.FredokaOne
@@ -119,7 +236,8 @@ local function buildCard(parent, entry, isNew, order)
 end
 
 -- results: { { id, kept } ... } açılış sırasıyla; ownedBefore: açmadan önce sahip olunan pet id'leri { [id] = true }
-function Reveal.show(screenGui, results, ownedBefore)
+-- egg: açılan yumurta (Config.Eggs girdisi) verilirse ve TEK pet açıldıysa önce yumurta kırılma animasyonu oynar; çoklu/otomatik açmada nil verilir (animasyon yok)
+function Reveal.show(screenGui, results, ownedBefore, egg)
 	if current then
 		current:Destroy()
 		current = nil
@@ -128,9 +246,11 @@ function Reveal.show(screenGui, results, ownedBefore)
 		return
 	end
 
+	-- Yumurta animasyonu süresi (0 = yok): açılış (ses, parıltı, kartlar, başlık) bu kadar sonra başlar
+	local intro = 0
 	-- Ses: açılış sesi; Epic ve üstü bir pet çıktıysa ek parıltı sesi. En iyi (kalan) peti bul: nadirlik başlığı ve konfeti ona göre
-	sfx("Hatch")
 	local best, bestRank = nil, 0
+	local rareSoundPending = false
 	for _, entry in results do
 		local pet = Catalog.PetById[entry.id]
 		if entry.kept and pet then
@@ -140,7 +260,7 @@ function Reveal.show(screenGui, results, ownedBefore)
 				best, bestRank = rarity, rank
 			end
 			if rank >= 3 then -- Epic ve üstü
-				task.delay(0.3, sfx, "Rare")
+				rareSoundPending = true
 			end
 		end
 	end
@@ -157,6 +277,15 @@ function Reveal.show(screenGui, results, ownedBefore)
 	root.Parent = screenGui
 	current = root
 
+	if egg and #results == 1 then
+		intro = playEggIntro(root, egg)
+	end
+	-- Açılış sesi (yumurta kırılma anında) ve Epic+ parıltı sesi
+	task.delay(intro, sfx, "Hatch")
+	if rareSoundPending then
+		task.delay(intro + 0.3, sfx, "Rare")
+	end
+
 	-- Odak: arka plan hafif kararır
 	local dim = Instance.new("Frame")
 	dim.Name = "HatchDim"
@@ -168,14 +297,26 @@ function Reveal.show(screenGui, results, ownedBefore)
 	TweenService:Create(dim, TweenInfo.new(0.2), { BackgroundTransparency = 0.55 }):Play()
 
 	-- Açılış parıltısı: ilk kartla birlikte beyaz bir çakma (nadir peti varsa nadirlik renginde)
-	local flash = Instance.new("Frame")
-	flash.Name = "HatchFlash"
-	flash.Size = UDim2.fromScale(1, 1)
-	flash.BackgroundColor3 = if bestRank >= 3 and best then best.color:Lerp(Color3.new(1, 1, 1), 0.5) else Color3.new(1, 1, 1)
-	flash.BackgroundTransparency = 0.35
-	flash.BorderSizePixel = 0
-	flash.Parent = root
-	TweenService:Create(flash, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+	local function spawnFlash()
+		local flash = Instance.new("Frame")
+		flash.Name = "HatchFlash"
+		flash.Size = UDim2.fromScale(1, 1)
+		flash.BackgroundColor3 = if bestRank >= 3 and best then best.color:Lerp(Color3.new(1, 1, 1), 0.5) else Color3.new(1, 1, 1)
+		flash.BackgroundTransparency = if intro > 0 then 0 else 0.35 -- yumurta kırılırken parıltı daha güçlü (yumurtanın kalkışını örter)
+		flash.BorderSizePixel = 0
+		flash.ZIndex = 6
+		flash.Parent = root
+		TweenService:Create(flash, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+	end
+	if intro > 0 then
+		task.delay(intro, function()
+			if root.Parent then
+				spawnFlash()
+			end
+		end)
+	else
+		spawnFlash()
+	end
 
 	local holder = Instance.new("Frame")
 	holder.Name = "HatchCards"
@@ -207,7 +348,7 @@ function Reveal.show(screenGui, results, ownedBefore)
 		scale.Parent = card
 		card.Rotation = if index % 2 == 0 then 14 else -14
 		table.insert(cards, scale)
-		task.delay((index - 1) * STAGGER, function()
+		task.delay(intro + (index - 1) * STAGGER, function()
 			if root.Parent then
 				TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 				TweenService:Create(card, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Rotation = 0 }):Play()
@@ -232,7 +373,7 @@ function Reveal.show(screenGui, results, ownedBefore)
 		local bannerScale = Instance.new("UIScale")
 		bannerScale.Scale = 0
 		bannerScale.Parent = banner
-		task.delay(lastCardTime * 0.6, function()
+		task.delay(intro + lastCardTime * 0.6, function()
 			if root.Parent then
 				TweenService:Create(bannerScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 				if okJuice then
@@ -246,7 +387,7 @@ function Reveal.show(screenGui, results, ownedBefore)
 	end
 
 	-- Bir süre durup küçülerek kaybolur
-	local total = lastCardTime + hold
+	local total = intro + lastCardTime + hold
 	task.delay(total, function()
 		if current ~= root or not root.Parent then
 			return
