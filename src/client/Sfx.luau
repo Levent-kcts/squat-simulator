@@ -76,7 +76,8 @@ local function acquire(id)
 	return pool[1]
 end
 
-function Sfx.play(name)
+-- opts (isteğe bağlı): { volume = çarpan, speed = çarpan } olayın ses ve perdesini o çalış için ölçekler (Reveal: yumurta büyüdükçe 'dum' yükselir)
+function Sfx.play(name, opts)
 	local def = Config.Sounds and Config.Sounds[name]
 	if not def then
 		return
@@ -95,9 +96,10 @@ function Sfx.play(name)
 	lastPlayed[name] = now
 
 	local sound = acquire(id)
-	sound.Volume = def.volume or 0.5
-	local speed = def.speed
-	sound.PlaybackSpeed = if speed then rng:NextNumber(speed[1], speed[2]) else 1
+	sound.Volume = (def.volume or 0.5) * (opts and opts.volume or 1)
+	-- fallback çalıyorsa (asıl ses henüz yüklenmedi/yüklenemedi) ona özel perde: fallbackSpeed
+	local speed = if id == def.fallback and def.fallbackSpeed then def.fallbackSpeed else def.speed
+	sound.PlaybackSpeed = (if speed then rng:NextNumber(speed[1], speed[2]) else 1) * (opts and opts.speed or 1)
 	sound.TimePosition = def.startAt or 0
 	sound:Play()
 end

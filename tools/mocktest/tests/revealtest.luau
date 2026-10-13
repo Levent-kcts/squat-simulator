@@ -3,6 +3,21 @@
 local S = require("../cstubs")
 local Config = require("./Config")
 local Reveal = require("./Reveal")
+local Sfx = require("./Sfx")
+-- Sesleri kaydet: Reveal Sfx.play'i çağrı anında modül tablosundan okur
+local played = {}
+Sfx.play = function(name, opts)
+	table.insert(played, { name = name, opts = opts })
+end
+local function playedCount(name)
+	local total = 0
+	for _, entry in played do
+		if entry.name == name then
+			total += 1
+		end
+	end
+	return total
+end
 
 local function find(instance, name)
 	for _, child in rawget(instance, "_children") do
@@ -65,11 +80,27 @@ assert(eggFrame and find(eggFrame, "HatchEggWhole"), "tek yumurtada önce bütü
 assert(count(eggFrame, "HatchCrack") == 0 and count(eggFrame, "HatchCrackPiece") == 0 and not find(eggFrame, "HatchGlow"), "yumurtada çatlak çizgisi ve gri ışık dairesi olmamalı")
 assert(not find(reveal, "HatchFlash"), "yumurta kırılmadan parıltı olmamalı")
 assert(Reveal.EggIntroSeconds > Reveal.EggBreakAt and Reveal.EggBreakAt > 0.5, "kırılma anı ve toplam süre tanımlı olmalı")
+-- 1b) SES: 'dum dum dum dum puf' (sahibi lego kırılma sesini kapattırıp öyle istedi): her büyüme vuruşunda tok 'dum', ses ve perde vuruştan vuruşa yükselir; lego sesi (EggBreak/EggKnock) YOK
+assert(Config.Sounds.EggBreak == nil and Config.Sounds.EggKnock == nil, "eski lego kırılma/tık sesleri kaldırılmış olmalı")
+assert(Config.Sounds.EggDum and Config.Sounds.EggPuf, "EggDum ve EggPuf sesleri tanımlı olmalı")
+assert(#Reveal.EggBeats == 4, "yumurta dört vuruşla büyümeli (dum dum dum dum)")
+advance(0.2 + Reveal.EggBeats[#Reveal.EggBeats].at + 0.05)
+assert(playedCount("EggDum") == 4, "dört vuruşta dört 'dum' çalmalı: " .. playedCount("EggDum"))
+assert(playedCount("EggPuf") == 0 and playedCount("EggBreak") == 0, "kırılmadan önce 'puf' çalmamalı")
+local lastVolume, lastPitch = 0, 0
+for _, entry in played do
+	if entry.name == "EggDum" then
+		assert(entry.opts and entry.opts.volume > lastVolume and entry.opts.speed > lastPitch, "her 'dum' bir öncekinden yüksek ve tizce olmalı")
+		lastVolume, lastPitch = entry.opts.volume, entry.opts.speed
+	end
+end
 -- 2) KIRILMA anı: bütün yumurta kalkar, çatlak çizgisinden İKİ YARI ayrılır (üst + alt), ışık patlar
 advance(Reveal.EggBreakAt + 0.05)
 assert(not find(eggFrame, "HatchEggWhole"), "kırılınca bütün yumurta kalkmalı")
 assert(find(eggFrame, "HatchEggTop") and find(eggFrame, "HatchEggBottom"), "kırılınca iki yarı görünmeli")
 assert(find(reveal, "HatchBurst"), "kırılırken ışık patlaması olmalı")
+assert(playedCount("EggPuf") == 1 and playedCount("EggDum") == 4, "kırılırken yumuşak 'puf' çalmalı (tek)")
+assert(played[#played].name == "EggPuf", "'puf' son vuruşun ardından gelmeli")
 -- 3) Yumurta animasyonu bitince yarılar kalkar, mevcut açılış (hafif ışık + pet kartları) oynar
 advance(Reveal.EggIntroSeconds + 0.05)
 assert(not find(reveal, "HatchEgg"), "animasyon bitince yumurta kalkmalı")

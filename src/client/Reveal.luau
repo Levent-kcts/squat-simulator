@@ -13,9 +13,9 @@ local UIStyle = require(script.Parent.UIStyle)
 local Reveal = {}
 
 local okSfx, Sfx = pcall(require, script.Parent.Sfx)
-local function sfx(name)
+local function sfx(name, opts)
 	if okSfx then
-		pcall(Sfx.play, name)
+		pcall(Sfx.play, name, opts)
 	end
 end
 
@@ -33,24 +33,26 @@ local RARITY_TITLE = { Epic = "EPIC!", Legendary = "LEGENDARY!", Mythic = "MYTHI
 local current = nil -- açık olan açılış ekranı (yenisi gelince eskisi kaldırılır)
 
 -- YUMURTA KIRILMA ANİMASYONU (2026-10-13, sahibi 'her yumurta satın aldığında [multi alımlar hariç] yumurta ekranın önüne UI olarak gelsin, sallansın, sonra şu anki animasyon oynasın' dedi; ilk sürümdeki kahverengi çubuk çatlaklar
--- 'çok kötü' bulundu, bu yüzden yeniden yapıldı: çubuk çatlak YOK): TEK yumurta açılışında yumurta ekranın ortasında belirir, giderek şiddetlenen sallanmayla büyür, arkasında ışık parlar, ortasında parlak bir çatlak çizgisi belirir,
--- sonra TAM O ÇİZGİDEN ikiye ayrılır (üst yarı sola-yukarı, alt yarı sağa-aşağı savrulur; döndürülmez çünkü Roblox döndürülmüş çerçevede ClipsDescendants'ı kırpmaz) ve beyaz bir ışık patlamasıyla mevcut açılış (hafif ışık + pet kartı) başlar. Her sallanışta tok bir 'tık', kırılırken kabuk kırılma sesi çalar.
+-- 'çok kötü' bulundu, bu yüzden yeniden yapıldı: çubuk çatlak YOK): TEK yumurta açılışında yumurta ekranın ortasında belirir, DÖRT vuruşla büyür (her vuruşta bir yana sarsılır, bir kademe büyür ve tok bir 'dum' çalar; vuruştan vuruşa
+-- ses ve perde yükselir, yumurta giderek parlar), sonra ortadan ikiye ayrılır (üst yarı sola-yukarı, alt yarı sağa-aşağı savrulur; döndürülmez çünkü Roblox döndürülmüş çerçevede ClipsDescendants'ı kırpmaz) ve beyaz bir ışık patlamasıyla
+-- yumuşak bir 'puf' sesi çalıp mevcut açılış (hafif ışık + pet kartı) başlar: 'dum dum dum dum puf' (sahibi öyle istedi, lego kırılma sesini KAPATTIRDI, geri ekleme; sesler Config.Sounds EggDum/EggPuf).
 -- Çoklu (x3/x10) ve otomatik açmada oynamaz (hız kesmesin).
 local EGG_POP = 0.2 -- yumurtanın belirme süresi
-local EGG_SHAKE = { { -9, 0.12 }, { 9, 0.12 }, { -13, 0.11 }, { 13, 0.11 }, { -17, 0.1 }, { 17, 0.1 }, { -21, 0.09 }, { 21, 0.09 }, { -25, 0.08 }, { 25, 0.08 }, { 0, 0.1 } } -- { açı (derece), süre (sn) }
+-- Büyüme vuruşları: at = belirmeden sonraki an (sn), angle = sarsılma açısı (derece), scale = o vuruştaki boyut, volume/pitch = 'dum' sesinin çarpanları (giderek yükselir)
+local EGG_BEATS = {
+	{ at = 0, angle = -10, scale = 1.06, volume = 0.6, pitch = 0.88 },
+	{ at = 0.3, angle = 14, scale = 1.12, volume = 0.75, pitch = 0.96 },
+	{ at = 0.57, angle = -18, scale = 1.18, volume = 0.9, pitch = 1.04 },
+	{ at = 0.82, angle = 22, scale = 1.25, volume = 1, pitch = 1.12 },
+}
+local EGG_WOBBLE = 1.12 -- son vuruştan sonra kısa bir soluk, sonra kırılma ('puf')
 local EGG_BREAK = 0.35 -- iki yarının savrulma süresi
-local EGG_WOBBLE = (function()
-	local total = 0
-	for _, step in EGG_SHAKE do
-		total += step[2]
-	end
-	return total
-end)()
 local EGG_BREAK_AT = EGG_POP + EGG_WOBBLE -- kırılma anı (açılıştan itibaren sn)
 local EGG_INTRO = EGG_BREAK_AT + EGG_BREAK -- yumurta animasyonunun toplam süresi: pet açılışı bu kadar sonra başlar
 local EGG_SIZE = 250 -- yumurta görselinin kenarı (px)
 Reveal.EggIntroSeconds = EGG_INTRO
 Reveal.EggBreakAt = EGG_BREAK_AT
+Reveal.EggBeats = EGG_BEATS
 
 local function round(parent, x, y, width, height, color, strokeColor)
 	local dot = Instance.new("Frame")
@@ -144,40 +146,39 @@ local function playEggIntro(root, egg, fullScreen)
 	visual.AnchorPoint = Vector2.new(0.5, 0.5)
 	visual.Position = UDim2.fromScale(0.5, 0.5)
 
-	-- Küçükten belirir, sallanırken büyür; model yumurtası sallanırken giderek PARLAR (ışığı artar, beyaza yaklaşır: kırılmadan önce içeriden ışık sızıyor gibi)
+	-- Küçükten belirir; model yumurtası vuruşlar boyunca giderek PARLAR (ışığı artar, beyaza yaklaşır: kırılmadan önce içeriden ışık sızıyor gibi)
 	local scale = Instance.new("UIScale")
 	scale.Scale = 0
 	scale.Parent = holder
 	TweenService:Create(scale, TweenInfo.new(EGG_POP, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 	task.delay(EGG_POP, function()
-		if holder.Parent then
-			TweenService:Create(scale, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 1.25 }):Play()
-			if visual:IsA("ViewportFrame") then
-				TweenService:Create(visual, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Ambient = Color3.new(1, 1, 1) }):Play()
-			end
+		if holder.Parent and visual:IsA("ViewportFrame") then
+			TweenService:Create(visual, TweenInfo.new(EGG_WOBBLE, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Ambient = Color3.new(1, 1, 1) }):Play()
 		end
 	end)
-	-- Sallanma: her yön değişiminde tok bir 'tık'
-	task.spawn(function()
-		task.wait(EGG_POP)
-		for index, step in EGG_SHAKE do
+	-- Her vuruşta: bir yana sarsılır, bir kademe büyür (hafif zıplayarak) ve tok bir 'dum' çalar; ses ve perde vuruştan vuruşa yükselir
+	for _, beat in EGG_BEATS do
+		task.delay(EGG_POP + beat.at, function()
 			if not holder.Parent then
 				return
 			end
-			TweenService:Create(whole, TweenInfo.new(step[2], Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = step[1] }):Play()
-			if index > 1 and index % 2 == 0 then
-				sfx("EggKnock")
-			end
-			task.wait(step[2])
-		end
-	end)
+			TweenService:Create(whole, TweenInfo.new(0.09, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Rotation = beat.angle }):Play()
+			TweenService:Create(scale, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = beat.scale }):Play()
+			sfx("EggDum", { volume = beat.volume, speed = beat.pitch })
+			task.delay(0.09, function()
+				if holder.Parent and whole.Parent then
+					TweenService:Create(whole, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = 0 }):Play()
+				end
+			end)
+		end)
+	end
 
 	-- KIRILMA: bütün yumurta kalkar, iki yarı ortadan ayrılıp savrulur, beyaz ışık patlar
 	task.delay(EGG_BREAK_AT, function()
 		if not holder.Parent then
 			return
 		end
-		sfx("EggBreak")
+		sfx("EggPuf")
 		whole:Destroy()
 		local top = makeHalf(holder, egg, true)
 		local bottom = makeHalf(holder, egg, false)
