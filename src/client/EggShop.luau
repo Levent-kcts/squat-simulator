@@ -38,14 +38,7 @@ local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel 
 local NORMAL = Color3.fromRGB(30, 190, 220)
 local WINS_ORANGE = Color3.fromRGB(255, 150, 40) -- Win yetmeyince Open düğmesi
 
--- Panel kartlarının renkleri: en sık çıkandan en nadire doğru
-local CARD_COLORS = {
-	Color3.fromRGB(70, 200, 70),
-	Color3.fromRGB(40, 190, 230),
-	Color3.fromRGB(170, 60, 230),
-	Color3.fromRGB(250, 190, 30),
-	Color3.fromRGB(240, 50, 130),
-}
+-- (Panel kartlarının rengi petin NADİRLİĞİ'nden gelir: Catalog.rarityOf = Config.Rarities; yumurta açılışındaki kart ve Pets menüsüyle aynı renk)
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -366,7 +359,7 @@ function EggShop.init(screenGui, hooks)
 				LayoutOrder = index,
 				Text = "",
 				AutoButtonColor = false,
-				BackgroundColor3 = CARD_COLORS[math.min(index, #CARD_COLORS)],
+				BackgroundColor3 = Catalog.rarityOf(pet).color,
 			}, cards)
 			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 			UIStyle.soften(card, { radius = 10, strength = 0.3 })

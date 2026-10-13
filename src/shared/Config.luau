@@ -670,13 +670,17 @@ return {
 	},
 
 	-- Petler. mult = bacak kası çarpanına eklenen TAM SAYI (1 = +1; takılı petlerin toplamı + 1 = pet çarpanı: tek bir Cat bile x2 yapar). 2026-10-13: ondalık yok, en küçük 1. Hangi yumurtadan çıktıkları aşağıdaki Eggs listesindedir.
-	-- Pet nadirliği (çarpanına göre): yumurta açılış ekranında kart rengi ve etiket. maxMult: bu değerin ALTINDAKİ petler bu sınıftadır.
+	-- Pet nadirliği: yumurta açılış ekranında kart rengi ve etiket, Pets menüsü, Pet Index ve yumurta panelindeki kart rengi. NADİRLİK YUMURTADAKİ ÇIKMA ŞANSINA GÖRE (2026-10-13, sahibi 'güçlü yumurtalarda zayıf petler
+	-- legendary diye çıkıyor ama aslında yaygın olması lazım, hepsini rengine göre sırala' dedi; eskiden pet çarpanına göre eşikle belirleniyordu, Galaxy yumurtasının %50 çıkan Unicorn'u [+50] 'Legendary' görünüyordu):
+	-- her yumurtanın havuzu çıkma ağırlığına göre sıralanır, 1. sıra (en sık, %50) Common, 2. Rare, 3. Epic, 4. Legendary, 5. (en nadir, %2) Mythic olur (Catalog.rarityOf; birleşmiş boylar tabanın nadirliğini taşır).
+	-- Renkler yumurta panelindeki kart renkleriyle AYNIDIR (yeşil, camgöbeği, mor, altın, pembe; panel de bu listeden okur, ikisi ayrışmasın). maxMult SADECE hiçbir yumurtada çıkmayan petler için yedektir
+	-- (bu değerin ALTINDAKİ petler o sınıftadır; şimdi böyle pet yok).
 	Rarities = {
-		{ name = "Common", maxMult = 5, color = Color3.fromRGB(185, 190, 205) },
-		{ name = "Rare", maxMult = 10, color = Color3.fromRGB(70, 170, 255) },
-		{ name = "Epic", maxMult = 19, color = Color3.fromRGB(180, 90, 255) },
-		{ name = "Legendary", maxMult = 63, color = Color3.fromRGB(255, 190, 40) },
-		{ name = "Mythic", maxMult = math.huge, color = Color3.fromRGB(255, 70, 140) },
+		{ name = "Common", maxMult = 5, color = Color3.fromRGB(70, 200, 70) },
+		{ name = "Rare", maxMult = 10, color = Color3.fromRGB(40, 190, 230) },
+		{ name = "Epic", maxMult = 19, color = Color3.fromRGB(170, 60, 230) },
+		{ name = "Legendary", maxMult = 63, color = Color3.fromRGB(250, 190, 30) },
+		{ name = "Mythic", maxMult = math.huge, color = Color3.fromRGB(240, 50, 130) },
 	},
 	-- BLENDER MODELLERİ (tools/blender, shared/ModelLibrary + ModelInfo): ReplicatedStorage > GameModels klasöründe adı 'pet_<id>' / 'egg_<id>' olan model varsa oyun onu kullanır, yoksa eski küre/kod yumurtası.
 	-- PetScale: kutu pet ölçeği (1 = Blender'daki ~2.1 stud küp); PetHover: modelin tabanının takipçi merkezine (HumanoidRootPart) göre yüksekliği (eksi = zemine yakın); EggScale: yumurta ölçeği.

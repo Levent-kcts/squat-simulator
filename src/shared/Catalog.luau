@@ -130,6 +130,35 @@ for _, egg in Config.Eggs do
 	Catalog.EggById[egg.id] = egg
 end
 
+-- PET NADİRLİĞİ yumurtadaki çıkma şansına göre (Config.Rarities'in açıklaması): havuz ağırlığa göre sıralanır (eşitlikte havuzdaki sıra), sıra sayısı nadirlik sırasıdır.
+-- Petin kendisine ve bütün boylarına ('cat', 'cat@2'...) 'rarity' yazılır; Catalog.rarityOf bunu okur.
+for _, egg in Config.Eggs do
+	local order = table.clone(egg.pets)
+	local position = {}
+	for index, entry in egg.pets do
+		position[entry] = index
+	end
+	table.sort(order, function(a, b)
+		if a.weight ~= b.weight then
+			return a.weight > b.weight
+		end
+		return position[a] < position[b]
+	end)
+	for rank, entry in order do
+		local rarity = Config.Rarities[math.min(rank, #Config.Rarities)]
+		local base = Catalog.PetById[entry.id]
+		if base then
+			base.rarity = rarity
+			for tier = 2, fusion.MaxTier do
+				local variant = Catalog.PetById[`{base.id}@{tier}`]
+				if variant then
+					variant.rarity = rarity
+				end
+			end
+		end
+	end
+end
+
 for _, trail in Config.Trails do
 	Catalog.TrailById[trail.id] = trail
 end
@@ -170,8 +199,11 @@ function Catalog.luckWeights(egg, luck)
 	return weights
 end
 
--- Pet nadirliği (Config.Rarities): çarpanı sınırın altında kalan ilk sınıf
+-- Pet nadirliği (Config.Rarities): yumurtadaki çıkma şansına göre (yukarıdaki döngü); hiçbir yumurtada çıkmayan pet için yedek: çarpanı sınırın altında kalan ilk sınıf
 function Catalog.rarityOf(pet)
+	if pet.rarity then
+		return pet.rarity
+	end
 	for _, rarity in Config.Rarities do
 		if pet.mult < rarity.maxMult then
 			return rarity
