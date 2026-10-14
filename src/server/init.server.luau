@@ -55,6 +55,19 @@ do
 	end
 end
 
+-- Power Hour (sunucu çapı olay sayacı) isteğe bağlıdır: hata verirse çarpan 1 kalır
+do
+	local okEvents, ServerEvents = pcall(require, script.ServerEvents)
+	if okEvents then
+		local started, err = pcall(ServerEvents.init)
+		if not started then
+			warn(`[Server] ServerEvents init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load ServerEvents: {ServerEvents}`)
+	end
+end
+
 -- Çapraz sunucu duyuru akışı (nadir pet, rebirth eşikleri) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFeedModule, GlobalFeed = pcall(require, script.GlobalFeed)

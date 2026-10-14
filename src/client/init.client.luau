@@ -994,6 +994,7 @@ local function showToast(ok, message)
 end
 
 notifyEvent.OnClientEvent:Connect(showToast)
+safeInit("PowerHourHud", loadOptional("PowerHourHud"), screenGui, showToast) -- Power Hour sayacı (son 90 sn + aktifken, üstte küçük hap); başlarken tek bildirim
 
 -- Eğitim bitince (ilk skin alınınca) kısa tebrik
 do

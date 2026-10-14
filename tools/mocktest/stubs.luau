@@ -272,6 +272,24 @@ local services = {
 		end,
 	}),
 }
+-- Workspace: diğer her şeyde boş işlev döndüren genel taklit, ama öznitelikler GERÇEKTEN saklanır (ServerEvents'in 'PowerHourActive' özniteliği gibi sunucu çapı durum testleri için)
+do
+	local attrs = {}
+	services.Workspace = setmetatable({}, {
+		__index = function(_, key)
+			if key == "SetAttribute" then
+				return function(_, name, value)
+					attrs[name] = value
+				end
+			elseif key == "GetAttribute" then
+				return function(_, name)
+					return attrs[name]
+				end
+			end
+			return function() end
+		end,
+	})
+end
 M.game = {
 	GetService = function(_, name)
 		return services[name] or setmetatable({}, {

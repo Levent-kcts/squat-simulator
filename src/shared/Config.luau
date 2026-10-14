@@ -259,6 +259,10 @@ return {
 	-- Arkadaş bonusu: aynı sunucudaki her arkadaş için bacak kası kazancına +PercentPerFriend yüzdesi eklenir (en çok MaxFriends arkadaş sayılır).
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
+	-- POWER HOUR (2026-10-14 büyüme planı sprint 2; server/ServerEvents, client/PowerHourHud): her PeriodMinutes dakikada DurationMinutes dakika boyunca SUNUCUDAKİ HERKESE kas kazancı x Multiplier. Zamanlama UTC saatine bağlıdır
+	-- (tüm sunucularda aynı anda başlar: xx:00-xx:05 ve xx:30-xx:35), küçük üst sayaç gösterir (ortada büyük yazı yok). Baskı/kıtlık dili YOK, hiçbir şey kaçmaz (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
+	PowerHour = { Enabled = true, PeriodMinutes = 30, DurationMinutes = 5, Multiplier = 2, Name = "POWER HOUR" },
+
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.
 	Badges = {

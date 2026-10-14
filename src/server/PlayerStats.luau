@@ -13,6 +13,7 @@ local Layout = require(Shared:WaitForChild("Layout"))
 local Format = require(Shared:WaitForChild("Format"))
 local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
 local okBadges, Badges = pcall(require, script.Parent.Badges) -- Roblox rozetleri: yüklenemezse atlanır
+local okEvents, ServerEvents = pcall(require, script.Parent.ServerEvents) -- Power Hour: yüklenemezse çarpan 1 kalır
 local okFeed, GlobalFeed = pcall(require, script.Parent.GlobalFeed) -- çapraz sunucu duyuru akışı: yüklenemezse duyuru atlanır, oyun etkilenmez
 
 local PlayerStats = {}
@@ -1345,8 +1346,9 @@ function PlayerStats.addMuscle(player, areaMultiplier)
 	if not profile or not profile.loaded or not stat then
 		return nil
 	end
-	-- Antrenman alanının çarpanı kazanca eklenir (alan dışında 1)
-	local gained = math.max(1, math.floor(profile.gain * (areaMultiplier or 1)))
+	-- Antrenman alanının çarpanı kazanca eklenir (alan dışında 1); Power Hour sırasında sunucudaki herkesin kazancı x2 (Config.PowerHour)
+	local eventMultiplier = if okEvents then ServerEvents.multiplier() else 1
+	local gained = math.max(1, math.floor(profile.gain * (areaMultiplier or 1) * eventMultiplier))
 	stat.Value += gained
 	return stat.Value, gained
 end
@@ -1361,7 +1363,6 @@ function PlayerStats.getMuscle(player)
 	return stat.Value
 end
 
--- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
 -- Ödül tanımını ({ wins, muscleClicks, potions }) oyuncuya verir (promosyon kodu ve günlük giriş ortak). Dönüş: verilenlerin kısa listesi (yazı)
 local function grantRewardDef(player, profile, def)
 	local wins = getStat(player, Config.StatWins)
@@ -1493,6 +1494,7 @@ function PlayerStats.lifetimeMuscle(player)
 	return if profile and profile.loaded then math.floor(profile.lifetimeMuscle) else 0
 end
 
+-- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
 function PlayerStats.canSave(player)
 	local profile = profiles[player]
 	return profile ~= nil and profile.canSave == true
