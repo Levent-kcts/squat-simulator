@@ -79,6 +79,9 @@ local function newInstance(className)
 	return setmetatable(inst, InstanceMT)
 end
 InstanceMT.__index = function(self, key)
+	if key == "Value" then
+		return rawget(self, "_value") -- 'Value' ham tabloda tutulmaz: her atama __newindex'ten geçer (özellik değişim sinyali için)
+	end
 	local methods = {
 		FindFirstChild = function(s, name)
 			return rawget(s, "_children")[name]
@@ -92,12 +95,41 @@ InstanceMT.__index = function(self, key)
 		GetAttribute = function(s, k)
 			return rawget(s, "_attrs")[k]
 		end,
+		-- Özellik değişim sinyali (PlayerStats ömür boyu kas takibi: leaderstats.Value): değer DEĞİŞİNCE dinleyiciler çağrılır
+		GetPropertyChangedSignal = function(s, property)
+			return {
+				Connect = function(_, f)
+					local signals = rawget(s, "_propSignals")
+					if not signals then
+						signals = {}
+						rawset(s, "_propSignals", signals)
+					end
+					signals[property] = signals[property] or {}
+					table.insert(signals[property], f)
+					return { Disconnect = function() end }
+				end,
+			}
+		end,
 		Destroy = function() end,
 	}
 	return methods[key]
 end
 InstanceMT.__newindex = function(self, key, value)
-	rawset(self, key, value)
+	-- Lua'da __newindex sadece anahtar tabloda YOKKEN çalışır; sinyal her değişimde tetiklensin diye 'Value' ham tabloda değil '_value'da saklanır
+	local old
+	if key == "Value" then
+		old = rawget(self, "_value")
+		rawset(self, "_value", value)
+	else
+		old = rawget(self, key)
+		rawset(self, key, value)
+	end
+	local signals = rawget(self, "_propSignals")
+	if signals and signals[key] and old ~= value then
+		for _, listener in signals[key] do
+			listener()
+		end
+	end
 	if key == "Parent" and value ~= nil and type(value) == "table" and rawget(value, "_children") then
 		rawget(value, "_children")[rawget(self, "Name")] = self
 	end

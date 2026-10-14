@@ -16,7 +16,7 @@ Göremediklerim ve sınırlar: oyunu Studio'da OYNAMADIM; koridorun (duvarların
 
 | # | Bulgu | Kanıt | Önem |
 |---|---|---|---|
-| B1 | LEG MUSCLE sıralama panosu rebirth'te çöküyor: sıralama GÜNCEL kasa bakıyor, rebirth kası sıfırlıyor. Panoda üst sıradaki oyuncu rebirth yaparsa panodan düşer (rebirth'i cezalandıran bir ödül sistemi). | `server/Leaderboards.luau` BOARDS[1].statName = Leg Muscle; rebirth `muscle = 0` | Yüksek, küçük iş |
+| B1 | **ÇÖZÜLDÜ (2026-10-14, sahibi istedi: pano ömür boyu toplam kasa göre sıralar)** ~~LEG MUSCLE sıralama panosu rebirth'te çöküyor: sıralama GÜNCEL kasa bakıyor, rebirth kası sıfırlıyor. Panoda üst sıradaki oyuncu rebirth yaparsa panodan düşer (rebirth'i cezalandıran bir ödül sistemi).~~ | `server/Leaderboards.luau` BOARDS[1].lifetime = true, `PlayerStats.lifetimeMuscle` | Bitti |
 | B2 | Statü sinyali rebirth'te siliniyor: isim etiketi "Lv.N + güncel kas" gösteriyor, rebirth'ten hemen sonra 40 rebirth'lik oyuncu ile yeni oyuncu AYNI görünüyor. | `client/OverheadTags.luau` | Yüksek, küçük iş |
 | B3 | Lobi tek tonlu: duvar, zemin, tavan, raflar aynı lavanta-mavi; kapak sanatı ise şeker rengi gökkuşağı. İlk izlenim sözünü tutmuyor. Işık düz: karşıtlık ve odak yok. Ortadaki geniş zemin (~70 x 88 stud) boş, sadece spawn pedi var. | ekran görüntüleri; `Config.Lighting`, `EnvironmentService` renkleri | Yüksek (ilk izlenim) |
 | B4 | İlk rebirth'ten sonra oyuncuyu yönlendiren/hedef veren hiçbir şey yok (hedef şeridi ve rehber susuyor); uzun vadeli hedef listesi yok (başarım, rozet). | CLAUDE.md: deneyimli oyuncuda yönerge gizli | Yüksek (D3-D7) |

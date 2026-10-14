@@ -25,7 +25,7 @@ local BOARD_PITCH = 10.2 -- iki panonun merkezleri arası (stand ekseninde)
 
 -- Panolar: statName leaderstats'taki ad, store sıralı veri deposunun adı (değişirse tablo sıfırlanır), icon yüklenen görsel (boşsa emoji)
 local BOARDS = {
-	{ title = "LEG MUSCLE", statName = Config.StatLegMuscle, store = "Leaderboard_Muscle_v1", color = Color3.fromRGB(255, 150, 40), icon = Config.Icons.LegMuscle, emoji = "🦵" },
+	{ title = "LEG MUSCLE", subtitle = "ALL-TIME LEADERBOARD", lifetime = true, statName = Config.StatLegMuscle, store = "Leaderboard_Muscle_v1", color = Color3.fromRGB(255, 150, 40), icon = Config.Icons.LegMuscle, emoji = "🦵" },
 	{ title = "REBIRTHS", statName = Config.StatRebirths, store = "Leaderboard_Rebirths_v1", color = Color3.fromRGB(235, 70, 170), icon = Config.Icons.Rebirth, emoji = "🔄" },
 }
 
@@ -33,6 +33,23 @@ local MEDAL_COLORS = { Color3.fromRGB(255, 215, 60), Color3.fromRGB(215, 220, 23
 -- Taş/lego grisi tonları (sütunlar, çerçeve, kaide)
 local STONE = { Color3.fromRGB(150, 158, 172), Color3.fromRGB(174, 181, 195), Color3.fromRGB(128, 136, 153) }
 local STONE_DARK = Color3.fromRGB(96, 104, 122)
+
+-- Bir oyuncunun panodaki değeri: LEG MUSCLE panosu (lifetime = true) bugüne kadar kazanılan TOPLAM kasa bakar (rebirth sıfırlamaz; sahibi 'şimdiye kadar üretilmiş tüm leg power' dedi),
+-- diğerleri leaderstats'taki güncel değere. Veri yoksa nil. OrderedDataStore int64 tutar: üst sınır 9e18.
+local function boardValue(player, board)
+	local value
+	if board.lifetime then
+		value = PlayerStats.lifetimeMuscle(player)
+	else
+		local leaderstats = player:FindFirstChild("leaderstats")
+		local stat = leaderstats and leaderstats:FindFirstChild(board.statName)
+		value = stat and stat.Value
+	end
+	if value == nil then
+		return nil
+	end
+	return math.clamp(math.floor(value), 0, 9e18)
+end
 
 local nameCache = {}
 local function nameOf(userId)
@@ -164,7 +181,7 @@ local function buildBoard(folder, frame, board, localX)
 	bannerGui.PixelsPerStud = 60
 	bannerGui.Parent = banner
 	textLabel(bannerGui, { Position = UDim2.fromScale(0.04, 0.06), Size = UDim2.fromScale(0.92, 0.58), Text = board.title, TextColor3 = Color3.new(1, 1, 1) }, 3)
-	textLabel(bannerGui, { Position = UDim2.fromScale(0.15, 0.66), Size = UDim2.fromScale(0.7, 0.26), Text = "LEADERBOARD", TextColor3 = Color3.fromRGB(255, 245, 215) }, 2)
+	textLabel(bannerGui, { Position = UDim2.fromScale(0.15, 0.66), Size = UDim2.fromScale(0.7, 0.26), Text = board.subtitle or "LEADERBOARD", TextColor3 = Color3.fromRGB(255, 245, 215) }, 2)
 
 	local billboard = Instance.new("BillboardGui")
 	billboard.Adornee = banner
@@ -216,10 +233,8 @@ function Leaderboards.init()
 			return
 		end
 		for _, player in Players:GetPlayers() do
-			local leaderstats = player:FindFirstChild("leaderstats")
-			local stat = leaderstats and leaderstats:FindFirstChild(board.def.statName)
-			if stat and PlayerStats.canSave(player) then
-				local value = math.max(0, math.floor(stat.Value))
+			local value = boardValue(player, board.def)
+			if value and PlayerStats.canSave(player) then
 				if board.lastWritten[player.UserId] ~= value then
 					local ok, err = pcall(board.store.SetAsync, board.store, tostring(player.UserId), value)
 					if ok then
@@ -283,10 +298,9 @@ function Leaderboards.init()
 	Players.PlayerRemoving:Connect(function(player)
 		for _, board in boards do
 			if board.store and PlayerStats.canSave(player) then
-				local leaderstats = player:FindFirstChild("leaderstats")
-				local stat = leaderstats and leaderstats:FindFirstChild(board.def.statName)
-				if stat then
-					task.spawn(pcall, board.store.SetAsync, board.store, tostring(player.UserId), math.max(0, math.floor(stat.Value)))
+				local value = boardValue(player, board.def)
+				if value then
+					task.spawn(pcall, board.store.SetAsync, board.store, tostring(player.UserId), value)
 				end
 			end
 		end

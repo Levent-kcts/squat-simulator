@@ -230,7 +230,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -451,6 +451,18 @@ local function sanitize(raw)
 		for id in validSteps do
 			data.GuideSeen[id] = true
 		end
+	end
+	-- ÖMÜR BOYU KAS (2026-10-14, sahibi 'Leg Muscle şimdiye kadar üretilmiş tüm leg powera göre sıralasın, o an olana göre değil' dedi): rebirth kası sıfırlar, sıralama panosu ise
+	-- bugüne kadar kazanılan TOPLAM kasa bakar. Eski kayıtta alan yoksa geriye dönük tahmin: her geçmiş rebirth için o sırada ulaşılması ZORUNLU olan en az kas
+	-- (rebirth için level sınırına çıkmak gerekir; level toplam kastan hesaplanır: Progression.cumulativeMuscle(maxLevel)) + şimdiki kas. Robux 'SKIP' ile atlanan rebirth'ler bu tahmini biraz şişirebilir.
+	if type(raw.LifetimeMuscle) == "number" then
+		data.LifetimeMuscle = math.max(math.floor(raw.LifetimeMuscle), data.Muscle)
+	else
+		local estimate = data.Muscle
+		for passed = 0, data.Rebirths - 1 do
+			estimate += Progression.cumulativeMuscle(Progression.maxLevel(passed))
+		end
+		data.LifetimeMuscle = estimate
 	end
 	-- Hüni adımları: eski oyuncuda hepsi 'gönderilmiş' sayılır (analitiği kirletmesin)
 	if type(raw.Funnel) == "table" then
@@ -795,6 +807,7 @@ local function save(player, mode)
 
 	local data = {
 		Muscle = muscle.Value,
+		LifetimeMuscle = profile.lifetimeMuscle,
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
 		Taps = profile.taps,
@@ -1025,6 +1038,7 @@ local function setup(player)
 
 	local profile = {
 		taps = 0,
+		lifetimeMuscle = 0, -- bugüne kadar kazanılan TOPLAM bacak kası (rebirth sıfırlamaz; sıralama panosu bunu okur; kayıtlı)
 		loaded = false,
 		canSave = false,
 		items = {},
@@ -1134,6 +1148,17 @@ local function setup(player)
 		profile.autoDelete[id] = true
 	end
 	muscle.Value = data.Muscle
+	profile.lifetimeMuscle = data.LifetimeMuscle
+	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
+	-- sinyalden ÖNCE yapıldığı için sayılmaz.
+	local lastMuscle = muscle.Value
+	muscle:GetPropertyChangedSignal("Value"):Connect(function()
+		local value = muscle.Value
+		if value > lastMuscle and profiles[player] == profile then
+			profile.lifetimeMuscle += value - lastMuscle
+		end
+		lastMuscle = value
+	end)
 	wins.Value = data.Wins
 	level.Value = data.Level
 	rebirths.Value = data.Rebirths
@@ -1244,6 +1269,12 @@ function PlayerStats.getMuscle(player)
 end
 
 -- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
+-- Bugüne kadar kazanılan toplam bacak kası (sıralama panosu); veri yüklenmediyse 0
+function PlayerStats.lifetimeMuscle(player)
+	local profile = profiles[player]
+	return if profile and profile.loaded then math.floor(profile.lifetimeMuscle) else 0
+end
+
 function PlayerStats.canSave(player)
 	local profile = profiles[player]
 	return profile ~= nil and profile.canSave == true
@@ -2485,6 +2516,7 @@ function PlayerStats.dev(player, command, amount)
 		-- kas, level, rebirth, Win, ayakkabı, skin, pet ve görev/rehber kayıtları sıfırlanır (rebirth > 0 iken rehber zaten çıkmaz, pet/skin varken ilgili adımlar atlanır).
 		-- 'İlk pet' görevi keşfedilen pet türlerine, 'çark' görevi çark gününe bakar: ikisi de sıfırlanır (Pet Index ödülleri de yeniden denenebilsin diye). İz, aura, iksir ve günlük görevler KALIR (RESET ALL hepsini sıfırlar).
 		muscle.Value = 0
+		profile.lifetimeMuscle = 0 -- yeni oyuncu durumu: ömür boyu kas da sıfırlanır
 		wins.Value = 0
 		levelStat.Value = 1
 		rebirthStat.Value = 0
@@ -2514,6 +2546,7 @@ function PlayerStats.dev(player, command, amount)
 		message = "Tutorial restarted: you are a new player again (level, Wins, shoes, skins, pets and quests reset)"
 	elseif command == "Reset" then
 		muscle.Value = 0
+		profile.lifetimeMuscle = 0 -- yeni oyuncu durumu: ömür boyu kas da sıfırlanır
 		wins.Value = 0
 		levelStat.Value = 1
 		rebirthStat.Value = 0
