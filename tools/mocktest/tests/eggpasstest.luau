@@ -73,7 +73,7 @@ assert(cursorAfter == 3 and selectedCount == 10 and lockedPass == nil, "Multi va
 
 -- ---- Fiyatlar: 150'nin üstünde ama makul (sahibi bu iki ürün için sınırı kaldırdı)
 for _, pass in Config.EggPasses do
-	assert(pass.Robux > 150 and pass.Robux <= 400, `{pass.id}: fiyat 150 ile 400 arasında olmalı: {pass.Robux}`)
+	assert(pass.Robux > 0 and pass.Robux <= 400, `{pass.id}: fiyat makul olmalı (<= 400): {pass.Robux}`)
 	assert(type(pass.attribute) == "string" and pass.attribute ~= "", pass.id .. ": öznitelik adı")
 end
 

@@ -76,7 +76,7 @@ return {
 	Rebirth = {
 		MultiplierPerRebirth = 1, -- 1. rebirth x2, 2. x3 ...; TAM SAYI (2026-10-13)
 		-- "SKIP?" butonu: Robux ile level şartını atlayıp rebirth yapma. SkipProductId 0 ise buton "yakında" olarak kalır.
-		SkipRobuxPrice = 119,
+		SkipRobuxPrice = 59,
 		SkipProductId = 3717471329,
 	},
 
@@ -106,7 +106,7 @@ return {
 	-- oyuncu Auto Click'in hızını önce yaşasın, süre bitince fiyatı görsün; server/PlayerStats 'AutoClickTrialUntil' özniteliği, düğmede 'FREE m:ss'). Eski oyuncuya verilmez. 0 = deneme yok.
 	-- (2026-10-13: sahibi 'zamanlayıcı vermesin, onun yerine ilk rebirth'inde Auto Click Potion versin' dedi: ücretsiz DENEME KAPATILDI [TrialSeconds = 0; düğmedeki 'FREE m:ss' zamanlayıcısı da kalktı]. Auto Click'e geçici erişim artık
 	-- AUTO CLICK POTION'la gelir: ilk rebirth görevinin ödülü [StarterQuests 'rebirth', 30 dk], günlük görev bonusu ve çark; bkz. Config.Potions.) Deneme kodu duruyor: TrialSeconds > 0 yapılırsa geri gelir.
-	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 149, TrialSeconds = 0 },
+	AutoClick = { PerSecond = 10, GamePassId = 2022434461, Robux = 49, TrialSeconds = 0 },
 	-- YUMURTA GAME PASS'LERİ (sahibi 'yumurtada R auto ve T multi ücretli olsun, üzerlerinde Robux fiyatları olsun, bu sefer 150 sınırını geç, birazcık daha pahalı olsun' dedi): yumurta panelinde İKİ ücretli özellik vardır:
 	-- Auto Open (R tuşu: otomatik açma) ve Multi Open (T tuşu: x3 ve x10 modları; oyuncu T ile modu değiştirip açar). E ile tek yumurta açmak her zaman ücretsizdir. Her biri BİR game pass'tir (kalıcı).
 	-- (Önce üç pass'ti: Auto, Triple x3, Multi/Mega x10; sahibi Triple'ı Multi'ye çevirdi, 'eggtriple' kodunu eggmulti olarak kullan dedi: tek Multi pass'i HEM x3 HEM x10 modunu açar.)
@@ -114,8 +114,8 @@ return {
 	-- Robux = GÖSTERİLEN fiyat (asıl fiyatı Creator Hub'daki pass belirler, aynı yaz). Bu iki ürün '150 Robux'u geçmesin' kuralının İSTİSNASIDIR (sahibi izin verdi; pricetest/eggpasstest üst sınırı 400). Diğer her şeyde sınır 150 kalır.
 	-- Sahiplik sunucuda sorulur (server/EggPasses; 'HasEggAuto' / 'HasEggMulti') ve EggOpen'da SUNUCUDA zorlanır (shared/EggRules): x2-x10 açmak Multi'yi, otomatik açma Auto'yu ister. count = pass'in izin verdiği EN BÜYÜK sayı.
 	EggPasses = {
-		{ id = "auto", name = "Auto Open", GamePassId = 2025428297, Robux = 199, attribute = "HasEggAuto", detail = "Opens eggs for you" },
-		{ id = "multi", name = "Multi Open", GamePassId = 2026754291, Robux = 249, attribute = "HasEggMulti", count = 10, detail = "Open 3 or 10 eggs at once" },
+		{ id = "auto", name = "Auto Open", GamePassId = 2025428297, Robux = 59, attribute = "HasEggAuto", detail = "Opens eggs for you" },
+		{ id = "multi", name = "Multi Open", GamePassId = 2026754291, Robux = 99, attribute = "HasEggMulti", count = 10, detail = "Open 3 or 10 eggs at once" },
 	},
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
 
@@ -135,26 +135,26 @@ return {
 	-- FİYAT KURALI (sahibi 2026-10-09: 'ucuz olsun, en pahalı şey 150 Robux'u geçmesin'): bütün Robux fiyatları (Shop ürünleri, iksirler, iz/aura, Rebirth SKIP, Offline DOUBLE, Gifts kilidi, VIP game pass) en çok 150'dir; İSTİSNALAR: yumurta pass'leri (EggPasses) ve Robux'lu antrenör pedleri (Training.Areas robux), 150 < fiyat <= 400; tools/mocktest/tests/pricetest.luau denetler.
 	Shop = {
 		Products = {
-			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", badge = "+", kind = "petSpace", amount = 25, robux = 79, productId = 3717466379, color = Color3.fromRGB(235, 70, 70) },
+			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", badge = "+", kind = "petSpace", amount = 25, robux = 49, productId = 3717466379, color = Color3.fromRGB(235, 70, 70) },
 			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
-			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 25, productId = 3717466555, quick = true, color = Color3.fromRGB(255, 45, 140) },
-			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 10000, robux = 75, productId = 3717467017, quick = true, color = Color3.fromRGB(232, 32, 112) },
-			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 100000, robux = 149, productId = 3717467182, quick = true, color = Color3.fromRGB(180, 20, 70) },
-			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", imageKey = "WinPack", kind = "stageWins", stage = 8, robux = 59, productId = 3717467320, color = Color3.fromRGB(70, 210, 90) },
-			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", imageKey = "WinPackBig", kind = "stageWins", stage = 12, robux = 149, productId = 3717467423, color = Color3.fromRGB(190, 90, 255) },
+			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 15, productId = 3717466555, quick = true, color = Color3.fromRGB(255, 45, 140) },
+			{ id = "power10k", name = "+10K Power", detail = "10,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 10000, robux = 39, productId = 3717467017, quick = true, color = Color3.fromRGB(232, 32, 112) },
+			{ id = "power100k", name = "+100K Power", detail = "100,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 100000, robux = 99, productId = 3717467182, quick = true, color = Color3.fromRGB(180, 20, 70) },
+			{ id = "winsSmall", name = "Win Pack", detail = "Stage 8 reward", icon = "💰", imageKey = "WinPack", kind = "stageWins", stage = 8, robux = 35, productId = 3717467320, color = Color3.fromRGB(70, 210, 90) },
+			{ id = "winsBig", name = "Mega Win Pack", detail = "Stage 12 reward", icon = "💎", imageKey = "WinPackBig", kind = "stageWins", stage = 12, robux = 99, productId = 3717467423, color = Color3.fromRGB(190, 90, 255) },
 		},
 		-- İKSİR ÜRÜNLERİ (Shop > Potions bölümü): her iksir (Config.Potions.List) x süre. id = iksir id + dakika (luck15, luck60, muscle15 ...).
 		-- Çarktan / Gifts'ten / günlük görev bonusundan çıkan iksirler ENVANTERE girer (kayıtlı) ve burada fiyat yerine 'USE xN' yazar; envanterde yoksa fiyat yazar,
 		-- Robux ile alınan iksir hemen içilir. productId: Creator Hub'da oluşturulan Developer Product (0 = 'coming soon').
 		Potions = {
-			{ id = "luck15", potion = "luck", minutes = 15, robux = 49, productId = 3717467570 },
-			{ id = "luck60", potion = "luck", minutes = 60, robux = 129, productId = 3717467681 },
-			{ id = "muscle15", potion = "muscle", minutes = 15, robux = 39, productId = 3717468188 },
-			{ id = "muscle60", potion = "muscle", minutes = 60, robux = 99, productId = 3717468365 },
-			{ id = "wins15", potion = "wins", minutes = 15, robux = 39, productId = 3717468435 },
-			{ id = "wins60", potion = "wins", minutes = 60, robux = 99, productId = 3717468491 },
-			{ id = "rainbow15", potion = "rainbow", minutes = 15, robux = 79, productId = 3717468870 },
-			{ id = "rainbow60", potion = "rainbow", minutes = 60, robux = 149, productId = 3717468975 },
+			{ id = "luck15", potion = "luck", minutes = 15, robux = 29, productId = 3717467570 },
+			{ id = "luck60", potion = "luck", minutes = 60, robux = 75, productId = 3717467681 },
+			{ id = "muscle15", potion = "muscle", minutes = 15, robux = 25, productId = 3717468188 },
+			{ id = "muscle60", potion = "muscle", minutes = 60, robux = 59, productId = 3717468365 },
+			{ id = "wins15", potion = "wins", minutes = 15, robux = 25, productId = 3717468435 },
+			{ id = "wins60", potion = "wins", minutes = 60, robux = 59, productId = 3717468491 },
+			{ id = "rainbow15", potion = "rainbow", minutes = 15, robux = 49, productId = 3717468870 },
+			{ id = "rainbow60", potion = "rainbow", minutes = 60, robux = 99, productId = 3717468975 },
 			-- SATILMAZ (forSale = false): kart sadece envanterdeki iksiri içmek ve Auto Click pass'ini göstermek içindir (robux/productId yok)
 			{ id = "auto30", potion = "auto", minutes = 30, forSale = false },
 		},
@@ -165,7 +165,7 @@ return {
 	-- (Rate = aktif Auto Click oyununun yüzdesi: 0.02 = %2; eskiden squat süresine bölünürdü, tıklama hızı 5 katına çıkınca oran korunsun diye Auto Click hızına bağlandı). Alınmayan kazanç kayıtlı kalır. Kayıt gerektirir (yayınlanmış oyun + API); Studio'da DEV > Offline 3h ile denenir.
 	-- DoubleProductId: pencerenin 'DOUBLE IT!' butonu (Robux ile bekleyen kazancın 2 katı). Creator Hub'da Developer Product oluşturup ID'sini yaz;
 	-- 0 iken buton 'COMING SOON' der. DoubleRobux sadece butonda gösterilen fiyattır (gerçek fiyatı Developer Product belirler).
-	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300, DoubleProductId = 3717471441, DoubleRobux = 29 },
+	Offline = { Enabled = true, Rate = 0.02, MaxHours = 8, MinSeconds = 300, DoubleProductId = 3717471441, DoubleRobux = 19 },
 
 	-- Sesler (client/Sfx). id: "rbxasset://sounds/..." (Roblox'la gelen hazır sesler) ya da "rbxassetid://123456" (Creator Store'dan seçtiğin ses).
 	-- id = "" ise o olay sessiz kalır. volume 0-1, speed: { en yavaş, en hızlı } çalma hızı (her çalışta rastgele; ton çeşitliliği).
@@ -581,7 +581,7 @@ return {
 	-- VIP game pass'in ID'si (Roblox Creator Hub'da game pass oluşturunca verilir). 0 = henüz yok: VIP pedine ("2x WINS") basınca
 	-- 'coming soon' mesajı çıkar. ID girilince pede basan, pass'i olmayana Robux satın alma penceresi açılır; pass'i olan 2x Win alır.
 	VipGamePassId = 2022488478,
-	VipRobux = 149, -- VIP game pass'in GÖSTERİLEN fiyatı (asıl fiyatı Creator Hub'daki pass belirler, aynı yaz; en çok 150). Shop kartında ve ROBUX_URUNLERI.md'de görünür
+	VipRobux = 99, -- VIP game pass'in GÖSTERİLEN fiyatı (asıl fiyatı Creator Hub'daki pass belirler, aynı yaz; en çok 150). Shop kartında ve ROBUX_URUNLERI.md'de görünür
 
 	-- Ayakkabılar: lobideki raflardan, üstlerine basarak satın alınır (alt sıra ucuz, üst sıra pahalı).
 	-- damage = duvara verilen hasar çarpanı (hasar = bacak kası x damage). Bacak kazancını ETKİLEMEZ. Takılı ayakkabı geçerlidir, toplanmaz (sahip olduğun ucuz ayakkabılara basıp istediğini takabilirsin).
@@ -673,8 +673,8 @@ return {
 			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", outfit = "frost", mult = 18, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
 			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", outfit = "volt", mult = 36, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
 			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", outfit = "nova", mult = 100, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
-			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, robux = 199, gamePassId = 2027204299, color = Color3.fromRGB(255, 255, 255), rainbow = true },
-			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, robuxOnly = true, robux = 299, gamePassId = 2026280297, color = Color3.fromRGB(35, 35, 48) },
+			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, robux = 129, gamePassId = 2027204299, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, robuxOnly = true, robux = 199, gamePassId = 2026280297, color = Color3.fromRGB(35, 35, 48) },
 		},
 	},
 
@@ -872,7 +872,7 @@ return {
 	-- gereken oyun süresi (tools/simulate.py 'Fiyat merdiveni' dakikası) x dakika başı Robux (aura 0.6, iz 0.45; aura kalıcı çarpan olduğu için daha pahalı), en az Floor. Dakika başı kur ve taban BURADA yazılıdır; fiyatlar bu kura göre yuvarlanmış sabit sayıdır.
 	-- Win paketleri (Shop: winsSmall 255 Win, winsBig 4095 Win) bu fiyatlarla tutarlıdır: paketin içindeki Win ile bir seferde alınabilecek en pahalı iz/aura sepeti paket fiyatının en çok 1.3 katıdır (pricetest.luau denetler), yani paket yoldan almak
 	-- doğrudan Robux ile almaktan 'çok daha ucuz' DEĞİLDİR. Süre ya da Win fiyatı ya da paket değişirse simulate.py'yi çalıştır ve fiyatları yeniden hesapla.
-	WinValue = { RobuxPerMinuteAura = 0.6, RobuxPerMinuteTrail = 0.45, Floor = 15, MaxBasketRatio = 1.3 },
+	WinValue = { RobuxPerMinuteAura = 0.6, RobuxPerMinuteTrail = 0.45, Floor = 9, MaxBasketRatio = 1.3 },
 
 	-- WIN FİYATI MERDİVENİ (2026-10-10, sahibi 'trail ve aura fiyatları dengelemede değiştirilmemiş, onları da dengele' dedi): fiyat = HEDEF AŞAMANIN ÖDÜLÜNE yakın (Layout.reward: 1, 3, 7, 15, 31 ... 2^aşama - 1), yani oyuncu o aşamayı bitirip Win'e basınca TEK SEFERDE alabilir
 	-- (biriktirerek daha erken de alınır). İzler oyunun tamamına yayılır. AURA'LAR OYUNUN BAŞINA ÇEKİLDİ (sahibi 'auralar oyunun çok ileri safhasında, daha başlarında alınabilsin, ilki hem çok zayıf hem 1 saat oynamak gerekiyor' dedi): ilk aura 15 Win (ilk rebirth, ~5 dk) ve x1.5,
@@ -887,26 +887,26 @@ return {
 	-- E3 (fiyatlar): Win fiyatları aynı (hepsi oyunun ilk ~1,6 saatine sığar: simulate.py 'Fiyat merdiveni'); ROBUX fiyatları üst izlerde düşürüldü (blue 45 > 40, purple 60 > 50, pink 75 > 60, rainbow 110 > 75): GÖSTERİLEN fiyat
 	-- değişince Creator Hub'daki Developer Product'ın gerçek fiyatını da aynı yapmak sahibe düşer (ROBUX_FIYAT_DEGISIKLIGI.md).
 	Trails = {
-		{ id = "red", name = "Brick Dust", fx = "dust", icon = "LoadingBrick", iconTint = true, emoji = "💨", speed = 4, winPrice = 30, robuxPrice = 15, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
-		{ id = "orange", name = "Sweat Drops", fx = "drops", emoji = "💧", speed = 6, winPrice = 60, robuxPrice = 20, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
-		{ id = "yellow", name = "Protein Powder", fx = "powder", emoji = "✨", speed = 8, winPrice = 250, robuxPrice = 25, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
-		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "LoadingBrick", emoji = "🧱", speed = 10, winPrice = 1000, robuxPrice = 30, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
-		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Pet", emoji = "🐾", speed = 12, winPrice = 2000, robuxPrice = 35, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Wins", emoji = "🏆", speed = 14, winPrice = 4000, robuxPrice = 40, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
-		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "LegMuscle", emoji = "💪", speed = 16, winPrice = 8000, robuxPrice = 50, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Kick Sparks", fx = "sparks", emoji = "💥", speed = 18, winPrice = 16000, robuxPrice = 60, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", emoji = "🌈", speed = 24, winPrice = 32000, robuxPrice = 75, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Brick Dust", fx = "dust", icon = "LoadingBrick", iconTint = true, emoji = "💨", speed = 4, winPrice = 30, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
+		{ id = "orange", name = "Sweat Drops", fx = "drops", emoji = "💧", speed = 6, winPrice = 60, robuxPrice = 12, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
+		{ id = "yellow", name = "Protein Powder", fx = "powder", emoji = "✨", speed = 8, winPrice = 250, robuxPrice = 15, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
+		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "LoadingBrick", emoji = "🧱", speed = 10, winPrice = 1000, robuxPrice = 19, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
+		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Pet", emoji = "🐾", speed = 12, winPrice = 2000, robuxPrice = 22, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Wins", emoji = "🏆", speed = 14, winPrice = 4000, robuxPrice = 25, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
+		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "LegMuscle", emoji = "💪", speed = 16, winPrice = 8000, robuxPrice = 29, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Kick Sparks", fx = "sparks", emoji = "💥", speed = 18, winPrice = 16000, robuxPrice = 35, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", emoji = "🌈", speed = 24, winPrice = 32000, robuxPrice = 45, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
-		{ id = "red", name = "Red Aura", mult = 2, winPrice = 15, robuxPrice = 15, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 3, winPrice = 100, robuxPrice = 20, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 4, winPrice = 400, robuxPrice = 25, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 5, winPrice = 1600, robuxPrice = 40, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 6, winPrice = 6500, robuxPrice = 85, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 8, winPrice = 26000, robuxPrice = 145, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Aura", mult = 2, winPrice = 15, robuxPrice = 9, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "green", name = "Green Aura", mult = 3, winPrice = 100, robuxPrice = 12, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 4, winPrice = 400, robuxPrice = 15, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 5, winPrice = 1600, robuxPrice = 25, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 6, winPrice = 6500, robuxPrice = 49, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 8, winPrice = 26000, robuxPrice = 85, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.
@@ -930,8 +930,8 @@ return {
 	-- Unlock Next = ilk KİLİTLİ ödülü HEMEN verir (sırayla, hedeflenemez); Unlock All = alınmamış bütün ödülleri HEMEN verir (pet envanteri doluysa pet atlanır). Ödüller her oturum ücretsizdir, satılan şey BEKLEME süresidir.
 	-- ADİL FİYAT: hiçbir ödül Shop'tan UCUZA alınamasın. Tek bir ödülün Shop karşılığı en çok 15 dk Luck iksiri (49 R$) => Unlock Next >= 49; Unlock All içindeki üç iksirin Shop toplamı 127 R$ (Luck 49 + Muscle 39 + Wins 39) => Unlock All >= 127 (149; üstüne iki pet,
 	-- kas ve Win de gelir ve 10 x Next'ten (490) çok ucuzdur: toplu alım indirimi). pricetest.luau ikisini de denetler. ProductId 0 iken buton fiyatlı 'coming soon' der. ID'ler: robux_ids.txt giftnext= / giftall=, tools/set_robux_ids.py işler.
-	GiftUnlockAllRobux = 149,
-	GiftUnlockNextRobux = 49,
+	GiftUnlockAllRobux = 79,
+	GiftUnlockNextRobux = 29,
 	GiftUnlockAllProductId = 3717539298,
 	GiftUnlockNextProductId = 3717539247,
 }

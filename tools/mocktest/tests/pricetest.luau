@@ -83,7 +83,7 @@ print("DONE")
 -- Fiyat dengesi (2026-10-10, sahibi 'gereksiz ucuz olanları değiştirelim, yine çok pahalı olmasın' dedi): hiçbir Robux ürünü 25'in altında olmasın, aileler zayıftan güçlüye pahalılaşsın, uzun iksir dakika başına ucuz kalsın
 for _, price in prices do
 	local cosmetic = string.sub(price.name, 1, 6) == "Trail " or string.sub(price.name, 1, 5) == "Aura "
-	local floor = if cosmetic then Config.WinValue.Floor else 25 -- iz ve aura'lar Win'in Robux değerine göre (WinValue), erken olanlar en az Floor
+	local floor = if cosmetic then Config.WinValue.Floor else 15 -- iz ve aura'lar Win'in Robux değerine göre (WinValue), erken olanlar en az Floor
 	assert(price.value >= floor, `{price.name}: {price.value} Robux gereksiz ucuz (en az {floor})`)
 end
 local previous = 0
@@ -219,8 +219,8 @@ for _, area in Config.Training.Areas do
 		shadowArea = area
 	end
 end
-assert(prismArea.robux > MAX_ROBUX and prismArea.robux <= 400, "Coach Prism: fiyat 150 ile 400 arasında olmalı: " .. prismArea.robux)
-assert(shadowArea.robux > MAX_ROBUX and shadowArea.robux <= 400, "Coach Shadow: fiyat 150 ile 400 arasında olmalı: " .. shadowArea.robux)
+assert(prismArea.robux > 0 and prismArea.robux <= 400, "Coach Prism: fiyat makul olmalı (<= 400): " .. prismArea.robux)
+assert(shadowArea.robux > 0 and shadowArea.robux <= 400, "Coach Shadow: fiyat makul olmalı (<= 400): " .. shadowArea.robux)
 assert(shadowArea.robux > prismArea.robux, "Shadow (en güçlü, sadece Robux) Prism'den (rebirth ile de açılır) pahalı olmalı")
 assert(shadowArea.mult > prismArea.mult, "Shadow çarpanı Prism'den büyük olmalı")
 print("coach pad prices ok:", prismArea.robux, shadowArea.robux)

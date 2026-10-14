@@ -1,43 +1,74 @@
-# Robux fiyat değişikliği: Creator Hub'da güncellenecekler
+# Robux fiyat indirimi (2026-10-14): Creator Hub'da güncellenecekler
 
-> **2026-10-14 (tester E3/E4):** iz (trail) ürünleri oyuna uygun temalara çevrildi: ürün ADLARINI da Creator Hub'da aşağıdaki yeni adlarla değiştir (satın alma penceresinde görünür). FİYAT düşenler: Win Trophies (eski Blue Trail) 45 > 40, Muscle Power (eski Purple Trail) 60 > 50, Kick Sparks (eski Pink Trail) 75 > 60, Rainbow Legend (eski Rainbow Trail) 110 > 75; diğer beş ürünün fiyatı aynı kaldı (yalnız ad değişir). Ürün kimlikleri (`trail:red` ...) DEĞİŞMEDİ.
+Sahibi 14 Ekim 2026'da "fiyatları düşürelim, her şeyin" dedi (rakipler çok ucuz: +1 Muscle to Break Walls'ta Auto Click 37, Auto Rebirth 19, x2 Wins 79 R$).
+Oyundaki GÖSTERİLEN fiyatlar (Config.luau) güncellendi; **gerçek fiyatı Creator Hub'daki ürün belirler**, bu yüzden aşağıdaki ürünlerin fiyatını orada da değiştirmelisin.
+Güncelleyene kadar oyunda yazan fiyat ile Roblox'un satın alma penceresindeki fiyat farklı görünür (Roblox'un gösterdiği gerçek fiyat geçerli olur).
 
-Oyundaki GÖSTERİLEN fiyatlar güncellendi; **gerçek fiyatı Creator Hub'daki ürün belirler**, bu yüzden aşağıdaki ürünlerin fiyatını orada da değiştir.
-Geliştirici ürünleri: Creator Hub > Deneyim > Para Kazanma > Geliştirici Ürünleri > ürün > Fiyat. Game pass'ler (VIP, Auto Click, yumurta pass'leri): Para Kazanma > Geçişler > geçiş > Fiyat.
-'Eski' sütunu ürünler ilk açıldığında yazılan fiyattır (hiçbir ara değişikliği güncellemediysen doğrudan bu listeye bak).
+- Geliştirici ürünleri: Creator Hub > oyun > Monetization (Para Kazanma) > Developer Products > ürün > Price.
+- Game pass'ler: Monetization > Passes > pass > Price.
+- İz (trail) ürünlerinin **adlarını** da yeni adlarla değiştir (aşağıda ayrı tablo).
+- Ürün kimlikleri (ID) DEĞİŞMEDİ; sadece fiyat/ad.
+- Kural: hiçbir ürün 15 R$'nin altında değil (iz/aura 9'dan başlar); tüm fiyatlar küçülürken sıralama korundu (pahalı ürün her zaman daha güçlü).
 
-| Ürün | Eski (ilk açılan) | Yeni |
+## Game pass'ler (6)
+| Pass | Eski | YENİ |
 |---|---|---|
-| Pet Space | 49 | 79 |
-| +1K Power | 15 | 25 |
-| +10K Power | 49 | 75 |
-| Win Pack | 25 | 59 |
-| Mega Win Pack | 99 | 149 |
-| Luck Potion (15 min) | 29 | 49 |
-| Luck Potion (60 min) | 89 | 129 |
-| Muscle Potion (15 min) | 19 | 39 |
-| Muscle Potion (60 min) | 59 | 99 |
-| Wins Potion (15 min) | 19 | 39 |
-| Wins Potion (60 min) | 59 | 99 |
-| Rainbow Potion (15 min) | 49 | 79 |
-| Brick Dust (eski ad: Red Trail) | 9 | 15 |
-| Sweat Drops (eski ad: Orange Trail) | 19 | 20 |
-| Protein Powder (eski ad: Yellow Trail) | 29 | 25 |
-| Brick Confetti (eski ad: Green Trail) | 39 | 30 |
-| Pet Paws (eski ad: Cyan Trail) | 59 | 35 |
-| Win Trophies (eski ad: Blue Trail) | 79 | 40 |
-| Muscle Power (eski ad: Purple Trail) | 99 | 50 |
-| Kick Sparks (eski ad: Pink Trail) | 129 | 60 |
-| Rainbow Legend (eski ad: Rainbow Trail) | 149 | 75 |
-| Red Aura | 19 | 15 |
-| Green Aura | 39 | 20 |
-| Blue Aura | 59 | 25 |
-| Purple Aura | 89 | 40 |
-| Gold Aura | 119 | 85 |
-| Rainbow Aura | 149 | 145 |
-| Rebirth Skip | 99 | 119 |
-| Double Offline Earnings | 19 | 29 |
-| VIP | 99 | 149 |
-| Auto Click | 99 | 149 |
+| Auto Click | 149 | **49** |
+| Egg Auto Open | 199 | **59** |
+| Egg Multi Open | 249 | **99** |
+| VIP (2x Win pedi) | 149 | **99** |
+| Coach Prism (x250 ped) | 199 | **129** |
+| Coach Shadow (x999 ped) | 299 | **199** |
 
-Toplam 31 ürün. Yumurta pass'leri (eggauto, eggmulti) yeni ürünlerdir: ROBUX_URUNLERI.md'deki 34-35. satır.
+## Developer Product: paketler, iksirler, diğerleri (18)
+| Ürün | Eski | YENİ |
+|---|---|---|
+| Pet Space (+25 slot) | 79 | **49** |
+| +1K Power | 25 | **15** |
+| +10K Power | 75 | **39** |
+| +100K Power | 149 | **99** |
+| Win Pack | 59 | **35** |
+| Mega Win Pack | 149 | **99** |
+| Luck Potion 15 dk | 49 | **29** |
+| Luck Potion 60 dk | 129 | **75** |
+| Muscle Potion 15 dk | 39 | **25** |
+| Muscle Potion 60 dk | 99 | **59** |
+| Wins Potion 15 dk | 39 | **25** |
+| Wins Potion 60 dk | 99 | **59** |
+| Rainbow Potion 15 dk | 79 | **49** |
+| Rainbow Potion 60 dk | 149 | **99** |
+| Rebirth SKIP | 119 | **59** |
+| Offline DOUBLE IT | 29 | **19** |
+| Gifts Unlock Next | 49 | **29** |
+| Gifts Unlock All | 149 | **79** |
+
+## Developer Product: iz (trail) ürünleri (9): AD + FİYAT
+| Kimlik | Yeni ad | Eski ad | Eski fiyat | YENİ fiyat |
+|---|---|---|---|---|
+| trail:red | Brick Dust | Red Trail | 15 | **9** |
+| trail:orange | Sweat Drops | Orange Trail | 20 | **12** |
+| trail:yellow | Protein Powder | Yellow Trail | 25 | **15** |
+| trail:green | Brick Confetti | Green Trail | 30 | **19** |
+| trail:cyan | Pet Paws | Cyan Trail | 35 | **22** |
+| trail:blue | Win Trophies | Blue Trail | 45 (ya da 40) | **25** |
+| trail:purple | Muscle Power | Purple Trail | 60 (ya da 50) | **29** |
+| trail:pink | Kick Sparks | Pink Trail | 75 (ya da 60) | **35** |
+| trail:rainbow | Rainbow Legend | Rainbow Trail | 110 (ya da 75) | **45** |
+
+## Developer Product: aura ürünleri (6)
+| Kimlik | Ad | Eski | YENİ |
+|---|---|---|---|
+| aura:red | Red Aura | 15 | **9** |
+| aura:green | Green Aura | 20 | **12** |
+| aura:blue | Blue Aura | 25 | **15** |
+| aura:purple | Purple Aura | 40 | **25** |
+| aura:gold | Gold Aura | 85 | **49** |
+| aura:rainbow | Rainbow Aura | 145 | **85** |
+
+Toplam: 6 pass + 18 + 9 + 6 = 39 ürün. En çok satan 6 pass'i ve Win/iksir paketlerini önce güncelle, iz/aura'lar sonra.
+
+## Neden bu fiyatlar
+- Rakipler 19-79 R$ bandında yardımcı pass satıyor; bizimki 149-249'du (research/03, 01).
+- Giriş fiyatı (en ucuz ürün) 9-15 R$: ilk satın almanın bariyeri düşük.
+- Kurallar korunuyor (pricetest): Win paketiyle alınabilecek iz/aura sepeti paket fiyatının 1,3 katını geçmez (paket yoldan almak doğrudan Robux'tan çok ucuz olmasın), 60 dk iksir dakikası ucuz, Rainbow üç tekil iksirden ucuz, Gifts "Unlock All" iksirlerin toplamından ucuz değil.
+- Gelir kaybı küçük nüfusta önemsiz; amaç ilk satın almayı ve harcama günlerini (Roblox'un öneri sinyali) artırmak.

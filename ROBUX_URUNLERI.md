@@ -1,3 +1,5 @@
+> **FİYATLAR GÜNCEL DEĞİL (2026-10-14):** fiyat sütunları eskidir; güncel Robux fiyatları ve Creator Hub talimatı `ROBUX_FIYAT_DEGISIKLIGI.md` içindedir.
+
 # Robux ürünleri: Creator Hub'da açılacaklar
 
 Her satır için Creator Hub'da (create.roblox.com) oyunun > **Para Kazanma (Monetization) > Geliştirici Ürünleri (Developer Products)** sayfasında bir ürün aç (VIP için **Geçişler / Passes**).
