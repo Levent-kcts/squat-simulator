@@ -54,7 +54,7 @@ function TrainingClient.init()
 		gui.Adornee = pad
 		gui.Parent = pad
 		if okScaler then
-			LabelScaler.register(gui, 230 * pixelScale, 104 * pixelScale, 24)
+			LabelScaler.register(gui, 230 * pixelScale, 104 * pixelScale, 24, 0.7) -- yakındaki koç etiketi en çok x0.7 (üst üste binmesin)
 		end
 
 		local name = ShelfClient.makeLabel(gui, 0, 0.27, Color3.new(1, 1, 1))

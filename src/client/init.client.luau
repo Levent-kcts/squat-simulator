@@ -46,6 +46,18 @@ local cfg = Config.Wall
 
 player.CameraMaxZoomDistance = Config.CameraMaxZoom
 player.CameraMinZoomDistance = Config.CameraMinZoom or 10 -- level 52+ karakter çok büyük: kamera gövdenin içine girmesin (QA 2026-10-15)
+-- Karakter büyüdükçe (BodyHeightScale) en yakın kamera mesafesi de artar: gövdenin içine girip ekranı gri bir gölgeyle kaplamasın
+task.spawn(function()
+	while true do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local heightScale = humanoid and humanoid:FindFirstChild("BodyHeightScale")
+		if heightScale and type(heightScale.Value) == "number" then
+			player.CameraMinZoomDistance = math.clamp(6 + 6 * heightScale.Value, Config.CameraMinZoom or 10, math.max(Config.CameraMaxZoom - 5, 10))
+		end
+		task.wait(1)
+	end
+end)
 
 local Theme = UIStyle.Theme
 local C = Theme.colors
@@ -970,7 +982,7 @@ end)
 -- Bildirim (satın alma sonucu, hata): küçük ve ÜSTTE (hedef şeridinin altı). Eskiden ekranın ortasında (0.62) ve 28 punto idi, karakteri ve bacak kası yazısını kapatıyordu
 local toast = makeText(screenGui, {
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.fromScale(0.5, 0.2),
+	Position = UDim2.fromScale(0.5, 0.14), -- koç etiketleriyle çakışmasın (QA 2026-10-15)
 	Size = UDim2.fromOffset(520, 32),
 	TextColor3 = Color3.new(1, 1, 1),
 	Visible = false,

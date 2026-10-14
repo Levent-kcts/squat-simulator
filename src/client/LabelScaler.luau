@@ -12,9 +12,9 @@ local INTERVAL = 0.1
 local entries = {} -- { gui, width, height, ref }
 local running = false
 
--- gui: BillboardGui (Adornee dolu), width/height: tam piksel boyutu, ref: isteğe bağlı tam boyut mesafesi
-function LabelScaler.register(gui, width, height, ref)
-	table.insert(entries, { gui = gui, width = width, height = height, ref = ref or REF_DISTANCE })
+-- gui: BillboardGui (Adornee dolu), width/height: tam piksel boyutu, ref: isteğe bağlı tam boyut mesafesi, maxScale: yakındaki üst sınır (varsayılan 1)
+function LabelScaler.register(gui, width, height, ref, maxScale)
+	table.insert(entries, { gui = gui, width = width, height = height, ref = ref or REF_DISTANCE, maxScale = maxScale or 1 })
 	LabelScaler.start()
 	return gui
 end
@@ -35,7 +35,7 @@ local function update()
 			if adornee then
 				local target = adornee.Position + gui.StudsOffsetWorldSpace
 				local distance = (target - origin).Magnitude
-				local scale = math.clamp(entry.ref / math.max(distance, 1), MIN_SCALE, 1)
+				local scale = math.clamp(entry.ref / math.max(distance, 1), MIN_SCALE, entry.maxScale)
 				gui.Size = UDim2.fromOffset(entry.width * scale, entry.height * scale)
 			end
 		end
