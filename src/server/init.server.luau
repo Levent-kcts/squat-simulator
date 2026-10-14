@@ -55,6 +55,19 @@ do
 	end
 end
 
+-- Çapraz sunucu duyuru akışı (nadir pet, rebirth eşikleri) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
+do
+	local okFeedModule, GlobalFeed = pcall(require, script.GlobalFeed)
+	if okFeedModule then
+		local started, err = pcall(GlobalFeed.init)
+		if not started then
+			warn(`[Server] GlobalFeed init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load GlobalFeed: {GlobalFeed}`)
+	end
+end
+
 -- Arkadaş bonusu isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFriends, FriendBonus = pcall(require, script.FriendBonus)

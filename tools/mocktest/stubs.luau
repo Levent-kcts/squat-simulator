@@ -194,6 +194,8 @@ local function encode(x)
 end
 -- Roblox PolicyService taklidi: M.policy.restricted = true ise 'ArePaidRandomItemsRestricted' döner (test için)
 M.policy = { restricted = false }
+M.published = {}
+M.subscribers = {}
 local services = {
 	PolicyService = {
 		GetPolicyInfoForPlayerAsync = function()
@@ -228,6 +230,16 @@ local services = {
 		end,
 		GetPlayerFromCharacter = function()
 			return nil
+		end,
+	},
+	-- MessagingService taklidi: PublishAsync yayınlananları M.published'a yazar, SubscribeAsync dinleyiciyi M.subscribers[konu]'ya koyar (test dinleyiciyi elle çağırabilir)
+	MessagingService = {
+		PublishAsync = function(_, topic, data)
+			table.insert(M.published, { topic = topic, data = data })
+		end,
+		SubscribeAsync = function(_, topic, handler)
+			M.subscribers[topic] = handler
+			return { Disconnect = function() end }
 		end,
 	},
 	HttpService = {

@@ -771,6 +771,7 @@ if JuiceModule and JuiceModule.setLevelPulse then
 	JuiceModule.setLevelPulse(pulseLevelBar) -- level atlayınca alttaki çubuk nabız atar (yazı yok)
 end
 safeInit("OverheadTags", loadOptional("OverheadTags"))
+safeInit("FeedHud", loadOptional("FeedHud"), screenGui) -- çapraz sunucu duyuru akışı (nadir pet, rebirth); sağda küçük şeritler
 safeInit("BoostHud", loadOptional("BoostHud"), screenGui)
 local eggHooks = {} -- showToast ve openShop aşağıda (bildirim ve Shop kurulunca) doldurulur: yumurta panelindeki 'Get Wins' yönlendirmesi ve ücretli düğmelerin 'coming soon' mesajı
 EggShop.init(screenGui, eggHooks)

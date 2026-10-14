@@ -278,6 +278,7 @@ return {
 		{ key = "ShowGain", name = "Gain numbers", detail = "The +N that pops up on your screen" },
 		{ key = "CameraShake", name = "Screen shake", detail = "Shake when walls break" },
 		{ key = "NameTags", name = "Name tags", detail = "Power and name above players" },
+		{ key = "FeedOn", name = "Server feed", detail = "Rare pets and rebirths from all servers (right side)" },
 		{ key = "GuideOn", name = "Guide", detail = "Tips, arrows and the tour for new players (until your first Rebirth)" },
 	},
 

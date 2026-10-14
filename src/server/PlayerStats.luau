@@ -12,6 +12,7 @@ local Progression = require(Shared:WaitForChild("Progression"))
 local Layout = require(Shared:WaitForChild("Layout"))
 local Format = require(Shared:WaitForChild("Format"))
 local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
+local okFeed, GlobalFeed = pcall(require, script.Parent.GlobalFeed) -- çapraz sunucu duyuru akışı: yüklenemezse duyuru atlanır, oyun etkilenmez
 
 local PlayerStats = {}
 
@@ -517,6 +518,14 @@ local function loadData(player)
 		end
 	end
 end
+
+-- Duyuru akışı (server/GlobalFeed): nadir pet ve rebirth eşikleri tüm sunuculara gider; hata verirse sessizce atlanır
+local function announce(player, kind, text, tier)
+	if okFeed then
+		pcall(GlobalFeed.announce, player, kind, text, tier)
+	end
+end
+local FEED_REBIRTHS = { 1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100 } -- bu rebirth sayılarına ulaşınca duyurulur
 
 -- Oyuncuya kısa bildirim (istemci 'RewardToast' özniteliği değişince gösterir: '<sayaç>|<mesaj>'; sayaç aynı mesaj art arda gelse de değişim olsun diye)
 local function sendToast(player, profile, message)
@@ -1337,6 +1346,10 @@ function PlayerStats.rebirth(player, force)
 	PlayerStats.questEvent(player, "rebirth", 1)
 	refresh(player)
 	requestSave(player)
+	if table.find(FEED_REBIRTHS, rebirthStat.Value) then
+		local tier = if rebirthStat.Value >= 20 then "Mythic" elseif rebirthStat.Value >= 10 then "Legendary" elseif rebirthStat.Value >= 5 then "Epic" else "Rare"
+		announce(player, "rebirth", `reached Rebirth {rebirthStat.Value}!`, tier)
+	end
 	return true, `Rebirth {rebirthStat.Value}! Permanent x{Progression.rebirthMultiplier(rebirthStat.Value)} multiplier.`
 end
 
@@ -1915,6 +1928,19 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	PlayerStats.questEvent(player, "hatch", #kept + #deleted)
 	refresh(player)
 	requestSave(player)
+
+	-- DUYURU: kalan petlerin en nadiri Legendary ya da Mythic ise tüm sunuculara küçük bir duyuru gider (silinenler duyurulmaz)
+	local bestPet, bestRank = nil, 0
+	for _, pet in kept do
+		local rank = table.find({ "Common", "Rare", "Epic", "Legendary", "Mythic" }, Catalog.rarityOf(pet).name) or 0
+		if rank >= 4 and rank > bestRank then
+			bestPet, bestRank = pet, rank
+		end
+	end
+	if bestPet then
+		local rarityName = Catalog.rarityOf(bestPet).name
+		announce(player, "pet", `hatched a {string.upper(rarityName)} {bestPet.name}!`, rarityName)
+	end
 
 	if #kept == 1 and #deleted == 0 then
 		local pet = kept[1]
