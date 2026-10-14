@@ -334,6 +334,8 @@ local settingsButton = makeGridButton(3, "⚙️", "Settings", { Color3.fromRGB(
 local backpackButton = makeGridButton(4, "🎒", "Backpack", { Color3.fromRGB(70, 230, 235), Color3.fromRGB(60, 110, 255) }, icons.Backpack)
 local petsButton = makeGridButton(5, "🐾", "Pets", { Color3.fromRGB(255, 215, 70), Color3.fromRGB(190, 120, 30) }, icons.Pets)
 local giftsButton = makeGridButton(6, "🎁", "Gifts", { Color3.fromRGB(110, 235, 100), Color3.fromRGB(40, 150, 75) }, icons.Gifts)
+-- GÜNLÜK GİRİŞ ÖDÜLÜ düğmesi (2026-10-14: sahibi onayladı; client/LoginPanel): 7. sol buton (sütun 0, 4. satır); ikon yüklenmediyse emoji. Bugünün ödülü hazırken köşesinde kırmızı '!' rozeti
+local dailyButton = makeGridButton(7, "📅", "Daily", { Color3.fromRGB(255, 190, 60), Color3.fromRGB(235, 110, 30) }, icons.Daily)
 
 -- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
 local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
@@ -356,6 +358,31 @@ local giftsBadgeText = makeText(giftsBadge, {
 	TextColor3 = Color3.new(1, 1, 1),
 	ZIndex = 9,
 }, 16, 1)
+
+local loginBadge = create("Frame", {
+	Name = "LoginBadge",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.new(1, -4, 0, 4),
+	Size = UDim2.fromOffset(28, 28),
+	BackgroundColor3 = Color3.fromRGB(235, 40, 50),
+	Visible = false,
+	ZIndex = 8,
+}, dailyButton)
+create("UICorner", { CornerRadius = UDim.new(1, 0) }, loginBadge)
+create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, loginBadge)
+makeText(loginBadge, {
+	Position = UDim2.fromScale(0.1, 0.1),
+	Size = UDim2.fromScale(0.8, 0.8),
+	Text = "!",
+	TextColor3 = Color3.new(1, 1, 1),
+	ZIndex = 9,
+}, 16, 1)
+local function refreshLoginBadge()
+	loginBadge.Visible = player:GetAttribute("DataLoaded") == true and player:GetAttribute("LoginReady") == true
+end
+player:GetAttributeChangedSignal("LoginReady"):Connect(refreshLoginBadge)
+player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshLoginBadge)
+refreshLoginBadge()
 
 -- Backpack: Trails/Auras sekmeleri, açık olan panelin SOL tarafında dikey iki buton olarak durur.
 local backpackMenu = create("Frame", {
@@ -1064,6 +1091,31 @@ end
 local toggleIndex = loadPanel("IndexPanel", screenGui)
 local toggleStats = loadPanel("StatsPanel", screenGui)
 local toggleQuests = loadPanel("QuestPanel", screenGui, showToast)
+local toggleLogin = loadPanel("LoginPanel", screenGui, showToast) -- günlük giriş ödülü penceresi (sol menüdeki Daily düğmesi)
+dailyButton.MouseButton1Click:Connect(function()
+	if toggleLogin then
+		toggleLogin()
+	else
+		showToast(false, "Daily rewards are coming soon!")
+	end
+end)
+-- Bugünün giriş ödülü hazırsa (eğitim bitmiş oyuncuya) oturumda BİR KEZ küçük bir hatırlatma; ekranı kapatmaz
+do
+	local reminded = false
+	local function remindLogin()
+		if reminded or player:GetAttribute("DataLoaded") ~= true or player:GetAttribute("TutorialDone") ~= true or player:GetAttribute("LoginReady") ~= true then
+			return
+		end
+		reminded = true
+		task.delay(6, function()
+			showToast(true, "Daily reward ready! Tap Daily (left menu).")
+		end)
+	end
+	player:GetAttributeChangedSignal("DataLoaded"):Connect(remindLogin)
+	player:GetAttributeChangedSignal("TutorialDone"):Connect(remindLogin)
+	player:GetAttributeChangedSignal("LoginReady"):Connect(remindLogin)
+	remindLogin()
+end
 local wheelControl = loadPanel("WheelController", screenGui, showToast) -- lobideki günlük çark (hareket, E ile açılan arayüz, tabela yazısı)
 -- TEST (Config.Wheel.Debug): çark başlayamadıysa nedeni ekranda KALICI bir kutuda gösterilir (kısa bildirim başka bildirimle ezilebiliyor); çark çalışınca Debug = false yapılır
 if Config.Wheel.Debug and not wheelControl then

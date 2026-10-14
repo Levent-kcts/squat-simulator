@@ -264,6 +264,21 @@ return {
 	},
 	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
 
+	-- GÜNLÜK GİRİŞ ÖDÜLÜ (2026-10-14: sahibi eskiden reddetmişti, 'onay veriyorum' dedi; sol menüdeki 'Daily' düğmesi, client/LoginPanel, server: PlayerStats.claimLogin): 7 günlük döngü, günde bir ödül (UTC günü).
+	-- NAZİK TASARIM: seri KOPMAZ (gün kaçırılırsa ceza yok, ödül sıradaki günden devam eder; 'kaçırırsan kaybedersin' baskısı yok), 7. gün büyük ödül, sonra döngü başa sarar. Ödüller Robux'suz (Win, kas, iksir).
+	-- Her giriş { wins, muscleClicks, potions = { { kind, minutes } }, big }: Codes ile aynı alanlar.
+	Login = {
+		Rewards = {
+			{ potions = { { kind = "boostMuscle", minutes = 15 } } },
+			{ wins = 50 },
+			{ potions = { { kind = "boostLuck", minutes = 15 } } },
+			{ muscleClicks = 3000 },
+			{ potions = { { kind = "boostRainbow", minutes = 15 } } },
+			{ wins = 150 },
+			{ wins = 300, potions = { { kind = "boostRainbow", minutes = 60 } }, big = true },
+		},
+	},
+
 	-- FRIEND REFERRAL ÖDÜLÜ (2026-10-14 büyüme planı sprint 1.2; server/Referrals): davet bağlantısıyla gelen YENİ oyuncu RequiredSeconds kadar oynayınca ikisine de iksir (Robux/Win DEĞİL) verilir; davetli başına tek seferlik,
 	-- davetçi başına en çok MaxPerInviter ödül (kötüye kullanım sınırı). Creator Hub > Engagement > Referral Rewards'ta banner açmak sahibine ait (kod banner olmadan da çalışır).
 	Referral = {

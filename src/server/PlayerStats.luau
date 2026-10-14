@@ -184,6 +184,13 @@ local function rewardText(kind, amount)
 	return if kind == "muscle" then `+{Format.compact(amount)} Leg Muscle` else `+{Format.compact(amount)} Wins`
 end
 
+-- GÜNLÜK GİRİŞ ÖDÜLÜ: durum öznitelikleri (istemci client/LoginPanel okur): LoginNext (sıradaki gün 1-7), LoginReady (bugün alınabilir mi), LoginTotal
+local function publishLogin(player, profile)
+	player:SetAttribute("LoginNext", profile.login.next)
+	player:SetAttribute("LoginReady", profile.login.last ~= currentQuestDay())
+	player:SetAttribute("LoginTotal", profile.login.total)
+end
+
 -- Görev durumunu istemciye JSON öznitelik olarak yazar ('QuestData'; client/QuestPanel okur)
 local function publishQuests(player)
 	local profile = profiles[player]
@@ -231,7 +238,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -445,6 +452,18 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true })
+	-- Günlük giriş ödülü durumu: sıradaki gün (1-7), son alınan UTC günü, toplam alınan
+	if type(raw.Login) == "table" then
+		if type(raw.Login.next) == "number" then
+			data.Login.next = math.clamp(math.floor(raw.Login.next), 1, #Config.Login.Rewards)
+		end
+		if type(raw.Login.last) == "number" then
+			data.Login.last = math.floor(raw.Login.last)
+		end
+		if type(raw.Login.total) == "number" then
+			data.Login.total = math.max(0, math.floor(raw.Login.total))
+		end
+	end
 	-- Kullanılan promosyon kodları (Config.Codes; kod başına bir kez). Listede olmayan eski kodlar da korunur (sonradan kaldırılsa bile yeniden kullanılamasın)
 	if type(raw.Codes) == "table" then
 		for _, code in raw.Codes do
@@ -751,6 +770,7 @@ local function refresh(player)
 	player:SetAttribute("TutorialDone", profile.tutorialDone)
 	player:SetAttribute("TutorialClicks", profile.tutorialClicks)
 	publishQuests(player)
+	publishLogin(player, profile)
 	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
@@ -837,6 +857,7 @@ local function save(player, mode)
 		LifetimeMuscle = profile.lifetimeMuscle,
 		Referral = profile.referral,
 		Codes = setToList(profile.codes),
+		Login = profile.login,
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
 		Taps = profile.taps,
@@ -1069,6 +1090,7 @@ local function setup(player)
 
 	local profile = {
 		taps = 0,
+		login = { next = 1, last = -1, total = 0 }, -- günlük giriş ödülü durumu (kayıtlı)
 		codes = {}, -- kullanılan promosyon kodları { KOD = true } (kayıtlı)
 		referral = { by = 0, paid = false, secs = 0 }, -- Friend Referral durumu (kayıtlı)
 		lifetimeMuscle = 0, -- bugüne kadar kazanılan TOPLAM bacak kası (rebirth sıfırlamaz; sıralama panosu bunu okur; kayıtlı)
@@ -1184,6 +1206,7 @@ local function setup(player)
 	profile.lifetimeMuscle = data.LifetimeMuscle
 	profile.referral = data.Referral
 	profile.codes = data.Codes
+	profile.login = data.Login
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
 	-- sinyalden ÖNCE yapıldığı için sayılmaz.
 	local lastMuscle = muscle.Value
@@ -1243,6 +1266,9 @@ function PlayerStats.init()
 			for player, profile in profiles do
 				if profile.loaded and profile.quests.day ~= currentQuestDay() then
 					publishQuests(player)
+				end
+				if profile.loaded and player:GetAttribute("LoginReady") ~= (profile.login.last ~= currentQuestDay()) then
+					publishLogin(player, profile)
 				end
 			end
 		end
@@ -1307,6 +1333,49 @@ function PlayerStats.getMuscle(player)
 end
 
 -- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
+-- Ödül tanımını ({ wins, muscleClicks, potions }) oyuncuya verir (promosyon kodu ve günlük giriş ortak). Dönüş: verilenlerin kısa listesi (yazı)
+local function grantRewardDef(player, profile, def)
+	local wins = getStat(player, Config.StatWins)
+	local muscle = getStat(player, Config.StatLegMuscle)
+	local parts = {}
+	if def.wins then
+		wins.Value += def.wins
+		table.insert(parts, `+{Format.compact(def.wins)} Wins`)
+	end
+	if def.muscleClicks then
+		local amount = math.max(100, math.floor(profile.gain * def.muscleClicks))
+		muscle.Value += amount
+		syncLevel(player)
+		table.insert(parts, `+{Format.compact(amount)} Leg Muscle`)
+	end
+	for _, potion in def.potions or {} do
+		giveItem(player, profile, potion.kind, potion.minutes)
+		table.insert(parts, `{Catalog.PotionByKind[potion.kind].name} ({potion.minutes} min)`)
+	end
+	return table.concat(parts, ", ")
+end
+
+function PlayerStats.claimLogin(player)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false, "Loading your data, please wait."
+	end
+	local today = currentQuestDay()
+	if profile.login.last == today then
+		return false, "You already claimed today's reward. Come back tomorrow!"
+	end
+	local day = profile.login.next
+	local def = Config.Login.Rewards[day]
+	profile.login.last = today
+	profile.login.next = if day >= #Config.Login.Rewards then 1 else day + 1 -- seri kopmaz: kaçırılan günler cezasız, sıradaki gün devam eder
+	profile.login.total += 1
+	local text = grantRewardDef(player, profile, def)
+	publishLogin(player, profile)
+	refresh(player)
+	requestSave(player)
+	return true, `Day {day} reward: {text}!{if def.potions then " Potions are in Shop > Potions." else ""}`
+end
+
 -- PROMOSYON KODU (Config.Codes): Settings'teki 'Redeem code' satırı. Büyük/küçük harf ve boşluk duyarsız, hesap başına kod başına BİR kez, yanlış deneme sınırlı. Dönüş: başarılı mı, mesaj
 local codeBuckets = setmetatable({}, { __mode = "k" }) -- [oyuncu] = { tokens, last }: dakikada Config.CodeAttempts.PerMinute deneme
 function PlayerStats.redeemCode(player, raw)
@@ -1351,24 +1420,10 @@ function PlayerStats.redeemCode(player, raw)
 		return false, "You already used this code."
 	end
 	profile.codes[def.code] = true
-	local parts = {}
-	if def.wins then
-		wins.Value += def.wins
-		table.insert(parts, `+{Format.compact(def.wins)} Wins`)
-	end
-	if def.muscleClicks then
-		local amount = math.max(100, math.floor(profile.gain * def.muscleClicks))
-		muscle.Value += amount
-		syncLevel(player)
-		table.insert(parts, `+{Format.compact(amount)} Leg Muscle`)
-	end
-	for _, potion in def.potions or {} do
-		giveItem(player, profile, potion.kind, potion.minutes)
-		table.insert(parts, `{Catalog.PotionByKind[potion.kind].name} ({potion.minutes} min)`)
-	end
+	local text = grantRewardDef(player, profile, def)
 	refresh(player)
 	requestSave(player)
-	return true, `Code {def.code} redeemed: {table.concat(parts, ", ")}! Potions are in Shop > Potions.`
+	return true, `Code {def.code} redeemed: {text}! Potions are in Shop > Potions.`
 end
 
 -- Oyuncunun verisi yüklenince fn(player) çağrılır (başka sunucu modülleri bağlanır; hata verirse oyun etkilenmez)
