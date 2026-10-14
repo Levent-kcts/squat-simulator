@@ -35,8 +35,6 @@ local ENTER_GAP = 0.5
 local EXIT_GAP = 3
 local AUTO_INTERVAL = 1.2 -- otomatik açma aralığı (saniye)
 local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel karakter, ShopPanel'deki gibi)
-local NORMAL = Color3.fromRGB(30, 190, 220)
-local WINS_ORANGE = Color3.fromRGB(255, 150, 40) -- Win yetmeyince Open düğmesi
 
 -- (Panel kartlarının rengi petin NADİRLİĞİ'nden gelir: Catalog.rarityOf = Config.Rarities; yumurta açılışındaki kart ve Pets menüsüyle aynı renk)
 
@@ -49,7 +47,7 @@ local function create(className, props, parent)
 	return instance
 end
 
--- Kalın siyah kenarlı yazı
+-- Kalın siyah kenarlı yazı: SADECE dünyadaki yumurta etiketleri (BillboardGui, marka anı); panel UIStyle ile yapılır
 local function makeText(parent, props, strokeThickness)
 	props.BackgroundTransparency = 1
 	props.Font = Enum.Font.FredokaOne
@@ -153,99 +151,108 @@ function EggShop.init(screenGui, hooks)
 	refreshPads()
 
 	-- ---------- Yaklaşınca açılan panel ----------
-	local panel = create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 68),
-		Size = UDim2.fromOffset(580, 338), -- 5 pet kartı yan yana sığsın (+ altta 'çarpı' ipucu satırı)
-		BackgroundColor3 = Color3.fromRGB(45, 48, 62),
-		BackgroundTransparency = 0.05,
-		Active = true, -- panele tıklamak hareket başlatmasın
-		Visible = false,
-	}, screenGui)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, panel)
-	UIStyle.soften(panel, { radius = 14, strength = 0.18, shine = false })
+	-- Modal olmayan orta boy panel (UIStyle.panel: koyu zemin, ince çerçeve, yumuşak gölge). Gölge kardeşi panelle birlikte gizlenir/gösterilir.
+	local Theme = UIStyle.Theme
+	local panel, panelShadow = UIStyle.panel(screenGui, {
+		name = "EggPanel",
+		width = 600,
+		size = UDim2.fromOffset(600, 336),
+		accent = "primary",
+		anchor = Vector2.new(0.5, 0),
+		position = UDim2.new(0.5, 0, 0, 68), -- üst çubuğun altı
+	})
+	panel.Visible = false -- Active = true (UIStyle.panel): panele tıklamak hareket başlatmasın
+	if panelShadow then
+		panelShadow.Visible = false
+	end
+	local function setPanelVisible(visible)
+		panel.Visible = visible
+		if panelShadow then
+			panelShadow.Visible = visible
+		end
+	end
 
-	local header = create("Frame", {
-		Size = UDim2.new(1, 0, 0, 50),
-		BackgroundColor3 = Color3.fromRGB(30, 190, 220),
-	}, panel)
-	UIStyle.soften(header, { radius = 12, strength = 0.25 })
-	local eggName = makeText(header, {
-		Position = UDim2.fromOffset(14, 6),
-		Size = UDim2.new(0.55, 0, 1, -12),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextColor3 = Color3.new(1, 1, 1),
-	}, 2)
-	local eggPrice = makeText(header, {
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -14, 0, 4),
-		Size = UDim2.new(0.38, 0, 1, -8),
-		TextXAlignment = Enum.TextXAlignment.Right,
-		TextColor3 = Color3.new(1, 1, 1),
-	}, 3)
+	-- Başlık: yumurta adı + fiyat çipi. Panel uzaklaşınca kendiliğinden kapandığı için X gizli.
+	local header = UIStyle.header(panel, { title = "Egg", emoji = "🥚", accent = "primary", chip = "0 Wins" })
+	if header.close then
+		header.close.Visible = false
+	end
+	local eggName = header.titleLabel
+	local eggPrice = header.chip and header.chip:FindFirstChild("Text")
+	if header.chip then
+		header.chip.Position = UDim2.new(1, -16, 0.5, 0)
+	end
+	if not eggPrice then -- UIStyle yedek (düz) moduna düşerse çökmesin
+		eggPrice = Instance.new("TextLabel")
+	end
 
-	-- ÇARPI İPUCU (playtest: 'egg açınca pet anında silindi, kartlara tıklayınca çarpı konduğu hiç belli değildi'): kartlara tıklamak o peti 'yumurtadan çıkınca anında sil' diye işaretler
-	local crossHint = makeText(panel, {
-		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 220),
-		Size = UDim2.new(0.94, 0, 0, 22),
-		Text = "Tap a pet to mark it with an X: marked pets are deleted the moment they hatch!",
-		TextColor3 = Color3.fromRGB(255, 214, 120),
-	}, 2)
-	crossHint.TextWrapped = false
-
+	-- Pet kartları: 5 eşit sütun (genişlik ölçekli, dar ekranda taşmaz)
 	local cards = create("Frame", {
-		Position = UDim2.fromOffset(0, 50),
-		Size = UDim2.new(1, 0, 0, 170),
+		Name = "Cards",
+		Position = UDim2.fromOffset(12, 70),
+		Size = UDim2.new(1, -24, 0, 154),
 		BackgroundTransparency = 1,
 	}, panel)
-	create("UIGridLayout", {
-		CellSize = UDim2.fromOffset(104, 150),
-		CellPadding = UDim2.fromOffset(8, 10),
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		VerticalAlignment = Enum.VerticalAlignment.Center,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-	}, cards)
 
-	-- Panelin altındaki tuş kutuları
+	-- ÇARPI İPUCU: kartlara tıklamak o peti 'yumurtadan çıkınca anında sil' diye işaretler
+	local crossHint = UIStyle.label(panel, {
+		name = "CrossHint",
+		text = "Tap a pet to auto-delete it",
+		role = "caption",
+		align = "center",
+		color = Theme.colors.primary.base,
+		props = { Position = UDim2.fromOffset(12, 230), Size = UDim2.new(1, -24, 0, 18) },
+	})
+
+	-- Altta üç eşit düğme: E Open, R Auto, T Multi xN (tuş harfi küçük klavye çipi)
 	local keys = create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 252),
-		Size = UDim2.fromOffset(250, 70), -- E / R / T
+		Name = "Keys",
+		Position = UDim2.fromOffset(12, 260),
+		Size = UDim2.new(1, -24, 0, 56),
 		BackgroundTransparency = 1,
 	}, panel)
 	create("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
 		Padding = UDim.new(0, 12),
+		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, keys)
 
-	local function makeKey(order, key)
-		local button = create("TextButton", {
-			LayoutOrder = order,
-			Size = UDim2.fromOffset(70, 70),
-			BackgroundColor3 = Color3.fromRGB(30, 190, 220),
-			Text = "",
-			AutoButtonColor = true,
-		}, keys)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-		UIStyle.soften(button, { radius = 10, strength = 0.28 })
-		makeText(button, {
-			Position = UDim2.fromScale(0.1, 0.06),
-			Size = UDim2.fromScale(0.8, 0.5),
-			Text = key,
-			TextColor3 = Color3.new(1, 1, 1),
-		}, 2)
-		local caption = makeText(button, {
-			Position = UDim2.fromScale(0.04, 0.58),
-			Size = UDim2.fromScale(0.92, 0.34),
-			TextColor3 = Color3.new(1, 1, 1),
-		}, 2)
+	local function makeKey(order, key, kind)
+		local button = UIStyle.button(keys, {
+			name = `Key_{key}`,
+			text = "",
+			kind = kind,
+			size = "lg",
+			width = UDim2.new(1 / 3, -8, 0, 0),
+			layout = true,
+			props = { LayoutOrder = order },
+		})
+		-- Klavye çipi: düğmenin solunda küçük tuş
+		local cap = create("Frame", {
+			Name = "KeyCap",
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 10, 0.5, -2),
+			Size = UDim2.fromOffset(24, 24),
+			BackgroundColor3 = Theme.colors.bg,
+			BackgroundTransparency = 0.45,
+		}, button)
+		UIStyle.round(cap, 6)
+		UIStyle.label(cap, {
+			name = "KeyText",
+			text = key,
+			role = "bold",
+			size = 14,
+			align = "center",
+			color = Theme.colors.text,
+			props = { Size = UDim2.fromScale(1, 1) },
+		})
+		local caption = button:FindFirstChild("Label", true) or button
 		return button, caption
 	end
-	local openButton, openCaption = makeKey(1, "E")
-	local autoButton, autoCaption = makeKey(2, "R")
-	local multiButton, multiCaption = makeKey(3, "T")
+	local openButton, openCaption = makeKey(1, "E", "primary")
+	local autoButton, autoCaption = makeKey(2, "R", "secondary")
+	local multiButton, multiCaption = makeKey(3, "T", "secondary")
 	local autoPass = EggRules.autoPass()
 	local passAttributes = {}
 	for _, pass in Config.EggPasses do
@@ -299,13 +306,13 @@ function EggShop.init(screenGui, hooks)
 			multiIndex, cursor = 1, 1
 		end
 		autoCaption.Text = if autoOn then "Auto ON" else "Auto"
-		autoButton.BackgroundColor3 = if autoOn then Color3.fromRGB(60, 200, 90) else NORMAL
+		UIStyle.setButtonKind(autoButton, if autoOn then "success" else "secondary")
 		local count = Config.EggMultiOptions[multiIndex]
 		multiCaption.Text = `Multi x{count}`
 		-- Win yetmiyorsa Open 'Get Wins' olur (turuncu) ve Shop'un paket bölümünü açar
 		local short = currentEgg ~= nil and winValue.Value < currentEgg.price
 		openCaption.Text = if short then "Get Wins" else "Open"
-		openButton.BackgroundColor3 = if short then WINS_ORANGE else NORMAL
+		UIStyle.setButtonKind(openButton, if short then "warn" else "primary")
 		if currentEgg then
 			eggPrice.Text = if count > 1
 				then `{Format.number(currentEgg.price * count)} Wins`
@@ -337,7 +344,7 @@ function EggShop.init(screenGui, hooks)
 
 	local function showEgg(egg)
 		currentEgg = egg
-		panel.Visible = egg ~= nil
+		setPanelVisible(egg ~= nil)
 		if not egg then
 			autoOn = false
 			refreshButtons()
@@ -353,10 +360,11 @@ function EggShop.init(screenGui, hooks)
 			local cycle = Catalog.trainingCycle(egg)
 			nextPetId = cycle[opened % #cycle + 1]
 		end
-		eggName.Text = if training then `{egg.name} (Training)` else egg.name
+		eggName.Text = string.upper(if training then `{egg.name} (Training)` else egg.name)
+		UIStyle.setChipText(header.chip, `{Format.number(egg.price)} Wins`) -- (refreshButtons çarpana göre toplamı günceller)
 		crossHint.Text = if training
-			then `Training Egg: pets come in a fixed order. Every {Catalog.TrainingLength} opens repeat it.`
-			else "Tap a pet to mark it with an X: marked pets are deleted the moment they hatch!"
+			then `Training Egg: fixed pet order, repeats every {Catalog.TrainingLength} opens`
+			else "Tap a pet to auto-delete it"
 		for _, child in cards:GetChildren() do
 			if child:IsA("GuiObject") then
 				child:Destroy()
@@ -364,56 +372,93 @@ function EggShop.init(screenGui, hooks)
 		end
 		table.clear(crossMarks)
 		local luck = player:GetAttribute("EggLuck") or 1
-		for index, entry in sortedPool(egg, luck) do
+		local pool = sortedPool(egg, luck)
+		for index, entry in pool do
 			local pet = entry.pet
-			-- Kart bir butondur: üstüne gelince kararır, tıklayınca çarpı konur/kalkar (çarpılı pet çıkınca anında silinir)
+			local rarityColor = Catalog.rarityOf(pet).color
+			-- Kart bir butondur: üstüne gelince kararır, tıklayınca çarpı konur/kalkar (çarpılı pet çıkınca anında silinir).
+			-- Zemin kart rengi + nadirlik tonu, üstte nadirlik rengi şerit; kart başına tek ince çerçeve.
 			local card = create("TextButton", {
-				LayoutOrder = index,
+				Name = `PetCard_{pet.id}`,
+				Position = UDim2.new((index - 1) / #pool, 4, 0, 0),
+				Size = UDim2.new(1 / #pool, -8, 1, 0),
 				Text = "",
 				AutoButtonColor = false,
-				BackgroundColor3 = Catalog.rarityOf(pet).color,
+				BorderSizePixel = 0,
+				BackgroundColor3 = Theme.colors.card:Lerp(rarityColor, 0.14),
 			}, cards)
-			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
-			UIStyle.soften(card, { radius = 10, strength = 0.3 })
-			makeText(card, {
-				Position = UDim2.fromScale(0.05, 0.02),
-				Size = UDim2.fromScale(0.9, 0.2),
-				Text = Format.petBonus(pet.mult),
-				TextColor3 = Color3.new(1, 1, 1),
-			}, 2)
-			-- Pet simgesi: pet renginde sevimli yüz (UIStyle.petIcon)
+			UIStyle.round(card, Theme.radius.card)
+			create("UIStroke", {
+				Thickness = 1.5,
+				Color = rarityColor,
+				Transparency = 0.5,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			}, card)
+			local strip = create("Frame", {
+				Name = "RarityStrip",
+				Position = UDim2.fromOffset(14, 8),
+				Size = UDim2.new(1, -28, 0, 4),
+				BackgroundColor3 = rarityColor,
+				BorderSizePixel = 0,
+			}, card)
+			UIStyle.round(strip, 2)
+			UIStyle.label(card, {
+				name = "Bonus",
+				text = Format.petBonus(pet.mult),
+				role = "number",
+				size = 18,
+				align = "center",
+				color = rarityColor:Lerp(Color3.new(1, 1, 1), 0.35),
+				props = { Position = UDim2.fromOffset(0, 16), Size = UDim2.new(1, 0, 0, 22) },
+			})
+			-- Pet simgesi: pet renginde sevimli yüz / 3B (UIStyle.safePetIcon)
 			UIStyle.safePetIcon(card, pet, {
 				AnchorPoint = Vector2.new(0.5, 0),
-				Position = UDim2.fromScale(0.5, 0.235),
-				Size = UDim2.fromOffset(58, 58),
+				Position = UDim2.new(0.5, 0, 0, 42),
+				Size = UDim2.fromOffset(54, 54),
 			})
-			makeText(card, {
-				Position = UDim2.fromScale(0.04, 0.62),
-				Size = UDim2.fromScale(0.92, 0.14),
-				Text = pet.name,
-				TextColor3 = Color3.new(1, 1, 1),
-			}, 2)
+			UIStyle.label(card, {
+				name = "PetName",
+				text = pet.name,
+				role = "caption",
+				size = 13,
+				align = "center",
+				color = Theme.colors.text,
+				props = { Position = UDim2.fromOffset(0, 100), Size = UDim2.new(1, 0, 0, 16) },
+			})
 			if training and pet.id == nextPetId then
-				makeText(card, { Position = UDim2.fromScale(0.02, 0.0), Size = UDim2.fromScale(0.5, 0.17), Text = "NEXT", TextColor3 = Color3.fromRGB(255, 235, 90), ZIndex = 7 }, 2)
+				UIStyle.chip(card, {
+					name = "NextChip",
+					text = "NEXT",
+					accent = "primary",
+					props = { Position = UDim2.fromOffset(4, 38), ZIndex = 7 },
+				})
 			end
-			makeText(card, {
-				Position = UDim2.fromScale(0.04, 0.78),
-				Size = UDim2.fromScale(0.92, 0.2),
-				Text = if training then `{trainingCounts[pet.id] or 0}/{Catalog.TrainingLength}` else string.format("%.1f%%", entry.chance),
-				TextColor3 = if luck > 1 and entry.base < 20 then Color3.fromRGB(150, 255, 150) else Color3.new(1, 1, 1), -- Luck Potion artırdıysa nadir petlerin yüzdesi yeşil
-			}, 2)
+			UIStyle.label(card, {
+				name = "Chance",
+				text = if training then `{trainingCounts[pet.id] or 0}/{Catalog.TrainingLength}` else string.format("%.1f%%", entry.chance),
+				role = "bold",
+				size = 16,
+				align = "center",
+				-- Luck Potion artırdıysa nadir petlerin yüzdesi yeşil
+				color = if luck > 1 and entry.base < 20 then Theme.colors.success.base else Theme.colors.text,
+				props = { Position = UDim2.fromOffset(0, 124), Size = UDim2.new(1, 0, 0, 22) },
+			})
 
 			-- Gölge katmanı: üstüne gelince (veya çarpılıyken) kartı karartır
 			local shade = create("Frame", {
+				Name = "Shade",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundColor3 = Color3.new(0, 0, 0),
 				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
 				ZIndex = 5,
 			}, card)
-			UIStyle.round(shade, 10)
+			UIStyle.round(shade, Theme.radius.card)
 
 			-- Çarpı: iki çapraz kırmızı çubuk
 			local cross = create("Frame", {
+				Name = "Cross",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
 				Visible = false,
@@ -423,23 +468,32 @@ function EggShop.init(screenGui, hooks)
 				local bar = create("Frame", {
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),
-					Size = UDim2.fromOffset(16, 120),
+					Size = UDim2.fromOffset(10, 110),
 					Rotation = angle,
-					BackgroundColor3 = Color3.fromRGB(235, 45, 65),
+					BackgroundColor3 = Theme.colors.danger.base,
+					BackgroundTransparency = 0.1,
+					BorderSizePixel = 0,
 					ZIndex = 6,
 				}, cross)
-				create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, bar)
+				UIStyle.round(bar, 5)
 			end
-			local markLabel = makeText(cross, {
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				Size = UDim2.fromScale(0.94, 0.2),
-				Text = "AUTO-DELETE",
-				TextColor3 = Color3.fromRGB(255, 80, 90),
-				ZIndex = 8,
-			}, 3)
-			markLabel.BackgroundTransparency = 0.25
-			markLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+			local markLabel = UIStyle.label(cross, {
+				name = "MarkLabel",
+				text = "AUTO-DELETE",
+				role = "bold",
+				size = 11,
+				align = "center",
+				color = Theme.colors.danger.text,
+				props = {
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(0.5, 0.5),
+					Size = UDim2.new(0.94, 0, 0, 18),
+					BackgroundTransparency = 0.15,
+					BackgroundColor3 = Theme.colors.danger.dark,
+					ZIndex = 8,
+				},
+			})
+			UIStyle.round(markLabel, 6)
 			crossMarks[pet.id] = { cross = cross, shade = shade }
 
 			local hovering = false

@@ -46,7 +46,7 @@ function PowerHourHud.init(screenGui, showToast)
 	local label = create("TextLabel", {
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
-		Font = Enum.Font.FredokaOne,
+		Font = Enum.Font.GothamBlack,
 		TextScaled = true,
 		TextColor3 = Color3.new(1, 1, 1),
 		Text = "",

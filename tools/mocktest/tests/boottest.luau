@@ -1,6 +1,7 @@
 -- Sunucu açılışı: init.server tüm modülleriyle (Hub, WallService, raflar, antrenman alanı, yumurtalar, izler, auralar...) hatasız kurulmalı,
 -- sonra bir oyuncu girişi (PlayerAdded dinleyicileri) hatasız işlenmeli. Özellik/enum adı geçerliliğini DOĞRULAMAZ.
 local S = require("./cstubs")
+require("./Config").PowerHour.Enabled = false
 local ok, err = pcall(require, "./serverMain")
 print("server boot:", ok, err)
 if not ok then

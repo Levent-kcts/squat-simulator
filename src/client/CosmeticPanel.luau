@@ -1,6 +1,6 @@
 -- Genel "kozmetik" menüsü: Trails ve Auras aynı kodu kullanır. Her öğe için kart: adı, önizleme, bonus yazısı,
 -- Win ve Robux fiyatı; sahip olunanlar için Equip butonu. Satın alma ve takma sunucuda yapılır.
--- Görünüm: UIStyle tasarım sistemi (panel, header, card, button, chip); 2 sütunlu kart ızgarası.
+-- Görünüm: UIStyle tasarım sistemi (panel, header, card, button, chip); kompakt 3 sütunlu kart ızgarası (aynı anda daha çok öğe görünür).
 --
 -- options = {
 --   title, icon, image (başlık simgesi), items (Config listesi), ownedAttr, equippedAttr, buyAction, equipAction,
@@ -40,8 +40,8 @@ local function create(className, props, parent)
 	return instance
 end
 
--- Kart ölçüleri (2 sütun, 460 birimlik pencerede)
-local CELL_W, CELL_H = 200, 178
+-- Kart ölçüleri (3 sütun, 520 birimlik pencerede)
+local CELL_W, CELL_H = 156, 134
 
 -- showToast(ok, mesaj): kısa bildirim gösterir. Dönüş: { toggle, show, hide, panel }.
 function CosmeticPanel.init(screenGui, showToast, options)
@@ -52,8 +52,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 
 	local panel = UIStyle.panel(screenGui, {
 		name = "CosmeticPanel",
-		width = 460,
-		height = 450,
+		width = 520,
+		height = 470,
 		accent = "magic",
 		anchor = Vector2.new(0.5, 0.5),
 		position = UDim2.fromScale(0.5, 0.5),
@@ -87,7 +87,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 		PaddingTop = UDim.new(0, 4),
 		PaddingBottom = UDim.new(0, 16),
 		PaddingLeft = UDim.new(0, 16),
-		PaddingRight = UDim.new(0, 12),
+		PaddingRight = UDim.new(0, 8),
 	}, list)
 	create("UIGridLayout", {
 		CellSize = UDim2.fromOffset(CELL_W, CELL_H),
@@ -138,8 +138,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 			-- Önizleme çukuru: iz için sona doğru solan şerit + tema simgesi, aura için parlak yuvarlak
 			local well = create("Frame", {
 				Name = "Preview",
-				Position = UDim2.fromOffset(8, 8),
-				Size = UDim2.new(1, -16, 0, 52),
+				Position = UDim2.fromOffset(6, 6),
+				Size = UDim2.new(1, -12, 0, 40),
 				BackgroundColor3 = C.cardDeep,
 				BorderSizePixel = 0,
 			}, card)
@@ -149,7 +149,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 				local orb = create("Frame", {
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),
-					Size = UDim2.fromOffset(38, 38),
+					Size = UDim2.fromOffset(30, 30),
 					BackgroundColor3 = Color3.new(1, 1, 1),
 					BorderSizePixel = 0,
 				}, well)
@@ -158,8 +158,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 			else
 				local preview = create("Frame", {
 					AnchorPoint = Vector2.new(0, 0.5),
-					Position = UDim2.new(0, 10, 0.5, 0),
-					Size = UDim2.new(1, -62, 0, 18),
+					Position = UDim2.new(0, 8, 0.5, 0),
+					Size = UDim2.new(1, -50, 0, 14),
 					BackgroundColor3 = Color3.new(1, 1, 1),
 					BorderSizePixel = 0,
 				}, well)
@@ -178,8 +178,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 					create("ImageLabel", {
 						Name = "TrailIcon",
 						AnchorPoint = Vector2.new(1, 0.5),
-						Position = UDim2.new(1, -8, 0.5, 0),
-						Size = UDim2.fromOffset(38, 38),
+						Position = UDim2.new(1, -6, 0.5, 0),
+						Size = UDim2.fromOffset(30, 30),
 						BackgroundTransparency = 1,
 						Image = iconId,
 						ImageColor3 = if item.iconTint then item.color else Color3.new(1, 1, 1),
@@ -190,12 +190,12 @@ function CosmeticPanel.init(screenGui, showToast, options)
 						name = "TrailIcon",
 						text = item.emoji,
 						role = "bold",
-						size = 26,
+						size = 22,
 						align = "center",
 						props = {
 							AnchorPoint = Vector2.new(1, 0.5),
-							Position = UDim2.new(1, -8, 0.5, 0),
-							Size = UDim2.fromOffset(38, 38),
+							Position = UDim2.new(1, -6, 0.5, 0),
+							Size = UDim2.fromOffset(30, 30),
 						},
 					})
 				end
@@ -207,7 +207,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 					name = "StatusChip",
 					text = if isEquipped then "EQUIPPED" else "OWNED",
 					accent = if isEquipped then "success" else "info",
-					props = { Position = UDim2.fromOffset(6, 6) },
+					props = { Position = UDim2.fromOffset(4, 4) },
 				})
 			end
 
@@ -215,14 +215,14 @@ function CosmeticPanel.init(screenGui, showToast, options)
 				name = "ItemName",
 				text = item.name,
 				role = "bold",
-				props = { Position = UDim2.fromOffset(10, 66), Size = UDim2.new(1, -20, 0, 20) },
+				props = { Position = UDim2.fromOffset(8, 50), Size = UDim2.new(1, -16, 0, 18) },
 			})
 			UIStyle.label(card, {
 				name = "ItemBonus",
 				text = options.bonusText(item),
 				role = "caption",
 				color = C.success.base,
-				props = { Position = UDim2.fromOffset(10, 86), Size = UDim2.new(1, -20, 0, 18) },
+				props = { Position = UDim2.fromOffset(8, 68), Size = UDim2.new(1, -16, 0, 16) },
 			})
 
 			if isOwned then
@@ -232,8 +232,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 					kind = if isEquipped then "secondary" else "success",
 					size = "sm",
 					icon = if isEquipped then "●" else nil,
-					width = CELL_W - 20,
-					position = UDim2.fromOffset(10, 128),
+					width = CELL_W - 16,
+					position = UDim2.fromOffset(8, 90),
 					onClick = function()
 						invoke(options.equipAction, if isEquipped then "" else item.id)
 					end,
@@ -245,8 +245,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 					text = `🏆 {Format.compact(item.winPrice)}`,
 					kind = if affordable then "primary" else "secondary",
 					size = "sm",
-					width = 112,
-					position = UDim2.fromOffset(10, 128),
+					width = 88,
+					position = UDim2.fromOffset(8, 90),
 					onClick = function()
 						invoke(options.buyAction, item.id)
 					end,
@@ -262,8 +262,8 @@ function CosmeticPanel.init(screenGui, showToast, options)
 					text = `R$ {item.robuxPrice}`,
 					kind = "ghost",
 					size = "sm",
-					width = CELL_W - 20 - 112 - 6,
-					position = UDim2.fromOffset(10 + 112 + 6, 128),
+					width = CELL_W - 16 - 88 - 4,
+					position = UDim2.fromOffset(8 + 88 + 4, 90),
 					onClick = function()
 						if item.robuxProductId > 0 then
 							-- Satın alma penceresi açılır; ödülü sunucu ProcessReceipt ile verir (server/Purchases)

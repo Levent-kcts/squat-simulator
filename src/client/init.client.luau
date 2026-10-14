@@ -338,12 +338,12 @@ local giftsBadge = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0.5),
 	Position = UDim2.new(1, -4, 0, 4),
 	Size = UDim2.fromOffset(28, 28),
-	BackgroundColor3 = Color3.fromRGB(235, 40, 50),
+	BackgroundColor3 = C.danger.base,
 	Visible = false,
 	ZIndex = 8,
 }, giftsButton)
 create("UICorner", { CornerRadius = UDim.new(1, 0) }, giftsBadge)
-create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, giftsBadge)
+create("UIStroke", { Thickness = 1.5, Color = C.bg, Transparency = 0.1 }, giftsBadge)
 local giftsBadgeText = makeText(giftsBadge, {
 	Position = UDim2.fromScale(0.1, 0.1),
 	Size = UDim2.fromScale(0.8, 0.8),
@@ -356,12 +356,12 @@ local loginBadge = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0.5),
 	Position = UDim2.new(1, -4, 0, 4),
 	Size = UDim2.fromOffset(28, 28),
-	BackgroundColor3 = Color3.fromRGB(235, 40, 50),
+	BackgroundColor3 = C.danger.base,
 	Visible = false,
 	ZIndex = 8,
 }, dailyButton)
 create("UICorner", { CornerRadius = UDim.new(1, 0) }, loginBadge)
-create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, loginBadge)
+create("UIStroke", { Thickness = 1.5, Color = C.bg, Transparency = 0.1 }, loginBadge)
 makeText(loginBadge, {
 	Position = UDim2.fromScale(0.1, 0.1),
 	Size = UDim2.fromScale(0.8, 0.8),
@@ -418,7 +418,7 @@ local rebirthHint = makeText(bottom, {
 	Position = UDim2.new(0.5, 0, 0, -34),
 	Size = UDim2.new(1, 0, 0, 30),
 	Text = "Rebirth to unlock more levels!",
-	TextColor3 = Color3.fromRGB(255, 50, 140),
+	TextColor3 = C.hot.base,
 	Visible = false,
 }, 20, 2.5)
 
@@ -426,7 +426,7 @@ local rebirthHint = makeText(bottom, {
 local multiplierLabel = makeText(bottom, {
 	Position = UDim2.fromOffset(2, 42),
 	Size = UDim2.new(0.48, 0, 0, 24),
-	TextColor3 = Color3.fromRGB(110, 255, 120),
+	TextColor3 = C.success.base,
 	TextXAlignment = Enum.TextXAlignment.Left,
 }, 20, 2)
 
@@ -443,29 +443,26 @@ local gainLabel = makeText(bottom, {
 	AnchorPoint = Vector2.new(1, 0),
 	Position = UDim2.new(1, -2, 0, 42),
 	Size = UDim2.new(0.5, 0, 0, 24),
-	TextColor3 = Color3.fromRGB(255, 220, 90),
+	TextColor3 = C.warn.base,
 	TextXAlignment = Enum.TextXAlignment.Right,
 }, 20, 2)
 
 local bar = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0.5), -- merkezden büyüyüp küçülsün (level atlayınca nabız, aşağıda)
 	Position = UDim2.new(0.5, 0, 0, 72 + 27),
-	Size = UDim2.new(1, 0, 0, 54),
-	BackgroundColor3 = Color3.fromRGB(52, 50, 64), -- boş kısım koyu gri (referanstaki gibi), dolgu kırmızı-pembe
+	Size = UDim2.new(1, 0, 0, 28),
+	BackgroundColor3 = C.cardDeep, -- çukur zemin
 }, bottom)
-create("UICorner", { CornerRadius = UDim.new(0, 6) }, bar)
-create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, bar)
-UIStyle.soften(bar, { radius = 12, strength = 0.2, shine = false })
+UIStyle.soften(bar, { radius = 14, style = "flat", shine = false })
 
 local barFill = create("Frame", {
 	Size = UDim2.fromScale(0, 1),
-	BackgroundColor3 = Color3.new(1, 1, 1), -- renk gradyandan gelir: üstte açık pembe, altta koyu kırmızı
+	BackgroundColor3 = Color3.new(1, 1, 1), -- renk gradyandan gelir (tek vurgu: pembe-turuncu)
 	BorderSizePixel = 0,
 	ZIndex = 1,
 }, bar)
-UIStyle.soften(barFill, { radius = 12, gradient = false })
-create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 78, 172), Color3.fromRGB(226, 24, 74)) }, barFill)
-UIStyle.brickSkin(bar, 22, 4, 12, { light = 0.9 }) -- lego tuğla deseni (referanstaki gibi); yazılar bunun ÜSTÜNDE
+UIStyle.soften(barFill, { radius = 14, gradient = false, shine = false })
+create("UIGradient", { Rotation = 0, Color = ColorSequence.new(C.hot.base, C.warn.base) }, barFill)
 
 -- LEVEL ATLAYINCA çubuk hafifçe büyüyüp küçülür (sahibi 'level up yazısı yerine alttaki bar hafif büyüyüp küçülsün' dedi; ekranın ortasına yazı çıkmaz). Juice level atlamayı görünce çağırır.
 local barScale = create("UIScale", { Scale = 1 }, bar)
@@ -483,20 +480,20 @@ local function pulseLevelBar()
 end
 
 local stageLabel = makeText(bar, {
-	Position = UDim2.fromOffset(14, 4),
-	Size = UDim2.new(0.5, 0, 1, -8),
-	TextColor3 = Color3.new(1, 1, 1),
+	Position = UDim2.fromOffset(14, 3),
+	Size = UDim2.new(0.5, 0, 1, -6),
+	TextColor3 = C.text,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	ZIndex = 5,
-}, 38, 3)
+}, 17, 1.5)
 local countLabel = makeText(bar, {
 	AnchorPoint = Vector2.new(1, 0),
-	Position = UDim2.new(1, -14, 0, 4),
-	Size = UDim2.new(0.4, 0, 1, -8),
-	TextColor3 = Color3.new(1, 1, 1),
+	Position = UDim2.new(1, -14, 0, 3),
+	Size = UDim2.new(0.4, 0, 1, -6),
+	TextColor3 = C.text,
 	TextXAlignment = Enum.TextXAlignment.Right,
 	ZIndex = 5,
-}, 38, 3)
+}, 17, 1.5)
 
 -- Auto Click: açıkken hareketler kendiliğinden tekrarlanır (ileride VIP'ye özel yapılabilir).
 -- Referanstaki gibi: GÖKKUŞAĞI renkli, kayan zemin (açıkken daha hızlı ve parlak) ve üst kenarda "OFF" / "ON" rozeti.
@@ -522,17 +519,15 @@ local autoButton = create("TextButton", {
 	AutoButtonColor = false,
 	BackgroundColor3 = Color3.new(1, 1, 1), -- renk gökkuşağı gradyanından gelir
 }, bottom)
-create("UICorner", { CornerRadius = UDim.new(0, 6) }, autoButton)
-create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, autoButton)
-UIStyle.soften(autoButton, { radius = 12, gradient = false }) -- sadece köşe ve üst parlak şerit; gradyanı gökkuşağı verir
+create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.8, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, autoButton)
+UIStyle.soften(autoButton, { radius = Theme.radius.button + 2, gradient = false, shine = false }) -- sadece köşe ve üst parlak şerit; gradyanı gökkuşağı verir
 local autoRainbow = create("UIGradient", {}, autoButton)
 local autoLabel = makeText(autoButton, {
 	Position = UDim2.fromOffset(8, 8),
 	Size = UDim2.new(1, -16, 1, -12),
 	Text = "Auto Click",
 	TextColor3 = Color3.new(1, 1, 1),
-}, 26, 3)
-UIStyle.brickSkin(autoButton, 8, 3, 12, { light = 0.9 })
+}, 24, 1.5)
 autoLabel.ZIndex = 5 -- yazı ortadaki tıklama simgesinin ÜSTÜNDE kalır
 if Config.Icons.Click and Config.Icons.Click ~= "" then
 	addOutlinedIcon(autoButton, Config.Icons.Click, 36, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
@@ -542,9 +537,9 @@ local autoBadge = makeText(autoButton, {
 	Position = UDim2.new(0.5, 0, 0, 1),
 	Size = UDim2.fromOffset(64, 26),
 	Text = "OFF",
-	TextColor3 = Color3.fromRGB(255, 92, 70),
+	TextColor3 = C.danger.base,
 	ZIndex = 5,
-}, 22, 3)
+}, 20, 1.5)
 -- Auto Click game pass'i satılıyorsa (Config.AutoClick.GamePassId > 0) ve oyuncuda yoksa: 'ONLY R$ 99' rozeti OFF/ON rozetinin yerinde durur, düğmeye basınca satın alma penceresi açılır
 local ROBUX_SIGN = utf8.char(0xE002)
 local autoPrice = makeText(autoButton, {
@@ -552,10 +547,10 @@ local autoPrice = makeText(autoButton, {
 	Position = UDim2.new(0.5, 0, 0, 1),
 	Size = UDim2.fromOffset(120, 28),
 	Text = `ONLY {ROBUX_SIGN} {Config.AutoClick.Robux}`,
-	TextColor3 = Color3.fromRGB(255, 226, 90),
+	TextColor3 = C.warn.base,
 	Visible = false,
 	ZIndex = 6,
-}, 22, 3)
+}, 20, 1.5)
 -- (Ücretsiz deneme KAPALI: Config.AutoClick.TrialSeconds = 0; düğmede zamanlayıcı YAZMAZ, sahibi istemedi. Kalan iksir süresi sol alttaki iksir şişesinde görünür.)
 -- AUTO CLICK POTION (Config.Potions, 2026-10-13): iksir süresince de Auto Click pass'siz açıktır ('AutoBoostUntil'); ücretsiz süre = deneme ya da iksir, hangisi daha uzunsa
 local function trialSecondsLeft()
@@ -587,10 +582,8 @@ for index, product in quickProducts do
 		AutoButtonColor = true,
 		BackgroundColor3 = product.color,
 	}, bottom)
-	create("UICorner", { CornerRadius = UDim.new(0, 6) }, button)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-	UIStyle.soften(button, { radius = 10, strength = 0.35 })
-	UIStyle.brickSkin(button, 5, 3, 10, { light = 0.9 }) -- lego tuğla deseni
+	create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.8, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, button)
+	UIStyle.soften(button, { radius = Theme.radius.button, strength = 0.2, shine = false })
 	if Config.Icons.LegMuscle and Config.Icons.LegMuscle ~= "" then
 		-- Bacak simgesi düğmenin ORTASINDA ve yazının ARKASINDA (referanstaki eldiven gibi); yazı ZIndex 5, simge 2-3 (desenin üstünde)
 		local legIcon = addOutlinedIcon(button, Config.Icons.LegMuscle, 44, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5))
@@ -603,14 +596,14 @@ for index, product in quickProducts do
 		Text = `+{Format.compact(product.amount)}`,
 		TextColor3 = Color3.new(1, 1, 1),
 		ZIndex = 5,
-	}, 24, 3)
+	}, 24, 1.5)
 	makeText(button, {
 		Position = UDim2.fromOffset(4, 25),
 		Size = UDim2.new(1, -8, 0, 13),
 		Text = "POWER",
-		TextColor3 = Color3.fromRGB(255, 236, 170),
+		TextColor3 = C.text,
 		ZIndex = 5,
-	}, 12, 2)
+	}, 12, 1)
 	table.insert(quickButtons, { button = button, product = product })
 end
 local plusButton = create("TextButton", {
@@ -619,19 +612,17 @@ local plusButton = create("TextButton", {
 	Size = UDim2.fromOffset(PLUS_WIDTH, 40),
 	Text = "",
 	AutoButtonColor = true,
-	BackgroundColor3 = Color3.fromRGB(120, 205, 30),
+	BackgroundColor3 = C.success.base,
 }, bottom)
-create("UICorner", { CornerRadius = UDim.new(0, 6) }, plusButton)
-create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, plusButton)
-UIStyle.soften(plusButton, { radius = 10, strength = 0.35 })
-UIStyle.brickSkin(plusButton, 2, 3, 10, { light = 0.9 })
+create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.8, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, plusButton)
+UIStyle.soften(plusButton, { radius = Theme.radius.button, strength = 0.2, shine = false })
 makeText(plusButton, {
 	Position = UDim2.fromOffset(2, 2),
 	Size = UDim2.new(1, -4, 1, -6),
 	Text = "+",
 	TextColor3 = Color3.new(1, 1, 1),
 	ZIndex = 5,
-}, 30, 3)
+}, 30, 1.5)
 
 -- Kayıt uyarısı sadece Studio'da ve küçük görünür (canlı oyunda oyuncular görmez, hata Output'a yazılır)
 local warning = create("TextLabel", {
@@ -672,7 +663,7 @@ local function refresh()
 	autoBadge.Visible = not locked
 	autoPrice.Visible = locked
 	autoBadge.Text = if autoClick then "ON" else "OFF"
-	autoBadge.TextColor3 = if autoClick then Color3.fromRGB(110, 255, 130) else Color3.fromRGB(255, 92, 70)
+	autoBadge.TextColor3 = if autoClick then C.success.base else C.danger.base
 	warning.Visible = RunService:IsStudio() and player:GetAttribute("DataError") == true
 end
 
@@ -976,7 +967,7 @@ local function showToast(ok, message)
 		end
 	end
 	toast.Text = message
-	toast.TextColor3 = if ok then Color3.fromRGB(110, 255, 140) else Color3.fromRGB(255, 120, 120)
+	toast.TextColor3 = if ok then C.success.base else C.danger.base
 	toast.Visible = true
 	task.delay(2.5, function()
 		if toastId == id then

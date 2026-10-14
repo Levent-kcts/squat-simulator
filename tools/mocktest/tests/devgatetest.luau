@@ -7,6 +7,7 @@ rawset(runService, "IsStudio", function()
 	return false -- yayındaki oyun
 end)
 rawset(S.game, "CreatorId", 555)
+require("./Config").PowerHour.Enabled = false -- testler UTC saatine bağlı Power Hour x2 çarpanından bağımsız olsun
 require("./serverMain")
 
 local function remote(name)

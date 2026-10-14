@@ -14,7 +14,8 @@ local okSfx, Sfx = pcall(require, script.Parent.Sfx)
 
 local QuestPanel = {}
 
-local FONT = Enum.Font.FredokaOne
+local Theme = UIStyle.Theme
+local COLORS = Theme.colors
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -25,13 +26,15 @@ local function create(className, props, parent)
 	return instance
 end
 
-local function makeText(parent, props, strokeThickness)
-	props.BackgroundTransparency = 1
-	props.Font = FONT
-	props.TextScaled = true
-	local label = create("TextLabel", props, parent)
-	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
-	return label
+-- Görev simgeleri (sadece görünüm; bilinmeyen id için yedek yıldız)
+local STARTER_ICONS = {
+	squat = "🦵", pet = "🐾", skin = "🎨", wall = "🧱", shoes = "👟",
+	level10 = "⬆️", gift = "🎁", train = "💪", rebirth = "🔄", wheel = "🎡",
+}
+
+-- Yazı: UIStyle.label kısayolu (sabit boyut, props ile konum/boyut)
+local function text(parent, content, role, props)
+	return UIStyle.label(parent, { text = content, role = role, props = props })
 end
 
 -- QuestData özniteliğini çözer; yoksa/bozuksa nil
@@ -119,121 +122,83 @@ function QuestPanel.init(screenGui, showToast)
 	local player = Players.LocalPlayer
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 
-	local panel = create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(620, 540), -- (sekmeler için biraz yüksek)
-		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
-		Active = true, -- pencereye tıklamak hareket başlatmasın
-		Visible = false,
-	}, screenGui)
-	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
-	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
+	local panel = UIStyle.panel(screenGui, {
+		name = "QuestPanel",
+		width = 620,
+		height = 540, -- (sekmeler için biraz yüksek)
+		accent = "info",
+		anchor = Vector2.new(0.5, 0.5),
+		position = UDim2.fromScale(0.5, 0.5),
+	})
+	panel.Visible = false
 
-	local header = create("Frame", {
-		Size = UDim2.new(1, 0, 0, 56),
-		BackgroundColor3 = Color3.fromRGB(255, 160, 40),
-	}, panel)
-	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	UIStyle.headerIcon(header, Config.Icons.Quests, "📜", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
-	makeText(header, {
-		Position = UDim2.fromOffset(68, 8),
-		Size = UDim2.fromOffset(250, 40),
-		Text = "QUESTS",
-		TextColor3 = Color3.new(1, 1, 1),
-		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 3)
-	local timerText = makeText(header, {
-		Position = UDim2.fromOffset(320, 12),
-		Size = UDim2.new(1, -380, 0, 32),
-		Text = "",
-		TextColor3 = Color3.fromRGB(255, 250, 200),
-		TextXAlignment = Enum.TextXAlignment.Right,
-	}, 2)
-	local close = create("TextButton", {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -10, 0.5, 0),
-		Size = UDim2.fromOffset(40, 40),
-		Text = "X",
-		Font = FONT,
-		TextSize = 26,
-		TextColor3 = Color3.new(1, 1, 1),
-		BackgroundColor3 = Color3.fromRGB(235, 40, 90),
-	}, header)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
-	UIStyle.soften(close, { radius = 10, strength = 0.28 })
-	close.MouseButton1Click:Connect(function()
-		PanelManager.hide(panel)
-	end)
+	local header = UIStyle.header(panel, {
+		title = "Quests",
+		icon = Config.Icons.Quests,
+		emoji = "📜",
+		accent = "info",
+		chip = "",
+		onClose = function()
+			PanelManager.hide(panel)
+		end,
+	})
+	local timerChip = header and header.chip
+	local function setTimer(content)
+		if timerChip then
+			UIStyle.setChipText(timerChip, content)
+			timerChip.Visible = content ~= ""
+		end
+	end
+	setTimer("")
 
 	-- SEKMELER (2026-10-13, sahibi 'görevlere yeni oyuncu görevleri sekmesi' istedi): NEW PLAYER (Config.StarterQuests, ilk rebirth'e kadar rehber) ve DAILY
+	local setTab
+	local tabApi = UIStyle.tabs(panel, {
+		items = { { id = "starter", text = "NEW PLAYER" }, { id = "daily", text = "DAILY" } },
+		accent = "info",
+		selected = "daily",
+		props = { Position = UDim2.fromOffset(16, 72), Size = UDim2.new(1, -32, 0, 44) },
+		onSelect = function(id)
+			setTab(id)
+		end,
+	})
 	local tabs = {}
-	local currentTab = nil
-	local function makeTab(name, title, x, color)
-		local button = create("TextButton", {
-			Name = "Tab_" .. name,
-			Position = UDim2.fromOffset(x, 62),
-			Size = UDim2.fromOffset(190, 36),
-			Text = "",
-			BackgroundColor3 = color,
-		}, panel)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-		UIStyle.soften(button, { radius = 10, strength = 0.28 })
-		local label = makeText(button, { Position = UDim2.fromScale(0.05, 0.1), Size = UDim2.fromScale(0.9, 0.8), Text = title, TextColor3 = Color3.new(1, 1, 1) }, 2)
+	for _, name in { "starter", "daily" } do
+		local host = tabApi.buttons[name] or tabApi.frame
+		-- alınabilir ödül varsa sekmede yeşil nokta
 		local dot = create("Frame", {
+			Name = "Dot",
 			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -8, 0.5, 0),
-			Size = UDim2.fromOffset(14, 14),
-			BackgroundColor3 = Color3.fromRGB(120, 255, 140),
+			Position = UDim2.new(1, -12, 0.5, 0),
+			Size = UDim2.fromOffset(10, 10),
+			BackgroundColor3 = COLORS.success.base,
+			BorderSizePixel = 0,
 			Visible = false,
 			ZIndex = 5,
-		}, button)
-		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, dot)
-		create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, dot)
-		tabs[name] = { button = button, label = label, color = color, dot = dot }
-		return button
+		}, host)
+		UIStyle.round(dot, UDim.new(0.5, 0))
+		tabs[name] = { dot = dot }
 	end
-	local starterTab = makeTab("starter", "NEW PLAYER", 12, Color3.fromRGB(70, 190, 255))
-	local dailyTab = makeTab("daily", "DAILY", 210, Color3.fromRGB(255, 160, 40))
 
-	local list = create("Frame", {
-		Position = UDim2.fromOffset(12, 108),
-		Size = UDim2.new(1, -24, 1, -120),
-		BackgroundTransparency = 1,
-	}, panel)
+	local CONTENT_POS = UDim2.fromOffset(16, 128)
+	local CONTENT_SIZE = UDim2.new(1, -32, 1, -140)
+	local ROW_HEIGHT = 84
+	local list = create("Frame", { Position = CONTENT_POS, Size = CONTENT_SIZE, BackgroundTransparency = 1 }, panel)
 	create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, list)
 
 	-- YENİ OYUNCU görev listesi (kaydırılır): her satır görevin adı, nerede/nasıl yapılacağı (hint), ilerleme çubuğu, ödül ve CLAIM
 	local starterList = create("ScrollingFrame", {
 		Name = "StarterList",
-		Position = UDim2.fromOffset(12, 108),
-		Size = UDim2.new(1, -24, 1, -120),
+		Position = CONTENT_POS,
+		Size = CONTENT_SIZE,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		ScrollBarThickness = 8,
+		ScrollBarThickness = 4,
 		CanvasSize = UDim2.new(),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		Visible = false,
 	}, panel)
-	create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, starterList)
-
-	local function claimButton(parent, position, size)
-		local button = create("TextButton", {
-			Position = position,
-			Size = size,
-			Text = "",
-			BackgroundColor3 = Color3.fromRGB(95, 100, 120),
-		}, parent)
-		create("UIStroke", { Name = "Stroke", Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-		UIStyle.soften(button, { radius = 10, strength = 0.28 })
-		local label = makeText(button, {
-			Position = UDim2.fromScale(0.05, 0.12),
-			Size = UDim2.fromScale(0.9, 0.76),
-			Text = "",
-			TextColor3 = Color3.new(1, 1, 1),
-		}, 2)
-		return button, label
-	end
+	create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, starterList)
 
 	local function invoke(action, id)
 		task.spawn(function()
@@ -245,170 +210,192 @@ function QuestPanel.init(screenGui, showToast)
 		end)
 	end
 
-	local function styleClaim(button, label, state)
-		-- Alınmaya hazır ödülün düğmesi altın çerçeveli (oyuncu Quests'e yönlendirilince CLAIM'i hemen bulsun)
-		local stroke = button:FindFirstChild("Stroke")
+	-- CLAIM düğmesi: gerçek TextButton (UIStyle.button). Adı 'TextButton' kalır (ctest satırdaki 'TextButton'a tıklar).
+	local function claimButton(parent, onClick)
+		local button = UIStyle.button(parent, {
+			name = "TextButton",
+			text = "In progress",
+			kind = "secondary",
+			size = "sm",
+			width = 132,
+			anchor = Vector2.new(1, 0),
+			position = UDim2.new(1, 0, 0, 40),
+			onClick = onClick,
+		})
+		if button then
+			-- Hazır ödülün altın çerçevesi ('Stroke'): sadece "ready" durumunda açık
+			local stroke = create("UIStroke", {
+				Name = "Stroke",
+				Thickness = 2,
+				Color = COLORS.primary.base,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				Enabled = false,
+			}, button)
+			return button, stroke
+		end
+		return nil
+	end
+
+	local function styleClaim(button, stroke, state)
+		if not button then
+			return
+		end
 		if stroke then
-			stroke.Color = if state == "ready" then Color3.fromRGB(255, 214, 60) else Color3.new(0, 0, 0)
-			stroke.Thickness = if state == "ready" then 4 else 3
+			stroke.Enabled = state == "ready"
 		end
 		if state == "ready" then
-			button.BackgroundColor3 = Color3.fromRGB(60, 200, 40)
-			label.Text = "CLAIM!"
-			button.Active = true
+			UIStyle.setButtonKind(button, "success")
+			UIStyle.setButtonEnabled(button, true)
+			UIStyle.setButtonText(button, "CLAIM!")
 		elseif state == "claimed" then
-			button.BackgroundColor3 = Color3.fromRGB(70, 75, 95)
-			label.Text = "CLAIMED"
-			button.Active = false
+			UIStyle.setButtonKind(button, "secondary")
+			UIStyle.setButtonEnabled(button, false)
+			UIStyle.setButtonText(button, "CLAIMED")
 		else
-			button.BackgroundColor3 = Color3.fromRGB(95, 100, 120)
-			label.Text = "In progress"
-			button.Active = false
+			UIStyle.setButtonKind(button, "secondary")
+			UIStyle.setButtonEnabled(button, false)
+			UIStyle.setButtonText(button, "In progress")
 		end
+	end
+
+	-- Satır zemini: hazır (yeşilimsi) / sürüyor / alındı (sönük)
+	local function styleRow(card, iconChip, titleLabel, state)
+		if not card then
+			return
+		end
+		if state == "ready" then
+			card.BackgroundColor3 = COLORS.card:Lerp(COLORS.success.base, 0.2)
+			card.BackgroundTransparency = 0
+		elseif state == "claimed" then
+			card.BackgroundColor3 = COLORS.card
+			card.BackgroundTransparency = 0.55
+		else
+			card.BackgroundColor3 = COLORS.card
+			card.BackgroundTransparency = 0
+		end
+		if iconChip then
+			iconChip.BackgroundColor3 = if state == "ready" then COLORS.success.base elseif state == "claimed" then COLORS.cardDeep else COLORS.info.base
+			iconChip.BackgroundTransparency = if state == "claimed" then 0.3 else 0.75
+		end
+		if titleLabel then
+			titleLabel.TextColor3 = if state == "claimed" then COLORS.textMute else COLORS.text
+		end
+	end
+
+	-- Sol görev simgesi çipi (emoji); alınınca tik gösterir
+	local function iconChipFor(card, emoji)
+		local chip = create("Frame", {
+			Name = "IconChip",
+			Position = UDim2.new(0, 0, 0.5, -22),
+			Size = UDim2.fromOffset(44, 44),
+			BackgroundColor3 = COLORS.info.base,
+			BackgroundTransparency = 0.75,
+			BorderSizePixel = 0,
+		}, card)
+		UIStyle.round(chip, Theme.radius.button)
+		local glyph = text(chip, emoji, "bold", { Name = "Glyph", Size = UDim2.fromScale(1, 1), TextSize = 22, TextXAlignment = Enum.TextXAlignment.Center })
+		return chip, glyph
+	end
+
+	-- Satır iskeleti (kart + simge + ad + çubuk + ödül + CLAIM); kart padding'siz, içerik mutlak konumlu
+	local MID_WIDTH = -(44 + 12 + 144 + 8)
+	local function buildRow(parent, props)
+		local card = UIStyle.card(parent, { name = props.name, size = UDim2.new(1, props.inset or 0, 0, ROW_HEIGHT), padding = false, props = { LayoutOrder = props.order } })
+		create("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }, card)
+		local chip, glyph = iconChipFor(card, props.emoji)
+		local title = text(card, props.title or "", "bold", { Name = "Title", Position = UDim2.fromOffset(56, if props.hint then 10 else 18), Size = UDim2.new(1, MID_WIDTH, 0, 20) })
+		local hint = nil
+		if props.hint then
+			hint = text(card, props.hint, "caption", { Name = "Hint", Position = UDim2.fromOffset(56, 31), Size = UDim2.new(1, MID_WIDTH, 0, 16) })
+		end
+		local bar = UIStyle.progressBar(card, {
+			accent = "success",
+			name = "Progress",
+			props = { Position = UDim2.fromOffset(56, if props.hint then 54 else 46), Size = UDim2.new(1, MID_WIDTH, 0, 16) },
+		})
+		local reward = text(card, props.reward or "", "caption", {
+			Name = "Reward",
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, 0, 0, 8),
+			Size = UDim2.fromOffset(144, 28),
+			TextXAlignment = Enum.TextXAlignment.Right,
+			TextColor3 = COLORS.primary.base,
+			TextWrapped = true,
+			TextSize = 12,
+		})
+		local button, stroke = claimButton(card, props.onClick)
+		return { card = card, chip = chip, glyph = glyph, title = title, hint = hint, bar = bar, reward = reward, button = button, stroke = stroke }
 	end
 
 	-- 3 görev satırı + bonus satırı bir kez kurulur, render sadece değerleri günceller
 	local rows = {}
 	for slot = 1, 3 do
-		local row = create("Frame", {
-			LayoutOrder = slot,
-			Size = UDim2.new(1, 0, 0, 86),
-			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
-		}, list)
-		UIStyle.soften(row, { radius = 12, strength = 0.12, shine = false })
-		local title = makeText(row, {
-			Position = UDim2.fromOffset(14, 6),
-			Size = UDim2.new(0.58, -14, 0, 30),
-			Text = "",
-			TextColor3 = Color3.new(1, 1, 1),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 2)
-		local bar = create("Frame", {
-			Position = UDim2.fromOffset(14, 46),
-			Size = UDim2.new(0.58, -14, 0, 26),
-			BackgroundColor3 = Color3.fromRGB(25, 27, 38),
-		}, row)
-		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bar)
-		create("UIStroke", { Thickness = 2.5, Color = Color3.new(0, 0, 0) }, bar)
-		local fill = create("Frame", {
-			Size = UDim2.fromScale(0, 1),
-			BackgroundColor3 = Color3.fromRGB(110, 255, 140),
-			BorderSizePixel = 0,
-		}, bar)
-		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fill)
-		local amount = makeText(bar, {
-			Position = UDim2.fromScale(0.05, 0.1),
-			Size = UDim2.fromScale(0.9, 0.8),
-			Text = "",
-			TextColor3 = Color3.new(1, 1, 1),
-			ZIndex = 2,
-		}, 1.5)
-		local reward = makeText(row, {
-			Position = UDim2.new(0.6, 6, 0, 6),
-			Size = UDim2.new(0.4, -18, 0, 30),
-			Text = "",
-			TextColor3 = Color3.fromRGB(255, 225, 110),
-		}, 2)
-		local button, buttonLabel = claimButton(row, UDim2.new(0.6, 6, 0, 42), UDim2.new(0.4, -18, 0, 34))
-		button.MouseButton1Click:Connect(function()
-			invoke("ClaimQuest", slot)
-		end)
-		rows[slot] = { title = title, fill = fill, amount = amount, reward = reward, button = button, buttonLabel = buttonLabel }
+		rows[slot] = buildRow(list, {
+			name = "Daily_" .. slot,
+			order = slot,
+			emoji = "📜",
+			onClick = function()
+				invoke("ClaimQuest", slot)
+			end,
+		})
 	end
 
-	local bonusRow = create("Frame", {
-		LayoutOrder = 4,
-		Size = UDim2.new(1, 0, 0, 86),
-		BackgroundColor3 = Color3.fromRGB(88, 62, 140),
-	}, list)
-	UIStyle.soften(bonusRow, { radius = 12, strength = 0.15, shine = false })
-	makeText(bonusRow, {
-		Position = UDim2.fromOffset(14, 8),
-		Size = UDim2.new(0.58, -14, 0, 30),
-		Text = "⭐ BONUS: finish all 3 quests",
-		TextColor3 = Color3.fromRGB(255, 240, 160),
-		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 2)
-	local bonusReward = makeText(bonusRow, {
-		Position = UDim2.fromOffset(14, 44),
-		Size = UDim2.new(0.58, -14, 0, 30),
-		Text = "",
-		TextColor3 = Color3.new(1, 1, 1),
-		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 2)
-	local bonusButton, bonusButtonLabel = claimButton(bonusRow, UDim2.new(0.6, 6, 0, 26), UDim2.new(0.4, -18, 0, 36))
-	bonusButton.MouseButton1Click:Connect(function()
+	-- BONUS satırı: altın çerçeveli kart
+	local bonusCard = UIStyle.card(list, { name = "BonusRow", size = UDim2.new(1, 0, 0, ROW_HEIGHT), padding = false, accent = "primary", selected = true, props = { LayoutOrder = 4 } })
+	create("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }, bonusCard)
+	local bonusChip, bonusGlyph = iconChipFor(bonusCard, "⭐")
+	bonusChip.BackgroundColor3 = COLORS.primary.base
+	text(bonusCard, "BONUS: finish all 3 quests", "bold", { Name = "Title", Position = UDim2.fromOffset(56, 18), Size = UDim2.new(1, MID_WIDTH, 0, 20), TextColor3 = COLORS.primary.base })
+	local bonusReward = text(bonusCard, "", "caption", { Name = "Reward", Position = UDim2.fromOffset(56, 44), Size = UDim2.new(1, MID_WIDTH, 0, 20) })
+	local bonusButton, bonusStroke = claimButton(bonusCard, function()
 		invoke("ClaimQuestBonus", "")
 	end)
+	if bonusButton then
+		bonusButton.Position = UDim2.new(1, 0, 0.5, -18)
+	end
 
 	-- Yeni oyuncu satırları bir kez kurulur; renderStarter sadece değerleri günceller
 	local starterRows = {}
 	for index, quest in Config.StarterQuests do
-		local row = create("Frame", {
-			Name = "Starter_" .. quest.id,
-			LayoutOrder = index,
-			Size = UDim2.new(1, -10, 0, 74),
-			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
-		}, starterList)
-		UIStyle.soften(row, { radius = 12, strength = 0.12, shine = false })
-		local title = makeText(row, {
-			Position = UDim2.fromOffset(12, 4),
-			Size = UDim2.new(0.6, -12, 0, 24),
-			Text = quest.text,
-			TextColor3 = Color3.new(1, 1, 1),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 2)
-		makeText(row, {
-			Position = UDim2.fromOffset(12, 28),
-			Size = UDim2.new(0.6, -12, 0, 16),
-			Text = quest.hint,
-			TextColor3 = Color3.fromRGB(190, 196, 220),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 1)
-		local bar = create("Frame", {
-			Position = UDim2.fromOffset(12, 50),
-			Size = UDim2.new(0.6, -12, 0, 16),
-			BackgroundColor3 = Color3.fromRGB(25, 27, 38),
-		}, row)
-		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bar)
-		create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, bar)
-		local fill = create("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.fromRGB(110, 255, 140), BorderSizePixel = 0 }, bar)
-		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fill)
-		local amount = makeText(bar, { Position = UDim2.fromScale(0.05, 0.05), Size = UDim2.fromScale(0.9, 0.9), Text = "", TextColor3 = Color3.new(1, 1, 1), ZIndex = 2 }, 1.2)
-		local rewardLabel = makeText(row, {
-			Position = UDim2.new(0.6, 6, 0, 6),
-			Size = UDim2.new(0.4, -16, 0, 24),
-			Text = `🎁 {rewardText(quest.rewards, player:GetAttribute("HasAutoClick") == true)}`,
-			TextColor3 = Color3.fromRGB(255, 225, 110),
-		}, 2)
-		local button, buttonLabel = claimButton(row, UDim2.new(0.6, 6, 0, 36), UDim2.new(0.4, -16, 0, 30))
-		button.MouseButton1Click:Connect(function()
-			invoke("ClaimStarter", quest.id)
-		end)
-		starterRows[quest.id] = { frame = row, rewardLabel = rewardLabel, title = title, fill = fill, amount = amount, button = button, buttonLabel = buttonLabel, quest = quest }
+		local row = buildRow(starterList, {
+			name = "Starter_" .. quest.id,
+			order = index,
+			inset = -8, -- (kaydırma çubuğuna pay)
+			emoji = STARTER_ICONS[quest.id] or "⭐",
+			title = quest.text,
+			hint = quest.hint,
+			reward = `🎁 {rewardText(quest.rewards, player:GetAttribute("HasAutoClick") == true)}`,
+			onClick = function()
+				invoke("ClaimStarter", quest.id)
+			end,
+		})
+		row.quest = quest
+		starterRows[quest.id] = row
 	end
 
 	local function renderStarter()
 		local state = QuestPanel.readStarter(player)
 		local ready = 0
 		local open = 0
+		local hasAuto = player:GetAttribute("HasAutoClick") == true -- Auto Click game pass'i olana Auto Click Potion yerine Rainbow görünür
 		for _, row in starterRows do
 			local entry = state[row.quest.id] or { progress = 0, done = false, claimed = false }
-			row.rewardLabel.Text = `🎁 {rewardText(row.quest.rewards, player:GetAttribute("HasAutoClick") == true)}` -- Auto Click game pass'i olana Auto Click Potion yerine Rainbow görünür
+			row.reward.Text = `🎁 {rewardText(row.quest.rewards, hasAuto)}`
 			local progress = math.min(entry.progress, row.quest.goal)
-			row.fill.Size = UDim2.fromScale(math.clamp(progress / row.quest.goal, 0, 1), 1)
-			row.amount.Text = `{progress} / {row.quest.goal}`
+			row.bar.set(math.clamp(progress / row.quest.goal, 0, 1), `{progress} / {row.quest.goal}`)
 			row.title.Text = if entry.done then `✔ {row.quest.text}` else row.quest.text
 			if entry.claimed then
-				styleClaim(row.button, row.buttonLabel, "claimed")
-				row.frame.BackgroundColor3 = Color3.fromRGB(58, 63, 82)
+				styleClaim(row.button, row.stroke, "claimed")
+				styleRow(row.card, row.chip, row.title, "claimed")
+				row.glyph.Text = "✔"
 			else
 				open += 1
 				if entry.done then
 					ready += 1
 				end
-				styleClaim(row.button, row.buttonLabel, if entry.done then "ready" else "progress")
-				row.frame.BackgroundColor3 = if entry.done then Color3.fromRGB(48, 96, 66) else Color3.fromRGB(58, 63, 82) -- ödülü alınmayı bekleyen satır yeşilimsi
+				styleClaim(row.button, row.stroke, if entry.done then "ready" else "progress")
+				styleRow(row.card, row.chip, row.title, if entry.done then "ready" else "progress") -- ödülü alınmayı bekleyen satır yeşilimsi
+				row.glyph.Text = STARTER_ICONS[row.quest.id] or "⭐"
 			end
 		end
 		tabs.starter.dot.Visible = ready > 0
@@ -419,16 +406,16 @@ function QuestPanel.init(screenGui, showToast)
 
 	local function updateTimer()
 		if resetAt > 0 then
-			timerText.Text = `New quests in {formatTime(resetAt - Workspace:GetServerTimeNow())}`
+			setTimer(`New quests in {formatTime(resetAt - Workspace:GetServerTimeNow())}`)
 		else
-			timerText.Text = ""
+			setTimer("")
 		end
 	end
 
 	local function render()
 		local data = QuestPanel.read(player)
 		if not data or not data.quests then
-			timerText.Text = "Loading..."
+			setTimer("Loading...")
 			return
 		end
 		-- DAILY sekmesindeki nokta: alınmayı bekleyen günlük ödül varsa yanar
@@ -446,24 +433,31 @@ function QuestPanel.init(screenGui, showToast)
 			if row then
 				local progress = math.min(quest.progress, quest.goal)
 				row.title.Text = quest.text
-				row.fill.Size = UDim2.fromScale(math.clamp(progress / quest.goal, 0, 1), 1)
-				row.amount.Text = `{progress} / {quest.goal}`
+				row.bar.set(math.clamp(progress / quest.goal, 0, 1), `{progress} / {quest.goal}`)
 				row.reward.Text = `🎁 {quest.reward}`
 				if quest.claimed then
-					styleClaim(row.button, row.buttonLabel, "claimed")
+					styleClaim(row.button, row.stroke, "claimed")
+					styleRow(row.card, row.chip, row.title, "claimed")
+					row.glyph.Text = "✔"
 				else
 					allClaimed = false
-					styleClaim(row.button, row.buttonLabel, if progress >= quest.goal then "ready" else "progress")
+					local isReady = progress >= quest.goal
+					styleClaim(row.button, row.stroke, if isReady then "ready" else "progress")
+					styleRow(row.card, row.chip, row.title, if isReady then "ready" else "progress")
+					row.glyph.Text = "📜"
 				end
 			end
 		end
 		bonusReward.Text = data.bonusText or ""
 		if data.bonusClaimed then
-			styleClaim(bonusButton, bonusButtonLabel, "claimed")
+			styleClaim(bonusButton, bonusStroke, "claimed")
+			bonusGlyph.Text = "✔"
 		elseif allClaimed then
-			styleClaim(bonusButton, bonusButtonLabel, "ready")
+			styleClaim(bonusButton, bonusStroke, "ready")
+			bonusGlyph.Text = "⭐"
 		else
-			styleClaim(bonusButton, bonusButtonLabel, "progress")
+			styleClaim(bonusButton, bonusStroke, "progress")
+			bonusGlyph.Text = "⭐"
 		end
 		updateTimer()
 	end
@@ -473,25 +467,18 @@ function QuestPanel.init(screenGui, showToast)
 		renderStarter()
 	end
 
-	-- Sekme değiştir: yalnız seçilen listenin içeriği görünür; geri sayım yazısı sadece DAILY'de
-	local function setTab(name)
-		currentTab = name
+	-- Sekme değiştir: yalnız seçilen listenin içeriği görünür; geri sayım çipi sadece DAILY'de
+	setTab = function(name)
+		tabApi.select(name, true)
 		list.Visible = name == "daily"
 		starterList.Visible = name == "starter"
-		timerText.Visible = name == "daily"
-		for tabName, tab in tabs do
-			local active = tabName == name
-			tab.button.BackgroundColor3 = if active then tab.color else Color3.fromRGB(80, 84, 104)
-			tab.label.TextTransparency = if active then 0 else 0.35
-		end
 		renderAll()
+		if name == "daily" then
+			updateTimer()
+		else
+			setTimer("")
+		end
 	end
-	starterTab.MouseButton1Click:Connect(function()
-		setTab("starter")
-	end)
-	dailyTab.MouseButton1Click:Connect(function()
-		setTab("daily")
-	end)
 	setTab("daily")
 
 	for _, name in { "QuestData", "StarterState" } do
@@ -505,7 +492,7 @@ function QuestPanel.init(screenGui, showToast)
 	-- Açıkken geri sayım saniyede bir güncellenir
 	task.spawn(function()
 		while true do
-			if PanelManager.isOpen(panel) then
+			if PanelManager.isOpen(panel) and list.Visible then
 				updateTimer()
 			end
 			task.wait(1)
@@ -539,7 +526,7 @@ function QuestPanel.init(screenGui, showToast)
 			if firstReady then
 				-- (Tuval boyutu liste görünür olduktan sonra hesaplanır: bir an sonra kaydır)
 				task.delay(0.05, function()
-					starterList.CanvasPosition = Vector2.new(0, math.max(0, (firstReady - 1) * 80 - 4))
+					starterList.CanvasPosition = Vector2.new(0, math.max(0, (firstReady - 1) * (ROW_HEIGHT + 8) - 4))
 				end)
 			end
 		end

@@ -4,6 +4,7 @@ local Config = require("./Config")
 Config.Tutorial.ClickGoal = 5 -- gerçek 30 tıklamayı beklemek için 12 sn busy-wait gerekirdi: sayaç mantığı hedef küçültülerek denenir
 local Layout = require("./Layout")
 local PlayerStats = require("./PlayerStats")
+require("./Config").PowerHour.Enabled = false -- testler UTC saatine bağlı Power Hour x2 çarpanından bağımsız olsun
 require("./serverMain")
 
 local function remote(name)

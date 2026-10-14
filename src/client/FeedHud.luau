@@ -87,7 +87,7 @@ function FeedHud.init(screenGui)
 			Position = UDim2.fromOffset(12, 0),
 			Size = UDim2.new(1, -16, 1, 0),
 			BackgroundTransparency = 1,
-			Font = Enum.Font.FredokaOne,
+			Font = Enum.Font.GothamBlack,
 			TextScaled = true,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = Color3.new(1, 1, 1),

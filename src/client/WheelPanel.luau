@@ -1,5 +1,5 @@
 -- Günlük çark arayüzü (referans oyundaki gibi): lobideki çarka E ile yaklaşınca açılır; arka plan karartılır, ortada büyük yuvarlak çark (8 renkli dilim, simge + ad + yüzde),
--- üstte sabit ibre, sağ üstte ghost kapat düğmesi, altta SPIN düğmesi ve sonuç/durum çipi. Çarkın yüzü shared/WheelFace ile çizilir (lobideki 3B çarkla aynı).
+-- üstte sabit ibre; modal kart UIStyle tasarım sistemiyle (header + ghost X, altta primary SPIN ve kısa sonuç/durum satırı). Çarkın yüzü shared/WheelFace ile çizilir (lobideki 3B çarkla aynı).
 -- Bu modül SADECE arayüzdür: dönüş animasyonunu ve sunucu isteğini client/WheelController yapar (panel.place ile açıyı verir, Spin düğmesi onSpin'i çağırır).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,11 +12,8 @@ local UIStyle = require(script.Parent.UIStyle)
 
 local WheelPanel = {}
 
-local FONT = Enum.Font.FredokaOne
-local WHITE = Color3.new(1, 1, 1)
-local BLACK = Color3.new(0, 0, 0)
-local GREEN = Color3.fromRGB(80, 215, 40)
-local GREY = Color3.fromRGB(100, 106, 126)
+local Theme = UIStyle.Theme
+local C = Theme.colors
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -27,20 +24,13 @@ local function create(className, props, parent)
 	return instance
 end
 
-local function makeText(parent, props, strokeThickness)
-	props.BackgroundTransparency = 1
-	props.Font = FONT
-	props.TextScaled = true
-	local label = create("TextLabel", props, parent)
-	create("UIStroke", { Thickness = strokeThickness, Color = BLACK }, label)
-	return label
-end
-
 -- screenGui: arayüz kökü (init.client'taki screenGui; sadece yedek). onSpin: Spin düğmesine basılınca çağrılır.
 -- Karartma TÜM ekranı (Roblox'un üst çubuğu payı dahil, sağ üst daireler de) örtsün diye panel kendi ScreenGui'sinde kurulur (IgnoreGuiInset = true; ana arayüzde y = 0 ekranın ~58 piksel altıdır).
 -- Dönüş: { open, close, isOpen, place(açı), setStatus(hazır, yazı, meşgul), showResult(yazı, renk) }
 function WheelPanel.init(screenGui, onSpin)
 	local isOpen = false
+	local closeToken = 0
+	local panel = {}
 
 	local host = screenGui
 	local playerGui = Players.LocalPlayer and Players.LocalPlayer:WaitForChild("PlayerGui", 5)
@@ -58,8 +48,8 @@ function WheelPanel.init(screenGui, onSpin)
 	local backdrop = create("TextButton", {
 		Name = "WheelPanel",
 		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = BLACK,
-		BackgroundTransparency = 0.4,
+		BackgroundColor3 = C.bg,
+		BackgroundTransparency = 0.35,
 		Text = "",
 		AutoButtonColor = false,
 		Active = true,
@@ -67,25 +57,45 @@ function WheelPanel.init(screenGui, onSpin)
 		ZIndex = 40,
 	}, host)
 
-	makeText(backdrop, {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.07),
-		Size = UDim2.fromScale(0.5, 0.09),
-		Text = "DAILY WHEEL",
-		TextColor3 = Color3.fromRGB(255, 225, 90),
-		ZIndex = 41,
-	}, 3.5)
+	-- Ortadaki modal kart: ince çerçeveli koyu panel (genişlik ekranın %92'si ile 520 arası, yükseklik ekranın %92'si)
+	local card = UIStyle.panel(backdrop, {
+		name = "WheelCard",
+		accent = "warn",
+		width = 520,
+		size = UDim2.fromScale(0, 0.92),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchor = Vector2.new(0.5, 0.5),
+		shadow = false,
+	})
+	card.ZIndex = 41
+	create("UISizeConstraint", { Name = "HeightLimit", MaxSize = Vector2.new(520, 720) }, card)
 
-	-- Çark: ekran yüksekliğinin %58'i kadar kare
+	UIStyle.header(card, {
+		title = "DAILY WHEEL",
+		emoji = "🎡",
+		accent = "warn",
+		onClose = function()
+			panel.close() -- panel tablosu aşağıda doldurulur; tıklanınca çağrılır
+		end,
+	})
+
+	-- Çark alanı: başlıkla alt bölüm arasındaki boşluk; çark bunun içine sığan en büyük kare
+	local area = create("Frame", {
+		Name = "WheelArea",
+		Position = UDim2.new(0, 16, 0, 78),
+		Size = UDim2.new(1, -32, 1, -78 - 124),
+		BackgroundTransparency = 1,
+		ZIndex = 41,
+	}, card)
 	local holder = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.47),
-		Size = UDim2.fromScale(0.58, 0.58),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.96, 0.96),
 		BackgroundTransparency = 1,
 		Active = true, -- çarka tıklamak paneli kapatmasın
 		ZIndex = 41,
-	}, backdrop)
-	create("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Height }, holder)
+	}, area)
+	create("UIAspectRatioConstraint", { AspectRatio = 1 }, holder)
 	-- Çarkın yüzü: Auto Click game pass'i olan oyuncuda 'Auto Click Potion' dilimi 'Rainbow Potion' görünür (sunucu da öyle verir); pass bilgisi sonradan gelince/satın alınınca yüz yeniden çizilir
 	local face
 	local faceAngle = 0
@@ -106,71 +116,74 @@ function WheelPanel.init(screenGui, onSpin)
 	buildFace()
 	Players.LocalPlayer:GetAttributeChangedSignal("HasAutoClick"):Connect(buildFace)
 
-	-- İbre: çarkın üstünde sabit, aşağı bakan beyaz üçgen
-	makeText(holder, {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.0),
-		Size = UDim2.fromScale(0.16, 0.16),
-		Text = "▼",
-		TextColor3 = WHITE,
-		ZIndex = 44,
-	}, 3)
+	-- İbre: çarkın üstünde sabit, aşağı bakan altın üçgen (yazı üstünde ince, yarı saydam siyah kontur)
+	local pointer = UIStyle.label(holder, {
+		name = "Pointer",
+		text = "▼",
+		role = "title",
+		size = 34,
+		align = "center",
+		color = C.primary.base,
+		props = {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.0),
+			Size = UDim2.fromScale(0.16, 0.16),
+			ZIndex = 44,
+		},
+	})
+	pcall(function()
+		pointer.TextScaled = true
+		create("UIStroke", { Thickness = 1.5, Color = Color3.new(0, 0, 0), Transparency = 0.55, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }, pointer)
+	end)
 
-	-- Kapat (X): çarkın sağ üst köşesinde
-	local close = create("TextButton", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(1.02, 0.0),
-		Size = UDim2.fromScale(0.13, 0.13),
-		Text = "X",
-		Font = FONT,
-		TextScaled = true,
-		TextColor3 = WHITE,
-		BackgroundColor3 = Color3.fromRGB(235, 40, 60),
-		ZIndex = 45,
-	}, holder)
-	create("UIStroke", { Thickness = 3, Color = BLACK }, close)
-	UIStyle.soften(close, { radius = 10, strength = 0.28 })
-
-	-- Alt: sonuç/durum yazısı ve Spin düğmesi
-	local statusLabel = makeText(backdrop, {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.805),
-		Size = UDim2.fromScale(0.6, 0.05),
-		Text = "",
-		TextColor3 = Color3.fromRGB(215, 225, 245),
-		ZIndex = 41,
-	}, 2.5)
-	local spin = create("TextButton", {
-		Name = "SpinButton",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.89),
-		Size = UDim2.fromScale(0.3, 0.09),
-		Text = "",
-		BackgroundColor3 = GREEN,
-		ZIndex = 41,
-	}, backdrop)
-	create("UIStroke", { Thickness = 4, Color = BLACK }, spin)
-	UIStyle.soften(spin, { radius = 14, strength = 0.3 })
-	local spinText = makeText(spin, {
-		Position = UDim2.fromScale(0.05, 0.1),
-		Size = UDim2.fromScale(0.9, 0.8),
-		Text = "Spin! (1)",
-		TextColor3 = WHITE,
-		ZIndex = 42,
-	}, 3)
-
-	local panel = {}
+	-- Alt: kısa sonuç/durum satırı ve Spin düğmesi
+	local statusLabel = UIStyle.label(card, {
+		name = "WheelStatus",
+		text = "",
+		role = "bold",
+		align = "center",
+		color = C.textDim,
+		props = { Position = UDim2.new(0, 16, 1, -116), Size = UDim2.new(1, -32, 0, 30), ZIndex = 41 },
+	})
+	pcall(function()
+		statusLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	end)
+	local spin = UIStyle.button(card, {
+		name = "SpinButton",
+		text = "Spin! (1)",
+		kind = "primary",
+		size = "lg",
+		width = 260,
+		position = UDim2.new(0.5, -130, 1, -76),
+		onClick = function()
+			if onSpin then
+				onSpin()
+			end
+		end,
+	})
 
 	function panel.isOpen()
 		return isOpen
 	end
 	function panel.open()
 		isOpen = true
+		closeToken += 1
 		backdrop.Visible = true
+		UIStyle.fadeScaleIn(card)
 	end
 	function panel.close()
+		if not isOpen then
+			return
+		end
 		isOpen = false
-		backdrop.Visible = false
+		closeToken += 1
+		local token = closeToken
+		UIStyle.fadeScaleOut(card, function()
+			-- bu arada yeniden açıldıysa karartmayı kapatma
+			if token == closeToken then
+				backdrop.Visible = false
+			end
+		end)
 	end
 	-- Çarkı açıya (derece, saat yönü) döndürür
 	function panel.place(angle)
@@ -179,25 +192,19 @@ function WheelPanel.init(screenGui, onSpin)
 	end
 	-- hazır: bugünkü hak var mı; yazı: altındaki durum yazısı (boşsa değişmez); meşgul: çark dönüyor ya da sunucudan yanıt bekleniyor
 	function panel.setStatus(ready, text, busy)
-		spin.BackgroundColor3 = if ready and not busy then GREEN else GREY
-		spinText.Text = if busy then "Spinning..." elseif ready then "Spin! (1)" else "Spin! (0)"
+		UIStyle.setButtonKind(spin, if ready and not busy then "primary" else "secondary")
+		UIStyle.setButtonText(spin, if busy then "Spinning..." elseif ready then "Spin! (1)" else "Spin! (0)")
 		if text then
 			statusLabel.Text = text
-			statusLabel.TextColor3 = Color3.fromRGB(215, 225, 245)
+			statusLabel.TextColor3 = C.textDim
 		end
 	end
 	function panel.showResult(text, color)
 		statusLabel.Text = text
-		statusLabel.TextColor3 = color or Color3.fromRGB(255, 235, 110)
+		statusLabel.TextColor3 = color or C.primary.base
 	end
 
-	close.MouseButton1Click:Connect(panel.close)
 	backdrop.MouseButton1Click:Connect(panel.close)
-	spin.MouseButton1Click:Connect(function()
-		if onSpin then
-			onSpin()
-		end
-	end)
 
 	return panel
 end

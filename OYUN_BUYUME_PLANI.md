@@ -72,6 +72,7 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 - 2026-10-14: **rozetler (9, pasif: id bekliyor) ve rütbe unvanları YAPILDI** (badgetest).
 - 2026-10-14: **1.3 kısıtlı hesaplar için sabit sıralı Eğitim Yumurtası YAPILDI** (trainingeggtest).
 - 2026-10-14: **2.1 Halloween Lite (Spooky Gym) YAPILDI** (Candy, deterministik mağaza, kilometre taşları, lobi süsü; seasoneventtest, eventdecortest, spookypaneltest). Ortak hedef (topluluk) bilerek YOK: 16 kişilik nüfusta ulaşılamaz hedef olurdu.
+- 2026-10-14: **tüm arayüz yenilendi (Soft Dark Candy, UIStyle tasarım sistemi, 15 panel + HUD)**; Studio doğrulaması sahipte.
 - 2026-10-14: **harita/ışık geçişi YAPILDI** (bölge duvar renkleri + doygunluk/kontrast; vinyet ve merkez halka bilerek yok).
 - 2026-10-14: **1.6 Neler yeni kartı YAPILDI** (whatsnewtest, whatsnewcardtest).
 - 2026-10-14: **1.5 ölçüm olayları YAPILDI** (Economy kaynak/gider + özel olaylar; analyticstest).
