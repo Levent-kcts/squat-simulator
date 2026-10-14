@@ -434,6 +434,53 @@ end
 
 local GOLD = Color3.fromRGB(255, 220, 70)
 local PINK = Color3.fromRGB(255, 90, 190)
+
+-- EVRİM ANI 'FORM-UP' (büyüme planı 2.2): yeni kas aşaması açılınca (Progression.legStage artınca) kısa, sade, klip dostu bir an: ayakların altından genişleyen altın halka,
+-- güçlü parıltı patlaması, kamera görüş açısında kısa 'vuruş' (FOV) ve küçük üst yazı. Ekranı kapatmaz, ortada büyük yazı YOK. Calm UI ve hafif modda sadece parıltı + küçük yazı.
+function Juice.evolve(stage)
+	local root = rootPart()
+	if not root then
+		return false
+	end
+	local calm = player:GetAttribute("CalmUI") == true
+	local low = okPerf and Performance.low
+	Juice.burst(root.Position + Vector3.new(0, 1, 0), Vector3.new(5, 5, 5), GOLD, if low then 60 else 140, nil, Color3.fromRGB(255, 255, 255))
+	Juice.screenPop(`EVOLVED! Stage {stage}`, GOLD, nil, 1.1)
+	if calm or low then
+		return true
+	end
+	-- Genişleyen halka (ayakların altında, neon, hızla solar)
+	local humanoid = root.Parent and root.Parent:FindFirstChildOfClass("Humanoid")
+	local feetY = root.Position.Y - root.Size.Y / 2 - (if humanoid then humanoid.HipHeight else 2)
+	local ring = Instance.new("Part")
+	ring.Name = "EvolveRing"
+	ring.Shape = Enum.PartType.Cylinder
+	ring.Anchored = true
+	ring.CanCollide = false
+	ring.CanQuery = false
+	ring.CanTouch = false
+	ring.CastShadow = false
+	ring.Material = Enum.Material.Neon
+	ring.Color = GOLD
+	ring.Transparency = 0.25
+	ring.Size = Vector3.new(0.3, 2, 2)
+	ring.Position = Vector3.new(root.Position.X, feetY + 0.2, root.Position.Z)
+	ring.Orientation = Vector3.new(0, 0, 90) -- silindir ekseni dikey: yassı halka
+	ring.Parent = Workspace
+	TweenService:Create(ring, TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = Vector3.new(0.3, 26, 26), Transparency = 1 }):Play()
+	Debris:AddItem(ring, 1)
+	-- Kamera vuruşu: görüş açısı kısa daralır, yumuşakça geri döner (CameraShake ayarı kapalıysa yok)
+	local camera = Workspace.CurrentCamera
+	if camera and player:GetAttribute("CameraShake") ~= false then
+		local original = camera.FieldOfView
+		TweenService:Create(camera, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { FieldOfView = original - 7 }):Play()
+		task.delay(0.14, function()
+			TweenService:Create(camera, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { FieldOfView = original }):Play()
+		end)
+	end
+	Juice.shake(0.25, 0.3)
+	return true
+end
 local GREEN = Color3.fromRGB(120, 255, 160)
 
 function Juice.init(screenGui)
@@ -500,7 +547,12 @@ function Juice.init(screenGui)
 			end
 			Juice.celebrate(GOLD, 40)
 			-- Level atlayınca kısık 'LevelUp' (eski Roblox zafer sesi); kas aşaması da değiştiyse (yeni kas çıktı/irileşti) daha güçlü 'GrowBig'
-			sfx(if Progression.legStage(level.Value) > Progression.legStage(previousLevel) then "GrowBig" else "LevelUp")
+			local newStage = Progression.legStage(level.Value)
+			local evolved = newStage > Progression.legStage(previousLevel)
+			sfx(if evolved then "GrowBig" else "LevelUp")
+			if evolved then
+				pcall(Juice.evolve, newStage)
+			end
 		end
 	end)
 
