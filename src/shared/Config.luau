@@ -250,6 +250,20 @@ return {
 	-- Arkadaş bonusu: aynı sunucudaki her arkadaş için bacak kası kazancına +PercentPerFriend yüzdesi eklenir (en çok MaxFriends arkadaş sayılır).
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
+	-- PROMOSYON KODLARI (2026-10-14: sahibi daha önce reddetmişti, araştırma sonrası 'onay veriyorum, ne gerekiyorsa yap' dedi; sektörde standart: kod listeleme siteleri ücretsiz arama trafiği getirir).
+	-- Settings penceresinin üstündeki 'Redeem code' satırından girilir (server: PlayerStats.redeemCode). Kod büyük/küçük harf ve boşluk duyarsız, HER KOD HESAP BAŞINA BİR KEZ; ödüller Robux'suz ve küçük:
+	-- wins (Win), muscleClicks (tıklama değerinde bacak kası), potions ({ kind, minutes } iksir envantere girer). expires = UTC saniye (os.time) ya da yok. Yeni kodu buraya ekle ve tanıtımda (video/sayfa) duyur.
+	Codes = {
+		{ code = "LAUNCH", wins = 100, potions = { { kind = "boostLuck", minutes = 15 } } },
+		{ code = "SQUAT", muscleClicks = 2500, potions = { { kind = "boostMuscle", minutes = 15 } } },
+		{ code = "SMASHWALLS", potions = { { kind = "boostRainbow", minutes = 15 } } },
+		{ code = "EVOLUTION", wins = 150 },
+		{ code = "LEGDAY", potions = { { kind = "boostMuscle", minutes = 15 }, { kind = "boostWins", minutes = 15 } } },
+		{ code = "FRIENDS", wins = 60, potions = { { kind = "boostLuck", minutes = 15 } } },
+		{ code = "THANKS", muscleClicks = 5000, wins = 50 },
+	},
+	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
+
 	-- FRIEND REFERRAL ÖDÜLÜ (2026-10-14 büyüme planı sprint 1.2; server/Referrals): davet bağlantısıyla gelen YENİ oyuncu RequiredSeconds kadar oynayınca ikisine de iksir (Robux/Win DEĞİL) verilir; davetli başına tek seferlik,
 	-- davetçi başına en çok MaxPerInviter ödül (kötüye kullanım sınırı). Creator Hub > Engagement > Referral Rewards'ta banner açmak sahibine ait (kod banner olmadan da çalışır).
 	Referral = {

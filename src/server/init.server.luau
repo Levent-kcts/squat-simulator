@@ -308,6 +308,8 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return PlayerStats.usePotion(player, id)
 	elseif action == "ClaimOffline" then
 		return PlayerStats.claimOffline(player)
+	elseif action == "RedeemCode" and type(id) == "string" then
+		return PlayerStats.redeemCode(player, id)
 	elseif action == "SetSetting" and type(id) == "string" and type(value) == "boolean" then
 		return PlayerStats.setSetting(player, id, value)
 	elseif action == "SetMusicLevel" and type(id) == "number" then

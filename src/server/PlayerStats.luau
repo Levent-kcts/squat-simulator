@@ -231,7 +231,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -445,6 +445,14 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true })
+	-- Kullanılan promosyon kodları (Config.Codes; kod başına bir kez). Listede olmayan eski kodlar da korunur (sonradan kaldırılsa bile yeniden kullanılamasın)
+	if type(raw.Codes) == "table" then
+		for _, code in raw.Codes do
+			if type(code) == "string" and #code <= 24 then
+				data.Codes[string.upper(code)] = true
+			end
+		end
+	end
 	-- Friend Referral durumu (server/Referrals): kim davet etti (0 = kimse), ödül verildi mi, davetlinin oynadığı saniye
 	if type(raw.Referral) == "table" then
 		if type(raw.Referral.by) == "number" and raw.Referral.by > 0 then
@@ -828,6 +836,7 @@ local function save(player, mode)
 		Muscle = muscle.Value,
 		LifetimeMuscle = profile.lifetimeMuscle,
 		Referral = profile.referral,
+		Codes = setToList(profile.codes),
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
 		Taps = profile.taps,
@@ -1060,6 +1069,7 @@ local function setup(player)
 
 	local profile = {
 		taps = 0,
+		codes = {}, -- kullanılan promosyon kodları { KOD = true } (kayıtlı)
 		referral = { by = 0, paid = false, secs = 0 }, -- Friend Referral durumu (kayıtlı)
 		lifetimeMuscle = 0, -- bugüne kadar kazanılan TOPLAM bacak kası (rebirth sıfırlamaz; sıralama panosu bunu okur; kayıtlı)
 		loaded = false,
@@ -1173,6 +1183,7 @@ local function setup(player)
 	muscle.Value = data.Muscle
 	profile.lifetimeMuscle = data.LifetimeMuscle
 	profile.referral = data.Referral
+	profile.codes = data.Codes
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
 	-- sinyalden ÖNCE yapıldığı için sayılmaz.
 	local lastMuscle = muscle.Value
@@ -1296,6 +1307,70 @@ function PlayerStats.getMuscle(player)
 end
 
 -- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
+-- PROMOSYON KODU (Config.Codes): Settings'teki 'Redeem code' satırı. Büyük/küçük harf ve boşluk duyarsız, hesap başına kod başına BİR kez, yanlış deneme sınırlı. Dönüş: başarılı mı, mesaj
+local codeBuckets = setmetatable({}, { __mode = "k" }) -- [oyuncu] = { tokens, last }: dakikada Config.CodeAttempts.PerMinute deneme
+function PlayerStats.redeemCode(player, raw)
+	local profile = profiles[player]
+	local wins = getStat(player, Config.StatWins)
+	local muscle = getStat(player, Config.StatLegMuscle)
+	if not profile or not profile.loaded or not wins or not muscle then
+		return false, "Loading your data, please wait."
+	end
+	local perMinute = Config.CodeAttempts.PerMinute
+	local bucket = codeBuckets[player]
+	local now = os.clock()
+	if not bucket then
+		bucket = { tokens = perMinute, last = now }
+		codeBuckets[player] = bucket
+	end
+	bucket.tokens = math.min(perMinute, bucket.tokens + (now - bucket.last) * perMinute / 60)
+	bucket.last = now
+	if bucket.tokens < 1 then
+		return false, "Too many tries. Wait a minute and try again."
+	end
+	bucket.tokens -= 1
+
+	local typed = if type(raw) == "string" then string.upper(string.gsub(string.sub(raw, 1, 40), "[^%w]", "")) else ""
+	if typed == "" then
+		return false, "Type a code first."
+	end
+	local def
+	for _, entry in Config.Codes do
+		if entry.code == typed then
+			def = entry
+			break
+		end
+	end
+	if not def then
+		return false, "That code does not exist."
+	end
+	if def.expires and os.time() > def.expires then
+		return false, "That code has expired."
+	end
+	if profile.codes[def.code] then
+		return false, "You already used this code."
+	end
+	profile.codes[def.code] = true
+	local parts = {}
+	if def.wins then
+		wins.Value += def.wins
+		table.insert(parts, `+{Format.compact(def.wins)} Wins`)
+	end
+	if def.muscleClicks then
+		local amount = math.max(100, math.floor(profile.gain * def.muscleClicks))
+		muscle.Value += amount
+		syncLevel(player)
+		table.insert(parts, `+{Format.compact(amount)} Leg Muscle`)
+	end
+	for _, potion in def.potions or {} do
+		giveItem(player, profile, potion.kind, potion.minutes)
+		table.insert(parts, `{Catalog.PotionByKind[potion.kind].name} ({potion.minutes} min)`)
+	end
+	refresh(player)
+	requestSave(player)
+	return true, `Code {def.code} redeemed: {table.concat(parts, ", ")}! Potions are in Shop > Potions.`
+end
+
 -- Oyuncunun verisi yüklenince fn(player) çağrılır (başka sunucu modülleri bağlanır; hata verirse oyun etkilenmez)
 function PlayerStats.onLoaded(fn)
 	table.insert(loadedCallbacks, fn)

@@ -65,3 +65,5 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 - 2026-10-14: araştırma tamam (5 rapor), plan yazıldı, sahibi listesi verildi. Sprint 1 başladı.
 - 2026-10-14: **1.1 çapraz sunucu duyuru akışı YAPILDI** (GlobalFeed + FeedHud, testli).
 - 2026-10-14: **1.2 Friend Referral ödülü kodlandı** (server/Referrals, PlayerStats.onLoaded kancası, Config.Referral); referraltest.luau ile testli.
+- 2026-10-14: sahibi Audience Reach'i paylaştı: kimlik, 2FA, anket, ücret TAMAM; eksik olan tek şey 250 highly engaged (şu an 1). Sahibi kod/günlük ödülü onayladı ve fiyat indirimi + 'hepsini ekle' dedi.
+- 2026-10-14: **fiyat indirimi YAPILDI** (ROBUX_FIYAT_DEGISIKLIGI.md), **promosyon kodları YAPILDI** (Config.Codes, Settings > Redeem code, codestest).

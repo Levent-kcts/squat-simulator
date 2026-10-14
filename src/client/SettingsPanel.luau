@@ -37,7 +37,7 @@ function SettingsPanel.init(screenGui)
 	local player = Players.LocalPlayer
 	local ROW_HEIGHT, ROW_GAP = 54, 8
 	local settings = Config.Settings
-	local height = 68 + #settings * (ROW_HEIGHT + ROW_GAP) + 4
+	local height = 68 + (#settings + 1) * (ROW_HEIGHT + ROW_GAP) + 4 -- ilk satır: promosyon kodu girişi, sonra ayarlar
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -82,9 +82,96 @@ function SettingsPanel.init(screenGui)
 		PanelManager.hide(panel)
 	end)
 
+	-- PROMOSYON KODU (Config.Codes; 2026-10-14 büyüme planı): kutuya yaz, REDEEM'e bas. Sonuç aynı satırda yazar (yeşil: ödül, kırmızı: hata); sunucu doğrular (PlayerStats.redeemCode)
+	do
+		local CODE_HINT = "Redeem code: free potions and Wins!"
+		local shop = ReplicatedStorage:WaitForChild("Shop")
+		local codeRow = create("Frame", {
+			Name = "CodeRow",
+			Position = UDim2.fromOffset(12, 68),
+			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
+			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
+		}, panel)
+		create("UICorner", { CornerRadius = UDim.new(0, 8) }, codeRow)
+		UIStyle.soften(codeRow, { radius = 10, strength = 0.12, shine = false })
+		local status = text(codeRow, {
+			Name = "CodeStatus",
+			Position = UDim2.fromOffset(12, 3),
+			Size = UDim2.new(1, -120, 0, 24),
+			Text = CODE_HINT,
+			TextColor3 = Color3.fromRGB(255, 230, 120),
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, 1)
+		create("UITextSizeConstraint", { MaxTextSize = 16 }, status)
+		local box = create("TextBox", {
+			Name = "CodeBox",
+			Position = UDim2.fromOffset(12, 29),
+			Size = UDim2.new(1, -120, 0, 21),
+			BackgroundColor3 = Color3.fromRGB(30, 33, 46),
+			TextColor3 = Color3.new(1, 1, 1),
+			PlaceholderText = "Enter code",
+			PlaceholderColor3 = Color3.fromRGB(140, 146, 170),
+			Font = FONT,
+			TextSize = 15,
+			Text = "",
+			ClearTextOnFocus = false,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, codeRow)
+		create("UICorner", { CornerRadius = UDim.new(0, 6) }, box)
+		create("UIPadding", { PaddingLeft = UDim.new(0, 8) }, box)
+		local redeem = create("TextButton", {
+			Name = "RedeemButton",
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -10, 0.5, 0),
+			Size = UDim2.fromOffset(84, 36),
+			Text = "",
+			BackgroundColor3 = ON_COLOR,
+		}, codeRow)
+		create("UICorner", { CornerRadius = UDim.new(0, 18) }, redeem)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, redeem)
+		UIStyle.soften(redeem, { radius = 18, strength = 0.28 })
+		text(redeem, { Position = UDim2.fromScale(0.08, 0.15), Size = UDim2.fromScale(0.84, 0.7), Text = "REDEEM", TextColor3 = Color3.new(1, 1, 1) }, 2)
+
+		local busy = false
+		local shownId = 0
+		local function submit()
+			local typed = box.Text
+			if busy or typed == "" then
+				return
+			end
+			busy = true
+			task.spawn(function()
+				local callOk, success, message = pcall(shop.InvokeServer, shop, "RedeemCode", typed)
+				busy = false
+				shownId += 1
+				local id = shownId
+				if not callOk then
+					success, message = false, "Could not redeem the code. Try again."
+				end
+				status.Text = message or ""
+				status.TextColor3 = if success then Color3.fromRGB(110, 255, 140) else Color3.fromRGB(255, 120, 120)
+				if success then
+					box.Text = ""
+				end
+				task.delay(7, function()
+					if shownId == id then
+						status.Text = CODE_HINT
+						status.TextColor3 = Color3.fromRGB(255, 230, 120)
+					end
+				end)
+			end)
+		end
+		redeem.MouseButton1Click:Connect(submit)
+		box.FocusLost:Connect(function(enterPressed)
+			if enterPressed then
+				submit()
+			end
+		end)
+	end
+
 	for index, setting in settings do
 		local row = create("Frame", {
-			Position = UDim2.fromOffset(12, 68 + (index - 1) * (ROW_HEIGHT + ROW_GAP)),
+			Position = UDim2.fromOffset(12, 68 + index * (ROW_HEIGHT + ROW_GAP)),
 			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
 			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
 		}, panel)
