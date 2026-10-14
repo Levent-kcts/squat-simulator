@@ -22,6 +22,7 @@ local EggShop = {}
 
 -- Açılış ekranı korumalı yüklenir: hata verirse yumurta açma yine çalışır (sadece sonuç ekranı görünmez)
 local okReveal, Reveal = pcall(require, script.Parent.Reveal)
+local okScaler, LabelScaler = pcall(require, script.Parent.LabelScaler) -- etiketleri mesafeye göre ölçekler (uzaktakiler küçülür)
 
 -- Ped renkleri raflarla aynı mantıkta (ShelfClient): parlak yeşil = açabilirsin, sönük lavanta gri = Win yetmiyor, gri = pet envanteri dolu
 local GREEN = Color3.fromRGB(60, 255, 110)
@@ -91,11 +92,14 @@ function EggShop.init(screenGui, hooks)
 		--  * isim: yumurtanın üstünde tek satır,
 		--  * fiyat: pedin hemen üstünde. Boyutlar stud cinsinden, uzaktayken küçülür; uzaktaki etiketler gizlenir (MaxDistance).
 		local nameGui = create("BillboardGui", {
-			Size = UDim2.fromOffset(210, 44), -- piksel boyutu: yakında ekranı kaplamaz (QA 2026-10-15)
+			Size = UDim2.fromOffset(190, 40), -- piksel boyutu, mesafeye göre LabelScaler ölçekler (QA 2026-10-15)
 			StudsOffsetWorldSpace = Vector3.new(0, 8.6, 0),
 			MaxDistance = 40,
 			Adornee = pad,
 		}, pad)
+		if okScaler then
+			LabelScaler.register(nameGui, 190, 40, 16)
+		end
 		makeText(nameGui, {
 			Size = UDim2.fromScale(1, 1),
 			TextColor3 = egg.color:Lerp(Color3.new(1, 1, 1), 0.35),
@@ -108,6 +112,9 @@ function EggShop.init(screenGui, hooks)
 			MaxDistance = 28,
 			Adornee = pad,
 		}, pad)
+		if okScaler then
+			LabelScaler.register(priceGui, 150, 30, 14)
+		end
 		local price = makeText(priceGui, {
 			Size = UDim2.fromScale(1, 1),
 			TextColor3 = Color3.new(1, 1, 1),

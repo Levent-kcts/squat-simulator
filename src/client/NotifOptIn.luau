@@ -8,7 +8,7 @@ local NotifOptIn = {}
 
 local DELAY = 12 -- rebirth kutlaması bittikten sonra (sn)
 
-function NotifOptIn.init()
+function NotifOptIn.init(screenGui)
 	local player = Players.LocalPlayer
 	local started = false
 	local function consider()
@@ -22,6 +22,22 @@ function NotifOptIn.init()
 		end
 		started = true
 		task.delay(DELAY, function()
+			-- Welcome Back (çevrimdışı kazanç) ya da Neler Yeni kartı açıksa onlar kapanana kadar bekle (en çok 60 sn): iki pencere üst üste çıkmasın
+			for _ = 1, 60 do
+				local busy = false
+				if screenGui then
+					for _, name in { "OfflineEarnings", "WhatsNewCard" } do
+						local frame = screenGui:FindFirstChild(name, true)
+						if frame and frame.Visible then
+							busy = true
+						end
+					end
+				end
+				if not busy then
+					break
+				end
+				task.wait(1)
+			end
 			local ok, service = pcall(function()
 				return game:GetService("ExperienceNotificationService")
 			end)

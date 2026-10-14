@@ -45,6 +45,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 local cfg = Config.Wall
 
 player.CameraMaxZoomDistance = Config.CameraMaxZoom
+player.CameraMinZoomDistance = Config.CameraMinZoom or 10 -- level 52+ karakter çok büyük: kamera gövdenin içine girmesin (QA 2026-10-15)
 
 local Theme = UIStyle.Theme
 local C = Theme.colors
@@ -999,7 +1000,7 @@ local function showToast(ok, message)
 end
 
 notifyEvent.OnClientEvent:Connect(showToast)
-safeInit("NotifOptIn", loadOptional("NotifOptIn")) -- ilk rebirth sonrası Roblox bildirim izni (bir kez)
+safeInit("NotifOptIn", loadOptional("NotifOptIn"), screenGui) -- ilk rebirth sonrası Roblox bildirim izni (bir kez)
 safeInit("PowerHourHud", loadOptional("PowerHourHud"), screenGui, showToast) -- Power Hour sayacı (son 90 sn + aktifken, üstte küçük hap); başlarken tek bildirim
 
 -- Eğitim bitince (ilk skin alınınca) kısa tebrik

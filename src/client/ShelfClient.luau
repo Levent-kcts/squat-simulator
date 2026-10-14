@@ -11,6 +11,8 @@ local Format = require(Shared:WaitForChild("Format"))
 -- Performans modülü korumalı: yoksa her şey eskisi gibi çalışır
 local okPerf, Performance = pcall(require, script.Parent.Performance)
 
+local okScaler, LabelScaler = pcall(require, script.Parent.LabelScaler) -- etiketleri mesafeye göre ölçekler (uzaktakiler küçülür)
+
 local ShelfClient = {}
 
 -- Ped renkleri (sahne bunaltmasın diye SADECE işe yarayan pedler parlar, gerisi sönüktür; Win yokken hiçbiri parlamaz):
@@ -70,6 +72,9 @@ function ShelfClient.init(options)
 		gui.MaxDistance = 30
 		gui.Adornee = pad
 		gui.Parent = pad
+		if okScaler then
+			LabelScaler.register(gui, 150, 72, 16)
+		end
 
 		-- Koyu renkler (Galaxy gibi) siyah kenarlıkla bile okunsun diye isim rengi beyaza doğru açılır
 		local name = makeLabel(gui, 0, 0.3, item.color:Lerp(Color3.new(1, 1, 1), 0.55))

@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local okScaler, LabelScaler = pcall(require, script.Parent.LabelScaler) -- etiketleri mesafeye göre ölçekler (uzaktakiler küçülür)
 local ShelfClient = require(script.Parent.ShelfClient)
 
 local TrainingClient = {}
@@ -52,6 +53,9 @@ function TrainingClient.init()
 		gui.MaxDistance = 80
 		gui.Adornee = pad
 		gui.Parent = pad
+		if okScaler then
+			LabelScaler.register(gui, 230 * pixelScale, 104 * pixelScale, 24)
+		end
 
 		local name = ShelfClient.makeLabel(gui, 0, 0.27, Color3.new(1, 1, 1))
 		name.Text = area.trainer

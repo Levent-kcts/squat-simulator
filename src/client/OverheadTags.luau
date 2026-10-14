@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local okScaler, LabelScaler = pcall(require, script.Parent.LabelScaler) -- etiketleri mesafeye göre ölçekler (uzaktakiler küçülür)
 local Format = require(Shared:WaitForChild("Format"))
 local Progression = require(Shared:WaitForChild("Progression"))
 
@@ -65,6 +66,9 @@ local function attach(targetPlayer, character)
 	gui.MaxDistance = 60
 	gui.Adornee = head
 	gui.Parent = head
+	if okScaler then
+		LabelScaler.register(gui, 190, 84, 18)
+	end
 
 	-- Settings'te "Name tags" kapalıysa etiket görünmez (bu oyuncunun ekranında)
 	local viewer = Players.LocalPlayer

@@ -546,7 +546,8 @@ return {
 	-- Oyuncuyu ödüllendiren yol yeni oyuncu görevleridir: StarterQuests, Quests penceresi > NEW PLAYER, CLAIM ile alınır.)
 
 	-- Kameranın en fazla ne kadar uzaklaşabileceği (stud). Koridorun dışından içeriyi görmeyi engeller.
-	CameraMaxZoom = 40,
+	CameraMaxZoom = 60,
+	CameraMinZoom = 10,
 
 	-- Işıklandırma ve ışık efekti (server/EnvironmentService). Kapalı mekanda aydınlığı ortam ışığı verir (karanlık/mavi hava istenmedi).
 	-- PanelGlow: lobideki tavan panellerinin çevresinde SADECE tavan yüzeyinde yumuşak bir hale (üst üste bindirilmiş şeffaf katmanlar);
