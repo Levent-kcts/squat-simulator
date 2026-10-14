@@ -28,6 +28,18 @@ local function styledLabel(parent, yScale, heightScale, color)
 	return label
 end
 
+-- Rebirth sayısına göre yıldız rengi (RichText onaltılık)
+local function starColor(count)
+	if count >= 20 then
+		return "#FF6FB0"
+	elseif count >= 10 then
+		return "#C58BFF"
+	elseif count >= 5 then
+		return "#FFD23C"
+	end
+	return "#E6EEF8"
+end
+
 local function attach(targetPlayer, character)
 	local head = character:WaitForChild("Head", 10)
 	local leaderstats = targetPlayer:WaitForChild("leaderstats", 30)
@@ -71,6 +83,8 @@ local function attach(targetPlayer, character)
 
 	local muscle = leaderstats:WaitForChild(Config.StatLegMuscle, 10)
 	local level = leaderstats:WaitForChild(Config.StatLevel, 10)
+	local rebirths = leaderstats:WaitForChild(Config.StatRebirths, 10)
+	nameLabel.RichText = true
 
 	local function refresh()
 		if not gui.Parent then
@@ -80,13 +94,18 @@ local function attach(targetPlayer, character)
 		gui.StudsOffsetWorldSpace = Vector3.new(0, head.Size.Y / 2 + 1.6, 0)
 		local text = if muscle then Format.compact(muscle.Value) else "0"
 		power.Text = `🦵 {text}`
-		if level then
+		-- KALICI STATÜ (2026-10-14 tasarım incelemesi: 'Lv.N' ve kas rebirth'te sıfırlanır, 40 rebirth'lik oyuncu yeni oyuncuyla aynı görünüyordu): rebirth yapmış oyuncuda
+		-- '★N' rozeti (rebirth sayısı, renk kademesi: 1+ gümüş, 5+ altın, 10+ mor, 20+ pembe), yapmamışta 'Lv.N'
+		local rebirthCount = if rebirths then rebirths.Value else 0
+		if rebirthCount > 0 then
+			nameLabel.Text = `<font color="{starColor(rebirthCount)}">★{rebirthCount}</font> {targetPlayer.DisplayName}`
+		elseif level then
 			nameLabel.Text = `Lv.{level.Value} {targetPlayer.DisplayName}`
 		end
 	end
 	refresh()
 
-	for _, stat in { muscle, level } do
+	for _, stat in { muscle, level, rebirths } do
 		if stat then
 			stat:GetPropertyChangedSignal("Value"):Connect(refresh)
 		end
