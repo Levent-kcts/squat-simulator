@@ -21,6 +21,17 @@ function Progression.maxLevel(rebirths)
 	return Config.Level.BaseMaxLevel + rebirths * Config.Level.MaxLevelPerRebirth
 end
 
+-- Rebirth sayısına göre rütbe unvanı (Config.Titles; en yüksek eşiği geçen). Dönüş: { rebirths, name, color }
+function Progression.title(rebirths)
+	local best = Config.Titles[1]
+	for _, title in Config.Titles do
+		if rebirths >= title.rebirths then
+			best = title
+		end
+	end
+	return best
+end
+
 -- Verilen levele ulaşmak için gereken TOPLAM bacak kası (level 1 = 0)
 function Progression.cumulativeMuscle(level)
 	local total = 0

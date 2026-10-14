@@ -146,6 +146,12 @@ local function createWinButton(folder, stage, def)
 			return
 		end
 		PlayerStats.addWin(player, reward)
+		if stage >= 10 then
+			PlayerStats.awardBadge(player, "stage10")
+		end
+		if stage >= Config.Wall.Count // Config.Wall.GroupSize then
+			PlayerStats.awardBadge(player, "stage20")
+		end
 		resetRun(player)
 		teleportToSpawn(player)
 	end)

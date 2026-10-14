@@ -259,6 +259,30 @@ return {
 	-- Arkadaş bonusu: aynı sunucudaki her arkadaş için bacak kası kazancına +PercentPerFriend yüzdesi eklenir (en çok MaxFriends arkadaş sayılır).
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
+	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
+	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.
+	Badges = {
+		welcome = { id = 0, name = "Welcome to the Gym", description = "Played +1 Squat Evolution: Smash Walls for the first time." },
+		rebirth1 = { id = 0, name = "First Rebirth", description = "Did your first Rebirth." },
+		rebirth10 = { id = 0, name = "Rebirth Champion", description = "Reached Rebirth 10." },
+		stage10 = { id = 0, name = "Wall Smasher", description = "Cleared stage 10 of the wall corridor." },
+		stage20 = { id = 0, name = "Blackhole Breaker", description = "Cleared all 20 stages." },
+		legendary = { id = 0, name = "Legendary Hatch", description = "Hatched a Legendary pet." },
+		mythic = { id = 0, name = "Mythic Hatch", description = "Hatched a Mythic pet." },
+		boss = { id = 0, name = "Boss Pet", description = "Merged a pet all the way to Boss size." },
+		index30 = { id = 0, name = "Pet Collector", description = "Discovered every pet in the Pet Index." },
+	},
+	-- RÜTBE UNVANLARI (2026-10-14): rebirth sayısına göre otomatik; baş üstü etiketinde ★N ve unvan görünür (rebirth'te silinmeyen KALICI statü). rebirths = bu unvanın başladığı rebirth sayısı.
+	Titles = {
+		{ rebirths = 0, name = "Rookie", color = Color3.fromRGB(190, 196, 215) },
+		{ rebirths = 1, name = "Trainee", color = Color3.fromRGB(120, 220, 150) },
+		{ rebirths = 3, name = "Athlete", color = Color3.fromRGB(90, 190, 255) },
+		{ rebirths = 6, name = "Brawler", color = Color3.fromRGB(255, 170, 70) },
+		{ rebirths = 10, name = "Champion", color = Color3.fromRGB(200, 130, 255) },
+		{ rebirths = 15, name = "Titan", color = Color3.fromRGB(255, 120, 120) },
+		{ rebirths = 25, name = "Legend", color = Color3.fromRGB(255, 215, 70) },
+	},
+
 	-- PROMOSYON KODLARI (2026-10-14: sahibi daha önce reddetmişti, araştırma sonrası 'onay veriyorum, ne gerekiyorsa yap' dedi; sektörde standart: kod listeleme siteleri ücretsiz arama trafiği getirir).
 	-- Settings penceresinin üstündeki 'Redeem code' satırından girilir (server: PlayerStats.redeemCode). Kod büyük/küçük harf ve boşluk duyarsız, HER KOD HESAP BAŞINA BİR KEZ; ödüller Robux'suz ve küçük:
 	-- wins (Win), muscleClicks (tıklama değerinde bacak kası), potions ({ kind, minutes } iksir envantere girer). expires = UTC saniye (os.time) ya da yok. Yeni kodu buraya ekle ve tanıtımda (video/sayfa) duyur.

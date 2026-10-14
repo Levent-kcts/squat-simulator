@@ -69,3 +69,4 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 - 2026-10-14: **fiyat indirimi YAPILDI** (ROBUX_FIYAT_DEGISIKLIGI.md), **promosyon kodları YAPILDI** (Config.Codes, Settings > Redeem code, codestest).
 - 2026-10-14: **günlük giriş ödülü YAPILDI** (sol menü Daily düğmesi, 7 gün, nazik seri, logintest + loginpaneltest).
 - 2026-10-14: **Başlangıç Paketi kodlandı** (49 R$ tek seferlik; ürün ID'si sahibinde bekliyor).
+- 2026-10-14: **rozetler (9, pasif: id bekliyor) ve rütbe unvanları YAPILDI** (badgetest).

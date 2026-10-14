@@ -34,6 +34,9 @@ Oyunda Settings > Redeem code'dan girilir. Lansman kodları: **LAUNCH, SQUAT, SM
 - İz (trail) ürünlerinin **adlarını** ve 4 tanesinin **fiyatını** güncelle: `ROBUX_FIYAT_DEGISIKLIGI.md`.
 - Yeni Robux ürünleri (başlangıç paketi gibi) için ID'ler: kodu hazır yazıp pasif tutacağım, sen ürünü açınca ID'yi bana veririm. Sıra: sen karar verince.
 
+## C2) Rozetleri aç (isteğe bağlı, oyuncu profilinde görünür)
+Creator Hub > oyun > **Engagement > Badges > Create**: kod 9 rozeti hazır (`src/shared/Config.luau` > `Badges`; ad ve açıklamalar orada yazılı). Rozet oluşturmak Roblox'ta küçük Robux ücreti isteyebilir; **önce en önemli 3-5 tanesini aç** (welcome, rebirth1, stage10, legendary, mythic). Her rozetin ID'sini bana ver, `Config.Badges.<anahtar>.id` değerine yazarım (id 0 iken o rozet kapalıdır, oyun etkilenmez).
+
 ## D) YAPMA listesi (hesabını ve oyunu korur)
 
 - Bot ile ziyaret/oyuncu/beğeni satın alma. Roblox bunu filtreliyor ve hesaba zarar verir.

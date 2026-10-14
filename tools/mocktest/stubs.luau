@@ -196,6 +196,7 @@ end
 M.policy = { restricted = false }
 M.published = {}
 M.subscribers = {}
+M.badgesAwarded = {}
 M.playersById = {} -- test: çevrimiçi oyuncular (Players:GetPlayerByUserId)
 local services = {
 	PolicyService = {
@@ -234,6 +235,13 @@ local services = {
 		end,
 		GetPlayerFromCharacter = function()
 			return nil
+		end,
+	},
+	-- BadgeService taklidi: AwardBadge çağrılarını M.badgesAwarded'a yazar ({ userId, badgeId })
+	BadgeService = {
+		AwardBadge = function(_, userId, badgeId)
+			table.insert(M.badgesAwarded, { userId = userId, badgeId = badgeId })
+			return true
 		end,
 	},
 	-- MessagingService taklidi: PublishAsync yayınlananları M.published'a yazar, SubscribeAsync dinleyiciyi M.subscribers[konu]'ya koyar (test dinleyiciyi elle çağırabilir)

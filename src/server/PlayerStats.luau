@@ -12,6 +12,7 @@ local Progression = require(Shared:WaitForChild("Progression"))
 local Layout = require(Shared:WaitForChild("Layout"))
 local Format = require(Shared:WaitForChild("Format"))
 local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
+local okBadges, Badges = pcall(require, script.Parent.Badges) -- Roblox rozetleri: yüklenemezse atlanır
 local okFeed, GlobalFeed = pcall(require, script.Parent.GlobalFeed) -- çapraz sunucu duyuru akışı: yüklenemezse duyuru atlanır, oyun etkilenmez
 
 local PlayerStats = {}
@@ -553,6 +554,13 @@ local function loadData(player)
 			end
 			task.wait(2 * failures)
 		end
+	end
+end
+
+-- Roblox rozeti ver (Config.Badges; id 0 iken pasif); hata verirse sessizce atlanır
+function PlayerStats.awardBadge(player, key)
+	if okBadges then
+		pcall(Badges.award, player, key)
 	end
 end
 
@@ -1254,6 +1262,7 @@ local function setup(player)
 	profile.sessionStart = workspace:GetServerTimeNow()
 	player:SetAttribute("SessionStart", profile.sessionStart)
 	player:SetAttribute("DataLoaded", true)
+	PlayerStats.awardBadge(player, "welcome")
 	for _, callback in loadedCallbacks do
 		task.spawn(pcall, callback, player) -- diğer sunucu modülleri (Referrals ...): hata verirse oyun etkilenmez
 	end
@@ -1527,6 +1536,10 @@ function PlayerStats.rebirth(player, force)
 	PlayerStats.questEvent(player, "rebirth", 1)
 	refresh(player)
 	requestSave(player)
+	PlayerStats.awardBadge(player, "rebirth1")
+	if rebirthStat.Value >= 10 then
+		PlayerStats.awardBadge(player, "rebirth10")
+	end
 	if table.find(FEED_REBIRTHS, rebirthStat.Value) then
 		local tier = if rebirthStat.Value >= 20 then "Mythic" elseif rebirthStat.Value >= 10 then "Legendary" elseif rebirthStat.Value >= 5 then "Epic" else "Rare"
 		announce(player, "rebirth", `reached Rebirth {rebirthStat.Value}!`, tier)
@@ -1945,6 +1958,9 @@ grantIndexRewards = function(player, profile, count)
 		return
 	end
 	local messages = {}
+	if count >= #Config.Pets then
+		PlayerStats.awardBadge(player, "index30") -- bütün petler keşfedildi
+	end
 	for _, reward in Config.Index.Rewards do
 		if count >= reward.count and not profile.indexRewards[reward.count] then
 			profile.indexRewards[reward.count] = true
@@ -2128,6 +2144,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	if bestPet then
 		local rarityName = Catalog.rarityOf(bestPet).name
 		announce(player, "pet", `hatched a {string.upper(rarityName)} {bestPet.name}!`, rarityName)
+		PlayerStats.awardBadge(player, if rarityName == "Mythic" then "mythic" else "legendary")
 	end
 
 	if #kept == 1 and #deleted == 0 then
@@ -2468,6 +2485,9 @@ function PlayerStats.fusePet(player, petId)
 		return false, `You need {fusion.Cost} {pet.label} to merge (you have {have}).`
 	end
 	local nextPet = fuseOnce(player, profile, petId)
+	if nextPet.tier >= Config.PetFusion.MaxTier then
+		PlayerStats.awardBadge(player, "boss")
+	end
 	refresh(player)
 	requestSave(player)
 	return true, `Merged! You got {nextPet.label} ({Format.petBonus(nextPet.mult)} multiplier)`, nextPet.id
@@ -2491,6 +2511,9 @@ function PlayerStats.fuseAllPets(player)
 					didAny = true
 					if not best or made.mult > best.mult then
 						best = made
+					end
+					if made.tier >= Config.PetFusion.MaxTier then
+						PlayerStats.awardBadge(player, "boss")
 					end
 				end
 			end
