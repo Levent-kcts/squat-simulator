@@ -231,7 +231,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -445,6 +445,16 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true })
+	-- Friend Referral durumu (server/Referrals): kim davet etti (0 = kimse), ödül verildi mi, davetlinin oynadığı saniye
+	if type(raw.Referral) == "table" then
+		if type(raw.Referral.by) == "number" and raw.Referral.by > 0 then
+			data.Referral.by = math.floor(raw.Referral.by)
+		end
+		data.Referral.paid = raw.Referral.paid == true
+		if type(raw.Referral.secs) == "number" then
+			data.Referral.secs = math.clamp(math.floor(raw.Referral.secs), 0, Config.Referral.RequiredSeconds)
+		end
+	end
 	if type(raw.WallsBroken) == "number" then
 		data.WallsBroken = math.max(0, math.floor(raw.WallsBroken))
 	end
@@ -817,6 +827,7 @@ local function save(player, mode)
 	local data = {
 		Muscle = muscle.Value,
 		LifetimeMuscle = profile.lifetimeMuscle,
+		Referral = profile.referral,
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
 		Taps = profile.taps,
@@ -1021,6 +1032,8 @@ local function publishOffline(player, profile)
 	player:SetAttribute("OfflinePending", if pending then profile.offlinePending else nil)
 end
 
+local loadedCallbacks = {} -- veri yüklenince çağrılacak işlevler (PlayerStats.onLoaded)
+
 local function setup(player)
 	task.spawn(PaidRandomPolicy.check, player) -- Roblox 'ücretli rastgele ürün' politikası: sonuç 'PaidRandomRestricted' özniteliğine yazılır (yumurta açma ve Luck iksiri satın alma bakar)
 	local leaderstats = Instance.new("Folder")
@@ -1047,6 +1060,7 @@ local function setup(player)
 
 	local profile = {
 		taps = 0,
+		referral = { by = 0, paid = false, secs = 0 }, -- Friend Referral durumu (kayıtlı)
 		lifetimeMuscle = 0, -- bugüne kadar kazanılan TOPLAM bacak kası (rebirth sıfırlamaz; sıralama panosu bunu okur; kayıtlı)
 		loaded = false,
 		canSave = false,
@@ -1158,6 +1172,7 @@ local function setup(player)
 	end
 	muscle.Value = data.Muscle
 	profile.lifetimeMuscle = data.LifetimeMuscle
+	profile.referral = data.Referral
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
 	-- sinyalden ÖNCE yapıldığı için sayılmaz.
 	local lastMuscle = muscle.Value
@@ -1204,6 +1219,9 @@ local function setup(player)
 	profile.sessionStart = workspace:GetServerTimeNow()
 	player:SetAttribute("SessionStart", profile.sessionStart)
 	player:SetAttribute("DataLoaded", true)
+	for _, callback in loadedCallbacks do
+		task.spawn(pcall, callback, player) -- diğer sunucu modülleri (Referrals ...): hata verirse oyun etkilenmez
+	end
 end
 
 function PlayerStats.init()
@@ -1278,6 +1296,38 @@ function PlayerStats.getMuscle(player)
 end
 
 -- Verisi başarıyla yüklenmiş ve kaydedilebilir mi? (sıralama tabloları sadece böyle oyuncuları yazar)
+-- Oyuncunun verisi yüklenince fn(player) çağrılır (başka sunucu modülleri bağlanır; hata verirse oyun etkilenmez)
+function PlayerStats.onLoaded(fn)
+	table.insert(loadedCallbacks, fn)
+end
+
+-- Friend Referral durumu (server/Referrals'ın DEĞİŞTİRDİĞİ canlı tablo { by, paid, secs }); veri yüklenmediyse nil
+function PlayerStats.referralState(player)
+	local profile = profiles[player]
+	return if profile and profile.loaded then profile.referral else nil
+end
+
+-- Yeni oyuncu mu (eğitimi bitmemiş)? Friend Referral'da sadece yeni oyuncu davetli sayılır
+function PlayerStats.isNewPlayer(player)
+	local profile = profiles[player]
+	return profile ~= nil and profile.loaded == true and not profile.tutorialDone
+end
+
+-- Verilen iksir ödüllerini ({ kind, minutes } listesi) envantere ekler, bildirim gösterir ve kaydeder (Friend Referral gibi sunucu modülleri için)
+function PlayerStats.grantPotions(player, rewards, message)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false
+	end
+	for _, reward in rewards do
+		giveItem(player, profile, reward.kind, reward.minutes)
+	end
+	refresh(player)
+	sendToast(player, profile, message)
+	requestSave(player)
+	return true
+end
+
 -- Bugüne kadar kazanılan toplam bacak kası (sıralama panosu); veri yüklenmediyse 0
 function PlayerStats.lifetimeMuscle(player)
 	local profile = profiles[player]

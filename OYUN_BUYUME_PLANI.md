@@ -64,3 +64,4 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 (her sprint bitince güncellenir)
 - 2026-10-14: araştırma tamam (5 rapor), plan yazıldı, sahibi listesi verildi. Sprint 1 başladı.
 - 2026-10-14: **1.1 çapraz sunucu duyuru akışı YAPILDI** (GlobalFeed + FeedHud, testli).
+- 2026-10-14: **1.2 Friend Referral ödülü kodlandı** (server/Referrals, PlayerStats.onLoaded kancası, Config.Referral); mevcut testler geçiyor, BİRİM TESTİ HENÜZ YOK (sonraki oturumda referraltest.luau yazılacak).

@@ -250,6 +250,14 @@ return {
 	-- Arkadaş bonusu: aynı sunucudaki her arkadaş için bacak kası kazancına +PercentPerFriend yüzdesi eklenir (en çok MaxFriends arkadaş sayılır).
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
+	-- FRIEND REFERRAL ÖDÜLÜ (2026-10-14 büyüme planı sprint 1.2; server/Referrals): davet bağlantısıyla gelen YENİ oyuncu RequiredSeconds kadar oynayınca ikisine de iksir (Robux/Win DEĞİL) verilir; davetli başına tek seferlik,
+	-- davetçi başına en çok MaxPerInviter ödül (kötüye kullanım sınırı). Creator Hub > Engagement > Referral Rewards'ta banner açmak sahibine ait (kod banner olmadan da çalışır).
+	Referral = {
+		RequiredSeconds = 600,
+		MaxPerInviter = 3,
+		InviterRewards = { { kind = "boostMuscle", minutes = 15 }, { kind = "boostLuck", minutes = 15 } },
+		InviteeRewards = { { kind = "boostRainbow", minutes = 15 } },
+	},
 
 	-- Pet Index (koleksiyon defteri, sağ üstteki kitap simgesi): sahip olunan her YENİ pet türü kalıcı olarak keşfedilir (pet silinse de kalır);
 	-- keşfedilen her tür bacak kası kazancına +PercentPerPet yüzdesi ekler (13 tür = en çok +%13). Küçük tutuldu, dengeyi bozmasın diye.

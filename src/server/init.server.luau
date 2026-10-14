@@ -68,6 +68,19 @@ do
 	end
 end
 
+-- Friend Referral ödülü (davet bağlantısıyla gelen yeni oyuncu): isteğe bağlıdır, hata verirse oyunun geri kalanı çalışır
+do
+	local okReferrals, Referrals = pcall(require, script.Referrals)
+	if okReferrals then
+		local started, err = pcall(Referrals.init, PlayerStats)
+		if not started then
+			warn(`[Server] Referrals init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load Referrals: {Referrals}`)
+	end
+end
+
 -- Arkadaş bonusu isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFriends, FriendBonus = pcall(require, script.FriendBonus)

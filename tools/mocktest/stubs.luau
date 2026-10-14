@@ -196,6 +196,7 @@ end
 M.policy = { restricted = false }
 M.published = {}
 M.subscribers = {}
+M.playersById = {} -- test: çevrimiçi oyuncular (Players:GetPlayerByUserId)
 local services = {
 	PolicyService = {
 		GetPolicyInfoForPlayerAsync = function()
@@ -227,6 +228,9 @@ local services = {
 		PlayerRemoving = signal("PlayerRemoving"),
 		GetPlayers = function()
 			return {}
+		end,
+		GetPlayerByUserId = function(_, userId)
+			return M.playersById[userId]
 		end,
 		GetPlayerFromCharacter = function()
 			return nil
