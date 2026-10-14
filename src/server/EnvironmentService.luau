@@ -108,27 +108,44 @@ function EnvironmentService.init()
 		end
 	end
 
-	-- Yan duvarlar ve arka duvar
-	for _, side in { -1, 1 } do
-		Build.block(
-			folder,
-			"LobbySide",
-			Vector3.new(1, ceiling, length),
-			Vector3.new(if side < 0 then -widthLeft - 0.5 else widthRight + 0.5, ceiling / 2, centerZ),
-			WALL_COLOR,
-			Enum.Material.Plastic,
-			true
-		)
+	-- Yan duvarlar ve arka duvar. BÖLGE RENKLERİ (Config.Lobby.Zones, 2026-10-14 harita geçişi): duvar bölgeye göre parçalara ayrılır ve her parça WALL_COLOR'dan bölge rengine doğru hafifçe (Strength) kayar;
+	-- böylece ayakkabı/skin/antrenman/yumurta/çark bölgeleri duvardan da ayırt edilir (tek ton sorunu). Kapatmak için Zones.Enabled = false (tek parça duvar).
+	local zones = Config.Lobby.Zones
+	local function tint(color)
+		return WALL_COLOR:Lerp(color, zones.Strength)
 	end
-	Build.block(
-		folder,
-		"LobbyBack",
-		Vector3.new(hallWidth + 2, ceiling, 1),
-		Vector3.new(centerX, ceiling / 2, back + 0.5),
-		WALL_COLOR,
-		Enum.Material.Plastic,
-		true
-	)
+	-- Bir duvar şeridini [from, to] aralıklarına böler; list = { { from, to, rengi } } (aralıklar bitişik ve duvarı tam kaplar)
+	local function wallRuns(name, list, make)
+		for index, run in list do
+			make(`{name}_{index}`, run[1], run[2], if zones.Enabled then tint(run[3]) else WALL_COLOR)
+		end
+	end
+	local sideRuns = {
+		[-1] = { { zFront, Config.Lobby.ShoeShelfZ + 25.25, zones.Shoe }, { Config.Lobby.ShoeShelfZ + 25.25, Config.Lobby.SkinShelfZ + 25.25, zones.Skin }, { Config.Lobby.SkinShelfZ + 25.25, back, WALL_COLOR } },
+		[1] = { { zFront, 29, zones.Training }, { 29, back, zones.Wheel } },
+	}
+	if not zones.Enabled then
+		sideRuns = { [-1] = { { zFront, back, WALL_COLOR } }, [1] = { { zFront, back, WALL_COLOR } } }
+	end
+	for _, side in { -1, 1 } do
+		wallRuns("LobbySide", sideRuns[side], function(name, from, to, color)
+			Build.block(
+				folder,
+				if from == zFront and to == back then "LobbySide" else name,
+				Vector3.new(1, ceiling, to - from),
+				Vector3.new(if side < 0 then -widthLeft - 0.5 else widthRight + 0.5, ceiling / 2, (from + to) / 2),
+				color,
+				Enum.Material.Plastic,
+				true
+			)
+		end)
+	end
+	local backRuns = if zones.Enabled
+		then { { -widthLeft - 1, -34, WALL_COLOR }, { -34, 34, zones.Eggs }, { 34, widthRight + 1, zones.Wheel } }
+		else { { -widthLeft - 1, widthRight + 1, WALL_COLOR } }
+	wallRuns("LobbyBack", backRuns, function(name, from, to, color)
+		Build.block(folder, if #backRuns == 1 then "LobbyBack" else name, Vector3.new(to - from, ceiling, 1), Vector3.new((from + to) / 2, ceiling / 2, back + 0.5), color, Enum.Material.Plastic, true)
+	end)
 
 	-- Koridor girişi olan duvar: ortada koridor genişliğinde boşluk bırakılır
 	local openingHalf = (cfg.Width + 2) / 2

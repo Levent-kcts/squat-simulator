@@ -542,7 +542,7 @@ return {
 		PanelSize = { 10, 5 }, -- tavan panelinin boyutu (x, z; referanstaki gibi dikdörtgen; alan eski 7x7'ye yakın, parlaklık artmasın)
 		PanelGlow = { Enabled = true, Size = 14, Layers = 6, Alpha = 0.03 },
 		Bloom = { Enabled = false, Intensity = 0.2, Size = 16, Threshold = 1.5 },
-		Color = { Saturation = 0.1, Contrast = 0.06 }, -- hafif canlı renk (ColorCorrection); Saturation = 0 ve Contrast = 0 ise etkisiz
+		Color = { Saturation = 0.2, Contrast = 0.1 }, -- hafif canlı renk (ColorCorrection); Saturation = 0 ve Contrast = 0 ise etkisiz
 	},
 
 	-- Başlangıç lobisi: spawn'ın bulunduğu geniş kapalı salon
@@ -578,6 +578,16 @@ return {
 		-- SAĞ duvardaki antrenman alanı (merkez z). 2026-10-09: sahibi 'merdivenleri biraz büyütüp en sola yanaştır, soldaki duvara kadar daya' dedi: uç rampaları 6 -> 9 stud (TrainingArea.LAYOUT.rampWidth) ve alan giriş duvarına (z -63) DAYANDI:
 		-- şeritler z = -54 ile 20 arası (merkez -17 +- rowLength/2 + 6), rampalarla alan z -63 ile 29 arasını kaplar; ön rampa duvara değer, arka uç (z > 29, çarkın yanı) yeni şeyler için boş. Merkezi ya da rampa genişliğini değiştirirsen ön ucu -63'te tut: -63 = merkez - 37 - rampa genişliği.
 		TrainingShelfZ = -17,
+		-- BÖLGE DUVAR RENKLERİ (2026-10-14 harita geçişi, OYUN_TASARIM_ANALIZI.md 3.2): duvar parçaları bölgeye göre salon rengine (150,160,215) Strength oranında kayar. Enabled = false: eski tek ton duvar.
+		Zones = {
+			Enabled = true,
+			Strength = 0.4,
+			Shoe = Color3.fromRGB(235, 215, 140), -- ayakkabı rafı: krem-sarı
+			Skin = Color3.fromRGB(235, 150, 195), -- skin rafı: pembe
+			Training = Color3.fromRGB(240, 165, 120), -- antrenman alanı: şeftali
+			Eggs = Color3.fromRGB(140, 220, 190), -- yumurta standı: nane
+			Wheel = Color3.fromRGB(190, 150, 230), -- çark köşesi: menekşe
+		},
 		-- Lobi süsleri (server/LobbyDetail; sahibi başka bir oyunun lobisini gösterip 'harita düzenine benzet' dedi, duvar + tavan + zemin): sadece görünüm, oyun mantığı yok. Kapatmak için Enabled = false.
 		Detail = {
 			Enabled = true,
