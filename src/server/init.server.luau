@@ -93,6 +93,19 @@ do
 	end
 end
 
+-- Grup ödülü (Config.Group.Id = 0 iken pasif) isteğe bağlıdır
+do
+	local okGroup, GroupReward = pcall(require, script.GroupReward)
+	if okGroup then
+		local started, err = pcall(GroupReward.init, PlayerStats)
+		if not started then
+			warn(`[Server] GroupReward init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load GroupReward: {GroupReward}`)
+	end
+end
+
 -- Çapraz sunucu duyuru akışı (nadir pet, rebirth eşikleri) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFeedModule, GlobalFeed = pcall(require, script.GlobalFeed)
@@ -358,6 +371,8 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 			return false, "The event is not available right now."
 		end
 		return SeasonEvent.claim(player, math.floor(id))
+	elseif action == "NotifAsked" then
+		return PlayerStats.markNotifAsked(player)
 	elseif action == "SeenWhatsNew" then
 		return PlayerStats.seenWhatsNew(player)
 	elseif action == "RedeemCode" and type(id) == "string" then

@@ -454,7 +454,7 @@ local function sanitize(raw)
 	for id in data.StarterClaimed do
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
-	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true })
+	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true, notif = true, group = true })
 	-- Sezonluk etkinlik durumu (Config.Event; server/SeasonEvent): { id, candy, total, claimed = { [kilometre taşı] = true }, bought = { [ürün] = adet }, perks = { title, trail } }
 	do
 		local source = if type(raw.Event) == "table" then raw.Event else {}
@@ -850,6 +850,7 @@ local function refresh(player)
 		player:SetAttribute("TrainingEggs", table.concat(counters, ","))
 	end
 	player:SetAttribute("WhatsNewSeen", profile.whatsNew) -- istemci kartı Config.WhatsNew.Version'dan küçükse gösterir
+	player:SetAttribute("NotifAsked", profile.flags.notif == true) -- bildirim izni bir kez soruldu mu (client/NotifOptIn)
 	player:SetAttribute("StarterPackOwned", profile.flags.starter == true) -- Shop'taki Başlangıç Paketi kartı alındıktan sonra kalkar
 	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
@@ -1681,6 +1682,35 @@ function PlayerStats.seenWhatsNew(player)
 		requestSave(player)
 	end
 	return true
+end
+
+-- Bildirim izni penceresi gösterildi: bir daha sorulmaz
+function PlayerStats.markNotifAsked(player)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false
+	end
+	if not profile.flags.notif then
+		profile.flags.notif = true
+		player:SetAttribute("NotifAsked", true)
+		requestSave(player)
+	end
+	return true
+end
+
+-- GRUP ÖDÜLÜ (server/GroupReward): henüz alınmadı mı / iksirleri ver ve işaretle
+function PlayerStats.groupRewardPending(player)
+	local profile = profiles[player]
+	return profile ~= nil and profile.loaded == true and profile.canSave ~= false and not profile.flags.group
+end
+
+function PlayerStats.grantGroupReward(player, rewards, message)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or profile.flags.group then
+		return false
+	end
+	profile.flags.group = true
+	return PlayerStats.grantPotions(player, rewards, message)
 end
 
 function PlayerStats.rebirth(player, force)

@@ -339,6 +339,13 @@ return {
 		Decor = { Pumpkins = 10, Ghosts = 5 },
 	},
 
+	-- GRUP ÖDÜLÜ (büyüme planı 3.5; server/GroupReward): Id = 0 iken PASİF. Sahibi Roblox'ta bir grup açıp oyunu ona bağlayınca grup kimliğini yazar; üye oyuncu bir kez Rewards alır (iksirler, Robux'suz).
+	Group = {
+		Id = 0,
+		Message = "Thanks for joining our group! Potions are in Shop > Potions.",
+		Rewards = { { kind = "boostRainbow", minutes = 60 }, { kind = "boostLuck", minutes = 15 } },
+	},
+
 	-- NELER YENİ KARTI (2026-10-14 büyüme planı 1.6; client/WhatsNewCard): geri dönen oyuncuya yeni özellikleri tek küçük kartla duyurur. Version her yeni duyuruda ARTIRILIR; oyuncu 'Got it!' deyince o sürüm görülmüş sayılır (kayıtlı).
 	-- Yeni oyuncuya (eğitimi bitirmemiş) hiç gösterilmez. Settings > 'What's New' ile her zaman yeniden açılır. Lines: en çok 5 satır, kısa tut (ekran sade kalsın).
 	WhatsNew = {
