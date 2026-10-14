@@ -406,6 +406,8 @@ return {
 		{ key = "NameTags", name = "Name tags", detail = "Power and name above players" },
 		{ key = "FeedOn", name = "Server feed", detail = "Rare pets and rebirths from all servers (right side)" },
 		{ key = "GuideOn", name = "Guide", detail = "Tips, arrows and the tour for new players (until your first Rebirth)" },
+		-- defaultOff = true: öznitelik yoksa KAPALI sayılır (diğerleri yoksa AÇIK). Calm UI: animasyonsuz/sakin arayüz (client/UIStyle.calm)
+		{ key = "CalmUI", name = "Calm UI", detail = "Less animation: no pulsing, instant windows", defaultOff = true },
 	},
 
 	-- Sol menüdeki ve sayaçtaki ikonlar. Roblox'a yüklenmiş görsellerin "rbxassetid://..." değeri; BOŞ ikon emoji olarak görünür.

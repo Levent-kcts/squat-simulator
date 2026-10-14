@@ -104,9 +104,9 @@ function OfflinePanel.init(screenGui, showToast)
 		}, iconHolder)
 	end
 	if not UIStyle.isLow() then
-		TweenService:Create(iconHolder, TweenInfo.new(1.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+		UIStyle.loopTween(TweenService:Create(iconHolder, TweenInfo.new(1.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
 			Position = UDim2.new(0.5, 0, 0, 66),
-		}):Play()
+		}), iconHolder, nil):Play()
 	end
 
 	-- Miktar (sayma animasyonu) ve uzakta geçen süre

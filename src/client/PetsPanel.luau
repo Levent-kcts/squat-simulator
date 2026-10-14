@@ -419,7 +419,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 				TextScaled = true,
 				ZIndex = zIndex,
 			}, parent)
-			local tween = TweenService:Create(star, TweenInfo.new(0.7 + index * 0.17, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { TextTransparency = 0.8 })
+			local tween = UIStyle.loopTween(TweenService:Create(star, TweenInfo.new(0.7 + index * 0.17, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { TextTransparency = 0.8 }), star, nil)
 			tween:Play()
 			table.insert(tweens, tween)
 		end
@@ -431,7 +431,7 @@ function PetsPanel.init(screenGui, showToast, openShop)
 		if UIStyle.isLow() then
 			return
 		end
-		local tween = TweenService:Create(stroke, TweenInfo.new(seconds, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Color = colorB })
+		local tween = UIStyle.loopTween(TweenService:Create(stroke, TweenInfo.new(seconds, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Color = colorB }), stroke, { Color = colorA })
 		tween:Play()
 		table.insert(tweens, tween)
 	end

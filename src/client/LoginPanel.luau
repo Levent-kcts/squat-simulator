@@ -143,7 +143,7 @@ function LoginPanel.init(screenGui, showToast)
 	local pulseScale = create("UIScale", { Scale = 1 }, claim)
 	local pulse = nil
 	pcall(function()
-		pulse = TweenService:Create(pulseScale, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 })
+		pulse = UIStyle.loopTween(TweenService:Create(pulseScale, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 }), pulseScale, { Scale = 1 })
 	end)
 	local pulsing = false
 	local function setPulse(on)

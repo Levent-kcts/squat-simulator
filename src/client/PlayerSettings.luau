@@ -3,12 +3,24 @@
 -- Ayar anahtarları Config.Settings'te tanımlıdır (SfxOn, MusicOn, ShowGain, CameraShake, NameTags).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 
 local PlayerSettings = {}
 
 local player = Players.LocalPlayer
 
+-- defaultOff ayarlar (örn. CalmUI) öznitelik yokken KAPALIdır, ancak true iken açıktır
+local DEFAULT_OFF = {}
+for _, setting in Config.Settings do
+	if setting.defaultOff then
+		DEFAULT_OFF[setting.key] = true
+	end
+end
+
 function PlayerSettings.get(key)
+	if DEFAULT_OFF[key] then
+		return player:GetAttribute(key) == true
+	end
 	return player:GetAttribute(key) ~= false
 end
 

@@ -106,7 +106,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	end)
 
 	-- Hazırken kutu nabız gibi atar
-	local pulse = TweenService:Create(rewardScale, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 })
+	local pulse = UIStyle.loopTween(TweenService:Create(rewardScale, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 }), rewardScale, { Scale = 1 })
 	local pulsing = false
 
 	local function refreshReward()
@@ -237,7 +237,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	-- Yeni pet türü keşfedilince (playtest isteği: 'yeni pet keşfedilince bildirim, Index butonunda rozet'): kısa bildirim + Index dairesi Index'i açana kadar nabız atar
 	local indexDisc = index:FindFirstChildOfClass("Frame")
 	local indexPulseScale = create("UIScale", { Scale = 1 }, indexDisc)
-	local indexPulse = TweenService:Create(indexPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
+	local indexPulse = UIStyle.loopTween(TweenService:Create(indexPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), indexPulseScale, { Scale = 1 })
 	local indexPulsing = false
 	local lastDiscovered = nil
 	local function refreshIndex()
@@ -283,7 +283,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	}, 3)
 	local questDisc = quests:FindFirstChildOfClass("Frame")
 	local questPulseScale = create("UIScale", { Scale = 1 }, questDisc)
-	local questPulse = TweenService:Create(questPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
+	local questPulse = UIStyle.loopTween(TweenService:Create(questPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), questPulseScale, { Scale = 1 })
 	local questPulsing = false
 	quests.MouseButton1Click:Connect(function()
 		if openQuests then

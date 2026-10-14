@@ -10,6 +10,7 @@ local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
 local okPerf, Performance = pcall(require, script.Parent.Performance)
 
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
 local UIStyle = {}
@@ -594,6 +595,66 @@ local function isLow()
 	return okPerf and Performance.low == true
 end
 UIStyle.isLow = isLow
+
+-- CALM UI (hareketi azalt): oyuncu özniteliği CalmUI == true (Settings > Calm UI ya da sahipte J tuşu). Açıkken pencere/basma/pop/sayma animasyonları
+-- ANINDA biter, sonsuz nabız döngüleri oynamaz (ölçek 1'de kalır). Sadece görünüm; oyun mantığına dokunmaz.
+function UIStyle.calm()
+	local ok, value = pcall(function()
+		return Players.LocalPlayer:GetAttribute("CalmUI")
+	end)
+	return ok and value == true
+end
+
+-- Sonsuz döngülü nabız tween'i sarmalayıcısı: tw (TweenService:Create sonucu) yerine dönen nesnede Play/Cancel/Destroy kullanılır.
+-- Calm iken Play oynatmaz ve nesne 'rest' değerine ({ Scale = 1 } gibi) döner; CalmUI canlı değişirse çalışanlar durur / istenenler başlar.
+local loopProxies = setmetatable({}, { __mode = "k" })
+local loopConnected = false
+local function loopSettle(proxy)
+	pcall(function()
+		if UIStyle.calm() then
+			proxy.tween:Cancel()
+			if proxy.rest then
+				for key, value in proxy.rest do
+					proxy.obj[key] = value
+				end
+			end
+		elseif proxy.wanted then
+			proxy.tween:Play()
+		end
+	end)
+end
+function UIStyle.loopTween(tw, obj, rest)
+	local proxy = { tween = tw, obj = obj, rest = rest, wanted = false }
+	function proxy:Play()
+		proxy.wanted = true
+		loopSettle(proxy)
+	end
+	function proxy:Cancel()
+		proxy.wanted = false
+		pcall(function()
+			tw:Cancel()
+		end)
+	end
+	function proxy:Destroy()
+		proxy.wanted = false
+		loopProxies[proxy] = nil
+		pcall(function()
+			tw:Destroy()
+		end)
+	end
+	loopProxies[proxy] = true
+	if not loopConnected then
+		loopConnected = true
+		pcall(function()
+			Players.LocalPlayer:GetAttributeChangedSignal("CalmUI"):Connect(function()
+				for each in loopProxies do
+					loopSettle(each)
+				end
+			end)
+		end)
+	end
+	return proxy
+end
 
 -- Vurgu rengini {base, dark, text} tablosuna çevirir: ad ("primary"), tablo ya da Color3; bilinmeyen = primary
 function UIStyle.accent(accent)
@@ -1522,9 +1583,16 @@ function UIStyle.press(btn, opts)
 		end
 		local scale = btn:FindFirstChild("PressScale") or makeInstance("UIScale", "PressScale", btn, {})
 		btn.MouseButton1Down:Connect(function()
+			if UIStyle.calm() then
+				return
+			end
 			tween(scale, Theme.tween.press, { Scale = opts.scale or 0.96 })
 		end)
 		local function back()
+			if UIStyle.calm() then
+				scale.Scale = 1
+				return
+			end
 			tween(scale, Theme.tween.release, { Scale = 1 })
 		end
 		btn.MouseButton1Up:Connect(back)
@@ -1541,6 +1609,10 @@ function UIStyle.pop(obj, opts)
 			UIStyle.anchorCenter(obj)
 		end
 		local scale = obj:FindFirstChild("PopScale") or makeInstance("UIScale", "PopScale", obj, {})
+		if UIStyle.calm() then
+			scale.Scale = 1
+			return
+		end
 		scale.Scale = opts.from or 1.06
 		tween(scale, Theme.tween.pop, { Scale = 1 })
 	end)
@@ -1557,7 +1629,7 @@ function UIStyle.countTo(label, from, to, formatFn)
 	pcall(function()
 		countTokens[label] = (countTokens[label] or 0) + 1
 		local token = countTokens[label]
-		if isLow() or from == to then
+		if isLow() or UIStyle.calm() or from == to then
 			label.Text = format(to)
 			return
 		end
@@ -1594,7 +1666,7 @@ function UIStyle.fadeScaleIn(frame)
 			frame:SetAttribute("BaseTransparency", base)
 		end
 		frame.Visible = true
-		if isLow() then
+		if isLow() or UIStyle.calm() then
 			scale.Scale = 1
 			frame.BackgroundTransparency = base
 			return
@@ -1624,7 +1696,7 @@ function UIStyle.fadeScaleOut(frame, onDone)
 				onDone()
 			end
 		end
-		if isLow() then
+		if isLow() or UIStyle.calm() then
 			finish()
 			return
 		end

@@ -161,6 +161,14 @@ function DevPanel.init(screenGui)
 		end
 		setShotMode(not shotMode)
 	end)
+
+	-- J tuşu (sadece sahip/dev): Calm UI'ı GEÇİCİ açıp kapatır (ekran görüntüsü için animasyonsuz arayüz); kaydedilmez, sunucuya gitmez
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed or input.KeyCode ~= Enum.KeyCode.J or (player:GetAttribute("IsDev") ~= true and player:GetAttribute("IsCreator") ~= true) then
+			return
+		end
+		player:SetAttribute("CalmUI", player:GetAttribute("CalmUI") ~= true)
+	end)
 end
 
 return DevPanel

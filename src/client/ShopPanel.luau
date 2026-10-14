@@ -295,7 +295,7 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 			ZIndex = 10,
 		}, core)
 		create("UITextSizeConstraint", { MaxTextSize = 16 }, badgeText)
-		local badgePulse = TweenService:Create(core, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Size = UDim2.fromOffset(CORE_SIZE + 4, CORE_SIZE + 4) })
+		local badgePulse = UIStyle.loopTween(TweenService:Create(core, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Size = UDim2.fromOffset(CORE_SIZE + 4, CORE_SIZE + 4) }), core, { Size = UDim2.fromOffset(CORE_SIZE, CORE_SIZE) })
 		local pulsing = false
 
 		local function totalItems()

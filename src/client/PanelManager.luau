@@ -4,8 +4,17 @@
 -- Pencereler artık `panel.Visible` ile değil PanelManager.show / hide / toggle ile açılıp kapanır; açık mı sorusu için `PanelManager.isOpen(panel)`
 -- kullanılır (kapanma animasyonu sürerken panel.Visible hâlâ true olduğu için ona bakma). Mantıksal durum ayrıca panelin "PanelOpen" özniteliğindedir.
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
 
 local PanelManager = {}
+
+-- Calm UI (oyuncu özniteliği CalmUI): kayma animasyonu yok, pencere anında açılıp kapanır
+local function calm()
+	local ok, value = pcall(function()
+		return Players.LocalPlayer:GetAttribute("CalmUI")
+	end)
+	return ok and value == true
+end
 
 local SLIDE_IN = TweenInfo.new(0.34, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 local SLIDE_OUT = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
@@ -54,6 +63,11 @@ function PanelManager.hide(frame)
 	if not frame.Visible then
 		return -- henüz görünmemiş (gecikmeli açılış beklerken kapatıldı)
 	end
+	if calm() then
+		frame.Visible = false
+		frame.Position = entry.home
+		return
+	end
 	local tween = TweenService:Create(frame, SLIDE_OUT, { Position = offscreen(frame, entry.home) })
 	tween.Completed:Connect(function()
 		-- Bu arada yeniden açıldıysa (token değiştiyse) dokunma
@@ -93,6 +107,11 @@ function PanelManager.show(frame)
 		if not frame.Visible then
 			frame.Position = offscreen(frame, entry.home)
 			frame.Visible = true
+		end
+		if calm() then
+			frame.Position = entry.home
+			frame.Visible = true
+			return
 		end
 		TweenService:Create(frame, SLIDE_IN, { Position = entry.home }):Play()
 	end

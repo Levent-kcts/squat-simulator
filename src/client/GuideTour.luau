@@ -406,7 +406,7 @@ function GuideTour.init(screenGui, showToast)
 		end
 		arrow.Position = from
 		local ok, tween = pcall(function()
-			return TweenService:Create(arrow, TweenInfo.new(0.42, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Position = to })
+			return UIStyle.loopTween(TweenService:Create(arrow, TweenInfo.new(0.42, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Position = to }), arrow, { Position = from })
 		end)
 		if ok and tween then
 			table.insert(callout.bounceTweens, tween)
@@ -530,7 +530,7 @@ function GuideTour.init(screenGui, showToast)
 		local rippleStroke = create("UIStroke", { Thickness = 3, Color = GOLD, Transparency = 0 }, ripple)
 		local okRipple, grow, fade = pcall(function()
 			local info = TweenInfo.new(0.95, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, -1, false)
-			return TweenService:Create(ripple, info, { Size = UDim2.new(1, math.floor(14 * s), 1, math.floor(14 * s)) }), TweenService:Create(rippleStroke, info, { Transparency = 1 })
+			return UIStyle.loopTween(TweenService:Create(ripple, info, { Size = UDim2.new(1, math.floor(14 * s), 1, math.floor(14 * s)) }), ripple, nil), UIStyle.loopTween(TweenService:Create(rippleStroke, info, { Transparency = 1 }), rippleStroke, { Transparency = 0 })
 		end)
 		if okRipple and grow and fade then
 			table.insert(callout.tweens, grow)

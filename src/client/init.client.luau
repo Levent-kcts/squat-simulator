@@ -331,7 +331,7 @@ end
 
 -- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
 local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
-local rebirthPulseTween = TweenService:Create(rebirthPulse, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
+local rebirthPulseTween = UIStyle.loopTween(TweenService:Create(rebirthPulse, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), rebirthPulse, { Scale = 1 })
 
 -- Gifts butonundaki alınabilir ödül sayısı rozeti
 local giftsBadge = create("Frame", {

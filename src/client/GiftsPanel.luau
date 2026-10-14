@@ -203,7 +203,7 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 			end
 			cell.pulseScale.Scale = 1
 			if on and not UIStyle.isLow() then
-				cell.pulseTween = TweenService:Create(cell.pulseScale, TweenInfo.new(0.65, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.07 })
+				cell.pulseTween = UIStyle.loopTween(TweenService:Create(cell.pulseScale, TweenInfo.new(0.65, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.07 }), cell.pulseScale, { Scale = 1 })
 				cell.pulseTween:Play()
 			end
 		end)

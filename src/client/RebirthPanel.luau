@@ -158,7 +158,7 @@ function RebirthPanel.init(screenGui, showToast)
 		if on and not UIStyle.isLow() then
 			if not pulseTween then
 				pcall(function()
-					pulseTween = TweenService:Create(pulseScale, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.04 })
+					pulseTween = UIStyle.loopTween(TweenService:Create(pulseScale, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.04 }), pulseScale, { Scale = 1 })
 					pulseTween:Play()
 				end)
 			end
