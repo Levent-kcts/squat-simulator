@@ -73,6 +73,7 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 - 2026-10-14: **1.3 kısıtlı hesaplar için sabit sıralı Eğitim Yumurtası YAPILDI** (trainingeggtest).
 - 2026-10-14: **2.1 Halloween Lite (Spooky Gym) YAPILDI** (Candy, deterministik mağaza, kilometre taşları, lobi süsü; seasoneventtest, eventdecortest, spookypaneltest). Ortak hedef (topluluk) bilerek YOK: 16 kişilik nüfusta ulaşılamaz hedef olurdu.
 - 2026-10-14: **tüm arayüz yenilendi (Soft Dark Candy, UIStyle tasarım sistemi, 15 panel + HUD)**; Studio doğrulaması sahipte.
+- 2026-10-14: **3.1 Mastery ağacı YAPILDI** (3 dal x 10 kademe, Win ile kalıcı; masterytest, masterypaneltest). simulate.py'ye işlenmedi.
 - 2026-10-14: **2.2 evrim anı (Form-Up) YAPILDI** (Juice.evolve; evolvetest).
 - 2026-10-14: **3.3 bildirim izni ve grup ödülü (pasif, grup kimliği bekliyor) YAPILDI** (notiftest, grouptest).
 - 2026-10-14: **harita/ışık geçişi YAPILDI** (bölge duvar renkleri + doygunluk/kontrast; vinyet ve merkez halka bilerek yok).

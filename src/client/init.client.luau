@@ -329,6 +329,28 @@ do
 	refreshSpooky()
 end
 
+-- MASTERY düğmesi (client/MasteryPanel): 9. sol buton, İLK REBIRTH'ten sonra görünür (Config.Mastery.UnlockRebirths)
+local masteryButton = makeGridButton(9, "🎓", "Mastery", { Color3.fromRGB(255, 200, 61), Color3.fromRGB(217, 150, 26) }, nil)
+masteryButton.Name = "MasteryButton"
+masteryButton.Visible = false
+do
+	local function refreshMastery()
+		local leaderstats = player:FindFirstChild("leaderstats")
+		local rebirths = leaderstats and leaderstats:FindFirstChild(Config.StatRebirths)
+		masteryButton.Visible = Config.Mastery ~= nil and player:GetAttribute("DataLoaded") == true and rebirths ~= nil and rebirths.Value >= Config.Mastery.UnlockRebirths
+	end
+	player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshMastery)
+	task.defer(function()
+		local leaderstats = player:WaitForChild("leaderstats", 10)
+		local rebirths = leaderstats and leaderstats:FindFirstChild(Config.StatRebirths)
+		if rebirths then
+			rebirths:GetPropertyChangedSignal("Value"):Connect(refreshMastery)
+		end
+		refreshMastery()
+	end)
+	refreshMastery()
+end
+
 -- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
 local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
 local rebirthPulseTween = UIStyle.loopTween(TweenService:Create(rebirthPulse, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), rebirthPulse, { Scale = 1 })
@@ -1082,6 +1104,14 @@ dailyButton.MouseButton1Click:Connect(function()
 		toggleLogin()
 	else
 		showToast(false, "Daily rewards are coming soon!")
+	end
+end)
+local toggleMastery = loadPanel("MasteryPanel", screenGui, showToast) -- Mastery ağacı penceresi (sol menüdeki Mastery düğmesi)
+masteryButton.MouseButton1Click:Connect(function()
+	if toggleMastery then
+		toggleMastery()
+	else
+		showToast(false, "Mastery is not available right now.")
 	end
 end)
 local toggleSpooky = loadPanel("SpookyPanel", screenGui, showToast) -- sezonluk etkinlik penceresi (sol menüdeki Spooky düğmesi)

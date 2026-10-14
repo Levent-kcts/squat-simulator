@@ -101,4 +101,10 @@ function Layout.reward(stage)
 	return rewards[stage]
 end
 
+-- Mastery dalının mevcut kademeden bir sonrakine geçiş maliyeti (Win): startStage + kademe aşamasının ödülü x CostMult (Config.Mastery)
+function Layout.masteryCost(branch, level, costMult)
+	local stage = math.clamp(branch.startStage + level, 1, Layout.StageCount)
+	return math.floor(rewards[stage] * (costMult or 1))
+end
+
 return Layout

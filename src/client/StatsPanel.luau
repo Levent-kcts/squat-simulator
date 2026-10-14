@@ -43,6 +43,7 @@ function StatsPanel.init(screenGui)
 		{ "Pets", "🐾", function() return mult(attr("PetMultiplier", 1)) end, function() return attr("PetMultiplier", 1) > 1 end },
 		{ "Skin", "🎨", function() return `+{Format.compact(attr("SkinBonus", 0))} / click` end, function() return attr("SkinBonus", 0) > 0 end },
 		{ "Friends", "👥", function() return `+{attr("FriendBonus", 0)}%` end, function() return attr("FriendBonus", 0) > 0 end },
+		{ "Mastery", "🎓", function() return `+{attr("MasteryPower", 0)}%` end, function() return attr("MasteryPower", 0) > 0 end },
 		{ "Pet Index", "📖", function() return `+{attr("IndexBonus", 0)}%` end, function() return attr("IndexBonus", 0) > 0 end },
 		{ "Potion", "🧪", function()
 			local left = math.max(attr("MuscleBoostUntil", 0), attr("RainbowBoostUntil", 0)) - os.time() -- Rainbow Potion da Muscle Potion sayılır
