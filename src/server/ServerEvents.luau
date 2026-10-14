@@ -33,13 +33,31 @@ function ServerEvents.multiplier()
 	return if Workspace:GetAttribute("PowerHourActive") == true then Config.PowerHour.Multiplier else 1
 end
 
+-- Sezonluk etkinlik (Config.Event) şu an açık mı? (UTC saniye penceresi)
+function ServerEvents.seasonActive(now)
+	local event = Config.Event
+	if not event or not event.Enabled then
+		return false
+	end
+	now = now or serverNow()
+	return now >= event.StartUnix and now < event.EndUnix
+end
+
 function ServerEvents.init()
 	local lastActive = nil
+	local lastSeason = nil
 	task.spawn(function()
 		while true do
 			local now = serverNow()
 			local active, remaining = ServerEvents.powerHourState(now)
 			-- Özniteliği sadece durum değişince yaz (ağ trafiği olmasın): aktifken bitiş zamanı, değilken sonraki başlangıç
+			-- Sezonluk etkinlik: durum değişince 'SeasonActive' (bool) ve 'SeasonEnds' (UTC saniye) özniteliği; istemci düğmesi ve lobi süsü bunu dinler
+			local season = ServerEvents.seasonActive(now)
+			if season ~= lastSeason then
+				lastSeason = season
+				Workspace:SetAttribute("SeasonEnds", if Config.Event then Config.Event.EndUnix else 0)
+				Workspace:SetAttribute("SeasonActive", season)
+			end
 			if active ~= lastActive then
 				lastActive = active
 				Workspace:SetAttribute("PowerHourActive", active)

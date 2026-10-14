@@ -124,7 +124,14 @@ function CosmeticPanel.init(screenGui, showToast, options)
 		local equipped = player:GetAttribute(options.equippedAttr) or ""
 		local wins = winValue.Value
 
-		for index, item in options.items do
+		-- Sezonluk etkinlik gibi yalnızca sahibi olunca görünen ürünler (options.ownedOnlyItems) listenin sonuna eklenir
+		local entries = table.clone(options.items)
+		for _, extra in options.ownedOnlyItems or {} do
+			if owned[extra.id] then
+				table.insert(entries, extra)
+			end
+		end
+		for index, item in entries do
 			local card = create("Frame", {
 				LayoutOrder = index,
 				Size = UDim2.new(1, -10, 0, 120),

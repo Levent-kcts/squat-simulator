@@ -159,6 +159,10 @@ for _, egg in Config.Eggs do
 	end
 end
 
+-- Sezonluk etkinlik izi (Config.Event.Trail): Config.Trails'te değil, ama aynı katalogdan bulunur (takma, iz efekti, kayıt temizliği)
+if Config.Event and Config.Event.Trail then
+	Catalog.TrailById[Config.Event.Trail.id] = Config.Event.Trail
+end
 for _, trail in Config.Trails do
 	Catalog.TrailById[trail.id] = trail
 end

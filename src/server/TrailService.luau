@@ -107,6 +107,36 @@ local FX = {
 			}
 		end,
 	},
+	-- Pumpkin Patch (sezonluk etkinlik izi, Config.Event.Trail): turuncu kor parıltıları yukarı süzülür, arkada mor dumanlı hayalet izi kalır
+	pumpkin = {
+		emitters = function(trail)
+			return {
+				{
+					texture = SPARKLE,
+					colors = { { 0, Color3.fromRGB(255, 220, 110) }, { 0.5, trail.color }, { 1, Color3.fromRGB(120, 50, 170) } },
+					size = { { 0, 0.5 }, { 1, 0 } },
+					transparency = { { 0, 0.05 }, { 1, 1 } },
+					life = { 0.7, 1.2 },
+					rate = 12,
+					speed = { 1, 3 },
+					spread = 45,
+					rise = 4,
+					light = 1,
+				},
+				{
+					texture = SMOKE,
+					colors = { { 0, Color3.fromRGB(160, 90, 220) }, { 1, Color3.fromRGB(60, 30, 90) } },
+					size = { { 0, 0.5 }, { 1, 1.5 } },
+					transparency = { { 0, 0.5 }, { 1, 1 } },
+					life = { 0.6, 1 },
+					rate = 8,
+					speed = { 0.5, 1.5 },
+					spread = 30,
+					rise = 0.5,
+				},
+			}
+		end,
+	},
 	-- Sweat Drops: arkadan düşen mavi ter damlaları (antrenman)
 	drops = {
 		emitters = function(trail)

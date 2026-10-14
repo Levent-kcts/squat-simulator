@@ -301,6 +301,44 @@ return {
 	},
 	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
 
+	-- SEZONLUK ETKİNLİK: SPOOKY GYM (Halloween; 2026-10-14 büyüme planı 2.1; server/SeasonEvent, server/EventDecor, client/SpookyPanel): 24 Ekim - 8 Kasım. Duvar kırdıkça ve aşama bitirdikçe CANDY toplanır (satılmaz, Robux'la ALINMAZ),
+	-- Candy ile DETERMİNİSTİK etkinlik mağazasından (rastgele ürün YOK, Roblox 'ücretli rastgele ürün' kuralına takılmaz) iksir, Win, kas, unvan ve iz alınır; toplam Candy kilometre taşları ücretsiz ödül verir. Etkinlik biterken Candy sıfırlanır
+	-- (yeni etkinlikte Id değişir), AMA unvan ve iz kalıcıdır. Baskı/kıtlık dili yok. Kapatmak için Enabled = false. Süre: StartUnix/EndUnix (UTC saniye; ServerEvents.seasonActive).
+	-- Dengeleme: tam bir tur (100 duvar + 20 aşama) ~200 Candy; aktif bir oyuncu saatte ~100-250 Candy kazanır, mağaza toplamı ~1200, son kilometre taşı 1100.
+	Event = {
+		Enabled = true,
+		Id = "spooky2026",
+		Name = "SPOOKY GYM",
+		Emoji = "🎃",
+		CurrencyName = "Candy",
+		CurrencyEmoji = "🍬",
+		StartUnix = 1792800000, -- 24 Ekim 2026 00:00 UTC
+		EndUnix = 1794182400, -- 9 Kasım 2026 00:00 UTC (8 Kasım gün sonuna kadar)
+		CandyPerWall = 1, -- kırılan her duvar
+		CandyPerStage = 5, -- Win pedine basarak bitirilen her aşama
+		-- Etkinlik mağazası. reward = Config.Codes ile aynı ödül tanımı (wins / winsStage [aşama ödülü x N] / muscleClicks / potions); perk = 'title' ya da 'trail' (kalıcı); limit = etkinlik boyunca en çok kaç kez
+		Items = {
+			{ id = "rainbow", name = "Rainbow Potion", detail = "15 min Luck + Muscle + Wins", emoji = "🧪", price = 35, limit = 10, reward = { potions = { { kind = "boostRainbow", minutes = 15 } } } },
+			{ id = "stash", name = "Win Stash", detail = "3x a stage reward in Wins", emoji = "💰", price = 50, limit = 5, reward = { winsStage = 3 } },
+			{ id = "crate", name = "Protein Crate", detail = "A big pile of Leg Muscle", emoji = "💪", price = 40, limit = 5, reward = { muscleClicks = 4000 } },
+			{ id = "title", name = "Pumpkin King", detail = "Name tag title (yours forever)", emoji = "👑", price = 150, limit = 1, perk = "title" },
+			{ id = "trail", name = "Pumpkin Patch Trail", detail = "Spooky trail, +14 speed (forever)", emoji = "🎃", price = 250, limit = 1, perk = "trail" },
+		},
+		-- Toplam kazanılan Candy kilometre taşları (ücretsiz ödül, panelde CLAIM)
+		Milestones = {
+			{ candy = 60, reward = { potions = { { kind = "boostLuck", minutes = 15 } } } },
+			{ candy = 180, reward = { winsStage = 4 } },
+			{ candy = 400, reward = { potions = { { kind = "boostMuscle", minutes = 60 } } } },
+			{ candy = 700, reward = { muscleClicks = 15000, potions = { { kind = "boostWins", minutes = 15 } } } },
+			{ candy = 1100, reward = { winsStage = 12, potions = { { kind = "boostRainbow", minutes = 60 } } } },
+		},
+		Title = "Pumpkin King", -- unvan yazısı (isim etiketinin 3. satırı; rütbe unvanının yerine geçer)
+		-- Kalıcı etkinlik izi (Config.Trails'e girmez; Catalog.TrailById'ye eklenir, Backpack > Trails'te yalnızca sahibine görünür)
+		Trail = { id = "pumpkin", name = "Pumpkin Patch", fx = "pumpkin", emoji = "🎃", speed = 14, color = Color3.fromRGB(255, 140, 30), eventOnly = true },
+		-- Lobi süsü (server/EventDecor): balkabakları yol kenarlarında, hayaletler havada; sadece görünüm
+		Decor = { Pumpkins = 10, Ghosts = 5 },
+	},
+
 	-- NELER YENİ KARTI (2026-10-14 büyüme planı 1.6; client/WhatsNewCard): geri dönen oyuncuya yeni özellikleri tek küçük kartla duyurur. Version her yeni duyuruda ARTIRILIR; oyuncu 'Got it!' deyince o sürüm görülmüş sayılır (kayıtlı).
 	-- Yeni oyuncuya (eğitimi bitirmemiş) hiç gösterilmez. Settings > 'What's New' ile her zaman yeniden açılır. Lines: en çok 5 satır, kısa tut (ekran sade kalsın).
 	WhatsNew = {

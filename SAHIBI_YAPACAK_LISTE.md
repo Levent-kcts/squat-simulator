@@ -24,6 +24,9 @@ Ads Manager:
 9. **Sosyal bağlantı** (varsa Discord/YouTube/TikTok) ekle: sadece yaş doğrulamalı 16+ oyuncular görür, en çok 3 tane.
 10. **Experience Event oluştur** (Creator Hub > Engagement > Events & Updates): Halloween etkinliğim hazır olduğunda (24 Ekim) bir etkinlik kaydı aç. Off-Platform Featuring başvurusu için son gün 17 Ekim, ama 16+ oyunların uygun olup olmadığı belli değil, şansı düşük, bedava.
 
+## B1) Halloween etkinliği hazır: yayın ve duyuru (24 Ekim'den ÖNCE yayınla)
+**Spooky Gym** kodlandı ve GitHub'a yüklendi (24 Ekim 00:00 UTC - 8 Kasım sonu; kendiliğinden açılır/kapanır, senin bir şey açman gerekmez). **En geç 23 Ekim'de Studio'dan yayınla** (Rojo ile senkronla > File > Publish to Roblox). Yapılacaklar: (1) Experience Event kaydı (yukarıdaki madde 10) etkinlik tarihleriyle; (2) oyun adına yalnızca 24 Ekim-8 Kasım arası tek bir **[🎃]** etiketi ekleyebilirsin (zorunlu değil, 9 Kasım'da kaldır); (3) kısa video: balkabakları, Candy mağazası, 'Pumpkin King' unvanı. Candy sadece oynayarak kazanılır, satılmaz; hiçbir Robux ürünü eklenmedi.
+
 ## B2) Kodları duyur (kod sistemi hazır)
 Oyunda Settings > Redeem code'dan girilir. Lansman kodları: **LAUNCH, SQUAT, SMASHWALLS, EVOLUTION, LEGDAY, FRIENDS, THANKS**. Oyun sayfası açıklamasına ve videolara yaz ('Codes: LAUNCH, SQUAT ...'); kod listeleme siteleri bunları ücretsiz yayar. Not: oyun içinde link/Discord yazmak yasak, ama açıklama sayfasına kodları yazabilirsin.
 

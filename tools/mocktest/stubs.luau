@@ -110,7 +110,13 @@ InstanceMT.__index = function(self, key)
 				end,
 			}
 		end,
-		Destroy = function() end,
+		-- Destroy: ebeveynin _children tablosundan çıkarır (süs kurup kaldıran modüllerin testi için)
+		Destroy = function(s)
+			local parent = rawget(s, "Parent")
+			if type(parent) == "table" and rawget(parent, "_children") and rawget(parent, "_children")[rawget(s, "Name")] == s then
+				rawget(parent, "_children")[rawget(s, "Name")] = nil
+			end
+		end,
 	}
 	return methods[key]
 end
@@ -288,15 +294,32 @@ local services = {
 -- Workspace: diğer her şeyde boş işlev döndüren genel taklit, ama öznitelikler GERÇEKTEN saklanır (ServerEvents'in 'PowerHourActive' özniteliği gibi sunucu çapı durum testleri için)
 do
 	local attrs = {}
+	local attrSignals = {}
 	services.Workspace = setmetatable({}, {
 		__index = function(_, key)
 			if key == "SetAttribute" then
 				return function(_, name, value)
+					local old = attrs[name]
 					attrs[name] = value
+					if old ~= value then
+						for _, listener in attrSignals[name] or {} do
+							listener()
+						end
+					end
 				end
 			elseif key == "GetAttribute" then
 				return function(_, name)
 					return attrs[name]
+				end
+			elseif key == "GetAttributeChangedSignal" then
+				return function(_, name)
+					return {
+						Connect = function(_, listener)
+							attrSignals[name] = attrSignals[name] or {}
+							table.insert(attrSignals[name], listener)
+							return { Disconnect = function() end }
+						end,
+					}
 				end
 			end
 			return function() end

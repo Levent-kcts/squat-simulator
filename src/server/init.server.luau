@@ -68,6 +68,31 @@ do
 	end
 end
 
+-- Sezonluk etkinlik (Spooky Gym: Candy, mağaza, kilometre taşları) ve lobi süsü isteğe bağlıdır: hata verirse oyun etkilenmez
+local SeasonEvent
+do
+	local okSeason, module = pcall(require, script.SeasonEvent)
+	if okSeason then
+		SeasonEvent = module
+		local started, err = pcall(SeasonEvent.init, PlayerStats)
+		if not started then
+			SeasonEvent = nil
+			warn(`[Server] SeasonEvent init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load SeasonEvent: {module}`)
+	end
+	local okDecor, EventDecor = pcall(require, script.EventDecor)
+	if okDecor then
+		local started, err = pcall(EventDecor.init)
+		if not started then
+			warn(`[Server] EventDecor init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load EventDecor: {EventDecor}`)
+	end
+end
+
 -- Çapraz sunucu duyuru akışı (nadir pet, rebirth eşikleri) isteğe bağlıdır: hata verirse oyunun geri kalanı çalışır
 do
 	local okFeedModule, GlobalFeed = pcall(require, script.GlobalFeed)
@@ -323,6 +348,16 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return PlayerStats.claimOffline(player)
 	elseif action == "ClaimLogin" then
 		return PlayerStats.claimLogin(player)
+	elseif action == "EventBuy" and type(id) == "string" then
+		if not SeasonEvent then
+			return false, "The event is not available right now."
+		end
+		return SeasonEvent.buy(player, id)
+	elseif action == "EventClaim" and type(id) == "number" then
+		if not SeasonEvent then
+			return false, "The event is not available right now."
+		end
+		return SeasonEvent.claim(player, math.floor(id))
 	elseif action == "SeenWhatsNew" then
 		return PlayerStats.seenWhatsNew(player)
 	elseif action == "RedeemCode" and type(id) == "string" then

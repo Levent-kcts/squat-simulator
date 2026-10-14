@@ -101,7 +101,11 @@ local function attach(targetPlayer, character)
 		-- KALICI STATÜ (2026-10-14 tasarım incelemesi: 'Lv.N' ve kas rebirth'te sıfırlanır, 40 rebirth'lik oyuncu yeni oyuncuyla aynı görünüyordu): rebirth yapmış oyuncuda
 		-- '★N' rozeti (rebirth sayısı, renk kademesi: 1+ gümüş, 5+ altın, 10+ mor, 20+ pembe), yapmamışta 'Lv.N'
 		local rebirthCount = if rebirths then rebirths.Value else 0
-		if rebirthCount > 0 then
+		local eventTitle = targetPlayer:GetAttribute("EventTitle") -- sezonluk etkinlik unvanı (satın alınan): rütbe unvanının yerine geçer
+		if type(eventTitle) == "string" and eventTitle ~= "" then
+			titleLabel.Text = `{Config.Event and Config.Event.Emoji or "🎃"} {eventTitle}`
+			titleLabel.TextColor3 = Color3.fromRGB(255, 150, 40)
+		elseif rebirthCount > 0 then
 			local title = Progression.title(rebirthCount)
 			titleLabel.Text = title.name
 			titleLabel.TextColor3 = title.color
@@ -121,6 +125,7 @@ local function attach(targetPlayer, character)
 			stat:GetPropertyChangedSignal("Value"):Connect(refresh)
 		end
 	end
+	targetPlayer:GetAttributeChangedSignal("EventTitle"):Connect(refresh)
 end
 
 local function track(targetPlayer)

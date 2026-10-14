@@ -337,6 +337,23 @@ local giftsButton = makeGridButton(6, "🎁", "Gifts", { Color3.fromRGB(110, 235
 -- GÜNLÜK GİRİŞ ÖDÜLÜ düğmesi (2026-10-14: sahibi onayladı; client/LoginPanel): 7. sol buton (sütun 0, 4. satır); ikon yüklenmediyse emoji. Bugünün ödülü hazırken köşesinde kırmızı '!' rozeti
 local dailyButton = makeGridButton(7, "📅", "Daily", { Color3.fromRGB(255, 190, 60), Color3.fromRGB(235, 110, 30) }, icons.Daily)
 
+-- SEZONLUK ETKİNLİK düğmesi (Spooky Gym; client/SpookyPanel): 8. sol buton, SADECE etkinlik açıkken görünür; altındaki yazı Candy sayısını gösterir
+local spookyButton, spookyCaption = makeGridButton(8, Config.Event and Config.Event.Emoji or "🎃", "Spooky", { Color3.fromRGB(255, 140, 40), Color3.fromRGB(110, 50, 170) }, nil)
+spookyButton.Name = "SpookyButton"
+spookyButton.Visible = false
+do
+	local Workspace = game:GetService("Workspace")
+	local function refreshSpooky()
+		local active = Config.Event ~= nil and Workspace:GetAttribute("SeasonActive") == true and player:GetAttribute("DataLoaded") == true
+		spookyButton.Visible = active
+		spookyCaption.Text = `{Config.Event and Config.Event.CurrencyEmoji or ""} {Format.compact(player:GetAttribute("Candy") or 0)}`
+	end
+	Workspace:GetAttributeChangedSignal("SeasonActive"):Connect(refreshSpooky)
+	player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshSpooky)
+	player:GetAttributeChangedSignal("Candy"):Connect(refreshSpooky)
+	refreshSpooky()
+end
+
 -- Rebirth hazır olunca buton nabız gibi büyüyüp küçülür (dikkat çeker)
 local rebirthPulse = create("UIScale", { Scale = 1 }, rebirthButton)
 local rebirthPulseTween = TweenService:Create(rebirthPulse, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
@@ -1100,6 +1117,32 @@ dailyButton.MouseButton1Click:Connect(function()
 		showToast(false, "Daily rewards are coming soon!")
 	end
 end)
+local toggleSpooky = loadPanel("SpookyPanel", screenGui, showToast) -- sezonluk etkinlik penceresi (sol menüdeki Spooky düğmesi)
+spookyButton.MouseButton1Click:Connect(function()
+	if toggleSpooky then
+		toggleSpooky()
+	else
+		showToast(false, "The event is not available right now.")
+	end
+end)
+-- Etkinlik açıkken oturumda BİR KEZ kısa duyuru (eğitimi bitmiş oyuncuya; ekranı kapatmaz)
+do
+	local Workspace = game:GetService("Workspace")
+	local announced = false
+	local function announceEvent()
+		if announced or not Config.Event or Workspace:GetAttribute("SeasonActive") ~= true or player:GetAttribute("DataLoaded") ~= true or player:GetAttribute("TutorialDone") ~= true then
+			return
+		end
+		announced = true
+		task.delay(9, function()
+			showToast(true, `{Config.Event.Emoji} {Config.Event.Name} is ON! Break walls to collect {Config.Event.CurrencyName}.`)
+		end)
+	end
+	Workspace:GetAttributeChangedSignal("SeasonActive"):Connect(announceEvent)
+	player:GetAttributeChangedSignal("DataLoaded"):Connect(announceEvent)
+	player:GetAttributeChangedSignal("TutorialDone"):Connect(announceEvent)
+	announceEvent()
+end
 -- Bugünün giriş ödülü hazırsa (eğitim bitmiş oyuncuya) oturumda BİR KEZ küçük bir hatırlatma; ekranı kapatmaz
 do
 	local reminded = false
@@ -1169,6 +1212,7 @@ local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	headerBottom = Color3.fromRGB(255, 110, 30),
 	panelColor = Color3.fromRGB(75, 32, 22),
 	items = Config.Trails,
+	ownedOnlyItems = { Config.Event and Config.Event.Trail or nil }, -- sezonluk etkinlik izi: yalnızca sahibine görünür
 	ownedAttr = "OwnedTrails",
 	equippedAttr = "EquippedTrail",
 	buyAction = "BuyTrail",

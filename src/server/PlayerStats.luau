@@ -241,7 +241,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Event = {}, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -455,6 +455,39 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true })
+	-- Sezonluk etkinlik durumu (Config.Event; server/SeasonEvent): { id, candy, total, claimed = { [kilometre taşı] = true }, bought = { [ürün] = adet }, perks = { title, trail } }
+	do
+		local source = if type(raw.Event) == "table" then raw.Event else {}
+		local event = { id = if type(source.id) == "string" then source.id else "", candy = 0, total = 0, claimed = {}, bought = {}, perks = {} }
+		if type(source.candy) == "number" then
+			event.candy = math.clamp(math.floor(source.candy), 0, 1e9)
+		end
+		if type(source.total) == "number" then
+			event.total = math.clamp(math.floor(source.total), 0, 1e9)
+		end
+		if type(source.claimed) == "table" then
+			for _, index in source.claimed do
+				if type(index) == "number" then
+					event.claimed[math.floor(index)] = true
+				end
+			end
+		end
+		if type(source.bought) == "table" then
+			for itemId, count in source.bought do
+				if type(itemId) == "string" and type(count) == "number" then
+					event.bought[itemId] = math.clamp(math.floor(count), 0, 9999)
+				end
+			end
+		end
+		if type(source.perks) == "table" then
+			for _, perk in source.perks do
+				if type(perk) == "string" then
+					event.perks[perk] = true
+				end
+			end
+		end
+		data.Event = event
+	end
 	-- 'Neler yeni' kartı: görülen sürüm. Kayıtlı değer varsa o; yoksa eğitimi bitirmiş eski oyuncuda 0 (kartı görür), yeni oyuncuda güncel sürüm (görmez)
 	if type(raw.WhatsNew) == "number" then
 		data.WhatsNew = math.clamp(math.floor(raw.WhatsNew), 0, 1e6)
@@ -906,6 +939,14 @@ local function save(player, mode)
 		Codes = setToList(profile.codes),
 		Training = profile.training,
 		WhatsNew = profile.whatsNew,
+		Event = {
+			id = profile.event.id,
+			candy = profile.event.candy,
+			total = profile.event.total,
+			claimed = setToList(profile.event.claimed),
+			bought = profile.event.bought,
+			perks = setToList(profile.event.perks),
+		},
 		Login = profile.login,
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
@@ -1140,6 +1181,7 @@ local function setup(player)
 	local profile = {
 		taps = 0,
 		whatsNew = 0, -- 'Neler yeni' kartında görülen sürüm (kayıtlı)
+		event = { id = "", candy = 0, total = 0, claimed = {}, bought = {}, perks = {} }, -- sezonluk etkinlik durumu (kayıtlı, server/SeasonEvent)
 		training = {}, -- Eğitim yumurtası sayaçları { [yumurta id] = açılış sayısı } (kayıtlı)
 		login = { next = 1, last = -1, total = 0 }, -- günlük giriş ödülü durumu (kayıtlı)
 		codes = {}, -- kullanılan promosyon kodları { KOD = true } (kayıtlı)
@@ -1259,6 +1301,7 @@ local function setup(player)
 	profile.codes = data.Codes
 	profile.training = data.Training
 	profile.whatsNew = data.WhatsNew
+	profile.event = data.Event
 	profile.login = data.Login
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
 	-- sinyalden ÖNCE yapıldığı için sayılmaz.
@@ -1397,6 +1440,12 @@ local function grantRewardDef(player, profile, def, sku)
 		econ(player, "Source", def.wins, "TimedReward", sku or "reward")
 		table.insert(parts, `+{Format.compact(def.wins)} Wins`)
 	end
+	if def.winsStage then -- oyuncunun tahmini aşama ödülünün N katı (geç oyunda da anlamlı kalır)
+		local amount = estimatedStageReward(player) * def.winsStage
+		wins.Value += amount
+		econ(player, "Source", amount, "Gameplay", sku or "reward")
+		table.insert(parts, `+{Format.compact(amount)} Wins`)
+	end
 	if def.muscleClicks then
 		local amount = math.max(100, math.floor(profile.gain * def.muscleClicks))
 		muscle.Value += amount
@@ -1408,6 +1457,65 @@ local function grantRewardDef(player, profile, def, sku)
 		table.insert(parts, `{Catalog.PotionByKind[potion.kind].name} ({potion.minutes} min)`)
 	end
 	return table.concat(parts, ", ")
+end
+
+-- SEZONLUK ETKİNLİK (server/SeasonEvent) için dışa açılanlar: canlı durum tablosu, ödül verme, iz verme, olay dinleyicileri
+function PlayerStats.eventState(player)
+	local profile = profiles[player]
+	return if profile and profile.loaded then profile.event else nil
+end
+
+-- Ödül tanımını ({ wins, winsStage, muscleClicks, potions }) verir, yeniler ve kaydeder. Dönüş: verilenlerin kısa yazısı (veri yoksa nil)
+function PlayerStats.giveReward(player, def, sku)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return nil
+	end
+	local text = grantRewardDef(player, profile, def, sku)
+	refresh(player)
+	requestSave(player)
+	return text
+end
+
+-- Bir izi sahipliğe ekler (takmaz): etkinlik izi gibi Win dışı yollarla kazanılan izler için
+function PlayerStats.grantTrail(player, trailId)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or not Catalog.TrailById[trailId] then
+		return false
+	end
+	if not table.find(profile.trails, trailId) then
+		table.insert(profile.trails, trailId)
+	end
+	refresh(player)
+	requestSave(player)
+	return true
+end
+
+function PlayerStats.markDirty(player)
+	requestSave(player)
+end
+
+-- Oyuncuya küçük bildirim yollar (üstte kısa yazı)
+function PlayerStats.toast(player, message)
+	local profile = profiles[player]
+	if profile and profile.loaded then
+		sendToast(player, profile, message)
+	end
+end
+
+-- Küçük olay dinleyicisi: 'walls' (player, adet) ve 'stagewin' (player, Win) olayları. Dinleyici hata verirse oyun etkilenmez
+local listeners = {}
+function PlayerStats.listen(name, fn)
+	listeners[name] = listeners[name] or {}
+	table.insert(listeners[name], fn)
+end
+local function emit(name, ...)
+	for _, fn in listeners[name] or {} do
+		local ok, err = pcall(fn, ...)
+		if not ok then
+			warn(`[PlayerStats] {name} listener failed: {err}`)
+		end
+	end
 end
 
 function PlayerStats.claimLogin(player)
@@ -1843,6 +1951,7 @@ function PlayerStats.questEvent(player, kind, amount)
 		funnel(player, profile, "FirstWall")
 		profile.wallsBroken += math.max(1, math.floor(amount or 1)) -- ömür boyu kırılan duvar (Yeni oyuncu görevi)
 		publishStarter(player, profile)
+		emit("walls", player, math.max(1, math.floor(amount or 1)))
 	end
 	local changed = false
 	for slot, quest in questsForDay(profile.quests.day) do
@@ -1926,6 +2035,7 @@ function PlayerStats.addWin(player, amount)
 		local boost = if potionActive(profile, "boostWinsUntil") then Config.Potions.Mult else 1
 		stat.Value += (amount or 1) * boost
 		econ(player, "Source", (amount or 1) * boost, "Gameplay", "stage_win")
+		emit("stagewin", player, (amount or 1) * boost)
 		requestSave(player)
 		PlayerStats.questEvent(player, "winpads", 1)
 	end
