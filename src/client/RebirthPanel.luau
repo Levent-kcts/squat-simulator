@@ -126,16 +126,16 @@ function RebirthPanel.init(screenGui, showToast)
 		text = "Rebirth",
 		kind = "hot",
 		size = "lg",
-		width = 250,
-		position = UDim2.fromOffset(16 + 125, 332),
+		width = 220,
+		position = UDim2.new(0.34, 0, 0, 332),
 	})
 	local skipButton = UIStyle.button(panel, {
 		name = "SkipButton",
 		text = `SKIP  {utf8.char(0xE002)} {Config.Rebirth.SkipRobuxPrice}`,
 		kind = "secondary",
 		size = "md",
-		width = 150,
-		position = UDim2.fromOffset(444 - 75, 332),
+		width = 140,
+		position = UDim2.new(0.8, 0, 0, 332),
 	})
 	local hintLabel = UIStyle.label(panel, {
 		text = "",

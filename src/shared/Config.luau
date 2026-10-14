@@ -845,7 +845,7 @@ return {
 	-- BLENDER MODELLERİ (tools/blender, shared/ModelLibrary + ModelInfo): ReplicatedStorage > GameModels klasöründe adı 'pet_<id>' / 'egg_<id>' olan model varsa oyun onu kullanır, yoksa eski küre/kod yumurtası.
 	-- PetScale: kutu pet ölçeği (1 = Blender'daki ~2.1 stud küp); PetHover: modelin tabanının takipçi merkezine (HumanoidRootPart) göre yüksekliği (eksi = zemine yakın); EggScale: yumurta ölçeği.
 	Models = {
-		PetScale = 0.8,
+		PetScale = 0.6,
 		PetHover = -1.8,
 		EggScale = 1,
 		ShoeScale = 0.62, -- raftaki ayakkabı modeli (Blender'da ~3.9 stud uzun, rafta ~2.4 stud)

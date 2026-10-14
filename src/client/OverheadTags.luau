@@ -61,8 +61,8 @@ local function attach(targetPlayer, character)
 
 	local gui = Instance.new("BillboardGui")
 	gui.Name = TAG_NAME
-	gui.Size = UDim2.fromScale(6, 3.1) -- stud cinsinden: uzaktayken küçülür (3 satır: güç, ad, rütbe unvanı)
-	gui.MaxDistance = 70
+	gui.Size = UDim2.fromOffset(190, 84) -- PİKSEL boyutu (3 satır: güç, ad, rütbe unvanı): kameraya yaklaşınca ekranı kaplamaz (QA 2026-10-15)
+	gui.MaxDistance = 60
 	gui.Adornee = head
 	gui.Parent = head
 

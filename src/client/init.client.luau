@@ -556,7 +556,7 @@ if Config.Icons.Click and Config.Icons.Click ~= "" then
 end
 local autoBadge = makeText(autoButton, {
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.new(0.5, 0, 0, 1),
+	Position = UDim2.new(0.5, 0, 0, -7),
 	Size = UDim2.fromOffset(64, 26),
 	Text = "OFF",
 	TextColor3 = C.danger.base,

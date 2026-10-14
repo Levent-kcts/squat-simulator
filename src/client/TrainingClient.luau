@@ -46,9 +46,10 @@ function TrainingClient.init()
 
 		-- Antrenörün üstünde üç satır: antrenör ismi, çarpan ve durum
 		local gui = Instance.new("BillboardGui")
-		gui.Size = UDim2.fromScale(9 * labelScale, 4.4 * labelScale)
+		local pixelScale = math.clamp(labelScale, 1, 1.3) -- piksel boyutu (QA 2026-10-15): üst basamaklarda biraz büyük, yakında ekranı kaplamaz
+		gui.Size = UDim2.fromOffset(230 * pixelScale, 104 * pixelScale)
 		gui.StudsOffsetWorldSpace = Vector3.new(0, 0.3 + trainerHeight + 0.4 + 2.2 * labelScale, 0) -- ped yarım kalınlığı + antrenör boyu + boşluk + etiket yarı boyu
-		gui.MaxDistance = 110
+		gui.MaxDistance = 80
 		gui.Adornee = pad
 		gui.Parent = pad
 

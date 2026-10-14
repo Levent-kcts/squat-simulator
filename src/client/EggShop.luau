@@ -91,9 +91,9 @@ function EggShop.init(screenGui, hooks)
 		--  * isim: yumurtanın üstünde tek satır,
 		--  * fiyat: pedin hemen üstünde. Boyutlar stud cinsinden, uzaktayken küçülür; uzaktaki etiketler gizlenir (MaxDistance).
 		local nameGui = create("BillboardGui", {
-			Size = UDim2.fromScale(7.5, 1.9),
+			Size = UDim2.fromOffset(210, 44), -- piksel boyutu: yakında ekranı kaplamaz (QA 2026-10-15)
 			StudsOffsetWorldSpace = Vector3.new(0, 8.6, 0),
-			MaxDistance = 48,
+			MaxDistance = 40,
 			Adornee = pad,
 		}, pad)
 		makeText(nameGui, {
@@ -103,9 +103,9 @@ function EggShop.init(screenGui, hooks)
 		}, 2)
 
 		local priceGui = create("BillboardGui", {
-			Size = UDim2.fromScale(5, 1.35),
+			Size = UDim2.fromOffset(150, 30),
 			StudsOffsetWorldSpace = Vector3.new(0, 2.1, 0),
-			MaxDistance = 36,
+			MaxDistance = 28,
 			Adornee = pad,
 		}, pad)
 		local price = makeText(priceGui, {

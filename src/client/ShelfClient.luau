@@ -65,9 +65,9 @@ function ShelfClient.init(options)
 		local pad = folder:WaitForChild(`Pad_{item.id}`)
 
 		local gui = Instance.new("BillboardGui")
-		gui.Size = UDim2.fromScale(5, 2.6)
+		gui.Size = UDim2.fromOffset(150, 72) -- piksel boyutu: yakında ekranı kaplamaz (QA 2026-10-15)
 		gui.StudsOffsetWorldSpace = Vector3.new(0, options.labelHeight, 0)
-		gui.MaxDistance = 35
+		gui.MaxDistance = 30
 		gui.Adornee = pad
 		gui.Parent = pad
 
