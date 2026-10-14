@@ -14,6 +14,7 @@ local Format = require(Shared:WaitForChild("Format"))
 local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
 local okBadges, Badges = pcall(require, script.Parent.Badges) -- Roblox rozetleri: yüklenemezse atlanır
 local okEvents, ServerEvents = pcall(require, script.Parent.ServerEvents) -- Power Hour: yüklenemezse çarpan 1 kalır
+local okAnalytics, Analytics = pcall(require, script.Parent.Analytics) -- ölçüm (Economy / Custom Events): yüklenemezse atlanır
 local okFeed, GlobalFeed = pcall(require, script.Parent.GlobalFeed) -- çapraz sunucu duyuru akışı: yüklenemezse duyuru atlanır, oyun etkilenmez
 
 local PlayerStats = {}
@@ -609,6 +610,19 @@ local function funnel(player, profile, name)
 	pcall(function()
 		AnalyticsService:LogOnboardingFunnelStepEvent(player, step, name)
 	end)
+end
+
+-- ÖLÇÜM: Win kaynağı / gideri (Creator Hub > Analytics > Economy). Çağrıdan SONRA bakiye okunur (bitiş bakiyesi). Hata verirse oyunu etkilemez
+local function econ(player, flow, amount, transaction, sku)
+	if okAnalytics then
+		local stat = getStat(player, Config.StatWins)
+		pcall(Analytics.economy, player, flow, "Wins", if stat then stat.Value else 0, amount, transaction, sku)
+	end
+end
+local function customEvent(player, name, value, fields)
+	if okAnalytics then
+		pcall(Analytics.event, player, name, value, fields)
+	end
 end
 
 -- YENİ OYUNCU GÖREVLERİ (Config.StarterQuests): ilerleme sunucuda hesaplanır, biten görev KİLİTLENİR (starterDone) ve 'StarterState' özniteliğine 'id,ilerleme,bitti,alındı;...' diye yazılır (istemci QuestPanel > NEW PLAYER sekmesi)
@@ -1364,12 +1378,13 @@ function PlayerStats.getMuscle(player)
 end
 
 -- Ödül tanımını ({ wins, muscleClicks, potions }) oyuncuya verir (promosyon kodu ve günlük giriş ortak). Dönüş: verilenlerin kısa listesi (yazı)
-local function grantRewardDef(player, profile, def)
+local function grantRewardDef(player, profile, def, sku)
 	local wins = getStat(player, Config.StatWins)
 	local muscle = getStat(player, Config.StatLegMuscle)
 	local parts = {}
 	if def.wins then
 		wins.Value += def.wins
+		econ(player, "Source", def.wins, "TimedReward", sku or "reward")
 		table.insert(parts, `+{Format.compact(def.wins)} Wins`)
 	end
 	if def.muscleClicks then
@@ -1399,7 +1414,8 @@ function PlayerStats.claimLogin(player)
 	profile.login.last = today
 	profile.login.next = if day >= #Config.Login.Rewards then 1 else day + 1 -- seri kopmaz: kaçırılan günler cezasız, sıradaki gün devam eder
 	profile.login.total += 1
-	local text = grantRewardDef(player, profile, def)
+	local text = grantRewardDef(player, profile, def, "login_day")
+	customEvent(player, "LoginClaimed", day)
 	publishLogin(player, profile)
 	refresh(player)
 	requestSave(player)
@@ -1450,7 +1466,8 @@ function PlayerStats.redeemCode(player, raw)
 		return false, "You already used this code."
 	end
 	profile.codes[def.code] = true
-	local text = grantRewardDef(player, profile, def)
+	local text = grantRewardDef(player, profile, def, "code_" .. string.lower(def.code))
+	customEvent(player, "CodeRedeemed", 1, { code = def.code })
 	refresh(player)
 	requestSave(player)
 	return true, `Code {def.code} redeemed: {text}! Potions are in Shop > Potions.`
@@ -1555,6 +1572,7 @@ function PlayerStats.rebirth(player, force)
 	muscle.Value = 0
 	-- 2026-10-13 (sahibi 'rebirthde sadece level ve kas gücü sıfırlansın' dedi): Win, ayakkabı, skin, pet, iz ve aura KALIR. (Eskiden Win, ayakkabı ve skinler de sıfırlanırdı: ilk rebirth ceza gibi hissettiriyordu.)
 	PlayerStats.questEvent(player, "rebirth", 1)
+	customEvent(player, "Rebirth", rebirthStat.Value)
 	refresh(player)
 	requestSave(player)
 	PlayerStats.awardBadge(player, "rebirth1")
@@ -1623,6 +1641,7 @@ local function giveGift(player, profile, index)
 		message = `+{reward.amount} Leg Muscle`
 	elseif reward.kind == "wins" then
 		wins.Value += reward.amount
+		econ(player, "Source", reward.amount, "TimedReward", "playtime_gift")
 		message = `+{reward.amount} Wins`
 	elseif reward.kind == "pet" then
 		local pet = Catalog.PetById[reward.pet]
@@ -1678,7 +1697,9 @@ local function unlockGifts(player, profile, mode)
 	else
 		local wins = getStat(player, Config.StatWins)
 		if wins then
-			wins.Value += estimatedStageReward(player)
+			local amount = estimatedStageReward(player)
+			wins.Value += amount
+			econ(player, "Source", amount, "IAP", "gift_unlock")
 		end
 	end
 	return opened
@@ -1722,8 +1743,11 @@ local function applyProduct(player, profile, product)
 		profile.petSlots = math.min(profile.petSlots + product.amount, Config.MaxExtraPetSlots) -- üst sınırda da satın alma işlenmiş sayılır (Robux boşa gitmesin)
 	elseif product.kind == "wins" then
 		wins.Value += product.amount
+		econ(player, "Source", product.amount, "IAP", "iap_" .. tostring(product.id))
 	elseif product.kind == "stageWins" then
-		wins.Value += Layout.reward(product.stage)
+		local amount = Layout.reward(product.stage)
+		wins.Value += amount
+		econ(player, "Source", amount, "IAP", "iap_" .. tostring(product.id))
 	elseif product.kind == "moves" then
 		muscle.Value += product.amount * profile.gain
 		syncLevel(player)
@@ -1762,6 +1786,7 @@ function PlayerStats.processPurchase(player, purchaseId, product)
 	if #profile.receipts > 300 then
 		table.remove(profile.receipts, 1)
 	end
+	customEvent(player, "ProductGranted", 1, { product = tostring(product.id) }) -- Robux satın alma kaydı verildi (Creator Hub'da hangi ürün ne kadar satıyor)
 	requestSave(player)
 	return true
 end
@@ -1833,6 +1858,7 @@ function PlayerStats.claimQuest(player, slot)
 		syncLevel(player)
 	else
 		wins.Value += amount
+		econ(player, "Source", amount, "Gameplay", "daily_quest")
 	end
 	refresh(player)
 	requestSave(player)
@@ -1875,6 +1901,7 @@ function PlayerStats.addWin(player, amount)
 	if profile and profile.loaded and stat then
 		local boost = if potionActive(profile, "boostWinsUntil") then Config.Potions.Mult else 1
 		stat.Value += (amount or 1) * boost
+		econ(player, "Source", (amount or 1) * boost, "Gameplay", "stage_win")
 		requestSave(player)
 		PlayerStats.questEvent(player, "winpads", 1)
 	end
@@ -1909,6 +1936,7 @@ function PlayerStats.buyItem(player, itemId)
 	end
 
 	wins.Value -= item.price
+	econ(player, "Sink", item.price, "Shop", "shoe_" .. tostring(itemId))
 	table.insert(profile.items, itemId)
 	profile.equippedShoe = itemId
 	refresh(player)
@@ -1945,6 +1973,7 @@ function PlayerStats.buySkin(player, skinId)
 	end
 
 	wins.Value -= skin.price
+	econ(player, "Sink", skin.price, "Shop", "skin_" .. tostring(skinId))
 	table.insert(profile.skins, skinId)
 	profile.equippedSkin = skinId
 	refresh(player)
@@ -1987,6 +2016,7 @@ grantIndexRewards = function(player, profile, count)
 			profile.indexRewards[reward.count] = true
 			if reward.kind == "wins" then
 				wins.Value += reward.amount
+				econ(player, "Source", reward.amount, "Gameplay", "pet_index")
 				table.insert(messages, `+{reward.amount} Wins`)
 			elseif POTION_FIELD[reward.kind] then
 				giveItem(player, profile, reward.kind, reward.minutes)
@@ -2008,6 +2038,7 @@ local function grantRewardList(player, profile, rewards)
 	for _, reward in rewards do
 		if reward.kind == "wins" and wins then
 			wins.Value += reward.amount
+			econ(player, "Source", reward.amount, "Onboarding", "starter_quest")
 			table.insert(messages, `+{reward.amount} Wins`)
 		elseif POTION_FIELD[reward.kind] then
 			-- (Auto Click game pass'i olana Auto Click Potion yerine Rainbow: Catalog.ownerPotion)
@@ -2123,6 +2154,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	local luck = if potionActive(profile, "boostLuckUntil") then Config.Potions.Mult else 1
 	-- EĞİTİM YUMURTASI: 'ücretli rastgele ürün' kısıtı olan (ya da henüz bilinmeyen) hesapta sonuç rastgele DEĞİL, sabit sıralı döngüdür (Catalog.trainingCycle; panelde gösterilir)
 	local training = player:GetAttribute("PaidRandomRestricted") ~= false
+	local spentOnEggs = 0
 	for _ = 1, count do
 		if wins.Value < egg.price then
 			break
@@ -2139,6 +2171,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 			break
 		end
 		wins.Value -= egg.price
+		spentOnEggs += egg.price
 		if training then
 			profile.training[egg.id] = (profile.training[egg.id] or 0) + 1
 		end
@@ -2162,6 +2195,7 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	end
 
 	PlayerStats.questEvent(player, "hatch", #kept + #deleted)
+	econ(player, "Sink", spentOnEggs, "Gameplay", "egg_" .. egg.id) -- açılış başına değil çağrı başına tek olay (otomatik açma ölçümü boğmasın)
 	refresh(player)
 	requestSave(player)
 
@@ -2298,6 +2332,7 @@ function PlayerStats.buyTrail(player, trailId)
 	end
 
 	wins.Value -= trail.winPrice
+	econ(player, "Sink", trail.winPrice, "Shop", "trail_" .. tostring(trail.id))
 	table.insert(profile.trails, trailId)
 	profile.equippedTrail = trailId
 	refresh(player)
@@ -2346,6 +2381,7 @@ function PlayerStats.buyAura(player, auraId)
 	end
 
 	wins.Value -= aura.winPrice
+	econ(player, "Sink", aura.winPrice, "Shop", "aura_" .. tostring(aura.id))
 	table.insert(profile.auras, auraId)
 	profile.equippedAura = auraId
 	refresh(player)
@@ -2607,6 +2643,7 @@ function PlayerStats.spinWheel(player)
 	if kind == "wins" then
 		local amount = estimatedStageReward(player) * prize.mult
 		wins.Value += amount
+		econ(player, "Source", amount, "TimedReward", "wheel")
 		message = `+{Format.compact(amount)} Wins`
 	elseif kind == "muscle" then
 		local amount = math.max(100, math.floor(profile.gain * prize.clicks))
@@ -2626,6 +2663,7 @@ function PlayerStats.spinWheel(player)
 		local winAmount = estimatedStageReward(player) * prize.mult
 		local muscleAmount = math.max(100, math.floor(profile.gain * prize.clicks))
 		wins.Value += winAmount
+		econ(player, "Source", winAmount, "TimedReward", "wheel_jackpot")
 		muscle.Value += muscleAmount
 		syncLevel(player)
 		message = `JACKPOT! +{Format.compact(winAmount)} Wins and +{Format.compact(muscleAmount)} Leg Muscle!`

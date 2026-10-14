@@ -197,6 +197,7 @@ M.policy = { restricted = false }
 M.published = {}
 M.subscribers = {}
 M.badgesAwarded = {}
+M.analytics = {} -- AnalyticsService taklidinin kayıtları
 M.playersById = {} -- test: çevrimiçi oyuncular (Players:GetPlayerByUserId)
 local services = {
 	PolicyService = {
@@ -235,6 +236,18 @@ local services = {
 		end,
 		GetPlayerFromCharacter = function()
 			return nil
+		end,
+	},
+	-- AnalyticsService taklidi: ekonomi ve özel olayları M.analytics'e yazar ({ kind = 'economy' | 'custom', ... })
+	AnalyticsService = {
+		LogEconomyEvent = function(_, player, flow, currency, balance, amount, transaction, sku)
+			table.insert(M.analytics, { kind = "economy", player = player, flow = flow, currency = currency, balance = balance, amount = amount, transaction = transaction, sku = sku })
+		end,
+		LogCustomEvent = function(_, player, name, value, fields)
+			table.insert(M.analytics, { kind = "custom", player = player, name = name, value = value, fields = fields })
+		end,
+		LogOnboardingFunnelStepEvent = function(_, player, step, name)
+			table.insert(M.analytics, { kind = "funnel", player = player, step = step, name = name })
 		end,
 	},
 	-- BadgeService taklidi: AwardBadge çağrılarını M.badgesAwarded'a yazar ({ userId, badgeId })
