@@ -1,7 +1,9 @@
--- GÜNLÜK GİRİŞ ÖDÜLÜ penceresi (2026-10-14: sahibi onayladı; Config.Login, server: PlayerStats.claimLogin): 7 günlük kart sırası, bugünün ödülü için CLAIM düğmesi, alt yazıda "seri kopmaz".
+-- GÜNLÜK GİRİŞ ÖDÜLÜ penceresi (2026-10-14: sahibi onayladı; Config.Login, server: PlayerStats.claimLogin): 7 günlük kart sırası, bugünün ödülü için CLAIM düğmesi, alt başlıkta "seri kopmaz".
 -- Durum sunucudan öznitelik olarak gelir: LoginNext (sıradaki gün 1-7), LoginReady (bugün alınabilir mi), LoginTotal. Sol menüdeki 'Daily' düğmesiyle açılır (PanelManager); hazırken düğmede kırmızı rozet çıkar.
+-- Görünüm: UIStyle tasarım sistemi (panel/header/card/button), vurgu = warn (turuncu); 7. gün geniş ve altın vurgulu.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -12,11 +14,11 @@ local PanelManager = require(script.Parent.PanelManager)
 
 local LoginPanel = {}
 
-local FONT = Enum.Font.FredokaOne
-local GOLD = Color3.fromRGB(255, 205, 60)
-local GREEN = Color3.fromRGB(70, 200, 100)
-local GRAY = Color3.fromRGB(110, 114, 135)
-local CARD_W, CARD_H, GAP = 70, 118, 8
+local Theme = UIStyle.Theme
+local COLORS = Theme.colors
+-- 4 sütunlu ızgara: 1-4 üst sıra, 5-6 alt sıra + 7. gün iki hücre genişliğinde (telefonda da sığar)
+local CELL_W, CELL_H, GAP, PAD = 92, 100, 8, 16
+local GRID_TOP = 76
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -27,32 +29,25 @@ local function create(className, props, parent)
 	return instance
 end
 
-local function text(parent, props, strokeThickness)
-	props.BackgroundTransparency = 1
-	props.Font = FONT
-	props.TextScaled = true
-	local label = create("TextLabel", props, parent)
-	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
-	return label
-end
-
--- Bir günün ödül yazısı ve simgesi (Config.Login.Rewards[gün]): iksir varsa iksir resmi, yoksa Win/kas simgesi
+-- Bir günün ödül satırı (Config.Login.Rewards[gün]): '+50 Wins', 'Luck 15m'
 local function describe(reward)
 	local lines = {}
 	if reward.wins then
-		table.insert(lines, `{reward.wins} Wins`)
+		table.insert(lines, `+{reward.wins} Wins`)
 	end
 	if reward.muscleClicks then
-		table.insert(lines, "Muscle")
+		table.insert(lines, "+Muscle")
 	end
 	for _, potion in reward.potions or {} do
-		table.insert(lines, `{potion.minutes}m`)
+		local def = Catalog.PotionByKind[potion.kind]
+		local name = if def and def.name then string.gsub(tostring(def.name), " Potion", "") else "Potion"
+		table.insert(lines, `{name} {potion.minutes}m`)
 	end
 	return table.concat(lines, " + ")
 end
 
-local function drawIcon(parent, reward)
-	local frame = create("Frame", { Position = UDim2.fromOffset(11, 26), Size = UDim2.fromOffset(48, 48), BackgroundTransparency = 1 }, parent)
+local function drawIcon(parent, reward, size)
+	local frame = create("Frame", { Name = "RewardIcon", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 22), Size = UDim2.fromOffset(size, size), BackgroundTransparency = 1 }, parent)
 	if reward.potions and #reward.potions > 0 then
 		local potion = Catalog.PotionByKind[reward.potions[1].kind]
 		UIStyle.potionIcon(frame, potion, { Position = UDim2.fromScale(0, 0), Size = UDim2.fromScale(1, 1) })
@@ -63,7 +58,7 @@ local function drawIcon(parent, reward)
 	if type(id) == "string" and id ~= "" then
 		create("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = id, ScaleType = Enum.ScaleType.Fit }, frame)
 	else
-		text(frame, { Size = UDim2.fromScale(1, 1), Text = if reward.wins then "🏆" else "🦵", TextColor3 = Color3.new(1, 1, 1) }, 0)
+		UIStyle.label(frame, { text = if reward.wins then "🏆" else "🦵", role = "bold", size = size - 8, align = "center", props = { Size = UDim2.fromScale(1, 1) } })
 	end
 end
 
@@ -72,85 +67,100 @@ local function formatClock(seconds)
 	return string.format("%02d:%02d:%02d", seconds // 3600, (seconds % 3600) // 60, seconds % 60)
 end
 
+-- Kartın çerçevesini (tek UIStroke) ayarlar
+local function setStroke(card, color, thickness, transparency)
+	pcall(function()
+		local stroke = card:FindFirstChildOfClass("UIStroke")
+		if stroke then
+			stroke.Color = color
+			stroke.Thickness = thickness
+			stroke.Transparency = transparency
+		end
+	end)
+end
+
 -- Döner: pencereyi açıp kapatan fonksiyon, pencere
 function LoginPanel.init(screenGui, showToast)
 	local player = Players.LocalPlayer
 	local shop = ReplicatedStorage:WaitForChild("Shop")
 	local days = #Config.Login.Rewards
-	local width = 24 + days * CARD_W + (days - 1) * GAP
+	local width = PAD * 2 + 4 * CELL_W + 3 * GAP
+	local height = 372
 
-	local panel = create("Frame", {
-		Name = "LoginPanel",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.48),
-		Size = UDim2.fromOffset(width, 292),
-		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
-		Active = true,
-		Visible = false,
-	}, screenGui)
-	create("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
-	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
-	create("UISizeConstraint", { MaxSize = Vector2.new(width, 292), MinSize = Vector2.new(300, 292) }, panel)
-	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
+	local panel = UIStyle.panel(screenGui, {
+		name = "LoginPanel",
+		width = width,
+		size = UDim2.fromOffset(width, height),
+		anchor = Vector2.new(0.5, 0.5),
+		position = UDim2.fromScale(0.5, 0.48),
+		accent = "warn",
+	})
+	panel.Visible = false
 
-	local header = create("Frame", { Size = UDim2.new(1, 0, 0, 56), BackgroundColor3 = Color3.fromRGB(255, 170, 50) }, panel)
-	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	text(header, { Position = UDim2.fromOffset(16, 6), Size = UDim2.new(1, -90, 1, -12), Text = "📅 DAILY REWARDS", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 3)
-	local close = create("TextButton", {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -10, 0.5, 0),
-		Size = UDim2.fromOffset(40, 40),
-		Text = "",
-		BackgroundColor3 = Color3.fromRGB(235, 40, 70),
-	}, header)
-	create("UICorner", { CornerRadius = UDim.new(0, 6) }, close)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
-	UIStyle.soften(close, { radius = 10, strength = 0.28 })
-	text(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1) }, 2)
-	close.MouseButton1Click:Connect(function()
-		PanelManager.hide(panel)
-	end)
+	UIStyle.header(panel, {
+		title = "Daily Reward",
+		subtitle = "Come back any day - no streak loss",
+		icon = Config.Icons.Daily,
+		emoji = "📅",
+		accent = "warn",
+		onClose = function()
+			PanelManager.hide(panel)
+		end,
+	})
 
 	-- Gün kartları
 	local cards = {}
 	for day = 1, days do
 		local reward = Config.Login.Rewards[day]
-		local card = create("Frame", {
-			Name = "LoginDay_" .. day,
-			Position = UDim2.fromOffset(12 + (day - 1) * (CARD_W + GAP), 68),
-			Size = UDim2.fromOffset(CARD_W, CARD_H),
-			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
-		}, panel)
-		create("UICorner", { CornerRadius = UDim.new(0, 8) }, card)
-		local stroke = create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
-		UIStyle.soften(card, { radius = 10, strength = 0.12, shine = false })
-		text(card, { Position = UDim2.fromOffset(4, 3), Size = UDim2.new(1, -8, 0, 20), Text = if reward.big then "DAY 7 ★" else `DAY {day}`, TextColor3 = if reward.big then GOLD else Color3.new(1, 1, 1) }, 2)
-		drawIcon(card, reward)
-		text(card, { Position = UDim2.fromOffset(2, 78), Size = UDim2.new(1, -4, 0, 18), Text = describe(reward), TextColor3 = Color3.fromRGB(190, 195, 215) }, 1)
-		local state = text(card, { Position = UDim2.fromOffset(2, 97), Size = UDim2.new(1, -4, 0, 16), Text = "", TextColor3 = Color3.new(1, 1, 1) }, 1)
-		cards[day] = { frame = card, stroke = stroke, state = state }
+		local big = reward.big == true
+		local col = (day - 1) % 4
+		local row = (day - 1) // 4
+		local w = if big then CELL_W * 2 + GAP else CELL_W
+		local card = UIStyle.card(panel, {
+			name = "LoginDay_" .. day,
+			position = UDim2.fromOffset(PAD + col * (CELL_W + GAP), GRID_TOP + row * (CELL_H + GAP)),
+			size = UDim2.fromOffset(w, CELL_H),
+			accent = if big then "primary" else "warn",
+			padding = false,
+		})
+		UIStyle.label(card, { name = "DayLabel", text = if big then "DAY 7 ★" else `DAY {day}`, role = "caption", align = "center", color = if big then COLORS.primary.base else COLORS.textDim, props = { Position = UDim2.fromOffset(0, 4), Size = UDim2.new(1, 0, 0, 16), Font = Theme.fonts.bold } })
+		drawIcon(card, reward, if big then 40 else 34)
+		local rewardLabel = UIStyle.label(card, { name = "RewardText", text = describe(reward), role = "caption", align = "center", color = COLORS.text, props = { Position = UDim2.fromOffset(0, 62), Size = UDim2.new(1, 0, 0, 16), Font = Theme.fonts.bold } })
+		local state = UIStyle.label(card, { name = "StateText", text = "", role = "caption", align = "center", props = { Position = UDim2.fromOffset(0, 80), Size = UDim2.new(1, 0, 0, 16), Font = Theme.fonts.bold } })
+		cards[day] = { frame = card, state = state, reward = rewardLabel, big = big }
 	end
 
-	-- CLAIM düğmesi ve alt yazı
-	local claim = create("TextButton", {
-		Name = "LoginClaim",
-		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 196),
-		Size = UDim2.fromOffset(250, 44),
-		Text = "",
-		BackgroundColor3 = GREEN,
-	}, panel)
-	create("UICorner", { CornerRadius = UDim.new(0, 12) }, claim)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, claim)
-	UIStyle.soften(claim, { radius = 12, strength = 0.28 })
-	local claimText = text(claim, { Position = UDim2.fromScale(0.05, 0.12), Size = UDim2.fromScale(0.9, 0.76), Text = "CLAIM", TextColor3 = Color3.new(1, 1, 1) }, 2)
-	local note = text(panel, {
-		Position = UDim2.fromOffset(12, 250),
-		Size = UDim2.new(1, -24, 0, 30),
-		Text = "Your streak never resets: miss a day and the next reward is still waiting!",
-		TextColor3 = Color3.fromRGB(190, 195, 215),
-	}, 1)
-	create("UITextSizeConstraint", { MaxTextSize = 15 }, note)
+	-- CLAIM düğmesi (hazırken nabız atar, değilken geri sayım)
+	local claim = UIStyle.button(panel, {
+		name = "LoginClaim",
+		text = "CLAIM",
+		kind = "success",
+		size = "lg",
+		width = 280,
+		anchor = Vector2.new(0.5, 0),
+		position = UDim2.new(0.5, 0, 0, GRID_TOP + 2 * (CELL_H + GAP) + 6),
+	})
+	local pulseScale = create("UIScale", { Scale = 1 }, claim)
+	local pulse = nil
+	pcall(function()
+		pulse = TweenService:Create(pulseScale, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 })
+	end)
+	local pulsing = false
+	local function setPulse(on)
+		on = on and not UIStyle.isLow()
+		if on == pulsing or not pulse then
+			return
+		end
+		pulsing = on
+		pcall(function()
+			if on then
+				pulse:Play()
+			else
+				pulse:Cancel()
+				pulseScale.Scale = 1
+			end
+		end)
+	end
 
 	local function nextSeconds()
 		local now = Workspace:GetServerTimeNow()
@@ -164,30 +174,48 @@ function LoginPanel.init(screenGui, showToast)
 		local nextDay = player:GetAttribute("LoginNext") or 1
 		local ready = player:GetAttribute("LoginReady") == true
 		for day, card in cards do
-			local status, color, strokeColor
+			local status, statusColor
+			local frame = card.frame
+			local bigStroke = card.big
+			local restColor = if bigStroke then COLORS.primary.base else Theme.stroke.color
+			local restThick = if bigStroke then 2 else Theme.stroke.card
 			if day < nextDay then
-				status, color, strokeColor = "✓ CLAIMED", Color3.fromRGB(48, 96, 66), GREEN
+				-- geçmiş: tikli, sönük
+				status, statusColor = "✓ CLAIMED", COLORS.success.base
+				frame.BackgroundTransparency = 0.5
+				setStroke(frame, Theme.stroke.color, 1, Theme.stroke.transparency)
+				card.reward.TextColor3 = COLORS.textMute
+			elseif day == nextDay and ready then
+				-- bugün hazır: turuncu çerçeve
+				status, statusColor = "TODAY!", COLORS.warn.base
+				frame.BackgroundTransparency = 0
+				setStroke(frame, COLORS.warn.base, 2, 0)
+				card.reward.TextColor3 = COLORS.text
 			elseif day == nextDay then
-				if ready then
-					status, color, strokeColor = "TODAY!", Color3.fromRGB(96, 80, 36), GOLD
-				else
-					status, color, strokeColor = "TOMORROW", Color3.fromRGB(58, 63, 82), GRAY
-				end
+				status, statusColor = "TOMORROW", COLORS.textDim
+				frame.BackgroundTransparency = 0
+				setStroke(frame, restColor, restThick, if bigStroke then 0.2 else Theme.stroke.transparency)
+				card.reward.TextColor3 = COLORS.text
 			else
-				status, color, strokeColor = "", Color3.fromRGB(58, 63, 82), Color3.new(0, 0, 0)
+				-- gelecek: kilitli, sönük
+				status, statusColor = "LOCKED", COLORS.textMute
+				frame.BackgroundTransparency = 0.3
+				setStroke(frame, restColor, restThick, if bigStroke then 0.4 else Theme.stroke.transparency)
+				card.reward.TextColor3 = COLORS.textDim
 			end
-			card.frame.BackgroundColor3 = color
-			card.stroke.Color = strokeColor
 			card.state.Text = status
-			card.state.TextColor3 = if status == "TODAY!" then GOLD elseif day < nextDay then GREEN else Color3.fromRGB(190, 195, 215)
+			card.state.TextColor3 = statusColor
 		end
 		if ready then
-			claim.BackgroundColor3 = GREEN
-			claimText.Text = `CLAIM DAY {nextDay}`
+			UIStyle.setButtonKind(claim, "success")
+			UIStyle.setButtonEnabled(claim, true)
+			UIStyle.setButtonText(claim, `CLAIM DAY {nextDay}`)
 		else
-			claim.BackgroundColor3 = GRAY
-			claimText.Text = `NEXT REWARD IN {formatClock(nextSeconds())}`
+			UIStyle.setButtonKind(claim, "secondary")
+			UIStyle.setButtonEnabled(claim, false)
+			UIStyle.setButtonText(claim, `NEXT REWARD IN {formatClock(nextSeconds())}`)
 		end
+		setPulse(ready and PanelManager.isOpen(panel))
 	end
 
 	local busy = false
@@ -215,13 +243,15 @@ function LoginPanel.init(screenGui, showToast)
 			task.wait(1)
 			if PanelManager.isOpen(panel) then
 				render()
+			else
+				setPulse(false)
 			end
 		end
 	end)
 
 	local function toggle()
-		render()
 		PanelManager.toggle(panel)
+		render()
 	end
 	return toggle, panel
 end

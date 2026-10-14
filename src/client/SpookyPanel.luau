@@ -1,5 +1,6 @@
 -- SEZONLUK ETKİNLİK penceresi: SPOOKY GYM (Config.Event; server/SeasonEvent). Üstte Candy sayısı + kalan süre, ortada Candy kilometre taşları (CLAIM), altta DETERMİNİSTİK etkinlik mağazası (rastgele ürün yok).
 -- Durum sunucudan öznitelik olarak gelir: Candy, CandyTotal, EventClaimed ('1,2'), EventBought ('rainbow:2'), EventPerks ('title,trail'), + Workspace 'SeasonActive' / 'SeasonEnds' (UTC saniye). Sol menüdeki 🎃 düğmesiyle açılır (PanelManager).
+-- GÖRÜNÜM: UIStyle tasarım sistemi (panel/header/card/button/chip/progressBar); etkinlik kimliği için panel ve kartlara mor-kahve ton, vurgu turuncu (warn).
 -- Döner: pencereyi açıp kapatan fonksiyon, pencere.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,14 +14,16 @@ local PanelManager = require(script.Parent.PanelManager)
 
 local SpookyPanel = {}
 
-local FONT = Enum.Font.FredokaOne
-local ORANGE = Color3.fromRGB(255, 150, 40)
-local GREEN = Color3.fromRGB(70, 200, 100)
-local GRAY = Color3.fromRGB(110, 114, 135)
-local PURPLE = Color3.fromRGB(70, 40, 100)
-local WIDTH = 440
-local CHIP_W, CHIP_H, CHIP_GAP = 76, 70, 6
-local ROW_H, ROW_GAP = 60, 6
+local Theme = UIStyle.Theme
+local COLORS = Theme.colors
+-- Etkinlik teması: yalnız bu pencerede mor-kahve zemin
+local TINT_PANEL = Color3.fromRGB(0x26, 0x1B, 0x33)
+local TINT_CARD = Color3.fromRGB(0x35, 0x26, 0x4A)
+local WIDTH = 460
+local PAD = 16
+local CHIP_GAP = 6
+local CHIP_H = 108
+local ROW_H, ROW_GAP = 64, 6
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -29,15 +32,6 @@ local function create(className, props, parent)
 	end
 	instance.Parent = parent
 	return instance
-end
-
-local function text(parent, props, strokeThickness)
-	props.BackgroundTransparency = 1
-	props.Font = FONT
-	props.TextScaled = true
-	local label = create("TextLabel", props, parent)
-	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
-	return label
 end
 
 -- 'a,b' ya da 'a:2,b:1' metnini tabloya çevirir
@@ -89,47 +83,46 @@ function SpookyPanel.init(screenGui, showToast)
 	end
 	local milestones = #event.Milestones
 	local items = #event.Items
-	local chipsWidth = milestones * CHIP_W + (milestones - 1) * CHIP_GAP
-	local height = 56 + 40 + 24 + CHIP_H + 20 + 24 + items * (ROW_H + ROW_GAP) + 10
+	local chipW = math.floor((WIDTH - PAD * 2 - (milestones - 1) * CHIP_GAP) / math.max(milestones, 1))
+	-- içerik koordinatları (başlığın altından): bilgi satırı 8, çubuk 62, kartlar 86, mağaza başlığı, satırlar
+	local shopY = 86 + CHIP_H + 14
+	local height = 60 + shopY + 26 + items * (ROW_H + ROW_GAP) + 10
 
-	local panel = create("Frame", {
-		Name = "SpookyPanel",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.48),
-		Size = UDim2.fromOffset(WIDTH, height),
-		BackgroundColor3 = Color3.fromRGB(34, 26, 52),
-		Active = true,
-		Visible = false,
-	}, screenGui)
-	create("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
-	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
-	create("UISizeConstraint", { MaxSize = Vector2.new(WIDTH, height), MinSize = Vector2.new(320, height) }, panel)
-	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
+	local panel = UIStyle.panel(screenGui, {
+		name = "SpookyPanel",
+		width = WIDTH,
+		size = UDim2.fromOffset(WIDTH, height),
+		accent = "warn",
+		anchor = Vector2.new(0.5, 0.5),
+		position = UDim2.fromScale(0.5, 0.48),
+	})
+	panel.BackgroundColor3 = TINT_PANEL
+	panel.Visible = false
 
-	local header = create("Frame", { Size = UDim2.new(1, 0, 0, 56), BackgroundColor3 = Color3.fromRGB(235, 110, 30) }, panel)
-	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	text(header, { Position = UDim2.fromOffset(16, 6), Size = UDim2.new(1, -90, 1, -12), Text = `{event.Emoji} {event.Name}`, TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 3)
-	local close = create("TextButton", {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -10, 0.5, 0),
-		Size = UDim2.fromOffset(40, 40),
-		Text = "",
-		BackgroundColor3 = Color3.fromRGB(235, 40, 70),
-	}, header)
-	create("UICorner", { CornerRadius = UDim.new(0, 6) }, close)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
-	UIStyle.soften(close, { radius = 10, strength = 0.28 })
-	text(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1) }, 2)
-	close.MouseButton1Click:Connect(function()
-		PanelManager.hide(panel)
-	end)
+	UIStyle.header(panel, {
+		title = event.Name,
+		emoji = event.Emoji,
+		accent = "warn",
+		onClose = function()
+			PanelManager.hide(panel)
+		end,
+	})
 
-	-- Candy sayısı ve kalan süre (üst satır)
-	local candyLabel = text(panel, { Name = "CandyLabel", Position = UDim2.fromOffset(16, 62), Size = UDim2.fromOffset(220, 32), Text = "", TextColor3 = Color3.fromRGB(255, 225, 90), TextXAlignment = Enum.TextXAlignment.Left }, 2)
-	local endsLabel = text(panel, { Name = "EndsLabel", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -16, 0, 66), Size = UDim2.fromOffset(170, 24), Text = "", TextColor3 = Color3.fromRGB(190, 195, 215), TextXAlignment = Enum.TextXAlignment.Right }, 1)
-	create("UITextSizeConstraint", { MaxTextSize = 20 }, endsLabel)
+	local content = create("Frame", { Name = "Content", Position = UDim2.fromOffset(0, 60), Size = UDim2.new(1, 0, 1, -60), BackgroundTransparency = 1 }, panel)
 
-	local content = create("Frame", { Name = "Content", Position = UDim2.fromOffset(0, 98), Size = UDim2.new(1, 0, 1, -98), BackgroundTransparency = 1 }, panel)
+	-- Candy sayısı ve kalan süre çipleri (CandyLabel / EndsLabel adları sözleşme; içeriği render sonrası da yaşar)
+	local candyLabel = UIStyle.chip(panel, {
+		name = "CandyLabel",
+		text = "",
+		accent = "primary",
+		props = { Position = UDim2.fromOffset(PAD, 68), Size = UDim2.fromOffset(0, 28) },
+	})
+	local endsLabel = UIStyle.chip(panel, {
+		name = "EndsLabel",
+		text = "",
+		accent = "warn",
+		props = { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -PAD, 0, 68), Size = UDim2.fromOffset(0, 28) },
+	})
 
 	local function invoke(action, id)
 		task.spawn(function()
@@ -151,102 +144,114 @@ function SpookyPanel.init(screenGui, showToast)
 		local bought = parseSet(player:GetAttribute("EventBought"))
 		local perks = parseSet(player:GetAttribute("EventPerks"))
 		local active = Workspace:GetAttribute("SeasonActive") == true
-		candyLabel.Text = `{event.CurrencyEmoji} {Format.compact(candy)} {event.CurrencyName}`
+		UIStyle.setChipText(candyLabel, `{event.CurrencyEmoji} {Format.compact(candy)} {event.CurrencyName}`)
 
-		-- Kilometre taşları
-		text(content, { Position = UDim2.fromOffset(16, 0), Size = UDim2.fromOffset(300, 20), Text = `Milestones (collected: {Format.compact(total)})`, TextColor3 = Color3.fromRGB(255, 205, 100), TextXAlignment = Enum.TextXAlignment.Left }, 1)
-		local startX = (WIDTH - chipsWidth) / 2
+		-- Kilometre taşları: ilerleme çubuğu + kartlar
+		local lastGoal = if milestones > 0 then event.Milestones[milestones].candy else 1
+		local progress = `{Format.compact(total)} / {Format.compact(lastGoal)}`
+		UIStyle.progressBar(content, {
+			accent = "warn",
+			value = math.clamp(total / lastGoal, 0, 1),
+			text = progress,
+			name = "MilestoneBar",
+			props = { Position = UDim2.fromOffset(PAD, 62), Size = UDim2.new(1, -PAD * 2, 0, 16) },
+		})
+		UIStyle.label(content, { text = "Milestones", role = "bold", color = COLORS.warn.base, size = 14, props = { Position = UDim2.fromOffset(PAD, 40), Size = UDim2.fromOffset(160, 18) } })
 		for index, milestone in event.Milestones do
 			local done = claimed[tostring(index)] == true
 			local ready = not done and total >= milestone.candy
-			local chip = create("Frame", {
-				Name = `Milestone_{index}`,
-				Position = UDim2.fromOffset(startX + (index - 1) * (CHIP_W + CHIP_GAP), 24),
-				Size = UDim2.fromOffset(CHIP_W, CHIP_H),
-				BackgroundColor3 = if done then Color3.fromRGB(46, 74, 60) elseif ready then Color3.fromRGB(60, 96, 62) else Color3.fromRGB(52, 48, 78),
-			}, content)
-			create("UICorner", { CornerRadius = UDim.new(0, 8) }, chip)
-			create("UIStroke", { Thickness = 3, Color = if ready then GREEN else Color3.new(0, 0, 0) }, chip)
-			UIStyle.soften(chip, { radius = 10, strength = 0.12, shine = false })
-			text(chip, { Position = UDim2.fromOffset(2, 2), Size = UDim2.new(1, -4, 0, 18), Text = `{event.CurrencyEmoji} {milestone.candy}`, TextColor3 = Color3.fromRGB(255, 225, 90) }, 1)
-			local rewardText = text(chip, { Position = UDim2.fromOffset(3, 21), Size = UDim2.new(1, -6, 0, 26), Text = describe(milestone.reward), TextColor3 = Color3.new(1, 1, 1) }, 1)
-			create("UITextSizeConstraint", { MaxTextSize = 13 }, rewardText)
-			local state = create("TextButton", {
-				Name = "ClaimButton",
-				AnchorPoint = Vector2.new(0.5, 1),
-				Position = UDim2.new(0.5, 0, 1, -3),
-				Size = UDim2.new(1, -10, 0, 18),
-				Text = "",
-				BackgroundColor3 = if ready then GREEN else GRAY,
-				AutoButtonColor = ready,
-			}, chip)
-			create("UICorner", { CornerRadius = UDim.new(0, 9) }, state)
-			text(state, { Size = UDim2.fromScale(1, 1), Text = if done then "✓" elseif ready then "CLAIM" else "🔒", TextColor3 = Color3.new(1, 1, 1) }, 1)
-			if ready and active then
-				state.MouseButton1Click:Connect(function()
-					invoke("EventClaim", index)
-				end)
+			local chip = UIStyle.card(content, {
+				name = `Milestone_{index}`,
+				accent = if ready then "success" else "warn",
+				selected = ready,
+				padding = false,
+				position = UDim2.fromOffset(PAD + (index - 1) * (chipW + CHIP_GAP), 86),
+				size = UDim2.fromOffset(chipW, CHIP_H),
+			})
+			if chip then
+				if not ready then
+					chip.BackgroundColor3 = TINT_CARD
+				end
+				UIStyle.label(chip, { text = `{event.CurrencyEmoji} {milestone.candy}`, role = "bold", size = 13, color = COLORS.primary.base, align = "center", props = { Position = UDim2.fromOffset(2, 6), Size = UDim2.new(1, -4, 0, 16) } })
+				UIStyle.label(chip, { text = describe(milestone.reward), role = "caption", size = 11, color = COLORS.text, align = "center", wrap = true, props = { Position = UDim2.fromOffset(4, 24), Size = UDim2.new(1, -8, 0, 32) } })
+				local state = UIStyle.button(chip, {
+					name = "ClaimButton",
+					text = if done then "✓" elseif ready then "CLAIM" else "🔒",
+					kind = if ready then "success" else "secondary",
+					size = "sm",
+					disabled = not ready,
+					width = chipW - 12,
+					position = UDim2.new(0.5, 0, 1, -24),
+					onClick = function()
+						if ready and active then
+							invoke("EventClaim", index)
+						end
+					end,
+				})
+				if ready and state then
+					UIStyle.pop(state)
+				end
 			end
 		end
 
 		-- Mağaza
-		local shopY = 24 + CHIP_H + 14
-		text(content, { Position = UDim2.fromOffset(16, shopY), Size = UDim2.fromOffset(300, 20), Text = `{event.Emoji} Event Shop (no random items!)`, TextColor3 = Color3.fromRGB(255, 205, 100), TextXAlignment = Enum.TextXAlignment.Left }, 1)
+		UIStyle.label(content, { text = `{event.Emoji} Event Shop (no random items!)`, role = "bold", color = COLORS.warn.base, size = 14, props = { Position = UDim2.fromOffset(PAD, shopY), Size = UDim2.new(1, -PAD * 2, 0, 18) } })
 		for index, item in event.Items do
-			local row = create("Frame", {
-				Name = `EventItem_{item.id}`,
-				Position = UDim2.fromOffset(12, shopY + 24 + (index - 1) * (ROW_H + ROW_GAP)),
-				Size = UDim2.new(1, -24, 0, ROW_H),
-				BackgroundColor3 = Color3.fromRGB(52, 48, 78),
-			}, content)
-			create("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
-			UIStyle.soften(row, { radius = 10, strength = 0.12, shine = false })
-			text(row, { Position = UDim2.fromOffset(8, 8), Size = UDim2.fromOffset(40, 44), Text = item.emoji, TextColor3 = Color3.new(1, 1, 1) }, 0)
-			local nameLabel = text(row, { Position = UDim2.fromOffset(54, 6), Size = UDim2.new(1, -170, 0, 26), Text = item.name, TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 2)
-			create("UITextSizeConstraint", { MaxTextSize = 20 }, nameLabel)
-			local detailLabel = text(row, { Position = UDim2.fromOffset(54, 33), Size = UDim2.new(1, -170, 0, 20), Text = item.detail, TextColor3 = Color3.fromRGB(190, 195, 215), TextXAlignment = Enum.TextXAlignment.Left }, 1)
-			create("UITextSizeConstraint", { MaxTextSize = 14 }, detailLabel)
+			local row = UIStyle.card(content, {
+				name = `EventItem_{item.id}`,
+				accent = "warn",
+				padding = false,
+				position = UDim2.fromOffset(PAD, shopY + 26 + (index - 1) * (ROW_H + ROW_GAP)),
+				size = UDim2.new(1, -PAD * 2, 0, ROW_H),
+			})
+			if row then
+				row.BackgroundColor3 = TINT_CARD
+				local iconBox = create("Frame", { Name = "ItemIcon", Position = UDim2.fromOffset(10, 10), Size = UDim2.fromOffset(44, 44), BackgroundColor3 = TINT_PANEL, BorderSizePixel = 0 }, row)
+				UIStyle.round(iconBox, Theme.radius.button)
+				UIStyle.label(iconBox, { text = item.emoji, role = "bold", size = 24, align = "center", props = { Size = UDim2.fromScale(1, 1) } })
+				UIStyle.label(row, { text = item.name, role = "bold", props = { Position = UDim2.fromOffset(64, 10), Size = UDim2.new(1, -184, 0, 22) } })
+				UIStyle.label(row, { text = item.detail, role = "caption", props = { Position = UDim2.fromOffset(64, 34), Size = UDim2.new(1, -184, 0, 18) } })
 
-			local count = bought[item.id] or 0
-			local owned = (item.perk ~= nil and perks[item.perk] == true) or (item.limit == 1 and count >= 1)
-			local label, color, onClick
-			if owned and item.perk == "trail" then
-				local equipped = player:GetAttribute("EquippedTrail") == event.Trail.id
-				label = if equipped then "EQUIPPED" else "EQUIP"
-				color = if equipped then GRAY else GREEN
-				onClick = function()
-					invoke("EquipTrail", if equipped then "" else event.Trail.id)
+				local count = bought[item.id] or 0
+				local owned = (item.perk ~= nil and perks[item.perk] == true) or (item.limit == 1 and count >= 1)
+				local label, kind, disabled, onClick = "", "primary", false, nil
+				if owned and item.perk == "trail" then
+					local equipped = player:GetAttribute("EquippedTrail") == event.Trail.id
+					label = if equipped then "EQUIPPED" else "EQUIP"
+					kind = if equipped then "secondary" else "success"
+					disabled = equipped
+					onClick = function()
+						invoke("EquipTrail", if equipped then "" else event.Trail.id)
+					end
+				elseif owned then
+					label, kind, disabled = "OWNED ✓", "secondary", true
+				elseif count >= item.limit then
+					label, kind, disabled = "SOLD OUT", "secondary", true
+				else
+					label = `{event.CurrencyEmoji} {item.price}`
+					disabled = candy < item.price
+					onClick = function()
+						invoke("EventBuy", item.id)
+					end
 				end
-			elseif owned then
-				label, color = "OWNED ✓", GRAY
-			elseif count >= item.limit then
-				label, color = "SOLD OUT", GRAY
-			else
-				local affordable = candy >= item.price
-				label = `{event.CurrencyEmoji} {item.price}`
-				color = if affordable then ORANGE else Color3.fromRGB(150, 110, 70)
-				onClick = function()
-					invoke("EventBuy", item.id)
+				UIStyle.button(row, {
+					name = "BuyButton",
+					text = label,
+					kind = kind,
+					size = "sm",
+					disabled = disabled,
+					width = 104,
+					anchor = Vector2.new(1, 0.5),
+					position = UDim2.new(1, -10, 0.5, if item.limit > 1 then -6 else 0),
+					onClick = function()
+						if onClick and active then
+							onClick()
+						end
+					end,
+				})
+				if item.limit > 1 then
+					UIStyle.label(row, { text = `{count}/{item.limit}`, role = "caption", size = 11, align = "center", props = { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -10, 1, -4), Size = UDim2.fromOffset(104, 14) } })
 				end
-			end
-			local button = create("TextButton", {
-				Name = "BuyButton",
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -8, 0.5, -6),
-				Size = UDim2.fromOffset(100, 34),
-				Text = "",
-				BackgroundColor3 = color,
-			}, row)
-			create("UICorner", { CornerRadius = UDim.new(0, 17) }, button)
-			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-			UIStyle.soften(button, { radius = 17, strength = 0.28 })
-			text(button, { Position = UDim2.fromScale(0.06, 0.12), Size = UDim2.fromScale(0.88, 0.76), Text = label, TextColor3 = Color3.new(1, 1, 1) }, 2)
-			if item.limit > 1 then
-				local limitLabel = text(row, { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -8, 1, -3), Size = UDim2.fromOffset(100, 14), Text = `{count}/{item.limit}`, TextColor3 = Color3.fromRGB(190, 195, 215) }, 1)
-				create("UITextSizeConstraint", { MaxTextSize = 12 }, limitLabel)
-			end
-			if onClick and active then
-				button.MouseButton1Click:Connect(onClick)
 			end
 		end
 	end
@@ -254,11 +259,11 @@ function SpookyPanel.init(screenGui, showToast)
 	local function refreshTimer()
 		local ends = Workspace:GetAttribute("SeasonEnds")
 		if Workspace:GetAttribute("SeasonActive") ~= true or type(ends) ~= "number" then
-			endsLabel.Text = "Event ended"
+			UIStyle.setChipText(endsLabel, "Event ended")
 			return
 		end
 		local now = Workspace:GetServerTimeNow()
-		endsLabel.Text = `Ends in {timeLeft(ends - (if type(now) == "number" then now else os.time()))}`
+		UIStyle.setChipText(endsLabel, `Ends in {timeLeft(ends - (if type(now) == "number" then now else os.time()))}`)
 	end
 
 	local function onChange()

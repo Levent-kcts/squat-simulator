@@ -2,6 +2,7 @@
 -- Ayarlar PlayerSettings üzerinden uygulanır ve kaydedilir.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
@@ -10,9 +11,8 @@ local PlayerSettings = require(script.Parent.PlayerSettings)
 
 local SettingsPanel = {}
 
-local FONT = Enum.Font.FredokaOne
-local ON_COLOR = Color3.fromRGB(70, 200, 100)
-local OFF_COLOR = Color3.fromRGB(110, 114, 135)
+local Theme = UIStyle.Theme
+local PAD = 16 -- içerik kenar payı
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -23,114 +23,136 @@ local function create(className, props, parent)
 	return instance
 end
 
-local function text(parent, props, strokeThickness)
-	props.BackgroundTransparency = 1
-	props.Font = FONT
-	props.TextScaled = true
-	local label = create("TextLabel", props, parent)
-	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
-	return label
+-- Modern anahtar: hap 52x28, içinde daire düğme; açık = success, kapalı = cardDeep (0.15 sn tween). Döner: düğme, setOn(on, animate)
+local KNOB_OFF, KNOB_ON = UDim2.new(0, 3, 0.5, 0), UDim2.new(1, -25, 0.5, 0)
+local SWITCH_TWEEN = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local function makeSwitch(parent, name)
+	local toggle = create("TextButton", {
+		Name = name,
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, 0, 0.5, 0),
+		Size = UDim2.fromOffset(52, 28),
+		Text = "",
+		AutoButtonColor = false,
+		BackgroundColor3 = Theme.colors.cardDeep,
+		BorderSizePixel = 0,
+	}, parent)
+	UIStyle.round(toggle, UDim.new(1, 0))
+	create("UIStroke", { Thickness = 1, Color = Theme.stroke.color, Transparency = Theme.stroke.transparency, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, toggle)
+	local knob = create("Frame", {
+		Name = "Knob",
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = KNOB_OFF,
+		Size = UDim2.fromOffset(22, 22),
+		BackgroundColor3 = Theme.colors.text,
+		BorderSizePixel = 0,
+	}, toggle)
+	UIStyle.round(knob, UDim.new(1, 0))
+	local function setOn(on, animate)
+		local color = if on then Theme.colors.success.base else Theme.colors.cardDeep
+		local position = if on then KNOB_ON else KNOB_OFF
+		toggle:SetAttribute("On", on and true or false)
+		if animate and not UIStyle.isLow() then
+			pcall(function()
+				TweenService:Create(toggle, SWITCH_TWEEN, { BackgroundColor3 = color }):Play()
+				TweenService:Create(knob, SWITCH_TWEEN, { Position = position }):Play()
+			end)
+		else
+			toggle.BackgroundColor3 = color
+			knob.Position = position
+		end
+	end
+	return toggle, setOn
+end
+
+-- Ad (kalın) + küçük açıklama (soluk) olan ayar satırı kartı; sağ tarafa kontrol konur ('Control' tutucusu)
+local function makeRow(parent, order, name, detail)
+	local row = UIStyle.card(parent, { name = "SettingRow", size = UDim2.new(1, 0, 0, 64), padding = false, props = { LayoutOrder = order } })
+	UIStyle.label(row, { name = "RowName", text = name, role = "bold", props = { Position = UDim2.fromOffset(PAD, 8), Size = UDim2.new(1, -(PAD * 2 + 64), 0, 20) } })
+	UIStyle.label(row, { name = "RowDetail", text = detail, role = "caption", wrap = true, props = { Position = UDim2.fromOffset(PAD, 28), Size = UDim2.new(1, -(PAD * 2 + 64), 0, 30), TextYAlignment = Enum.TextYAlignment.Top } })
+	local control = create("Frame", {
+		Name = "Control",
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -PAD, 0.5, 0),
+		Size = UDim2.fromOffset(52, 28),
+		BackgroundTransparency = 1,
+	}, row)
+	return row, control
 end
 
 -- Döner: pencereyi açıp kapatan fonksiyon
 function SettingsPanel.init(screenGui, openWhatsNew)
 	local player = Players.LocalPlayer
-	local ROW_HEIGHT, ROW_GAP = 54, 8
 	local settings = Config.Settings
-	local height = 68 + (#settings + 2) * (ROW_HEIGHT + ROW_GAP) + 4 -- ilk satır: promosyon kodu girişi, sonra ayarlar, son satır: Neler yeni
+	-- Yükseklik satır sayısına bağlı: 60 başlık + 104 kod kartı + ayarlar (64 + 8) + Neler yeni; ekranı aşarsa içerik kayar
+	local rowCount = #settings + (if openWhatsNew then 1 else 0)
+	local contentHeight = 12 + 104 + 8 + rowCount * 72 + PAD
+	local height = math.min(60 + contentHeight, 560)
 
-	local panel = create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.48),
-		Size = UDim2.fromOffset(440, height),
-		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
-		Active = true, -- pencereye tıklamak hareket başlatmasın
-		Visible = false,
-	}, screenGui)
-	create("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
-	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
-	create("UISizeConstraint", { MaxSize = Vector2.new(440, height), MinSize = Vector2.new(300, height) }, panel)
-	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
+	local panel = UIStyle.panel(screenGui, {
+		name = "SettingsPanel",
+		width = 440,
+		height = height,
+		accent = "info",
+		position = UDim2.fromScale(0.5, 0.48),
+		anchor = Vector2.new(0.5, 0.5),
+	})
+	panel.Visible = false
 
-	local header = create("Frame", {
-		Size = UDim2.new(1, 0, 0, 56),
-		BackgroundColor3 = Color3.fromRGB(110, 130, 165),
+	UIStyle.header(panel, {
+		title = "Settings",
+		icon = Config.Icons.Settings,
+		emoji = "⚙",
+		accent = "info",
+		onClose = function()
+			PanelManager.hide(panel)
+		end,
+	})
+
+	local list = create("ScrollingFrame", {
+		Name = "SettingsList",
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.fromOffset(0, 60),
+		Size = UDim2.new(1, 0, 1, -60),
+		CanvasSize = UDim2.new(),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollBarThickness = 4,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
 	}, panel)
-	create("UICorner", { CornerRadius = UDim.new(0, 10) }, header)
-	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	UIStyle.headerIcon(header, Config.Icons.Settings, "⚙", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
-	text(header, {
-		Position = UDim2.fromOffset(68, 6),
-		Size = UDim2.new(1, -150, 1, -12),
-		Text = "SETTINGS",
-		TextColor3 = Color3.new(1, 1, 1),
-		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 3)
+	create("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, PAD), PaddingLeft = UDim.new(0, PAD), PaddingRight = UDim.new(0, PAD) }, list)
+	create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, list)
 
-	local close = create("TextButton", {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -10, 0.5, 0),
-		Size = UDim2.fromOffset(40, 40),
-		Text = "",
-		BackgroundColor3 = Color3.fromRGB(235, 40, 70),
-	}, header)
-	create("UICorner", { CornerRadius = UDim.new(0, 6) }, close)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
-	UIStyle.soften(close, { radius = 10, strength = 0.28 })
-	text(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1) }, 2)
-	close.MouseButton1Click:Connect(function()
-		PanelManager.hide(panel)
-	end)
-
-	-- PROMOSYON KODU (Config.Codes; 2026-10-14 büyüme planı): kutuya yaz, REDEEM'e bas. Sonuç aynı satırda yazar (yeşil: ödül, kırmızı: hata); sunucu doğrular (PlayerStats.redeemCode)
+	-- PROMOSYON KODU (Config.Codes; 2026-10-14 büyüme planı): kutuya yaz, REDEEM'e bas. Sonuç girdinin ALTINDA küçük yazar (yeşil: ödül, kırmızı: hata); sunucu doğrular (PlayerStats.redeemCode)
 	do
 		local CODE_HINT = "Redeem code: free potions and Wins!"
+		local HINT_COLOR = Theme.colors.textDim
 		local shop = ReplicatedStorage:WaitForChild("Shop")
-		local codeRow = create("Frame", {
-			Name = "CodeRow",
-			Position = UDim2.fromOffset(12, 68),
-			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
-			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
-		}, panel)
-		create("UICorner", { CornerRadius = UDim.new(0, 8) }, codeRow)
-		UIStyle.soften(codeRow, { radius = 10, strength = 0.12, shine = false })
-		local status = text(codeRow, {
-			Name = "CodeStatus",
-			Position = UDim2.fromOffset(12, 3),
-			Size = UDim2.new(1, -120, 0, 24),
-			Text = CODE_HINT,
-			TextColor3 = Color3.fromRGB(255, 230, 120),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 1)
-		create("UITextSizeConstraint", { MaxTextSize = 16 }, status)
-		local box = create("TextBox", {
-			Name = "CodeBox",
-			Position = UDim2.fromOffset(12, 29),
-			Size = UDim2.new(1, -120, 0, 21),
-			BackgroundColor3 = Color3.fromRGB(30, 33, 46),
-			TextColor3 = Color3.new(1, 1, 1),
-			PlaceholderText = "Enter code",
-			PlaceholderColor3 = Color3.fromRGB(140, 146, 170),
-			Font = FONT,
-			TextSize = 15,
-			Text = "",
-			ClearTextOnFocus = false,
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, codeRow)
-		create("UICorner", { CornerRadius = UDim.new(0, 6) }, box)
-		create("UIPadding", { PaddingLeft = UDim.new(0, 8) }, box)
-		local redeem = create("TextButton", {
-			Name = "RedeemButton",
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -10, 0.5, 0),
-			Size = UDim2.fromOffset(84, 36),
-			Text = "",
-			BackgroundColor3 = ON_COLOR,
-		}, codeRow)
-		create("UICorner", { CornerRadius = UDim.new(0, 18) }, redeem)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, redeem)
-		UIStyle.soften(redeem, { radius = 18, strength = 0.28 })
-		text(redeem, { Position = UDim2.fromScale(0.08, 0.15), Size = UDim2.fromScale(0.84, 0.7), Text = "REDEEM", TextColor3 = Color3.new(1, 1, 1) }, 2)
+		local codeRow = UIStyle.card(list, { name = "CodeRow", size = UDim2.new(1, 0, 0, 104), padding = false, accent = "info", props = { LayoutOrder = 0 } })
+		UIStyle.label(codeRow, { name = "CodeTitle", text = "Redeem code", role = "bold", props = { Position = UDim2.fromOffset(PAD, 8), Size = UDim2.new(1, -(PAD * 2), 0, 20) } })
+		local box = UIStyle.input(codeRow, {
+			placeholder = "Enter code",
+			accent = "info",
+			props = { Position = UDim2.fromOffset(PAD, 34), Size = UDim2.new(1, -(PAD * 2 + 108), 0, 44) },
+		})
+		box.Name = "CodeBox"
+		box.Font = Theme.fonts.bold
+		box.TextSize = 18
+		local redeem = UIStyle.button(codeRow, {
+			name = "RedeemButton",
+			text = "REDEEM",
+			kind = "primary",
+			size = "md",
+			width = 100,
+			anchor = Vector2.new(1, 0),
+			position = UDim2.new(1, -PAD, 0, 34),
+		})
+		local status = UIStyle.label(codeRow, {
+			name = "CodeStatus",
+			text = CODE_HINT,
+			role = "caption",
+			props = { Position = UDim2.fromOffset(PAD, 82), Size = UDim2.new(1, -(PAD * 2), 0, 16) },
+		})
 
 		local busy = false
 		local shownId = 0
@@ -149,14 +171,14 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 					success, message = false, "Could not redeem the code. Try again."
 				end
 				status.Text = message or ""
-				status.TextColor3 = if success then Color3.fromRGB(110, 255, 140) else Color3.fromRGB(255, 120, 120)
+				status.TextColor3 = if success then Theme.colors.success.base else Theme.colors.danger.base
 				if success then
 					box.Text = ""
 				end
 				task.delay(7, function()
 					if shownId == id then
 						status.Text = CODE_HINT
-						status.TextColor3 = Color3.fromRGB(255, 230, 120)
+						status.TextColor3 = HINT_COLOR
 					end
 				end)
 			end)
@@ -170,50 +192,14 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 	end
 
 	for index, setting in settings do
-		local row = create("Frame", {
-			Position = UDim2.fromOffset(12, 68 + index * (ROW_HEIGHT + ROW_GAP)),
-			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
-			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
-		}, panel)
-		create("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
-		UIStyle.soften(row, { radius = 10, strength = 0.12, shine = false })
+		local _, control = makeRow(list, index, setting.name, setting.detail)
+		local toggle, setOn = makeSwitch(control, "Toggle_" .. setting.key)
+		toggle.Position = UDim2.new(1, 0, 0.5, 0)
 
-		text(row, {
-			Position = UDim2.fromOffset(12, 6),
-			Size = UDim2.new(1, -120, 0, 26),
-			Text = setting.name,
-			TextColor3 = Color3.new(1, 1, 1),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 2)
-		text(row, {
-			Position = UDim2.fromOffset(12, 33),
-			Size = UDim2.new(1, -120, 0, 16),
-			Text = setting.detail,
-			TextColor3 = Color3.fromRGB(190, 195, 215),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 1)
-
-		local toggle = create("TextButton", {
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -10, 0.5, 0),
-			Size = UDim2.fromOffset(84, 36),
-			Text = "",
-			AutoButtonColor = true,
-			BackgroundColor3 = ON_COLOR,
-		}, row)
-		create("UICorner", { CornerRadius = UDim.new(0, 18) }, toggle)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, toggle)
-		UIStyle.soften(toggle, { radius = 18, strength = 0.28 })
-		local toggleText = text(toggle, {
-			Position = UDim2.fromScale(0.1, 0.1),
-			Size = UDim2.fromScale(0.8, 0.8),
-			TextColor3 = Color3.new(1, 1, 1),
-		}, 2)
-
+		local first = true
 		local function refresh()
-			local on = PlayerSettings.get(setting.key)
-			toggle.BackgroundColor3 = if on then ON_COLOR else OFF_COLOR
-			toggleText.Text = if on then "ON" else "OFF"
+			setOn(PlayerSettings.get(setting.key) and true or false, not first)
+			first = false
 		end
 		toggle.MouseButton1Click:Connect(function()
 			PlayerSettings.set(setting.key, not PlayerSettings.get(setting.key))
@@ -226,32 +212,22 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 
 	-- NELER YENİ satırı (son satır): kartı her zaman yeniden açar (Config.WhatsNew)
 	if openWhatsNew then
-		local row = create("Frame", {
-			Name = "WhatsNewRow",
-			Position = UDim2.fromOffset(12, 68 + (#settings + 1) * (ROW_HEIGHT + ROW_GAP)),
-			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
-			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
-		}, panel)
-		create("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
-		UIStyle.soften(row, { radius = 10, strength = 0.12, shine = false })
-		text(row, { Position = UDim2.fromOffset(12, 6), Size = UDim2.new(1, -120, 0, 26), Text = "What's New", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 2)
-		text(row, { Position = UDim2.fromOffset(12, 33), Size = UDim2.new(1, -120, 0, 16), Text = "See the latest updates", TextColor3 = Color3.fromRGB(190, 195, 215), TextXAlignment = Enum.TextXAlignment.Left }, 1)
-		local open = create("TextButton", {
-			Name = "WhatsNewButton",
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -10, 0.5, 0),
-			Size = UDim2.fromOffset(84, 36),
-			Text = "",
-			BackgroundColor3 = Color3.fromRGB(255, 190, 60),
-		}, row)
-		create("UICorner", { CornerRadius = UDim.new(0, 18) }, open)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, open)
-		UIStyle.soften(open, { radius = 18, strength = 0.28 })
-		text(open, { Position = UDim2.fromScale(0.1, 0.1), Size = UDim2.fromScale(0.8, 0.8), Text = "OPEN", TextColor3 = Color3.new(1, 1, 1) }, 2)
-		open.MouseButton1Click:Connect(function()
-			PanelManager.hide(panel)
-			openWhatsNew()
-		end)
+		local row, control = makeRow(list, #settings + 1, "What's new", "See the latest updates")
+		row.Name = "WhatsNewRow"
+		control:Destroy()
+		UIStyle.button(row, {
+			name = "WhatsNewButton",
+			text = "OPEN",
+			kind = "secondary",
+			size = "sm",
+			width = 76,
+			anchor = Vector2.new(1, 0.5),
+			position = UDim2.new(1, -PAD, 0.5, 0),
+			onClick = function()
+				PanelManager.hide(panel)
+				openWhatsNew()
+			end,
+		})
 	end
 
 	return function()

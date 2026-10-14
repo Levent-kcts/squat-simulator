@@ -1,5 +1,5 @@
 -- Günlük çark arayüzü (referans oyundaki gibi): lobideki çarka E ile yaklaşınca açılır; arka plan karartılır, ortada büyük yuvarlak çark (8 renkli dilim, simge + ad + yüzde),
--- üstte sabit ibre, sağ üstte kırmızı X, altta yeşil 'Spin! (1)' düğmesi ve sonuç/durum yazısı. Çarkın yüzü shared/WheelFace ile çizilir (lobideki 3B çarkla aynı).
+-- üstte sabit ibre, sağ üstte ghost kapat düğmesi, altta SPIN düğmesi ve sonuç/durum çipi. Çarkın yüzü shared/WheelFace ile çizilir (lobideki 3B çarkla aynı).
 -- Bu modül SADECE arayüzdür: dönüş animasyonunu ve sunucu isteğini client/WheelController yapar (panel.place ile açıyı verir, Spin düğmesi onSpin'i çağırır).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

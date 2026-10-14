@@ -46,7 +46,9 @@ local cfg = Config.Wall
 
 player.CameraMaxZoomDistance = Config.CameraMaxZoom
 
-local FONT = Enum.Font.FredokaOne
+local Theme = UIStyle.Theme
+local C = Theme.colors
+local FONT = Theme.fonts.bold -- HUD yazıları Gotham ailesi (FredokaOne yalnız marka anlarında)
 
 -- Yeni/isteğe bağlı modüller korumalı yüklenir ve başlatılır: biri hata verirse oyunun geri kalanı çalışmaya devam eder
 local startupErrors = {} -- [modül adı] = hata metni: açılış hatası oyuncuya da gösterilebilsin (Output'a bakmadan; örneğin çark)
@@ -83,14 +85,21 @@ local function create(className, props, parent)
 	return instance
 end
 
--- Kalın siyah kenarlı yazı (referans oyundaki gibi)
+-- Yazı: Gotham, üzerinde yalnız ince (en çok 1.5 px) yarı saydam siyah kontur (okunurluk için; eski kalın siyah kontur kalktı)
 local function makeText(parent, props, maxTextSize, strokeThickness)
 	props.BackgroundTransparency = 1
-	props.Font = FONT
+	props.Font = props.Font or FONT
 	props.TextScaled = true
 	local label = create("TextLabel", props, parent)
 	create("UITextSizeConstraint", { MaxTextSize = maxTextSize }, label)
-	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
+	if strokeThickness and strokeThickness > 0 then
+		create("UIStroke", {
+			Thickness = math.min(strokeThickness, 1.5),
+			Color = Color3.new(0, 0, 0),
+			Transparency = 0.55,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
+		}, label)
+	end
 	return label
 end
 
@@ -125,13 +134,11 @@ local banner = create("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.new(0.5, 0, 0, 10),
 	Size = UDim2.new(0.55, 0, 0, 46),
-	BackgroundColor3 = Color3.fromRGB(35, 35, 42),
-	BackgroundTransparency = 0.15,
+	BackgroundColor3 = C.panel,
+	BackgroundTransparency = 0.12,
 }, screenGui)
 create("UISizeConstraint", { MaxSize = Vector2.new(560, 46), MinSize = Vector2.new(260, 46) }, banner)
-create("UICorner", { CornerRadius = UDim.new(0, 6) }, banner)
-create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(190, 190, 205) }, banner)
-UIStyle.soften(banner, { radius = 10, strength = 0.25, shine = false })
+UIStyle.soften(banner, { radius = Theme.radius.card, style = "flat" })
 local bannerText = makeText(banner, {
 	Position = UDim2.fromOffset(12, 4),
 	Size = UDim2.new(1, -24, 1, -8),
@@ -142,15 +149,15 @@ local bannerText = makeText(banner, {
 local bannerBar = create("Frame", {
 	Position = UDim2.new(0, 0, 1, 5),
 	Size = UDim2.new(1, 0, 0, 10),
-	BackgroundColor3 = Color3.fromRGB(30, 32, 44),
+	BackgroundColor3 = C.cardDeep,
 	BorderSizePixel = 0,
 	Visible = false,
 }, banner)
 create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bannerBar)
-create("UIStroke", { Thickness = 2, Color = Color3.new(0, 0, 0) }, bannerBar)
+create("UIStroke", { Thickness = 1, Color = Color3.new(1, 1, 1), Transparency = 0.88, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, bannerBar)
 local bannerFill = create("Frame", {
 	Size = UDim2.fromScale(0, 1),
-	BackgroundColor3 = Color3.fromRGB(110, 255, 140),
+	BackgroundColor3 = C.success.base,
 	BorderSizePixel = 0,
 }, bannerBar)
 create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bannerFill)
@@ -158,9 +165,7 @@ create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bannerFill)
 -- =====================================================================
 -- SOL ÜST: sayaçlar (Rebirth sayısı ve Win)
 -- =====================================================================
--- Görselin (ikonun) etrafına siyah dış çizgi ve gölge katmanları ekler: ImageLabel'in kendi çizgisi olmadığı için aynı görselin siyaha boyanmış
--- kopyaları 8 yöne 1.6 px kaydırılır (dış çizgi) ve biri aşağıya kaydırılıp yarı saydam bırakılır (gölge). Referanstaki parlak, çizgili ikon görünümü.
-local OUTLINE_OFFSETS = { { -1.6, 0 }, { 1.6, 0 }, { 0, -1.6 }, { 0, 1.6 }, { -1.2, -1.2 }, { 1.2, -1.2 }, { -1.2, 1.2 }, { 1.2, 1.2 } }
+-- İkon: asıl görselin altına tek bir yumuşak gölge katmanı (eski 8 yönlü kalın siyah dış çizgi kalktı: ekran daha sade, nesne sayısı daha az)
 local function addOutlinedIcon(parent, imageId, size, position, anchor)
 	local holder = create("Frame", {
 		AnchorPoint = anchor,
@@ -169,10 +174,10 @@ local function addOutlinedIcon(parent, imageId, size, position, anchor)
 		BackgroundTransparency = 1,
 		ZIndex = 2,
 	}, parent)
-	local function layer(dx, dy, color, transparency, zIndex)
+	local function layer(dy, color, transparency, zIndex)
 		return create("ImageLabel", {
 			BackgroundTransparency = 1,
-			Position = UDim2.fromOffset(dx, dy),
+			Position = UDim2.fromOffset(0, dy),
 			Size = UDim2.fromScale(1, 1),
 			Image = imageId,
 			ImageColor3 = color,
@@ -181,11 +186,8 @@ local function addOutlinedIcon(parent, imageId, size, position, anchor)
 			ZIndex = zIndex,
 		}, holder)
 	end
-	layer(0, 3.5, Color3.new(0, 0, 0), 0.55, 2) -- gölge
-	for _, offset in OUTLINE_OFFSETS do
-		layer(offset[1], offset[2], Color3.new(0, 0, 0), 0, 2)
-	end
-	layer(0, 0, Color3.new(1, 1, 1), 0, 3) -- asıl görsel en üstte
+	layer(2.5, Color3.new(0, 0, 0), 0.7, 2) -- yumuşak gölge
+	layer(0, Color3.new(1, 1, 1), 0, 3) -- asıl görsel en üstte
 	return holder
 end
 
@@ -196,56 +198,26 @@ local PHONE_SHIFT_X = if ON_PHONE then Config.UI.Phone.LeftShiftX else 0
 local PHONE_SHIFT_Y = if ON_PHONE then Config.UI.Phone.LeftShiftY else 0
 
 local function makeStatChip(order, icon, imageId)
-	-- Referanstaki gibi hapsız: büyük ikon ve yanında büyük, kalın siyah kenarlı rakam (dünyanın üstünde yüzer)
+	-- Hap çip: yumuşak koyu kart + ince açık çerçeve, solda ikon, sağda GothamBlack sayı (dünyanın üstünde yüzer)
 	local row = create("Frame", {
 		Position = UDim2.fromOffset(14 + PHONE_SHIFT_X, 60 + PHONE_SHIFT_Y + (order - 1) * 50),
-		Size = UDim2.fromOffset(150, 48),
-		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(150, 42),
+		BackgroundColor3 = C.panel,
+		BackgroundTransparency = 0.2,
 	}, screenGui)
-	-- Hale: ekranın sol kenarından başlayıp sağa doğru silinen yarı saydam gri şerit (referanstaki gibi); üst ve alt kenarında ince açık çizgi.
-	-- Satırların arkasında durur (ZIndex 0), ikon ve rakam üstte kalır.
-	local band = create("Frame", {
-		Position = UDim2.fromOffset(-14, 0),
-		Size = UDim2.fromOffset(300, 48),
-		BackgroundColor3 = Color3.fromRGB(46, 48, 64),
-		BorderSizePixel = 0,
-		ZIndex = 0,
-	}, row)
-	create("UIGradient", {
-		Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.3),
-			NumberSequenceKeypoint.new(0.55, 0.62),
-			NumberSequenceKeypoint.new(1, 1),
-		}),
-	}, band)
-	for _, edge in { 0, 1 } do
-		local line = create("Frame", {
-			AnchorPoint = Vector2.new(0, edge),
-			Position = UDim2.new(0, 0, edge, 0),
-			Size = UDim2.new(1, 0, 0, 1.5),
-			BackgroundColor3 = Color3.fromRGB(235, 238, 255),
-			BorderSizePixel = 0,
-			ZIndex = 0,
-		}, band)
-		create("UIGradient", {
-			Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 0.35),
-				NumberSequenceKeypoint.new(0.6, 0.75),
-				NumberSequenceKeypoint.new(1, 1),
-			}),
-		}, line)
-	end
+	UIStyle.soften(row, { radius = 21, style = "flat", shine = false })
 	if imageId and imageId ~= "" then
-		addOutlinedIcon(row, imageId, 44, UDim2.fromOffset(0, 2), Vector2.new(0, 0))
+		addOutlinedIcon(row, imageId, 34, UDim2.fromOffset(6, 4), Vector2.new(0, 0))
 	else
-		makeText(row, { Position = UDim2.fromOffset(0, 2), Size = UDim2.fromOffset(44, 44), Text = icon }, 38, 0)
+		makeText(row, { Position = UDim2.fromOffset(6, 4), Size = UDim2.fromOffset(34, 34), Text = icon }, 28, 0)
 	end
 	return makeText(row, {
-		Position = UDim2.fromOffset(54, 4),
-		Size = UDim2.new(1, -54, 1, -8),
-		TextColor3 = Color3.new(1, 1, 1),
+		Position = UDim2.fromOffset(46, 4),
+		Size = UDim2.new(1, -56, 1, -8),
+		TextColor3 = C.text,
 		TextXAlignment = Enum.TextXAlignment.Left,
-	}, 36, 3)
+		Font = Theme.fonts.title,
+	}, 26, 1)
 end
 local rebirthLabel = makeStatChip(1, "🔄", Config.Icons.Rebirth)
 local winLabel = makeStatChip(2, "🏆", Config.Icons.Wins)
@@ -256,13 +228,12 @@ end
 -- =====================================================================
 -- SOL: 2 sütun x 3 satır kare butonlar (Shop, Rebirth, Settings, Backpack, Pets, Gifts)
 -- =====================================================================
--- Buton referanstaki gibi: kalın siyah dış çizgi, İÇİNDE ince RENKLİ GRADYAN ÇERÇEVE (buton arka planı = gradyan, üstüne koyu iç panel biner),
--- koyu zeminde büyük ikon (siyah çizgili + gölgeli) ve butonun en altında, ikonun altına binen kalın kenarlı küçük yazı.
--- accent = { üst-sol renk, alt-sağ renk } çerçevenin gradyanı; imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji.
+-- Buton: yumuşak koyu kart (radius 16) + ince açık çerçeve; renk SADECE ikonun arkasındaki yumuşak tonlu daire gradyanında (accent) ve etikette.
+-- Altta GothamBold 12 etiket. accent = { üst-sol renk, alt-sağ renk } dairenin gradyanı; imageId doluysa ikon bu görsel (Config.Icons), boşsa emoji.
 local BORDER = 4
 -- İki sütun arası (buton başına 74 + boşluk): 82 iken Shop'un köşe rozeti yan düğmeye (Rebirth) değiyordu, sahibi 'arayı açabilirsin' dedi; 90 = 16 birim boşluk
 local GRID_PITCH = 90
--- iconSize: görselin kenarı (varsayılan 56). Kenarlara kadar dolu görseller (Auras alevi) taşmasın diye küçültülür (Config.IconSizes)
+-- iconSize: görselin kenarı (varsayılan 56 -> kartta 0.8 ile küçülür). Kenarlara kadar dolu görseller (Auras alevi) taşmasın diye küçültülür (Config.IconSizes)
 local function makeSquareButton(position, icon, label, accent, imageId, iconSize)
 	local button = create("TextButton", {
 		Name = label .. "Button", -- ShopButton, RebirthButton, PetsButton...: rehber turu (GuideTour) bu adlarla işaretler
@@ -270,49 +241,53 @@ local function makeSquareButton(position, icon, label, accent, imageId, iconSize
 		Size = UDim2.fromOffset(74, 74),
 		Text = "",
 		AutoButtonColor = false,
-		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundColor3 = C.card,
 	}, screenGui)
 	UIStyle.anchorCenter(button) -- Rebirth nabzı gibi büyüme/küçülme animasyonları ortadan olsun (sol-üst köşe sabit kalmasın)
-	create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
-	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
-	local borderGradient = create("UIGradient", { Color = ColorSequence.new(accent[1], accent[2]), Rotation = 45 }, button)
+	UIStyle.soften(button, { radius = Theme.radius.card + 2, style = "flat", shine = false })
 
-	local inner = create("Frame", {
-		Position = UDim2.fromOffset(BORDER, BORDER),
-		Size = UDim2.new(1, -BORDER * 2, 1, -BORDER * 2),
-		BackgroundColor3 = Color3.fromRGB(24, 27, 46),
-		BackgroundTransparency = 0.1,
+	-- İkonun arkasındaki yumuşak tonlu daire (renk kimliği burada)
+	local disc = create("Frame", {
+		Name = "AccentDisc",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 5),
+		Size = UDim2.fromOffset(46, 46),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundTransparency = 0.55,
+		ZIndex = 1,
 	}, button)
-	UIStyle.soften(inner, { radius = 5, strength = 0.35, shine = false })
-	-- Üstüne gelince iç zemin hafif aydınlanır
+	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
+	local borderGradient = create("UIGradient", { Color = ColorSequence.new(accent[1], accent[2]), Rotation = 45 }, disc)
+
+	-- Üstüne gelince kart hafif aydınlanır
 	button.MouseEnter:Connect(function()
-		inner.BackgroundColor3 = Color3.fromRGB(44, 48, 78)
+		button.BackgroundColor3 = C.cardHover
 	end)
 	button.MouseLeave:Connect(function()
-		inner.BackgroundColor3 = Color3.fromRGB(24, 27, 46)
+		button.BackgroundColor3 = C.card
 	end)
 
 	if imageId and imageId ~= "" then
-		iconSize = iconSize or 56
-		addOutlinedIcon(button, imageId, iconSize, UDim2.new(0.5, 0, 0, 2 + (56 - iconSize) / 2), Vector2.new(0.5, 0))
+		iconSize = math.floor((iconSize or 56) * 0.78)
+		addOutlinedIcon(button, imageId, iconSize, UDim2.new(0.5, 0, 0, 5 + (46 - iconSize) / 2), Vector2.new(0.5, 0))
 	else
 		makeText(button, {
-			Position = UDim2.fromScale(0.1, 0.03),
-			Size = UDim2.fromScale(0.8, 0.62),
+			Position = UDim2.new(0.5, -23, 0, 5),
+			Size = UDim2.fromOffset(46, 46),
 			Text = icon,
 			ZIndex = 3,
-		}, 44, 0)
+		}, 30, 0)
 	end
 	local caption = makeText(button, {
 		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -1),
-		Size = UDim2.fromScale(0.94, 0.26),
+		Position = UDim2.new(0.5, 0, 1, -4),
+		Size = UDim2.new(1, -6, 0, 14),
 		Text = label,
-		TextColor3 = Color3.new(1, 1, 1),
+		TextColor3 = C.text,
 		ZIndex = 5,
-	}, 16, 3)
+	}, 12, 0)
 
-	-- Çerçeve renklerini sonradan değiştirmek için (Rebirth hazır olunca parlar)
+	-- Vurgu renklerini sonradan değiştirmek için (Rebirth hazır olunca parlar)
 	local function setAccent(top, bottom)
 		borderGradient.Color = ColorSequence.new(top, bottom)
 	end
