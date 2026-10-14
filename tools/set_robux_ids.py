@@ -17,6 +17,7 @@ CONFIG = os.path.join(ROOT, "src", "shared", "Config.luau")
 
 SHOP_DETAILS = {
     "petSpace25": "Adds 25 pet slots to your Pets bag.",
+    "starterPack": "One-time Starter Pack: 2 Rainbow Potions (15 min), 1 Luck Potion (60 min) and +25 pet slots.",
     "power1k": "Instantly gives 1,000 squats worth of leg muscle.",
     "power10k": "Instantly gives 10,000 squats worth of leg muscle.",
     "power100k": "Instantly gives 100,000 squats worth of leg muscle.",

@@ -135,6 +135,9 @@ return {
 	-- FİYAT KURALI (sahibi 2026-10-09: 'ucuz olsun, en pahalı şey 150 Robux'u geçmesin'): bütün Robux fiyatları (Shop ürünleri, iksirler, iz/aura, Rebirth SKIP, Offline DOUBLE, Gifts kilidi, VIP game pass) en çok 150'dir; İSTİSNALAR: yumurta pass'leri (EggPasses) ve Robux'lu antrenör pedleri (Training.Areas robux), 150 < fiyat <= 400; tools/mocktest/tests/pricetest.luau denetler.
 	Shop = {
 		Products = {
+			-- BAŞLANGIÇ PAKETİ (2026-10-14 büyüme planı; rakiplerde standart ilk satın alma ürünü): TEK SEFERLİK (once = true: alındıktan sonra Shop'tan kalkar), sayaç/baskı yok. İçerik Config.StarterPack.
+			-- productId 0 iken kartta fiyat yazar ama basınca 'coming soon' der: Creator Hub'da Developer Product açıp ID'yi robux_ids.txt'e 'shop:starterPack=ID' yaz (tools/set_robux_ids.py).
+			{ id = "starterPack", name = "Starter Pack", detail = "2 Rainbow + Luck + 25 Pets", icon = "🎁", imageKey = "Gifts", kind = "starterPack", once = true, robux = 49, productId = 0, color = Color3.fromRGB(255, 150, 50) },
 			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", badge = "+", kind = "petSpace", amount = 25, robux = 49, productId = 3717466379, color = Color3.fromRGB(235, 70, 70) },
 			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
 			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 15, productId = 3717466555, quick = true, color = Color3.fromRGB(255, 45, 140) },
@@ -158,6 +161,12 @@ return {
 			-- SATILMAZ (forSale = false): kart sadece envanterdeki iksiri içmek ve Auto Click pass'ini göstermek içindir (robux/productId yok)
 			{ id = "auto30", potion = "auto", minutes = 30, forSale = false },
 		},
+	},
+
+	-- Başlangıç paketinin içeriği (Config.Shop.Products 'starterPack'): iksirler envantere girer (Shop > Potions > USE), petSlots pet envanterini artırır. Win/kas içermez (WinValue tutarlılığı).
+	StarterPack = {
+		Potions = { { kind = "boostRainbow", minutes = 15 }, { kind = "boostRainbow", minutes = 15 }, { kind = "boostLuck", minutes = 60 } },
+		PetSlots = 25,
 	},
 
 	-- Çevrimdışı kazanç (Offline Earnings): oyundan uzakta geçen süre için bacak kası birikir; girişte açılan pencerede CLAIM'e basınca verilir.

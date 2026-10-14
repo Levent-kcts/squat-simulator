@@ -67,6 +67,9 @@ Güncelleyene kadar oyunda yazan fiyat ile Roblox'un satın alma penceresindeki 
 
 Toplam: 6 pass + 18 + 9 + 6 = 39 ürün. En çok satan 6 pass'i ve Win/iksir paketlerini önce güncelle, iz/aura'lar sonra.
 
+## YENİ ÜRÜN: Başlangıç Paketi (Starter Pack), 49 R$
+Kod hazır ama ürün YOK: Creator Hub > Monetization > Developer Products > Create: ad **Starter Pack**, fiyat **49**, açıklama `One-time Starter Pack: 2 Rainbow Potions (15 min), 1 Luck Potion (60 min) and +25 pet slots.` Ürünün ID'sini bana ver (ya da robux_ids.txt'e `shop:starterPack=ID` yazıp `python tools/set_robux_ids.py robux_ids.txt`). ID girilene kadar Shop'ta kartı görünür ama basınca 'coming soon' der. Tek seferlik: alınca kart Shop'tan kalkar, sayaç/baskı yok.
+
 ## Neden bu fiyatlar
 - Rakipler 19-79 R$ bandında yardımcı pass satıyor; bizimki 149-249'du (research/03, 01).
 - Giriş fiyatı (en ucuz ürün) 9-15 R$: ilk satın almanın bariyeri düşük.

@@ -424,13 +424,21 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 
 	for _, product in Config.Shop.Products do
 		order += 1
-		addCard(order, product.color, product.icon, product.imageKey and Config.Icons[product.imageKey], product.name, product.detail, `{ROBUX} {product.robux}`, function()
+		local card = addCard(order, product.color, product.icon, product.imageKey and Config.Icons[product.imageKey], product.name, product.detail, `{ROBUX} {product.robux}`, function()
 			if product.productId > 0 then
 				MarketplaceService:PromptProductPurchase(player, product.productId)
 			else
 				showToast(false, `{product.name} is coming soon!`)
 			end
 		end, product.badge)
+		if product.once then
+			-- Tek seferlik ürün (Başlangıç Paketi): alındıktan sonra kart kalkar (sunucu 'StarterPackOwned' özniteliğini koyar)
+			local function refreshOnce()
+				card.Visible = player:GetAttribute("StarterPackOwned") ~= true
+			end
+			player:GetAttributeChangedSignal("StarterPackOwned"):Connect(refreshOnce)
+			refreshOnce()
+		end
 	end
 
 	close.MouseButton1Click:Connect(function()

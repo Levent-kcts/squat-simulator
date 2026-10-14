@@ -451,7 +451,7 @@ local function sanitize(raw)
 	for id in data.StarterClaimed do
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
-	readIds(raw.Flags, data.Flags, { gift = true, train = true })
+	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true })
 	-- Günlük giriş ödülü durumu: sıradaki gün (1-7), son alınan UTC günü, toplam alınan
 	if type(raw.Login) == "table" then
 		if type(raw.Login.next) == "number" then
@@ -771,6 +771,7 @@ local function refresh(player)
 	player:SetAttribute("TutorialClicks", profile.tutorialClicks)
 	publishQuests(player)
 	publishLogin(player, profile)
+	player:SetAttribute("StarterPackOwned", profile.flags.starter == true) -- Shop'taki Başlangıç Paketi kartı alındıktan sonra kalkar
 	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
 
@@ -1676,6 +1677,13 @@ local function applyProduct(player, profile, product)
 		return (PlayerStats.rebirth(player, true))
 	elseif POTION_FIELD[product.kind] then
 		startBoost(player, profile, product.kind, product.minutes)
+	elseif product.kind == "starterPack" then
+		-- Başlangıç paketi: iksirler envantere, pet yuvaları; tekrar satın alınırsa yine verilir (Robux boşa gitmesin), Shop kartı ilkinden sonra kalkar
+		for _, potion in Config.StarterPack.Potions do
+			giveItem(player, profile, potion.kind, potion.minutes)
+		end
+		profile.petSlots = math.min(profile.petSlots + Config.StarterPack.PetSlots, Config.MaxExtraPetSlots)
+		profile.flags.starter = true
 	elseif product.kind == "petSpace" then
 		profile.petSlots = math.min(profile.petSlots + product.amount, Config.MaxExtraPetSlots) -- üst sınırda da satın alma işlenmiş sayılır (Robux boşa gitmesin)
 	elseif product.kind == "wins" then

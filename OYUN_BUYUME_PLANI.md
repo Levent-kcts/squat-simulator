@@ -68,3 +68,4 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 - 2026-10-14: sahibi Audience Reach'i paylaştı: kimlik, 2FA, anket, ücret TAMAM; eksik olan tek şey 250 highly engaged (şu an 1). Sahibi kod/günlük ödülü onayladı ve fiyat indirimi + 'hepsini ekle' dedi.
 - 2026-10-14: **fiyat indirimi YAPILDI** (ROBUX_FIYAT_DEGISIKLIGI.md), **promosyon kodları YAPILDI** (Config.Codes, Settings > Redeem code, codestest).
 - 2026-10-14: **günlük giriş ödülü YAPILDI** (sol menü Daily düğmesi, 7 gün, nazik seri, logintest + loginpaneltest).
+- 2026-10-14: **Başlangıç Paketi kodlandı** (49 R$ tek seferlik; ürün ID'si sahibinde bekliyor).
