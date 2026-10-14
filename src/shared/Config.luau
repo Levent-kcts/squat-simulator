@@ -871,16 +871,22 @@ return {
 	-- İzler de OYUNUN BAŞINA çekildi (sahibi 'fiyatları tekrar belirle' dedi; ilk turda rainbow iz 8 saatteydi): hedef aşamalar red 5, orange 6, yellow 8, green 10, cyan 11, blue 12, purple 13, pink 14, rainbow 15 (hepsi ilk ~4 saatte).
 	-- Aura'lar: red 4, green 7, blue 9, purple 11, gold 13, rainbow 15 (oyunun sonu 20. aşama).
 	-- tools/simulate.py son satırlarındaki 'Fiyat merdiveni' bunu zamanla gösterir; fiyat ya da çarpan değiştirirsen o tabloyu ve aşama kilometre taşlarını (5: 5-8 dk, 10: ~1 sa, 15: ~4-5 sa, 20: ~10 sa) yeniden kontrol et. Robux fiyatları ayrıdır (robuxPrice).
+	-- OYUNA UYGUN İZLER (2026-10-14, sahibi tester'ın E3/E4 maddeleri için 'önce E4 ve E3'ü yap' dedi; E4: 'Backpack trail'leri oyunla alakasız görünüyor' = düz renkli şeritlerdi): her izin oyunla ilgili bir TEMASI var:
+	-- name (panelde ve bildirimlerde görünür), fx (server/TrailService.FX: karakterin ARKASINDA akan parçacık efekti; düz şerit YOK, sadece Kick Sparks/Rainbow Legend ince şerit ekler), icon (Config.Icons anahtarı: panelde kartın
+	-- simgesi ve çoğunda parçacığın görseli: tuğla, pati, kupa, bacak kası; iconTint = true ise simge iz rengine boyanır), emoji (icon yoksa/yüklenmediyse yedek), color (kart ve parçacık rengi).
+	-- id'ler KAYITLI ve Robux ürünlerine bağlıdır (sahip olunan izler id ile saklanır): DEĞİŞTİRME; sadece ad/renk/efekt değişir. simulate.py bu bloğu satır satır okur: her iz TEK satır, 'id = "..."' ilk, winPrice ve robuxPrice aynı satırda.
+	-- E3 (fiyatlar): Win fiyatları aynı (hepsi oyunun ilk ~1,6 saatine sığar: simulate.py 'Fiyat merdiveni'); ROBUX fiyatları üst izlerde düşürüldü (blue 45 > 40, purple 60 > 50, pink 75 > 60, rainbow 110 > 75): GÖSTERİLEN fiyat
+	-- değişince Creator Hub'daki Developer Product'ın gerçek fiyatını da aynı yapmak sahibe düşer (ROBUX_FIYAT_DEGISIKLIGI.md).
 	Trails = {
-		{ id = "red", name = "Red Trail", speed = 4, winPrice = 30, robuxPrice = 15, robuxProductId = 3717469051, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "orange", name = "Orange Trail", speed = 6, winPrice = 60, robuxPrice = 20, robuxProductId = 3717469165, color = Color3.fromRGB(255, 150, 40) },
-		{ id = "yellow", name = "Yellow Trail", speed = 8, winPrice = 250, robuxPrice = 25, robuxProductId = 3717469247, color = Color3.fromRGB(255, 230, 60) },
-		{ id = "green", name = "Green Trail", speed = 10, winPrice = 1000, robuxPrice = 30, robuxProductId = 3717469350, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "cyan", name = "Cyan Trail", speed = 12, winPrice = 2000, robuxPrice = 35, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Blue Trail", speed = 14, winPrice = 4000, robuxPrice = 45, robuxProductId = 3717469540, color = Color3.fromRGB(70, 110, 255) },
-		{ id = "purple", name = "Purple Trail", speed = 16, winPrice = 8000, robuxPrice = 60, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Pink Trail", speed = 18, winPrice = 16000, robuxPrice = 75, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Trail", speed = 24, winPrice = 32000, robuxPrice = 110, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Brick Dust", fx = "dust", icon = "LoadingBrick", iconTint = true, emoji = "💨", speed = 4, winPrice = 30, robuxPrice = 15, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
+		{ id = "orange", name = "Sweat Drops", fx = "drops", emoji = "💧", speed = 6, winPrice = 60, robuxPrice = 20, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
+		{ id = "yellow", name = "Protein Powder", fx = "powder", emoji = "✨", speed = 8, winPrice = 250, robuxPrice = 25, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
+		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "LoadingBrick", emoji = "🧱", speed = 10, winPrice = 1000, robuxPrice = 30, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
+		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Pet", emoji = "🐾", speed = 12, winPrice = 2000, robuxPrice = 35, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Wins", emoji = "🏆", speed = 14, winPrice = 4000, robuxPrice = 40, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
+		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "LegMuscle", emoji = "💪", speed = 16, winPrice = 8000, robuxPrice = 50, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Kick Sparks", fx = "sparks", emoji = "💥", speed = 18, winPrice = 16000, robuxPrice = 60, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", emoji = "🌈", speed = 24, winPrice = 32000, robuxPrice = 75, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.

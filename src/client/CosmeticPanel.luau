@@ -165,6 +165,28 @@ function CosmeticPanel.init(screenGui, showToast, options)
 						NumberSequenceKeypoint.new(1, 0),
 					}),
 				}, preview)
+				-- İZ TEMASI SİMGESİ (2026-10-14, tester E4: 'trail'ler oyunla alakasız görünüyor'): iz neyin izini bırakıyorsa onun simgesi (tuğla, pati, kupa, bacak kası; Config.Trails[].icon),
+				-- yüklü görsel yoksa emoji (Config.Trails[].emoji); tuğla simgesi iz rengine boyanır (iconTint)
+				local iconId = item.icon and Config.Icons[item.icon]
+				if type(iconId) == "string" and iconId ~= "" then
+					create("ImageLabel", {
+						Name = "TrailIcon",
+						Position = UDim2.fromOffset(176, 45),
+						Size = UDim2.fromOffset(40, 40),
+						BackgroundTransparency = 1,
+						Image = iconId,
+						ImageColor3 = if item.iconTint then item.color else Color3.new(1, 1, 1),
+						ScaleType = Enum.ScaleType.Fit,
+					}, card)
+				elseif item.emoji then
+					makeText(card, {
+						Name = "TrailIcon",
+						Position = UDim2.fromOffset(176, 45),
+						Size = UDim2.fromOffset(40, 40),
+						Text = item.emoji,
+						TextColor3 = Color3.new(1, 1, 1),
+					}, 1)
+				end
 			end
 
 			makeText(card, {

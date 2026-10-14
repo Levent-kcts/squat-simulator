@@ -22,15 +22,15 @@ Toplam: 39 ürün (33 Developer Product + 6 Game Pass).
 | 12 | `potion:wins60` | Developer Product | Wins Potion (60 min) | 99 | Doubles every Win you earn. Lasts 60 minutes. |
 | 13 | `potion:rainbow15` | Developer Product | Rainbow Potion (15 min) | 79 | Counts as ALL potions: 2x luck, 2x muscle and 2x Wins. Lasts 15 minutes. |
 | 14 | `potion:rainbow60` | Developer Product | Rainbow Potion (60 min) | 149 | Counts as ALL potions: 2x luck, 2x muscle and 2x Wins. Lasts 60 minutes. |
-| 15 | `trail:red` | Developer Product | Red Trail | 15 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 16 | `trail:orange` | Developer Product | Orange Trail | 20 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 17 | `trail:yellow` | Developer Product | Yellow Trail | 25 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 18 | `trail:green` | Developer Product | Green Trail | 30 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 19 | `trail:cyan` | Developer Product | Cyan Trail | 35 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 20 | `trail:blue` | Developer Product | Blue Trail | 45 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 21 | `trail:purple` | Developer Product | Purple Trail | 60 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 22 | `trail:pink` | Developer Product | Pink Trail | 75 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
-| 23 | `trail:rainbow` | Developer Product | Rainbow Trail | 110 | Unlocks this trail forever: leaves a colored trail and makes you run faster. |
+| 15 | `trail:red` | Developer Product | Brick Dust | 15 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 16 | `trail:orange` | Developer Product | Sweat Drops | 20 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 17 | `trail:yellow` | Developer Product | Protein Powder | 25 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 18 | `trail:green` | Developer Product | Brick Confetti | 30 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 19 | `trail:cyan` | Developer Product | Pet Paws | 35 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 20 | `trail:blue` | Developer Product | Win Trophies | 40 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 21 | `trail:purple` | Developer Product | Muscle Power | 50 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 22 | `trail:pink` | Developer Product | Kick Sparks | 60 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 23 | `trail:rainbow` | Developer Product | Rainbow Legend | 75 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
 | 24 | `aura:red` | Developer Product | Red Aura | 15 | Unlocks this aura forever: multiplies your leg muscle gain. |
 | 25 | `aura:green` | Developer Product | Green Aura | 20 | Unlocks this aura forever: multiplies your leg muscle gain. |
 | 26 | `aura:blue` | Developer Product | Blue Aura | 25 | Unlocks this aura forever: multiplies your leg muscle gain. |
