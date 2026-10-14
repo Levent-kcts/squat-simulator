@@ -1294,10 +1294,11 @@ plusButton.MouseButton1Click:Connect(function()
 end)
 
 -- Settings: ses efektleri, müzik, kazanç yazıları, ekran sarsıntısı ve isim etiketleri ayarları (korumalı yüklenir)
+local showWhatsNew = loadPanel("WhatsNewCard", screenGui) -- 'Neler yeni' kartı (girişte bir kez, Settings'ten her zaman)
 local SettingsPanelModule = loadOptional("SettingsPanel")
 local toggleSettings = nil
 if SettingsPanelModule then
-	local okSettings, result = pcall(SettingsPanelModule.init, screenGui)
+	local okSettings, result = pcall(SettingsPanelModule.init, screenGui, showWhatsNew)
 	if okSettings then
 		toggleSettings = result
 	else

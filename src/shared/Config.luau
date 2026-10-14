@@ -301,6 +301,20 @@ return {
 	},
 	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
 
+	-- NELER YENİ KARTI (2026-10-14 büyüme planı 1.6; client/WhatsNewCard): geri dönen oyuncuya yeni özellikleri tek küçük kartla duyurur. Version her yeni duyuruda ARTIRILIR; oyuncu 'Got it!' deyince o sürüm görülmüş sayılır (kayıtlı).
+	-- Yeni oyuncuya (eğitimi bitirmemiş) hiç gösterilmez. Settings > 'What's New' ile her zaman yeniden açılır. Lines: en çok 5 satır, kısa tut (ekran sade kalsın).
+	WhatsNew = {
+		Version = 1,
+		Title = "WHAT'S NEW!",
+		Lines = {
+			{ icon = "📅", text = "DAILY rewards: claim every day, no streak loss" },
+			{ icon = "🎟", text = "Promo codes in Settings: free potions + Wins" },
+			{ icon = "⚡", text = "POWER HOUR: x2 Leg Muscle, 5 min every 30 min" },
+			{ icon = "💸", text = "Lower Shop prices on almost everything" },
+			{ icon = "🏅", text = "Rank titles + a live feed of rare pets" },
+		},
+	},
+
 	-- GÜNLÜK GİRİŞ ÖDÜLÜ (2026-10-14: sahibi eskiden reddetmişti, 'onay veriyorum' dedi; sol menüdeki 'Daily' düğmesi, client/LoginPanel, server: PlayerStats.claimLogin): 7 günlük döngü, günde bir ödül (UTC günü).
 	-- NAZİK TASARIM: seri KOPMAZ (gün kaçırılırsa ceza yok, ödül sıradaki günden devam eder; 'kaçırırsan kaybedersin' baskısı yok), 7. gün büyük ödül, sonra döngü başa sarar. Ödüller Robux'suz (Win, kas, iksir).
 	-- Her giriş { wins, muscleClicks, potions = { { kind, minutes } }, big }: Codes ile aynı alanlar.

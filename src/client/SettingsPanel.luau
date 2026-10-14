@@ -33,11 +33,11 @@ local function text(parent, props, strokeThickness)
 end
 
 -- Döner: pencereyi açıp kapatan fonksiyon
-function SettingsPanel.init(screenGui)
+function SettingsPanel.init(screenGui, openWhatsNew)
 	local player = Players.LocalPlayer
 	local ROW_HEIGHT, ROW_GAP = 54, 8
 	local settings = Config.Settings
-	local height = 68 + (#settings + 1) * (ROW_HEIGHT + ROW_GAP) + 4 -- ilk satır: promosyon kodu girişi, sonra ayarlar
+	local height = 68 + (#settings + 2) * (ROW_HEIGHT + ROW_GAP) + 4 -- ilk satır: promosyon kodu girişi, sonra ayarlar, son satır: Neler yeni
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -222,6 +222,36 @@ function SettingsPanel.init(screenGui)
 		-- Ayar başka yerden (teyp, sunucudan yüklenen kayıt) değişirse düğme de güncellensin
 		player:GetAttributeChangedSignal(setting.key):Connect(refresh)
 		refresh()
+	end
+
+	-- NELER YENİ satırı (son satır): kartı her zaman yeniden açar (Config.WhatsNew)
+	if openWhatsNew then
+		local row = create("Frame", {
+			Name = "WhatsNewRow",
+			Position = UDim2.fromOffset(12, 68 + (#settings + 1) * (ROW_HEIGHT + ROW_GAP)),
+			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
+			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
+		}, panel)
+		create("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
+		UIStyle.soften(row, { radius = 10, strength = 0.12, shine = false })
+		text(row, { Position = UDim2.fromOffset(12, 6), Size = UDim2.new(1, -120, 0, 26), Text = "What's New", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 2)
+		text(row, { Position = UDim2.fromOffset(12, 33), Size = UDim2.new(1, -120, 0, 16), Text = "See the latest updates", TextColor3 = Color3.fromRGB(190, 195, 215), TextXAlignment = Enum.TextXAlignment.Left }, 1)
+		local open = create("TextButton", {
+			Name = "WhatsNewButton",
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -10, 0.5, 0),
+			Size = UDim2.fromOffset(84, 36),
+			Text = "",
+			BackgroundColor3 = Color3.fromRGB(255, 190, 60),
+		}, row)
+		create("UICorner", { CornerRadius = UDim.new(0, 18) }, open)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, open)
+		UIStyle.soften(open, { radius = 18, strength = 0.28 })
+		text(open, { Position = UDim2.fromScale(0.1, 0.1), Size = UDim2.fromScale(0.8, 0.8), Text = "OPEN", TextColor3 = Color3.new(1, 1, 1) }, 2)
+		open.MouseButton1Click:Connect(function()
+			PanelManager.hide(panel)
+			openWhatsNew()
+		end)
 	end
 
 	return function()

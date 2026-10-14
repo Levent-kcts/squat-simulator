@@ -241,7 +241,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -455,6 +455,12 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true })
+	-- 'Neler yeni' kartı: görülen sürüm. Kayıtlı değer varsa o; yoksa eğitimi bitirmiş eski oyuncuda 0 (kartı görür), yeni oyuncuda güncel sürüm (görmez)
+	if type(raw.WhatsNew) == "number" then
+		data.WhatsNew = math.clamp(math.floor(raw.WhatsNew), 0, 1e6)
+	else
+		data.WhatsNew = if data.TutorialDone then 0 else Config.WhatsNew.Version
+	end
 	-- Eğitim yumurtası sayaçları (kısıtlı hesaplar için sabit sıralı yumurta): { [yumurta id] = o yumurtadan kaç kez açıldı }
 	if type(raw.Training) == "table" then
 		for eggId, opened in raw.Training do
@@ -810,6 +816,7 @@ local function refresh(player)
 		table.sort(counters)
 		player:SetAttribute("TrainingEggs", table.concat(counters, ","))
 	end
+	player:SetAttribute("WhatsNewSeen", profile.whatsNew) -- istemci kartı Config.WhatsNew.Version'dan küçükse gösterir
 	player:SetAttribute("StarterPackOwned", profile.flags.starter == true) -- Shop'taki Başlangıç Paketi kartı alındıktan sonra kalkar
 	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
@@ -898,6 +905,7 @@ local function save(player, mode)
 		Referral = profile.referral,
 		Codes = setToList(profile.codes),
 		Training = profile.training,
+		WhatsNew = profile.whatsNew,
 		Login = profile.login,
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
@@ -1131,6 +1139,7 @@ local function setup(player)
 
 	local profile = {
 		taps = 0,
+		whatsNew = 0, -- 'Neler yeni' kartında görülen sürüm (kayıtlı)
 		training = {}, -- Eğitim yumurtası sayaçları { [yumurta id] = açılış sayısı } (kayıtlı)
 		login = { next = 1, last = -1, total = 0 }, -- günlük giriş ödülü durumu (kayıtlı)
 		codes = {}, -- kullanılan promosyon kodları { KOD = true } (kayıtlı)
@@ -1249,6 +1258,7 @@ local function setup(player)
 	profile.referral = data.Referral
 	profile.codes = data.Codes
 	profile.training = data.Training
+	profile.whatsNew = data.WhatsNew
 	profile.login = data.Login
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
 	-- sinyalden ÖNCE yapıldığı için sayılmaz.
@@ -1551,6 +1561,20 @@ function PlayerStats.addTap(player)
 end
 
 -- Dönüş: başarılı mı, mesaj
+-- 'Neler yeni' kartı görüldü: güncel sürüm kaydedilir (kart bir daha kendiliğinden açılmaz)
+function PlayerStats.seenWhatsNew(player)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false
+	end
+	if profile.whatsNew < Config.WhatsNew.Version then
+		profile.whatsNew = Config.WhatsNew.Version
+		player:SetAttribute("WhatsNewSeen", profile.whatsNew)
+		requestSave(player)
+	end
+	return true
+end
+
 function PlayerStats.rebirth(player, force)
 	local profile = profiles[player]
 	local levelStat = getStat(player, Config.StatLevel)
