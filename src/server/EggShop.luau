@@ -134,11 +134,9 @@ function EggShop.init(notifyEvent)
 			return false, "Invalid request."
 		end
 		count = math.clamp(math.floor(count), 1, Config.EggMultiOptions[#Config.EggMultiOptions])
-		-- Roblox 'ücretli rastgele ürün' politikası: kısıtlı hesaplarda yumurta açılmaz (server/PaidRandomPolicy)
-		if PaidRandomPolicy.isRestricted(player) then
-			notifyEvent:FireClient(player, false, PaidRandomPolicy.Message)
-			return false, PaidRandomPolicy.Message
-		end
+		-- Roblox 'ücretli rastgele ürün' politikası (server/PaidRandomPolicy): kısıtlı hesapta (UK, AU, NL, BE, BR...) yumurta RASTGELE değil, sabit sıralı 'Eğitim Yumurtası' olarak açılır (PlayerStats.hatchEgg);
+		-- burada sadece politikanın öğrenildiğinden emin olunur (bilinmiyorsa kısıtlı sayılır)
+		PaidRandomPolicy.isRestricted(player)
 		local allowed, denied = EggShop.checkPasses(player, count, auto)
 		if not allowed then
 			notifyEvent:FireClient(player, false, denied)

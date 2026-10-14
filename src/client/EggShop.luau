@@ -344,7 +344,19 @@ function EggShop.init(screenGui, hooks)
 			return
 		end
 
-		eggName.Text = egg.name
+		-- EĞİTİM YUMURTASI (kısıtlı hesap): sabit sıralı döngü; oranlar yerine '25/50' ve sıradaki pet 'NEXT' (Catalog.trainingCycle, sunucuyla aynı)
+		local training = player:GetAttribute("PaidRandomRestricted") ~= false
+		local trainingCounts, nextPetId
+		if training then
+			trainingCounts = Catalog.trainingCounts(egg)
+			local opened = tonumber(string.match(tostring(player:GetAttribute("TrainingEggs") or ""), egg.id .. ":(%d+)")) or 0
+			local cycle = Catalog.trainingCycle(egg)
+			nextPetId = cycle[opened % #cycle + 1]
+		end
+		eggName.Text = if training then `{egg.name} (Training)` else egg.name
+		crossHint.Text = if training
+			then `Training Egg: pets come in a fixed order. Every {Catalog.TrainingLength} opens repeat it.`
+			else "Tap a pet to mark it with an X: marked pets are deleted the moment they hatch!"
 		for _, child in cards:GetChildren() do
 			if child:IsA("GuiObject") then
 				child:Destroy()
@@ -381,10 +393,13 @@ function EggShop.init(screenGui, hooks)
 				Text = pet.name,
 				TextColor3 = Color3.new(1, 1, 1),
 			}, 2)
+			if training and pet.id == nextPetId then
+				makeText(card, { Position = UDim2.fromScale(0.02, 0.0), Size = UDim2.fromScale(0.5, 0.17), Text = "NEXT", TextColor3 = Color3.fromRGB(255, 235, 90), ZIndex = 7 }, 2)
+			end
 			makeText(card, {
 				Position = UDim2.fromScale(0.04, 0.78),
 				Size = UDim2.fromScale(0.92, 0.2),
-				Text = string.format("%.1f%%", entry.chance),
+				Text = if training then `{trainingCounts[pet.id] or 0}/{Catalog.TrainingLength}` else string.format("%.1f%%", entry.chance),
 				TextColor3 = if luck > 1 and entry.base < 20 then Color3.fromRGB(150, 255, 150) else Color3.new(1, 1, 1), -- Luck Potion artırdıysa nadir petlerin yüzdesi yeşil
 			}, 2)
 
@@ -457,6 +472,12 @@ function EggShop.init(screenGui, hooks)
 	-- Luck Potion başlayınca/bitince açık panelin yüzdeleri güncellenir
 	player:GetAttributeChangedSignal("EggLuck"):Connect(function()
 		if currentEgg then
+			showEgg(currentEgg)
+		end
+	end)
+	-- Eğitim yumurtası sayacı ilerleyince 'NEXT' işareti güncellenir
+	player:GetAttributeChangedSignal("TrainingEggs"):Connect(function()
+		if currentEgg and player:GetAttribute("PaidRandomRestricted") ~= false then
 			showEgg(currentEgg)
 		end
 	end)

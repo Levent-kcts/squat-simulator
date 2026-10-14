@@ -239,7 +239,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -453,6 +453,14 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true })
+	-- Eğitim yumurtası sayaçları (kısıtlı hesaplar için sabit sıralı yumurta): { [yumurta id] = o yumurtadan kaç kez açıldı }
+	if type(raw.Training) == "table" then
+		for eggId, opened in raw.Training do
+			if type(eggId) == "string" and Catalog.EggById[eggId] and type(opened) == "number" then
+				data.Training[eggId] = math.clamp(math.floor(opened), 0, 1e9)
+			end
+		end
+	end
 	-- Günlük giriş ödülü durumu: sıradaki gün (1-7), son alınan UTC günü, toplam alınan
 	if type(raw.Login) == "table" then
 		if type(raw.Login.next) == "number" then
@@ -779,6 +787,14 @@ local function refresh(player)
 	player:SetAttribute("TutorialClicks", profile.tutorialClicks)
 	publishQuests(player)
 	publishLogin(player, profile)
+	do -- Eğitim yumurtası sayaçları: istemci sıradaki peti ('NEXT') buradan bilir ('starter:12,forest:3')
+		local counters = {}
+		for eggId, opened in profile.training do
+			table.insert(counters, `{eggId}:{opened}`)
+		end
+		table.sort(counters)
+		player:SetAttribute("TrainingEggs", table.concat(counters, ","))
+	end
 	player:SetAttribute("StarterPackOwned", profile.flags.starter == true) -- Shop'taki Başlangıç Paketi kartı alındıktan sonra kalkar
 	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
@@ -866,6 +882,7 @@ local function save(player, mode)
 		LifetimeMuscle = profile.lifetimeMuscle,
 		Referral = profile.referral,
 		Codes = setToList(profile.codes),
+		Training = profile.training,
 		Login = profile.login,
 		Wins = wins.Value,
 		Level = getStat(player, Config.StatLevel).Value,
@@ -1099,6 +1116,7 @@ local function setup(player)
 
 	local profile = {
 		taps = 0,
+		training = {}, -- Eğitim yumurtası sayaçları { [yumurta id] = açılış sayısı } (kayıtlı)
 		login = { next = 1, last = -1, total = 0 }, -- günlük giriş ödülü durumu (kayıtlı)
 		codes = {}, -- kullanılan promosyon kodları { KOD = true } (kayıtlı)
 		referral = { by = 0, paid = false, secs = 0 }, -- Friend Referral durumu (kayıtlı)
@@ -1215,6 +1233,7 @@ local function setup(player)
 	profile.lifetimeMuscle = data.LifetimeMuscle
 	profile.referral = data.Referral
 	profile.codes = data.Codes
+	profile.training = data.Training
 	profile.login = data.Login
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
 	-- sinyalden ÖNCE yapıldığı için sayılmaz.
@@ -2100,16 +2119,27 @@ function PlayerStats.hatchEgg(player, eggId, count)
 	local kept, deleted = {}, {}
 	local results = {} -- açılış sırasıyla { id, kept }: istemcideki açılış ekranı için
 	local luck = if potionActive(profile, "boostLuckUntil") then Config.Potions.Mult else 1
+	-- EĞİTİM YUMURTASI: 'ücretli rastgele ürün' kısıtı olan (ya da henüz bilinmeyen) hesapta sonuç rastgele DEĞİL, sabit sıralı döngüdür (Catalog.trainingCycle; panelde gösterilir)
+	local training = player:GetAttribute("PaidRandomRestricted") ~= false
 	for _ = 1, count do
 		if wins.Value < egg.price then
 			break
 		end
-		local pet = rollPet(egg, luck)
+		local pet
+		if training then
+			local cycle = Catalog.trainingCycle(egg)
+			pet = Catalog.PetById[cycle[(profile.training[egg.id] or 0) % #cycle + 1]]
+		else
+			pet = rollPet(egg, luck)
+		end
 		local willDelete = profile.autoDelete[pet.id]
 		if not willDelete and #profile.pets >= petCapacity(profile) then
 			break
 		end
 		wins.Value -= egg.price
+		if training then
+			profile.training[egg.id] = (profile.training[egg.id] or 0) + 1
+		end
 		table.insert(results, { id = pet.id, kept = not willDelete })
 		if willDelete then
 			table.insert(deleted, pet)

@@ -199,6 +199,58 @@ function Catalog.luckWeights(egg, luck)
 	return weights
 end
 
+-- EĞİTİM YUMURTASI (2026-10-14 büyüme planı sprint 1.3): Roblox 'ücretli rastgele ürün' kısıtı olan hesaplarda (UK, AU, NL, BE, BR...) rastgele yumurta açılamaz; Roblox'un önerdiği uyumlu yol:
+-- sonuçları ÖNCEDEN BİLİNEN, SABİT SIRALI yumurta. Her yumurtanın havuzu en sık çıkandan en nadire 25 / 15 / 6 / 3 / 1 kez geçen 50 açılıklık sabit bir döngüdür (oranlar normal yumurtaya yakın: %50/30/12/6/2);
+-- döngü yumurta paneli açıkken oyuncuya GÖSTERİLİR (her pet '25/50' gibi) ve sıradaki pet 'NEXT' diye işaretlenir. Sunucu (PlayerStats.hatchEgg) ve istemci AYNI döngüyü buradan alır.
+Catalog.TrainingCounts = { 25, 15, 6, 3, 1 }
+Catalog.TrainingLength = 50
+local trainingCache = {}
+function Catalog.trainingCycle(egg)
+	local cached = trainingCache[egg.id]
+	if cached then
+		return cached
+	end
+	local order = {}
+	for index, entry in egg.pets do
+		order[index] = { id = entry.id, weight = entry.weight, position = index }
+	end
+	table.sort(order, function(a, b)
+		if a.weight ~= b.weight then
+			return a.weight > b.weight
+		end
+		return a.position < b.position
+	end)
+	-- Açıklık (deficit) programlaması: her adımda hedef oranından en çok geride kalan pet seçilir; böylece nadir petler döngüye düzgün yayılır
+	local placed, cycle = {}, {}
+	for index = 1, #Catalog.TrainingCounts do
+		placed[index] = 0
+	end
+	for slot = 1, Catalog.TrainingLength do
+		local bestIndex, bestDeficit = 1, -math.huge
+		for index, target in Catalog.TrainingCounts do
+			if placed[index] < target then
+				local deficit = target * slot / Catalog.TrainingLength - placed[index]
+				if deficit > bestDeficit + 1e-9 then
+					bestIndex, bestDeficit = index, deficit
+				end
+			end
+		end
+		placed[bestIndex] += 1
+		table.insert(cycle, order[math.min(bestIndex, #order)].id)
+	end
+	trainingCache[egg.id] = cycle
+	return cycle
+end
+
+-- Döngüde her petin kaç kez geçtiği { [petId] = adet }
+function Catalog.trainingCounts(egg)
+	local counts = {}
+	for _, id in Catalog.trainingCycle(egg) do
+		counts[id] = (counts[id] or 0) + 1
+	end
+	return counts
+end
+
 -- Pet nadirliği (Config.Rarities): yumurtadaki çıkma şansına göre (yukarıdaki döngü); hiçbir yumurtada çıkmayan pet için yedek: çarpanı sınırın altında kalan ilk sınıf
 function Catalog.rarityOf(pet)
 	if pet.rarity then
