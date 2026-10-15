@@ -310,6 +310,11 @@ end
 local function makeGridButton(index, icon, label, accent, imageId)
 	local column = (index - 1) % 2
 	local row = (index - 1) // 2
+	-- TELEFON (QA 2026-10-15): 7+ numaralı düğmeler (Daily, Spooky, Mastery) sütunu alta uzatıp Roblox'un sanal joystick'iyle çakışıyordu: telefonda 3. sütuna dizilir (3x3)
+	if ON_PHONE and index > 6 then
+		column = 2
+		row = index - 7
+	end
 	return makeSquareButton(UDim2.fromOffset(14 + PHONE_SHIFT_X + column * GRID_PITCH, 166 + PHONE_SHIFT_Y + row * 82), icon, label, accent, imageId)
 end
 
