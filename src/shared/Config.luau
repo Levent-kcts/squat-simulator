@@ -448,8 +448,8 @@ return {
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
-		PowerHour = "", -- Power Hour rozeti (sol alt; client/PowerHourHud): x2 yazılı lego şimşek, assets/icons/powerhour.png; boşken ⚡ emojisi + ayrı x2
-		PowerHourFall = "", -- Power Hour sürerken ekranın yanlarından yağan x2'siz lego şimşek (assets/icons/powerhour_bolt.png); boşken ⚡ emojisi
+		PowerHour = "rbxassetid://86577652430738", -- Power Hour rozeti (sol alt; client/PowerHourHud): x2 yazılı lego şimşek, assets/icons/powerhour.png; boşken ⚡ emojisi + ayrı x2
+		PowerHourFall = "rbxassetid://88513574142485", -- Power Hour sürerken ekranın yanlarından yağan x2'siz lego şimşek (assets/icons/powerhour_bolt.png); boşken ⚡ emojisi
 		Daily = "rbxassetid://136280654978055", -- sağ üstteki günlük giriş ödülü dairesi ve Daily penceresi başlığı (takvim; assets/icons/daily.png, boşken 📅)
 		Index = "rbxassetid://86290456757551", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "rbxassetid://128930779424288", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
