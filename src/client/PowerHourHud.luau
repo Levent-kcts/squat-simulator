@@ -46,7 +46,7 @@ function PowerHourHud.init(screenGui, showToast)
 	local label = create("TextLabel", {
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
-		Font = Enum.Font.GothamBlack,
+		Font = Enum.Font.FredokaOne,
 		TextScaled = true,
 		TextColor3 = Color3.new(1, 1, 1),
 		Text = "",
@@ -54,7 +54,7 @@ function PowerHourHud.init(screenGui, showToast)
 	create("UITextSizeConstraint", { MaxTextSize = 18 }, label)
 	create("UIStroke", { Thickness = 1.5, Color = Color3.new(0, 0, 0) }, label)
 	local scale = create("UIScale", { Scale = 1 }, pill)
-	local pulse = UIStyle.loopTween(TweenService:Create(scale, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.06 }), scale, { Scale = 1 })
+	local pulse = TweenService:Create(scale, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.06 })
 	local pulsing = false
 
 	local announcedFor = nil -- hangi bitiş zamanı için 'başladı' bildirimi verildi

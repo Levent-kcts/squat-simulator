@@ -10,12 +10,10 @@ local TweenService = game:GetService("TweenService")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local GiftState = require(script.Parent.GiftState)
 local UIStyle = require(script.Parent.UIStyle)
-local Theme = UIStyle.Theme
-local C = Theme.colors
 
 local RightHud = {}
 
-local FONT = Theme.fonts.title
+local FONT = Enum.Font.FredokaOne
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -31,9 +29,7 @@ local function text(parent, props, strokeThickness)
 	props.Font = FONT
 	props.TextScaled = true
 	local label = create("TextLabel", props, parent)
-	if strokeThickness > 0 then
-		create("UIStroke", { Thickness = math.min(strokeThickness, 1.5), Color = Color3.new(0, 0, 0), Transparency = 0.55, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }, label)
-	end
+	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
 	return label
 end
 
@@ -68,10 +64,10 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Size = UDim2.fromScale(1, 1),
 		Text = "",
 		AutoButtonColor = true,
-		BackgroundColor3 = C.warn.dark,
+		BackgroundColor3 = Color3.fromRGB(255, 168, 36),
 	}, rewardHolder)
-	create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.8, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, reward)
-	UIStyle.soften(reward, { radius = Theme.radius.card + 2, strength = 0.2, shine = false })
+	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, reward)
+	UIStyle.soften(reward, { radius = 16, strength = 0.3 })
 	local rewardScale = create("UIScale", { Scale = 1 }, reward)
 
 	if Config.Icons.Gifts and Config.Icons.Gifts ~= "" then
@@ -96,7 +92,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Position = UDim2.fromOffset(54, 25),
 		Size = UDim2.fromOffset(90, 32),
 		Text = "--:--",
-		TextColor3 = C.text,
+		TextColor3 = Color3.fromRGB(255, 250, 200),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	}, 3)
 	reward.MouseButton1Click:Connect(function()
@@ -106,7 +102,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	end)
 
 	-- Hazırken kutu nabız gibi atar
-	local pulse = UIStyle.loopTween(TweenService:Create(rewardScale, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 }), rewardScale, { Scale = 1 })
+	local pulse = TweenService:Create(rewardScale, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.05 })
 	local pulsing = false
 
 	local function refreshReward()
@@ -114,8 +110,8 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		local remaining = GiftState.nextRemaining()
 		if readyCount > 0 then
 			timer.Text = "READY!"
-			timer.TextColor3 = C.success.base
-			reward.BackgroundColor3 = C.success.dark
+			timer.TextColor3 = Color3.fromRGB(120, 255, 140)
+			reward.BackgroundColor3 = Color3.fromRGB(70, 205, 90)
 			if not pulsing then
 				pulsing = true
 				pulse:Play()
@@ -126,13 +122,13 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 				pulse:Cancel()
 				rewardScale.Scale = 1
 			end
-			reward.BackgroundColor3 = C.warn.dark
+			reward.BackgroundColor3 = Color3.fromRGB(255, 168, 36)
 			if remaining then
 				timer.Text = GiftState.formatTime(remaining)
-				timer.TextColor3 = C.text
+				timer.TextColor3 = Color3.fromRGB(255, 250, 200)
 			else
 				timer.Text = "DONE"
-				timer.TextColor3 = C.textDim
+				timer.TextColor3 = Color3.fromRGB(215, 220, 235)
 			end
 		end
 	end
@@ -188,12 +184,12 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 			Name = "Disc", -- rehber halkası (client/GuideTour) yalnız bu daireyi sarar, altındaki sayıyı değil
 			Position = UDim2.fromOffset(4, 0),
 			Size = UDim2.fromOffset(52, 52),
-			BackgroundColor3 = C.card,
+			BackgroundColor3 = Color3.fromRGB(16, 17, 24),
 			BackgroundTransparency = 0.04,
 		}, column)
 		UIStyle.anchorCenter(disc) -- Index / Quests dairesi nabız atar: ortadan büyüyüp küçülsün (sol-üst köşe sabit kalmasın)
 		create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, disc)
-		create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.85, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, disc)
+		create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(70, 74, 98) }, disc)
 		if imageId and imageId ~= "" then
 			create("ImageLabel", {
 				AnchorPoint = Vector2.new(0.5, 0.5),
@@ -208,10 +204,10 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		end
 		-- Üstüne gelince hafif aydınlanır
 		column.MouseEnter:Connect(function()
-			disc.BackgroundColor3 = C.cardHover
+			disc.BackgroundColor3 = Color3.fromRGB(40, 43, 62)
 		end)
 		column.MouseLeave:Connect(function()
-			disc.BackgroundColor3 = C.card
+			disc.BackgroundColor3 = Color3.fromRGB(16, 17, 24)
 		end)
 		return column
 	end
@@ -231,13 +227,13 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Position = UDim2.new(0.5, 0, 0, 41),
 		Size = UDim2.fromOffset(62, 32),
 		Text = "0/0",
-		TextColor3 = C.primary.base,
+		TextColor3 = Color3.fromRGB(255, 214, 46),
 		ZIndex = 3,
 	}, 3)
 	-- Yeni pet türü keşfedilince (playtest isteği: 'yeni pet keşfedilince bildirim, Index butonunda rozet'): kısa bildirim + Index dairesi Index'i açana kadar nabız atar
 	local indexDisc = index:FindFirstChildOfClass("Frame")
 	local indexPulseScale = create("UIScale", { Scale = 1 }, indexDisc)
-	local indexPulse = UIStyle.loopTween(TweenService:Create(indexPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), indexPulseScale, { Scale = 1 })
+	local indexPulse = TweenService:Create(indexPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
 	local indexPulsing = false
 	local lastDiscovered = nil
 	local function refreshIndex()
@@ -278,12 +274,12 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Position = UDim2.new(0.5, 0, 0, 41),
 		Size = UDim2.fromOffset(62, 32),
 		Text = "",
-		TextColor3 = C.primary.base,
+		TextColor3 = Color3.fromRGB(255, 214, 46),
 		ZIndex = 3,
 	}, 3)
 	local questDisc = quests:FindFirstChildOfClass("Frame")
 	local questPulseScale = create("UIScale", { Scale = 1 }, questDisc)
-	local questPulse = UIStyle.loopTween(TweenService:Create(questPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), questPulseScale, { Scale = 1 })
+	local questPulse = TweenService:Create(questPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
 	local questPulsing = false
 	quests.MouseButton1Click:Connect(function()
 		if openQuests then
@@ -323,12 +319,12 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Position = UDim2.new(0.5, 0, 0, 41),
 		Size = UDim2.fromOffset(62, 32),
 		Text = "",
-		TextColor3 = C.primary.base,
+		TextColor3 = Color3.fromRGB(255, 225, 90),
 		ZIndex = 3,
 	}, 3)
 	local dailyDisc = daily:FindFirstChildOfClass("Frame")
 	local dailyPulseScale = create("UIScale", { Scale = 1 }, dailyDisc)
-	local dailyPulse = UIStyle.loopTween(TweenService:Create(dailyPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), dailyPulseScale, { Scale = 1 })
+	local dailyPulse = TweenService:Create(dailyPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 })
 	local dailyPulsing = false
 	daily.MouseButton1Click:Connect(function()
 		if openDaily then
@@ -374,11 +370,11 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	local iconBox = create("Frame", {
 		Position = UDim2.fromOffset(4, 0),
 		Size = UDim2.fromOffset(52, 52),
-		BackgroundColor3 = C.card,
+		BackgroundColor3 = Color3.fromRGB(16, 17, 24),
 		BackgroundTransparency = 0.04,
 	}, friends)
 	create("UICorner", { CornerRadius = UDim.new(0.5, 0) }, iconBox)
-	create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.85, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, iconBox)
+	create("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(70, 74, 98) }, iconBox)
 	if Config.Icons.Friends and Config.Icons.Friends ~= "" then
 		create("ImageLabel", {
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -396,7 +392,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Position = UDim2.new(0.5, 0, 0, 59),
 		Size = UDim2.fromOffset(62, 36),
 		Text = "0%",
-		TextColor3 = C.primary.base,
+		TextColor3 = Color3.fromRGB(255, 214, 46),
 		ZIndex = 3,
 	}, 3)
 	local percentScale = create("UIScale", { Scale = 1 }, percentLabel)
@@ -406,16 +402,16 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 84),
 		Size = UDim2.fromOffset(236, 106),
-		BackgroundColor3 = C.panel,
+		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,
 	}, cornerRoot)
-	create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.85, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, tooltip)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tooltip)
 	UIStyle.soften(tooltip, { radius = 12, strength = 0.2, shine = false })
 	text(tooltip, {
 		Position = UDim2.fromOffset(12, 6),
 		Size = UDim2.new(1, -24, 0, 24),
 		Text = "FRIEND BONUS",
-		TextColor3 = C.primary.base,
+		TextColor3 = Color3.fromRGB(255, 214, 46),
 	}, 2)
 	local tooltipLine = text(tooltip, {
 		Position = UDim2.fromOffset(12, 32),
@@ -426,13 +422,13 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	local tooltipCount = text(tooltip, {
 		Position = UDim2.fromOffset(12, 56),
 		Size = UDim2.new(1, -24, 0, 20),
-		TextColor3 = C.textDim,
+		TextColor3 = Color3.fromRGB(190, 200, 235),
 	}, 1.5)
 	text(tooltip, {
 		Position = UDim2.fromOffset(12, 80),
 		Size = UDim2.new(1, -24, 0, 20),
 		Text = "Click to invite friends!",
-		TextColor3 = C.success.base,
+		TextColor3 = Color3.fromRGB(120, 255, 140),
 	}, 1.5)
 
 	local hovering, pinned = false, false
@@ -487,7 +483,7 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 			percentLabel.Position = UDim2.new(0.5, 0, 0, 57)
 		else
 			percentLabel.Text = `{percent}%`
-			percentLabel.TextColor3 = C.primary.base
+			percentLabel.TextColor3 = Color3.fromRGB(255, 214, 46)
 			percentLabel.Size = UDim2.fromOffset(62, 36)
 			percentLabel.Position = UDim2.new(0.5, 0, 0, 59)
 		end

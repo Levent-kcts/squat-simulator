@@ -1,10 +1,8 @@
 -- Rebirth onay ekranı: önce/sonra çarpanı, önce/sonra en yüksek level, uyarı, level çubuğu ve iki buton:
 -- "Rebirth" (level sınırına gelince çalışır) ve "SKIP?" (Robux ile level şartını atlama, şimdilik yer tutucu).
--- Görünüm: UIStyle tasarım sistemi (Soft Dark Candy), vurgu rengi hot (pembe). Mantık/Remote değişmedi.
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -15,7 +13,7 @@ local Format = require(Shared:WaitForChild("Format"))
 
 local RebirthPanel = {}
 
-local Theme = UIStyle.Theme
+local FONT = Enum.Font.FredokaOne
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -26,6 +24,16 @@ local function create(className, props, parent)
 	return instance
 end
 
+-- Kalın siyah kenarlı yazı
+local function makeText(parent, props, strokeThickness)
+	props.BackgroundTransparency = 1
+	props.Font = FONT
+	props.TextScaled = true
+	local label = create("TextLabel", props, parent)
+	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
+	return label
+end
+
 -- showToast(ok, mesaj): kısa bildirim gösterir. Dönüş: paneli açan fonksiyon.
 function RebirthPanel.init(screenGui, showToast)
 	local player = Players.LocalPlayer
@@ -34,167 +42,156 @@ function RebirthPanel.init(screenGui, showToast)
 	local levelValue = leaderstats:WaitForChild(Config.StatLevel)
 	local rebirthValue = leaderstats:WaitForChild(Config.StatRebirths)
 
-	-- Pencere gövdesi (PanelManager soldan kaydırır; gölge konumu izler)
-	local panel = UIStyle.panel(screenGui, {
-		name = "RebirthPanel",
-		size = UDim2.fromOffset(460, 424),
-		accent = "hot",
-		position = UDim2.fromScale(0.5, 0.45),
-		anchor = Vector2.new(0.5, 0.5),
-		width = 460,
-	})
-	panel.Visible = false
+	local panel = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.45),
+		Size = UDim2.fromOffset(600, 420),
+		BackgroundColor3 = Color3.fromRGB(30, 26, 40),
+		Active = true, -- panele tıklamak hareket başlatmasın
+		Visible = false,
+	}, screenGui)
+	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
-	UIStyle.header(panel, {
-		title = "Rebirth",
-		icon = Config.Icons.Rebirth,
-		emoji = "🔄",
-		accent = "hot",
-		onClose = function()
-			PanelManager.hide(panel)
-		end,
-	})
+	-- Başlık
+	local header = create("Frame", {
+		Size = UDim2.new(1, 0, 0, 58),
+		BackgroundColor3 = Color3.fromRGB(235, 40, 190),
+	}, panel)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	UIStyle.headerIcon(header, Config.Icons.Rebirth, "🔄", { Position = UDim2.fromOffset(12, 5), Size = UDim2.fromOffset(48, 48) })
+	-- Başlık ortada (playtest: 'Rebirth yazısı sol üst köşeye sabitlenmiş'); simge solda, X sağda kalır
+	makeText(header, {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.new(0.5, 0, 1, -16),
+		Text = "Rebirth",
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextColor3 = Color3.new(1, 1, 1),
+	}, 3)
+	local close = create("TextButton", {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -10, 0.5, 0),
+		Size = UDim2.fromOffset(42, 42),
+		Text = "X",
+		Font = FONT,
+		TextSize = 26,
+		TextColor3 = Color3.new(1, 1, 1),
+		BackgroundColor3 = Color3.fromRGB(215, 30, 60),
+	}, header)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
 
-	-- Şimdi / Sonra kutuları: iki büyük çarpan, ortada ok
-	local function multiplierBox(side, caption, highlight)
-		local box = UIStyle.card(panel, {
-			name = if side == "left" then "NowBox" else "NextBox",
-			size = UDim2.fromOffset(180, 92),
-			position = UDim2.fromOffset(if side == "left" then 16 else 264, 76),
-			accent = "hot",
-			selected = highlight,
-			padding = false,
-		})
-		UIStyle.label(box, { text = caption, role = "caption", align = "center", props = { Position = UDim2.fromOffset(0, 10), Size = UDim2.new(1, 0, 0, 16) } })
-		local value = UIStyle.label(box, {
-			text = "x1",
-			role = "number",
-			size = 40,
-			align = "center",
-			color = if highlight then Theme.colors.hot.base else Theme.colors.text,
-			props = { Position = UDim2.fromOffset(0, 30), Size = UDim2.new(1, 0, 0, 52) },
-		})
-		return value, box
+	-- Önce / Sonra tablosu
+	makeText(panel, {
+		Position = UDim2.new(0.04, 0, 0, 68),
+		Size = UDim2.new(0.4, 0, 0, 24),
+		Text = "Before",
+		TextColor3 = Color3.new(1, 1, 1),
+	}, 2)
+	makeText(panel, {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(0.96, 0, 0, 68),
+		Size = UDim2.new(0.4, 0, 0, 24),
+		Text = "After",
+		TextColor3 = Color3.new(1, 1, 1),
+	}, 2)
+
+	local function infoBox(row, side, color)
+		local box = create("Frame", {
+			AnchorPoint = Vector2.new(if side == "right" then 1 else 0, 0),
+			Position = UDim2.new(if side == "right" then 0.96 else 0.04, 0, 0, 98 + (row - 1) * 62),
+			Size = UDim2.new(0.4, 0, 0, 52),
+			BackgroundColor3 = color,
+		}, panel)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, box)
+		UIStyle.soften(box, { radius = 10, strength = 0.28 })
+		return makeText(box, {
+			Position = UDim2.fromScale(0.05, 0.12),
+			Size = UDim2.fromScale(0.9, 0.76),
+			TextColor3 = Color3.new(1, 1, 1),
+		}, 2)
 	end
-	local beforeMultiplier = multiplierBox("left", "NOW", false)
-	local afterMultiplier, nextBox = multiplierBox("right", "NEXT", true)
-	UIStyle.label(panel, {
-		text = ">",
-		role = "number",
-		size = 28,
-		align = "center",
-		color = Theme.colors.textDim,
-		props = { Position = UDim2.fromOffset(196, 98), Size = UDim2.fromOffset(68, 48) },
-	})
+	local pink = Color3.fromRGB(235, 40, 110)
+	local cyan = Color3.fromRGB(40, 170, 230)
+	local beforeMultiplier = infoBox(1, "left", pink)
+	local afterMultiplier = infoBox(1, "right", pink)
+	local beforeMax = infoBox(2, "left", cyan)
+	local afterMax = infoBox(2, "right", cyan)
+	makeText(panel, { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 104), Size = UDim2.fromOffset(40, 40), Text = "→", TextColor3 = Color3.new(1, 1, 1) }, 2)
+	makeText(panel, { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 166), Size = UDim2.fromOffset(40, 40), Text = "→", TextColor3 = Color3.new(1, 1, 1) }, 2)
 
-	-- Max level satırı
-	local maxLabel = UIStyle.label(panel, {
-		text = "Max level",
-		role = "bold",
-		align = "center",
-		color = Theme.colors.textDim,
-		props = { Position = UDim2.fromOffset(16, 178), Size = UDim2.new(1, -32, 0, 22) },
-	})
+	-- Uyarı
+	makeText(panel, {
+		Position = UDim2.new(0.03, 0, 0, 228),
+		Size = UDim2.new(0.94, 0, 0, 28),
+		Text = "Resets your level & leg muscle. You KEEP Wins, shoes, skins & pets!",
+		TextColor3 = Color3.fromRGB(255, 214, 90),
+	}, 2)
 
 	-- Level çubuğu
-	local levelBar = UIStyle.progressBar(panel, {
-		name = "LevelBar",
-		accent = "hot",
-		props = { Position = UDim2.fromOffset(16, 208), Size = UDim2.new(1, -32, 0, 24) },
-	})
+	local bar = create("Frame", {
+		Position = UDim2.new(0.03, 0, 0, 266),
+		Size = UDim2.new(0.94, 0, 0, 48),
+		BackgroundColor3 = Color3.fromRGB(90, 60, 10),
+	}, panel)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, bar)
+	UIStyle.soften(bar, { radius = 12, strength = 0.35, shine = false })
+	local barFill = create("Frame", {
+		Size = UDim2.fromScale(0, 1),
+		BackgroundColor3 = Color3.fromRGB(255, 190, 20),
+		BorderSizePixel = 0,
+	}, bar)
+	UIStyle.soften(barFill, { radius = 12, strength = 0.3 })
+	local barText = makeText(bar, {
+		Position = UDim2.fromScale(0.05, 0.08),
+		Size = UDim2.fromScale(0.9, 0.84),
+		TextColor3 = Color3.new(1, 1, 1),
+	}, 2)
 
-	-- Uyarı: tek ince warn şeritli kart
-	local warnCard = UIStyle.card(panel, {
-		name = "WarnCard",
-		size = UDim2.new(1, -32, 0, 52),
-		position = UDim2.fromOffset(16, 244),
-		accent = "warn",
-		padding = false,
-		props = { ClipsDescendants = true },
-	})
-	create("Frame", { Name = "WarnStripe", Size = UDim2.new(0, 4, 1, 0), BackgroundColor3 = Theme.colors.warn.base, BorderSizePixel = 0 }, warnCard)
-	UIStyle.label(warnCard, {
-		text = "Resets your level & leg muscle. You KEEP Wins, shoes, skins & pets!",
-		role = "body",
-		color = Theme.colors.text,
-		props = { Position = UDim2.fromOffset(16, 0), Size = UDim2.new(1, -28, 1, 0), TextWrapped = true },
-	})
-
-	-- Butonlar: büyük Rebirth (hot) + yanda küçük SKIP (secondary). Konum merkezdir (düğmeler anchorCenter)
-	local rebirthButton = UIStyle.button(panel, {
-		name = "RebirthButton",
-		text = "Rebirth",
-		kind = "hot",
-		size = "lg",
-		width = 220,
-		anchor = Vector2.new(0.5, 0),
-		position = UDim2.new(0.34, 0, 0, 332),
-	})
-	local skipButton = UIStyle.button(panel, {
-		name = "SkipButton",
-		text = `SKIP  {utf8.char(0xE002)} {Config.Rebirth.SkipRobuxPrice}`,
-		kind = "secondary",
-		size = "md",
-		width = 140,
-		anchor = Vector2.new(0.5, 0),
-		position = UDim2.new(0.8, 0, 0, 332),
-	})
-	local hintLabel = UIStyle.label(panel, {
-		text = "",
-		role = "caption",
-		align = "center",
-		props = { Position = UDim2.fromOffset(16, 372), Size = UDim2.new(1, -32, 0, 16) },
-	})
-	UIStyle.label(panel, {
-		text = "SKIP? Jump the level requirement with Robux.",
-		role = "caption",
-		align = "center",
-		color = Theme.colors.textMute,
-		props = { Position = UDim2.fromOffset(16, 392), Size = UDim2.new(1, -32, 0, 16) },
-	})
-
-	-- Hazırken Rebirth düğmesi nabız atar (düğme ortadan ölçeklenir; hafif modda yok)
-	local pulseTween = nil
-	local pulseScale = create("UIScale", { Name = "PulseScale" }, rebirthButton)
-	local function setPulse(on)
-		if on and not UIStyle.isLow() then
-			if not pulseTween then
-				pcall(function()
-					pulseTween = UIStyle.loopTween(TweenService:Create(pulseScale, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.04 }), pulseScale, { Scale = 1 })
-					pulseTween:Play()
-				end)
-			end
-		elseif pulseTween then
-			pcall(function()
-				pulseTween:Cancel()
-			end)
-			pulseTween = nil
-			pulseScale.Scale = 1
-		end
+	-- Butonlar
+	local function bigButton(side, color, text)
+		local button = create("TextButton", {
+			AnchorPoint = Vector2.new(if side == "right" then 1 else 0, 0),
+			Position = UDim2.new(if side == "right" then 0.97 else 0.03, 0, 0, 328),
+			Size = UDim2.new(0.46, 0, 0, 74),
+			Text = "",
+			BackgroundColor3 = color,
+		}, panel)
+		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, button)
+		UIStyle.soften(button, { radius = 14, strength = 0.28 })
+		-- Yazı düğmenin tam ortasında (playtest: 'ödeme butonundaki yazı düzgün görünmüyor'); ZIndex açıkça yüksek, parlak şeridin altında kalmasın
+		local label = makeText(button, {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.88, 0.62),
+			Text = text,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			TextColor3 = Color3.new(1, 1, 1),
+			ZIndex = 5,
+		}, 3)
+		return button, label
 	end
+	local rebirthButton, rebirthLabel = bigButton("left", Color3.fromRGB(60, 200, 40), "Rebirth")
+	local skipButton, skipLabel = bigButton("right", Color3.fromRGB(170, 40, 230), `SKIP  {utf8.char(0xE002)} {Config.Rebirth.SkipRobuxPrice}`)
 
 	local function currentState()
 		local rebirths = rebirthValue.Value
 		return rebirths, levelValue.Value, Progression.maxLevel(rebirths)
 	end
 
-	local lastNext = nil
 	local function render()
 		local rebirths, level, maxLevel = currentState()
-		beforeMultiplier.Text = `x{Format.multiplier(Progression.rebirthMultiplier(rebirths))}`
-		local nextText = `x{Format.multiplier(Progression.rebirthMultiplier(rebirths + 1))}`
-		afterMultiplier.Text = nextText
-		if lastNext ~= nextText then
-			lastNext = nextText
-			UIStyle.pop(nextBox)
-		end
-		maxLabel.Text = `Max level {maxLevel}  >  {Progression.maxLevel(rebirths + 1)}`
-		levelBar.set(math.clamp(level / maxLevel, 0, 1), `Level {level}/{maxLevel}`)
+		beforeMultiplier.Text = `{Format.multiplier(Progression.rebirthMultiplier(rebirths))}x Multiplier`
+		afterMultiplier.Text = `{Format.multiplier(Progression.rebirthMultiplier(rebirths + 1))}x Multiplier`
+		beforeMax.Text = `Max Level {maxLevel}`
+		afterMax.Text = `Max Level {Progression.maxLevel(rebirths + 1)}`
+		barText.Text = `Level: {level}/{maxLevel}`
+		barFill.Size = UDim2.fromScale(math.clamp(level / maxLevel, 0, 1), 1)
 
 		local ready = level >= maxLevel
-		UIStyle.setButtonEnabled(rebirthButton, ready)
-		hintLabel.Text = if ready then "Ready! Your multiplier goes up." else `Reach level {maxLevel} to rebirth ({maxLevel - level} to go)`
-		setPulse(ready)
+		rebirthButton.BackgroundColor3 = if ready then Color3.fromRGB(60, 200, 40) else Color3.fromRGB(105, 110, 105)
+		rebirthLabel.Text = if ready then "Rebirth" else `Reach level {maxLevel}`
 	end
 
 	rebirthButton.MouseButton1Click:Connect(function()
@@ -221,6 +218,10 @@ function RebirthPanel.init(screenGui, showToast)
 		else
 			showToast(false, "Skipping with Robux is coming soon!")
 		end
+	end)
+
+	close.MouseButton1Click:Connect(function()
+		PanelManager.hide(panel)
 	end)
 
 	local function onChange()

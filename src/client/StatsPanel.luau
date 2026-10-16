@@ -13,8 +13,25 @@ local PanelManager = require(script.Parent.PanelManager)
 
 local StatsPanel = {}
 
-local Theme = UIStyle.Theme
-local C = Theme.colors
+local FONT = Enum.Font.FredokaOne
+
+local function create(className, props, parent)
+	local instance = Instance.new(className)
+	for key, value in props do
+		instance[key] = value
+	end
+	instance.Parent = parent
+	return instance
+end
+
+local function text(parent, props, strokeThickness)
+	props.BackgroundTransparency = 1
+	props.Font = FONT
+	props.TextScaled = true
+	local label = create("TextLabel", props, parent)
+	create("UIStroke", { Thickness = strokeThickness, Color = Color3.new(0, 0, 0) }, label)
+	return label
+end
 
 local function mult(value)
 	return `x{Format.multiplier(value)}`
@@ -25,141 +42,122 @@ function StatsPanel.init(screenGui)
 	local player = Players.LocalPlayer
 	local leaderstats = player:WaitForChild("leaderstats")
 
-	local function attr(name, default)
-		return player:GetAttribute(name) or default
-	end
-
-	local WIDTH, PAD = 440, 16
-	local ROW_H, ROW_GAP = 28, 3
-
-	-- Kaynak satırları: { ad, emoji, değer fonksiyonu, etkin mi fonksiyonu }; etkin değilse sönük görünür
-	local sources = {
-		{ "Level", "⭐", function() return mult(Progression.levelMultiplier(leaderstats[Config.StatLevel].Value)) end, function() return Progression.levelMultiplier(leaderstats[Config.StatLevel].Value) > 1 end },
-		{ "Rebirth", "🔁", function() return mult(Progression.rebirthMultiplier(leaderstats[Config.StatRebirths].Value)) end, function() return Progression.rebirthMultiplier(leaderstats[Config.StatRebirths].Value) > 1 end },
-		{ "Aura", "✨", function()
-			local aura = Catalog.AuraById[attr("EquippedAura", "")]
+	local ROW_HEIGHT, GAP = 24, 3
+	-- Satırlar: { başlık, değer fonksiyonu -> yazı, renk }; null başlık = ayraç yazısı
+	local rows = {
+		{ "Leg Muscle", function() return Format.number(leaderstats[Config.StatLegMuscle].Value) end, Color3.fromRGB(255, 225, 90) },
+		{ "Level", function() return `{leaderstats[Config.StatLevel].Value} / {player:GetAttribute("MaxLevel") or "?"}` end, Color3.new(1, 1, 1) },
+		{ "Rebirths", function() return Format.number(leaderstats[Config.StatRebirths].Value) end, Color3.new(1, 1, 1) },
+		{ "Wins", function() return Format.number(leaderstats[Config.StatWins].Value) end, Color3.fromRGB(255, 215, 70) },
+		{ "Muscle per click", function() return `+{Format.number(player:GetAttribute("PerClick") or 1)}` end, Color3.fromRGB(110, 255, 140) },
+		{ "Damage multiplier", function() return mult(player:GetAttribute("DamageMultiplier") or 1) end, Color3.fromRGB(255, 160, 120) },
+		{ "-- MULTIPLIER BREAKDOWN --" },
+		{ "Pets", function() return mult(player:GetAttribute("PetMultiplier") or 1) end, Color3.new(1, 1, 1) },
+		{ "Level", function() return mult(Progression.levelMultiplier(leaderstats[Config.StatLevel].Value)) end, Color3.new(1, 1, 1) },
+		{ "Rebirth", function() return mult(Progression.rebirthMultiplier(leaderstats[Config.StatRebirths].Value)) end, Color3.new(1, 1, 1) },
+		{ "Skin bonus", function() return `+{Format.compact(player:GetAttribute("SkinBonus") or 0)} / click` end, Color3.new(1, 1, 1) },
+		{ "Aura", function()
+			local aura = Catalog.AuraById[player:GetAttribute("EquippedAura") or ""]
 			return mult(if aura then aura.mult else 1)
-		end, function() return Catalog.AuraById[attr("EquippedAura", "")] ~= nil end },
-		{ "Pets", "🐾", function() return mult(attr("PetMultiplier", 1)) end, function() return attr("PetMultiplier", 1) > 1 end },
-		{ "Skin", "🎨", function() return `+{Format.compact(attr("SkinBonus", 0))} / click` end, function() return attr("SkinBonus", 0) > 0 end },
-		{ "Friends", "👥", function() return `+{attr("FriendBonus", 0)}%` end, function() return attr("FriendBonus", 0) > 0 end },
-		{ "Mastery", "🎓", function() return `+{attr("MasteryPower", 0)}%` end, function() return attr("MasteryPower", 0) > 0 end },
-		{ "Pet Index", "📖", function() return `+{attr("IndexBonus", 0)}%` end, function() return attr("IndexBonus", 0) > 0 end },
-		{ "Potion", "🧪", function()
-			local left = math.max(attr("MuscleBoostUntil", 0), attr("RainbowBoostUntil", 0)) - os.time() -- Rainbow Potion da Muscle Potion sayılır
-			return if left > 0 then `x2 ({math.ceil(left / 60)}m left)` else "off"
-		end, function() return math.max(attr("MuscleBoostUntil", 0), attr("RainbowBoostUntil", 0)) - os.time() > 0 end },
+		end, Color3.new(1, 1, 1) },
+		{ "Muscle Potion", function()
+			local left = math.max(player:GetAttribute("MuscleBoostUntil") or 0, player:GetAttribute("RainbowBoostUntil") or 0) - os.time() -- Rainbow Potion da Muscle Potion sayılır
+			return if left > 0 then `x2  ({math.ceil(left / 60)}m left)` else "off"
+		end, Color3.new(1, 1, 1) },
+		{ "Friends", function() return `+{player:GetAttribute("FriendBonus") or 0}%` end, Color3.fromRGB(120, 255, 140) },
+		{ "Pet Index", function() return `+{player:GetAttribute("IndexBonus") or 0}%` end, Color3.fromRGB(120, 255, 140) },
+		{ "TOTAL", function()
+			local area = player:GetAttribute("AreaMultiplier") or 1
+			local total = (player:GetAttribute("TotalMultiplier") or 1) * area
+			return if area > 1 then `{mult(total)}  (training area x{string.format("%g", area)})` else mult(total)
+		end, Color3.fromRGB(255, 225, 90) },
 	}
 
-	-- Üstteki dört küçük sayı: { başlık, değer fonksiyonu, renk }
-	local minis = {
-		{ "MUSCLE", function() return Format.number(leaderstats[Config.StatLegMuscle].Value) end, C.primary.base },
-		{ "LEVEL", function() return `{leaderstats[Config.StatLevel].Value}/{attr("MaxLevel", "?")}` end, C.text },
-		{ "REBIRTHS", function() return Format.number(leaderstats[Config.StatRebirths].Value) end, C.hot.base },
-		{ "WINS", function() return Format.number(leaderstats[Config.StatWins].Value) end, C.primary.base },
-	}
+	local height = 68 + #rows * (ROW_HEIGHT + GAP) + 14
+	local panel = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(440, height),
+		BackgroundColor3 = Color3.fromRGB(40, 44, 58),
+		Active = true, -- pencereye tıklamak hareket başlatmasın
+		Visible = false,
+	}, screenGui)
+	create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, panel)
+	create("UISizeConstraint", { MaxSize = Vector2.new(440, height), MinSize = Vector2.new(300, height) }, panel)
+	UIStyle.soften(panel, { radius = 16, strength = 0.2, shine = false })
 
-	local TOTAL_Y, TOTAL_H = 72, 88
-	local MINI_Y, MINI_H = TOTAL_Y + TOTAL_H + 8, 48
-	local SECTION_Y = MINI_Y + MINI_H + 10
-	local ROWS_Y = SECTION_Y + 22
-	local BOTTOM_Y = ROWS_Y + #sources * (ROW_H + ROW_GAP) + 5
-	local BOTTOM_H = 58
-	local height = BOTTOM_Y + BOTTOM_H + PAD
+	local header = create("Frame", {
+		Size = UDim2.new(1, 0, 0, 56),
+		BackgroundColor3 = Color3.fromRGB(70, 160, 255),
+	}, panel)
+	UIStyle.soften(header, { radius = 14, strength = 0.25 })
+	UIStyle.headerIcon(header, Config.Icons.Stats, "📊", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) })
+	text(header, {
+		Position = UDim2.fromOffset(68, 8),
+		Size = UDim2.new(1, -150, 1, -16),
+		Text = "STATS",
+		TextColor3 = Color3.new(1, 1, 1),
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, 3)
+	local close = create("TextButton", {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -10, 0.5, 0),
+		Size = UDim2.fromOffset(40, 40),
+		Text = "X",
+		Font = FONT,
+		TextSize = 26,
+		TextColor3 = Color3.new(1, 1, 1),
+		BackgroundColor3 = Color3.fromRGB(235, 40, 90),
+	}, header)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, close)
+	UIStyle.soften(close, { radius = 10, strength = 0.28 })
+	close.MouseButton1Click:Connect(function()
+		PanelManager.hide(panel)
+	end)
 
-	local panel = UIStyle.panel(screenGui, {
-		name = "StatsPanel",
-		size = UDim2.fromOffset(WIDTH, height),
-		accent = "info",
-		position = UDim2.fromScale(0.5, 0.5),
-		anchor = Vector2.new(0.5, 0.5),
-	})
-	panel.Visible = false -- Active = true UIStyle.panel'de: pencereye tıklamak hareket başlatmasın
-
-	UIStyle.header(panel, {
-		title = "Stats",
-		icon = Config.Icons.Stats,
-		emoji = "📊",
-		accent = "info",
-		onClose = function()
-			PanelManager.hide(panel)
-		end,
-	})
-
-	-- Büyük TOPLAM kartı
-	local totalCard = UIStyle.card(panel, { name = "TotalCard", accent = "info", padding = false, size = UDim2.new(1, -PAD * 2, 0, TOTAL_H), position = UDim2.fromOffset(PAD, TOTAL_Y) })
-	UIStyle.label(totalCard, { name = "TotalCaption", text = "TOTAL MULTIPLIER", role = "caption", color = C.info.base, props = { Position = UDim2.fromOffset(16, 10), Size = UDim2.new(1, -32, 0, 16) } })
-	local totalValue = UIStyle.label(totalCard, { name = "TotalValue", text = "x1", role = "title", size = 36, color = C.text, props = { Position = UDim2.fromOffset(16, 28), Size = UDim2.new(1, -32, 0, 44) } })
-	local totalNote = UIStyle.label(totalCard, { name = "TotalNote", text = "", role = "caption", align = "right", props = { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -16, 1, -12), Size = UDim2.new(0.6, 0, 0, 16) } })
-
-	-- Dört küçük sayı kartı
-	local miniGap = 8
-	local miniW = (WIDTH - PAD * 2 - miniGap * 3) / 4
-	local miniValues = {}
-	for index, mini in minis do
-		local card = UIStyle.card(panel, { name = `Mini_{index}`, padding = false, size = UDim2.fromOffset(miniW, MINI_H), position = UDim2.fromOffset(PAD + (index - 1) * (miniW + miniGap), MINI_Y) })
-		UIStyle.label(card, { name = "MiniCaption", text = mini[1], role = "caption", size = 10, align = "center", props = { Position = UDim2.fromOffset(0, 6), Size = UDim2.new(1, 0, 0, 14) } })
-		miniValues[index] = UIStyle.label(card, { name = "MiniValue", text = "-", role = "bold", size = 16, align = "center", color = mini[3], props = { Position = UDim2.fromOffset(4, 22), Size = UDim2.new(1, -8, 0, 20) } })
-	end
-
-	UIStyle.label(panel, { name = "SourcesCaption", text = "WHERE IT COMES FROM", role = "caption", props = { Position = UDim2.fromOffset(PAD + 4, SECTION_Y), Size = UDim2.new(1, -PAD * 2, 0, 16) } })
-
-	-- Kaynak satırları
-	local rowLabels = {}
-	for index, source in sources do
-		local row = UIStyle.card(panel, { name = `Source_{index}`, padding = false, size = UDim2.new(1, -PAD * 2, 0, ROW_H), position = UDim2.fromOffset(PAD, ROWS_Y + (index - 1) * (ROW_H + ROW_GAP)) })
-		local iconChip = Instance.new("Frame")
-		iconChip.Name = "IconChip"
-		iconChip.BackgroundColor3 = C.info.base
-		iconChip.BackgroundTransparency = 0.82
-		iconChip.BorderSizePixel = 0
-		iconChip.Position = UDim2.fromOffset(6, 3)
-		iconChip.Size = UDim2.fromOffset(22, 22)
-		iconChip.Parent = row
-		UIStyle.round(iconChip, 6)
-		UIStyle.label(iconChip, { name = "Icon", text = source[2], role = "caption", size = 13, align = "center", props = { Size = UDim2.fromScale(1, 1) } })
-		local nameLabel = UIStyle.label(row, { name = "RowName", text = source[1], role = "body", size = 14, props = { Position = UDim2.fromOffset(36, 0), Size = UDim2.new(0.45, -36, 1, 0) } })
-		local valueLabel = UIStyle.label(row, { name = "RowValue", text = "-", role = "bold", size = 14, align = "right", props = { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 0), Size = UDim2.new(0.55, -10, 1, 0) } })
-		rowLabels[index] = { row = row, name = nameLabel, value = valueLabel, icon = iconChip }
-	end
-
-	-- Alt iki küçük kart: tıklama başı kas, duvar hasarı
-	local halfW = (WIDTH - PAD * 2 - 8) / 2
-	local bottomDefs = {
-		{ "Per click", "PerClick", function() return `+{Format.number(attr("PerClick", 1))}` end, C.success.base },
-		{ "Wall damage", "WallDamage", function() return mult(attr("DamageMultiplier", 1)) end, C.warn.base },
-	}
-	local bottomValues = {}
-	for index, def in bottomDefs do
-		local card = UIStyle.card(panel, { name = def[2], padding = false, size = UDim2.fromOffset(halfW, BOTTOM_H), position = UDim2.fromOffset(PAD + (index - 1) * (halfW + 8), BOTTOM_Y) })
-		UIStyle.label(card, { name = "BottomCaption", text = string.upper(def[1]), role = "caption", size = 11, props = { Position = UDim2.fromOffset(14, 8), Size = UDim2.new(1, -28, 0, 14) } })
-		bottomValues[index] = UIStyle.label(card, { name = "BottomValue", text = "-", role = "title", size = 24, color = def[4], props = { Position = UDim2.fromOffset(14, 24), Size = UDim2.new(1, -28, 0, 28) } })
+	local valueLabels = {}
+	for index, row in rows do
+		local y = 66 + (index - 1) * (ROW_HEIGHT + GAP)
+		if row[2] == nil then
+			-- Ayraç başlığı
+			text(panel, {
+				Position = UDim2.fromOffset(12, y),
+				Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
+				Text = row[1],
+				TextColor3 = Color3.fromRGB(170, 180, 225),
+			}, 2)
+		else
+			local box = create("Frame", {
+				Position = UDim2.fromOffset(12, y),
+				Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
+				BackgroundColor3 = Color3.fromRGB(58, 63, 82),
+			}, panel)
+			UIStyle.soften(box, { radius = 8, strength = 0.1, shine = false })
+			text(box, {
+				Position = UDim2.fromOffset(10, 3),
+				Size = UDim2.new(0.5, -10, 1, -6),
+				Text = row[1],
+				TextColor3 = Color3.fromRGB(215, 220, 240),
+				TextXAlignment = Enum.TextXAlignment.Left,
+			}, 1.5)
+			valueLabels[index] = text(box, {
+				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -10, 0, 3),
+				Size = UDim2.new(0.55, -10, 1, -6),
+				TextColor3 = row[3],
+				TextXAlignment = Enum.TextXAlignment.Right,
+			}, 1.5)
+		end
 	end
 
 	local function refresh()
-		for index, mini in minis do
-			local ok, value = pcall(mini[2])
-			miniValues[index].Text = if ok then value else "-"
+		for index, row in rows do
+			local label = valueLabels[index]
+			if label then
+				local ok, value = pcall(row[2])
+				label.Text = if ok then value else "-"
+			end
 		end
-		for index, source in sources do
-			local entry = rowLabels[index]
-			local ok, value = pcall(source[3])
-			entry.value.Text = if ok then value else "-"
-			local okActive, active = pcall(source[4])
-			local on = okActive and active
-			entry.value.TextColor3 = if on then C.text else C.textMute
-			entry.name.TextColor3 = if on then C.text else C.textMute
-			entry.icon.BackgroundTransparency = if on then 0.82 else 0.95
-		end
-		for index, def in bottomDefs do
-			local ok, value = pcall(def[3])
-			bottomValues[index].Text = if ok then value else "-"
-		end
-		-- TOPLAM: antrenman pedinin çarpanı da dahil
-		local area = attr("AreaMultiplier", 1)
-		local total = attr("TotalMultiplier", 1) * area
-		totalValue.Text = mult(total)
-		totalNote.Text = if area > 1 then `incl. training area x{string.format("%g", area)}` else ""
 	end
 
 	-- Açıkken saniyede bir güncellenir (süreli güçlendirme geri sayımı için); ayrıca değerler değişince

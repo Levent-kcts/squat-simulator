@@ -47,7 +47,7 @@ function BoostHud.init(screenGui)
 		Name = "PotionTooltip",
 	}, screenGui)
 	create("UICorner", { CornerRadius = UDim.new(0, 10) }, tooltip)
-	create("UIStroke", { Thickness = 1.5, Color = Color3.new(1, 1, 1), Transparency = 0.85, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, tooltip)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tooltip)
 	local function tipText(position, size, font, color)
 		return create("TextLabel", {
 			Position = position,
@@ -62,9 +62,9 @@ function BoostHud.init(screenGui)
 			ZIndex = 31,
 		}, tooltip)
 	end
-	local tipTitle = tipText(UDim2.fromOffset(10, 6), UDim2.new(1, -20, 0, 24), Enum.Font.GothamBlack, Color3.fromRGB(30, 30, 45))
+	local tipTitle = tipText(UDim2.fromOffset(10, 6), UDim2.new(1, -20, 0, 24), Enum.Font.FredokaOne, Color3.fromRGB(30, 30, 45))
 	local tipDescription = tipText(UDim2.fromOffset(10, 32), UDim2.new(1, -20, 0, 36), Enum.Font.GothamMedium, Color3.fromRGB(70, 74, 92))
-	local tipTime = tipText(UDim2.fromOffset(10, 70), UDim2.new(1, -20, 0, 18), Enum.Font.GothamBlack, Color3.fromRGB(40, 150, 70))
+	local tipTime = tipText(UDim2.fromOffset(10, 70), UDim2.new(1, -20, 0, 18), Enum.Font.FredokaOne, Color3.fromRGB(40, 150, 70))
 
 	for _, potion in Config.Potions.List do
 		local slot = create("TextButton", {
@@ -86,7 +86,7 @@ function BoostHud.init(screenGui)
 			Position = UDim2.new(0.5, 0, 1, 0),
 			Size = UDim2.new(1, 0, 0, 24),
 			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamBlack,
+			Font = Enum.Font.FredokaOne,
 			TextScaled = true,
 			Text = "",
 			TextColor3 = Color3.new(1, 1, 1),
