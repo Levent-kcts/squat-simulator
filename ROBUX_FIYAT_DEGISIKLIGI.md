@@ -1,5 +1,7 @@
 # Robux fiyat indirimi (2026-10-14): Creator Hub'da güncellenecekler
 
+**DURUM (2026-10-16): YAPILDI.** Sahibi tam yetki verdi; Claude Creator Hub'da 6 game pass + 33 Developer Product'ın fiyatını ve 9 iz ürününün adını değiştirdi, iki liste sayfasından tek tek doğrulandı (hepsi aşağıdaki YENİ değerlerde). Oyunda gösterilen fiyatlar (Config.luau) ile Roblox'taki gerçek fiyatlar artık aynı. Listede ayrıca kullanılmayan eski bir 'VIP' Developer Product'ı (3717471559, 99 R$) var; VIP game pass'tir, o ürün oyunda bağlı değil. Starter Pack ürünü henüz OLUŞTURULMADI.
+
 Sahibi 14 Ekim 2026'da "fiyatları düşürelim, her şeyin" dedi (rakipler çok ucuz: +1 Muscle to Break Walls'ta Auto Click 37, Auto Rebirth 19, x2 Wins 79 R$).
 Oyundaki GÖSTERİLEN fiyatlar (Config.luau) güncellendi; **gerçek fiyatı Creator Hub'daki ürün belirler**, bu yüzden aşağıdaki ürünlerin fiyatını orada da değiştirmelisin.
 Güncelleyene kadar oyunda yazan fiyat ile Roblox'un satın alma penceresindeki fiyat farklı görünür (Roblox'un gösterdiği gerçek fiyat geçerli olur).

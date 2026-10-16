@@ -31,10 +31,10 @@ Ads Manager:
 Oyunda Settings > Redeem code'dan girilir. Lansman kodları: **LAUNCH, SQUAT, SMASHWALLS, EVOLUTION, LEGDAY, FRIENDS, THANKS**. Oyun sayfası açıklamasına ve videolara yaz ('Codes: LAUNCH, SQUAT ...'); kod listeleme siteleri bunları ücretsiz yayar. Not: oyun içinde link/Discord yazmak yasak, ama açıklama sayfasına kodları yazabilirsin.
 
 ## C) Roblox'ta yeni ürün/ayar açman gerekenler (ben yazınca haber vereceğim)
-- **39 ürünün fiyatını indir** (game pass'ler + Developer Products + iz adları): `ROBUX_FIYAT_DEGISIKLIGI.md` (sahibi istedi; güncelleyene kadar oyundaki fiyat ile Roblox penceresindeki fiyat farklı görünür).
+- ~~39 ürünün fiyatını indir~~ **YAPILDI (2026-10-16, Claude Creator Hub'da güncelledi ve doğruladı).**
 
 - **Friend Referral banner'ı:** Creator Hub > Engagement > Referral Rewards > "Add Reward Details" (ad, resim, tarih, davetçi başına limit 3) > Save > Publish. Kodu ben yazıyorum, banner'ı sen açıyorsun.
-- İz (trail) ürünlerinin **adlarını** ve 4 tanesinin **fiyatını** güncelle: `ROBUX_FIYAT_DEGISIKLIGI.md`.
+- ~~İz (trail) ürünlerinin adlarını ve fiyatını güncelle~~ **YAPILDI (2026-10-16).**
 - Yeni Robux ürünleri (başlangıç paketi gibi) için ID'ler: kodu hazır yazıp pasif tutacağım, sen ürünü açınca ID'yi bana veririm. Sıra: sen karar verince.
 
 ## C2) Rozetleri aç (isteğe bağlı, oyuncu profilinde görünür)

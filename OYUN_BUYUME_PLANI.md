@@ -83,3 +83,4 @@ Başkasından çalma/PvP baskını, ticaret, beğeni/favori karşılığı ödü
 - 2026-10-14: **1.5 ölçüm olayları YAPILDI** (Economy kaynak/gider + özel olaylar; analyticstest).
 - 2026-10-14: **2.3 Power Hour YAPILDI** (her 30 dk'da 5 dk x2 kas, UTC senkron, üst sayaç; powerhourtest, powerhourhudtest).
 - 2026-10-16: **Power Hour yeniden** (sahibi istedi): her gün 18:00 ve 00:00 UTC'de 1 saat; üstte kısa duyuru, sonra sol altta iksirlerin yanında rozet (⚡ + süre + x2), ara ara ekrandan geçen simge; DEV 'Power Hour (test)'.
+- 2026-10-16: **Creator Hub fiyatları güncellendi** (sahibinin tam yetkisiyle Claude yaptı: 6 pass + 33 ürün fiyatı, 9 iz adı; listelerden doğrulandı).
