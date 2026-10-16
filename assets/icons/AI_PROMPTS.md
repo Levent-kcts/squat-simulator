@@ -34,6 +34,10 @@ Power Hour (2026-10-16; oyunda Config.Icons.PowerHour, sol alttaki rozet + ekran
 
 - `powerhour.png`: (tam prompt sohbette verildi; şimşek toy brick'lerden, sağ altta 'x2' rozeti)
 
+Starter Pack (2026-10-16; Creator Hub'daki Developer Product görseli 3718993924, istenirse Shop kartında da kullanılır; JOBS tablosuna 'starterpack' satırı ekle):
+
+- `starterpack.png`: [ana üslup promptu] An open chunky gift crate made of glossy orange-and-yellow toy building bricks (small round studs on the top edges of the walls), a big shiny red ribbon bow on the front corner. Popping out of the open crate: two round potion flasks with smooth rainbow-banded liquid and a gold star tag, one round potion flask with bright green liquid and a four-leaf clover tag (same flask shape as the potion icons: lavender-tinted glass, wooden cork, rope and parchment tag), and a small chunky red backpack with a white pet paw print badge peeking out behind them. A few gold sparkles and a soft warm glow above the crate. Meaning: one-time starter bundle (2 Rainbow potions, 1 Luck potion, +25 pet slots).
+
 Ek (şu an emoji; istersen yaptır):
 
 - `quests.png`: A rolled parchment quest scroll tied with a red ribbon and a red wax seal, a tiny green check mark on it. Meaning: daily quests.
