@@ -228,6 +228,9 @@ return {
 		-- EggPuf = kırılırken yumuşak 'puf'. İkisi de tools/sounds/make_egg_sounds.py ile üretildi (assets/sounds/egg_dum.ogg, egg_puf.ogg): sahibi yükledi [EggDum 113970207572163, EggPuf 111670510027497];
 		-- id yüklenemezse (ya da boşsa) fallback çalar, fallbackSpeed fallback'in perdesidir (Roblox'un hazır sesleri tok bir 'dum' vermez, alçak perdeyle yaklaştırıldı).
 		EggDum = { id = "rbxassetid://113970207572163", fallback = "rbxasset://sounds/action_footsteps_plastic.mp3", fallbackSpeed = { 0.5, 0.55 }, volume = 0.7, gap = 0.1 },
+		-- POWER HOUR giriş müziği (2026-10-16, sahibi 'ilk çıktığı zaman çalacak hareketli, heyecanlandıran özel bir şarkı' istedi): assets/sounds/powerhour_theme.ogg (9.6 sn, 150 BPM;
+		-- tools/sounds/make_powerhour.py ile üretildi). Sahibi yükleyince ID'yi id'ye yaz; boşken Roblox'un yerleşik zafer sesi çalar. Çalarken arka plan müziği kısılır (Sfx.duckMusic).
+		PowerHour = { id = "", fallback = "rbxasset://sounds/victory.mp3", volume = 0.7, gap = 5 },
 		EggPuf = { id = "rbxassetid://111670510027497", fallback = "rbxasset://sounds/impact_water.mp3", fallbackSpeed = { 1.0, 1.1 }, volume = 0.6, gap = 0.2 },
 		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca
 		Buy = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.3, speed = { 1.3, 1.4 } },
@@ -263,7 +266,7 @@ return {
 	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 18:00 UTC = Türkiye 21:00 / Avrupa akşamı, 00:00 UTC = ABD doğu 20:00 / batı 17:00 (Roblox'un en kalabalık saatleri).
 	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın sağ ve sol kenarında yukarıdan aşağı hafifçe şimşek yağar (FallEvery sn'de bir; Icons.PowerHourFall).
 	-- DEV paneli 'Power Hour (test)' sunucuda hemen başlatır / bitirir. Baskı/kıtlık dili YOK (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
-	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 2.5 },
+	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 9.6 },
 
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.

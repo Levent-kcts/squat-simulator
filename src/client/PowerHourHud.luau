@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local okSfx, Sfx = pcall(require, script.Parent.Sfx) -- giriş müziği (Config.Sounds.PowerHour); yüklenemezse sessiz
 
 local PowerHourHud = {}
 
@@ -68,6 +69,7 @@ local function calm()
 end
 
 function PowerHourHud.init(screenGui, showToast)
+	local player = Players.LocalPlayer
 	local settings = Config.PowerHour
 	if not settings or not settings.Enabled then
 		return
@@ -220,6 +222,13 @@ function PowerHourHud.init(screenGui, showToast)
 		bannerStroke.Transparency = 0
 		banner.Visible = true
 		fall()
+		-- Hareketli giriş müziği: arka plan müziği süresince kısılır (Settings'te efekt sesi kapalıysa Sfx.play çalmaz)
+		if okSfx then
+			pcall(Sfx.play, "PowerHour")
+			if not player or player:GetAttribute("SfxOn") ~= false then
+				pcall(Sfx.duckMusic, settings.ThemeSeconds or 9.6, 0.2)
+			end
+		end
 		task.delay(announceSeconds, function()
 			if Workspace:GetAttribute("PowerHourActive") ~= true then
 				banner.Visible = false

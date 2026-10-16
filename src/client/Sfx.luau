@@ -170,11 +170,28 @@ local function musicMaxLevel()
 	return (Config.Music and Config.Music.maxLevel) or 10
 end
 
+local duckFactor = 1 -- Sfx.duckMusic: özel bir müzik (Power Hour girişi) çalarken arka plan müziği bu oranda kısılır
+local duckToken = 0
+
 local function applyMusicVolume()
 	if musicSound then
 		local step = Config.Music.volumeStep or 0.045
-		musicSound.Volume = if player:GetAttribute("MusicOn") == false then 0 else musicLevel * step
+		musicSound.Volume = if player:GetAttribute("MusicOn") == false then 0 else musicLevel * step * duckFactor
 	end
+end
+
+-- Arka plan müziğini seconds sn boyunca factor oranına kısar, sonra eski sesine döner (üst üste çağrılırsa son çağrı geçerli)
+function Sfx.duckMusic(seconds, factor)
+	duckToken += 1
+	local token = duckToken
+	duckFactor = factor or 0.25
+	applyMusicVolume()
+	task.delay(seconds, function()
+		if duckToken == token then
+			duckFactor = 1
+			applyMusicVolume()
+		end
+	end)
 end
 
 local function setTrack(name, index, total)
