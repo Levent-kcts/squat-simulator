@@ -30,6 +30,10 @@ Ortak şişe: A round-bottom glass potion flask with a short neck, thick glass w
 - `potion_rainbow.png`: [ortak şişe] liquid in smooth rainbow bands (red, orange, yellow, green, blue, purple), a few extra sparkles, a gold star on the tag. Meaning: all three boosts at once.
 - `potion_auto.png`: [ortak şişe] glowing electric-blue liquid with a few cyan sparkles, a white mouse cursor arrow with three small yellow click rays around its tip on the tag. Meaning: free Auto Click for 30 minutes (Auto Click Potion, 2026-10-13; oyunda Config.Icons.Potions.auto, JOBS tablosuna 'potion_auto' satırı ekle, 'potions' ortak ölçek grubu).
 
+Power Hour (2026-10-16; oyunda Config.Icons.PowerHour, sol alttaki rozet + ekrandan geçen simge; JOBS tablosuna 'powerhour' satırı ekle). BU SİMGEDE YAZI VAR: ana üsluptaki 'no text' cümlesi yerine aşağıdaki tam promptu kullan:
+
+- `powerhour.png`: (tam prompt sohbette verildi; şimşek toy brick'lerden, sağ altta 'x2' rozeti)
+
 Ek (şu an emoji; istersen yaptır):
 
 - `quests.png`: A rolled parchment quest scroll tied with a red ribbon and a red wax seal, a tiny green check mark on it. Meaning: daily quests.
