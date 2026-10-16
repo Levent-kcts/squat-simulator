@@ -27,7 +27,8 @@ function NotifOptIn.init(screenGui)
 				local busy = false
 				if screenGui then
 					for _, name in { "OfflineEarnings", "WhatsNewCard" } do
-						local frame = screenGui:FindFirstChild(name, true)
+						local playerGui = player:FindFirstChildOfClass("PlayerGui")
+						local frame = (playerGui and playerGui:FindFirstChild(name, true)) or screenGui:FindFirstChild(name, true)
 						if frame and frame.Visible then
 							busy = true
 						end

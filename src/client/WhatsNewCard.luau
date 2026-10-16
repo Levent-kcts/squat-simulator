@@ -157,7 +157,8 @@ function WhatsNewCard.init(screenGui)
 		task.spawn(function()
 			task.wait(SHOW_DELAY)
 			for _ = 1, 40 do
-				local offline = screenGui:FindFirstChild("OfflineEarnings", true)
+				local playerGui = player:FindFirstChildOfClass("PlayerGui")
+				local offline = (playerGui and playerGui:FindFirstChild("OfflineEarnings", true)) or screenGui:FindFirstChild("OfflineEarnings", true)
 				if not offline or not offline.Visible then
 					break
 				end

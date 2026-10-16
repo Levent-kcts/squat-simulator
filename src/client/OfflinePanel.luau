@@ -52,7 +52,27 @@ function OfflinePanel.init(screenGui, showToast)
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
 	local offline = Config.Offline
 
-	-- Arkası hafif karartılmış tam ekran katman: tıklamalar oyuna geçmez
+	-- Arkası hafif karartılmış tam ekran katman: tıklamalar oyuna geçmez. KENDİ tam ekran ScreenGui'sindedir (IgnoreGuiInset): ana arayüz çerçevesi Roblox üst
+	-- çubuğunun ALTINDA başladığı için üstte kararmayan bir şerit kalıyordu ve sağ üst daireler karartmanın üstünde görünüyordu (sahibi 'üstünde boşluk var, kapat' dedi; HatchRevealGui ile aynı yol)
+	local overlayGui = screenGui
+	local playerGui = player:FindFirstChildOfClass("PlayerGui") or player:FindFirstChild("PlayerGui")
+	if playerGui then
+		overlayGui = playerGui:FindFirstChild("OfflineGui")
+		if not overlayGui then
+			overlayGui = Instance.new("ScreenGui")
+			overlayGui.Name = "OfflineGui"
+			overlayGui.ResetOnSpawn = false
+			overlayGui.IgnoreGuiInset = true
+			overlayGui.DisplayOrder = 55 -- ana arayüz ve sağ üst dairelerin üstünde, yumurta açılışının (60) ve yükleme ekranının altında
+			overlayGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			overlayGui.Parent = playerGui
+		end
+	end
+	-- Kart ana arayüzle aynı boyda kalsın: ana çerçevenin ölçeği (RootScale) kopyalanır
+	local function baseScale()
+		local rootScale = screenGui:FindFirstChild("RootScale")
+		return if rootScale and type(rootScale.Scale) == "number" and rootScale.Scale > 0 then rootScale.Scale else 1
+	end
 	local overlay = create("Frame", {
 		Name = "OfflineEarnings",
 		Size = UDim2.fromScale(1, 1),
@@ -61,7 +81,7 @@ function OfflinePanel.init(screenGui, showToast)
 		Active = true,
 		Visible = false,
 		ZIndex = 30,
-	}, screenGui)
+	}, overlayGui)
 
 	-- Ana kart: koyu lacivert, kalın koyu kenar (referans pencere gibi), yumuşak köşeler
 	local card = create("Frame", {
@@ -229,8 +249,9 @@ function OfflinePanel.init(screenGui, showToast)
 		amountLabel.Text = `{Format.compact(pending)} LEG MUSCLE`
 		awayLabel.Text = if type(away) == "number" then `You were away for {duration(away)}` else "While you were away"
 		overlay.Visible = true
-		cardScale.Scale = 0.6
-		TweenService:Create(cardScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		local scale = if overlayGui == screenGui then 1 else baseScale()
+		cardScale.Scale = 0.6 * scale
+		TweenService:Create(cardScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = scale }):Play()
 	end
 
 	claim.MouseButton1Click:Connect(function()
