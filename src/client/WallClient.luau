@@ -287,11 +287,22 @@ local function createWall(folder, index)
 	barStroke.Parent = bar
 	UIStyle.soften(bar, { radius = UDim.new(0.5, 0), strength = 0.3, shine = false })
 
+	-- Dolgu iki katmandır: 'clip' kalan can oranı kadar geniş, şeffaf ve dikdörtgen kırpar; içindeki 'fill' her zaman en az çubuk yüksekliği kadar geniş bir haptır.
+	-- Can azken hap clip'ten taşar ve sağdan düz kesilir: sol ucu çubuğun yuvarlak ucuyla aynı kalır (dışarı taşmaz) ve can bittikçe yine incelerek azalır.
+	-- (Tek katmanda dar dolguyu UICorner dikey hapa çevirip çubuktan taşırıyordu; en az genişlik verilince de son canlarda daire olup azalmıyordu: sahibi ikisini de gördü.)
+	local clip = Instance.new("Frame")
+	clip.Name = "FillClip"
+	clip.Size = UDim2.fromScale(1, 1)
+	clip.BackgroundTransparency = 1
+	clip.BorderSizePixel = 0
+	clip.ClipsDescendants = true
+	clip.Parent = bar
+
 	local fill = Instance.new("Frame")
 	fill.Size = UDim2.fromScale(1, 1)
 	fill.BorderSizePixel = 0
 	fill.ClipsDescendants = true
-	fill.Parent = bar
+	fill.Parent = clip
 
 	local fillCorner = Instance.new("UICorner")
 	fillCorner.CornerRadius = UDim.new(0.5, 0)
@@ -375,9 +386,10 @@ local function setHp(wall, hp)
 	wall.part.Transparency = wall.baseTransparency
 	applyVisibility(wall)
 	wall.label.Text = `{Format.compact(hp)}/{Format.compact(wall.maxHp)}`
-	-- Dolgu en az çubuğun yüksekliği kadar geniş olur: daha darken UICorner (0.5) dolguyu DİKEY bir hapa çeviriyor ve çubuğun yuvarlak ucundan taşıyordu
-	-- (sahibi 'can barı dışarı taşıyor' dedi; ClipsDescendants yuvarlak köşeyi kırpmaz, dikdörtgen kırpar). Bu genişlikte dolgunun sol ucu çubuğun ucuyla aynı yarıçapta örtüşür.
-	local bar = wall.fill.Parent
+	-- clip kalan oran kadar genişler; içindeki hap en az çubuk yüksekliği kadar geniş kalır (daha dar olursa UICorner onu dikey hapa çevirip taşırıyordu),
+	-- fazlası clip'te düz kesilir: hap çubuğun ucundan taşmaz ve can azaldıkça görünen kısım yine küçülür
+	local clip = wall.fill.Parent
+	local bar = clip and clip.Parent
 	local minRatio = 0
 	if bar and bar.AbsoluteSize.X > 0 and bar.AbsoluteSize.Y > 0 then
 		minRatio = bar.AbsoluteSize.Y / bar.AbsoluteSize.X
@@ -388,7 +400,11 @@ local function setHp(wall, hp)
 			minRatio = (0.13 * size.Y) / (0.5 * size.X)
 		end
 	end
-	wall.fill.Size = UDim2.fromScale(if ratio > 0 then math.clamp(math.max(ratio, minRatio), 0, 1) else 0, 1)
+	if clip then
+		clip.Size = UDim2.fromScale(ratio, 1)
+	end
+	-- hap genişliği clip'e göre ölçeklidir: oran minRatio'dan küçükse hap clip'ten geniştir (çubuk yüksekliği kadar)
+	wall.fill.Size = UDim2.fromScale(if ratio > 0 and ratio < minRatio then minRatio / ratio else 1, 1)
 	-- dolu = yeşil, azaldıkça kırmızıya döner
 	wall.fill.BackgroundColor3 = Color3.fromHSV(ratio * 0.33, 0.9, 1)
 end
