@@ -375,7 +375,20 @@ local function setHp(wall, hp)
 	wall.part.Transparency = wall.baseTransparency
 	applyVisibility(wall)
 	wall.label.Text = `{Format.compact(hp)}/{Format.compact(wall.maxHp)}`
-	wall.fill.Size = UDim2.fromScale(ratio, 1)
+	-- Dolgu en az çubuğun yüksekliği kadar geniş olur: daha darken UICorner (0.5) dolguyu DİKEY bir hapa çeviriyor ve çubuğun yuvarlak ucundan taşıyordu
+	-- (sahibi 'can barı dışarı taşıyor' dedi; ClipsDescendants yuvarlak köşeyi kırpmaz, dikdörtgen kırpar). Bu genişlikte dolgunun sol ucu çubuğun ucuyla aynı yarıçapta örtüşür.
+	local bar = wall.fill.Parent
+	local minRatio = 0
+	if bar and bar.AbsoluteSize.X > 0 and bar.AbsoluteSize.Y > 0 then
+		minRatio = bar.AbsoluteSize.Y / bar.AbsoluteSize.X
+	else
+		-- henüz çizilmemişse duvarın arka yüz ölçüsünden (çubuk = yüzün 0.5 genişliği x 0.13 yüksekliği)
+		local size = wall.part.Size
+		if size.X > 0 then
+			minRatio = (0.13 * size.Y) / (0.5 * size.X)
+		end
+	end
+	wall.fill.Size = UDim2.fromScale(if ratio > 0 then math.clamp(math.max(ratio, minRatio), 0, 1) else 0, 1)
 	-- dolu = yeşil, azaldıkça kırmızıya döner
 	wall.fill.BackgroundColor3 = Color3.fromHSV(ratio * 0.33, 0.9, 1)
 end
