@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local okBubble, SpeechBubble = pcall(require, script.Parent.SpeechBubble) -- rozet açıklaması: iksirlerdeki gibi konuşma balonu
 local okSfx, Sfx = pcall(require, script.Parent.Sfx) -- giriş müziği (Config.Sounds.PowerHour); yüklenemezse sessiz
 
 local PowerHourHud = {}
@@ -154,10 +155,60 @@ function PowerHourHud.init(screenGui, showToast)
 		return if type(at) == "number" then at - serverNow() else 0
 	end
 
-	badge.MouseButton1Click:Connect(function()
-		if showToast then
-			showToast(true, `{settings.Name}: x{settings.Multiplier} Leg Muscle for everyone! {clock(remainingNow())} left`)
+	-- Rozet açıklaması: iksir şişelerindeki gibi beyaz KONUŞMA BALONU (üstüne gelince / dokununca; sahibi 'yukarıda yeşil yazı çıkmasın, iksirlerdeki gibi balon olsun' dedi)
+	local tip = create("Frame", {
+		Name = "PowerHourTooltip",
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, MARGIN, 1, -(MARGIN + SLOT_HEIGHT + 16)),
+		Size = UDim2.fromOffset(214, 92),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		Visible = false,
+		ZIndex = 30,
+	}, screenGui)
+	create("UICorner", { CornerRadius = UDim.new(0, 10) }, tip)
+	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tip)
+	local bubble = if okBubble then SpeechBubble.decorate(tip, { side = "bottom", at = (SLOT_WIDTH / 2) / 214 }) else nil
+	local function tipText(position, size, font, color, text)
+		return create("TextLabel", {
+			Position = position,
+			Size = size,
+			BackgroundTransparency = 1,
+			Font = font,
+			TextScaled = true,
+			TextWrapped = true,
+			Text = text or "",
+			TextColor3 = color,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			ZIndex = 31,
+		}, tip)
+	end
+	tipText(UDim2.fromOffset(10, 6), UDim2.new(1, -20, 0, 24), FONT, Color3.fromRGB(30, 30, 45), "Power Hour")
+	tipText(UDim2.fromOffset(10, 32), UDim2.new(1, -20, 0, 36), Enum.Font.GothamMedium, Color3.fromRGB(70, 74, 92), `x{settings.Multiplier} Leg Muscle for everyone in every server!`)
+	local tipTime = tipText(UDim2.fromOffset(10, 70), UDim2.new(1, -20, 0, 18), FONT, Color3.fromRGB(40, 150, 70))
+	local tipOpen = false
+	local function setTip(open)
+		tipOpen = open and badge.Visible
+		if tipOpen then
+			tipTime.Text = `Time left: {clock(remainingNow())}`
+			if bubble then
+				bubble.show()
+			else
+				tip.Visible = true
+			end
+		elseif bubble then
+			bubble.hide()
+		else
+			tip.Visible = false
 		end
+	end
+	badge.MouseEnter:Connect(function()
+		setTip(true)
+	end)
+	badge.MouseLeave:Connect(function()
+		setTip(false)
+	end)
+	badge.MouseButton1Click:Connect(function() -- dokunmatikte üstüne gelme yok: dokununca açılır, tekrar dokununca kapanır
+		setTip(not tipOpen)
 	end)
 
 	-- (3) Ekranın SAĞ ve SOL kenarında yukarıdan aşağı hafifçe yağan küçük şimşek (ortayı ve karakteri kapatmaz; yarı saydam, yavaş, hafif salınır)
@@ -214,6 +265,7 @@ function PowerHourHud.init(screenGui, showToast)
 		badgeShown = false
 		badge.Visible = false
 		banner.Visible = false
+		setTip(false)
 	end
 
 	-- Duyuru: üstte durur, sonra küçülüp sol alttaki rozetin yerine iner ve rozet belirir
@@ -277,6 +329,9 @@ function PowerHourHud.init(screenGui, showToast)
 			return
 		end
 		timeLabel.Text = clock(at - serverNow())
+		if tipOpen then
+			tipTime.Text = `Time left: {clock(at - serverNow())}`
+		end
 		if announcedFor ~= at then
 			announcedFor = at
 			announce()

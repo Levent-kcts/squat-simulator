@@ -160,6 +160,9 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	}, panel)
 	create("UIStroke", { Thickness = 3, Color = Color3.fromRGB(255, 214, 60) }, tip)
 	UIStyle.soften(tip, { radius = 12, strength = 0.2, shine = false })
+	-- Konuşma balonu (kuyruk karta bakar, küçük açılma animasyonu); yazılar balondan SONRA kurulur ki kuyruk örtülerinin üstünde kalsın
+	local okBubble, SpeechBubble = pcall(require, script.Parent.SpeechBubble)
+	local bubble = if okBubble then SpeechBubble.decorate(tip, { side = "top" }) else nil
 	local tipTitle = makeText(tip, {
 		Position = UDim2.fromOffset(12, 6),
 		Size = UDim2.new(1, -24, 0, 28),
@@ -184,7 +187,11 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 	local tipIndex = nil
 	local function hideTip()
 		tipIndex = nil
-		tip.Visible = false
+		if bubble then
+			bubble.hide()
+		else
+			tip.Visible = false
+		end
 	end
 	local function showTip(index)
 		local title, body = GiftsPanel.rewardInfo(Config.GiftRewards[index])
@@ -194,9 +201,23 @@ function GiftsPanel.init(screenGui, showToast, onClaimable)
 		local row = (index - 1) // 5
 		local cellX = 10 + column * (116 + 8)
 		local cellY = 66 + row * (158 + 8)
-		tip.Position = UDim2.fromOffset(math.clamp(cellX + 58, 10 + TIP_WIDTH / 2, 630 - TIP_WIDTH / 2), if row == 0 then cellY + 112 else cellY - TIP_HEIGHT - 6)
+		-- 1. satır: balon kartın ALTINDA, kuyruk yukarı; 2. satır: balon kartın ÜSTÜNDE, kuyruk aşağı (kuyruğa 16 birim yer). Açılış kuyruğun kenarından büyür.
+		local tipX = math.clamp(cellX + 58, 10 + TIP_WIDTH / 2, 630 - TIP_WIDTH / 2)
+		local tailAt = 0.5 + (cellX + 58 - tipX) / TIP_WIDTH
+		if row == 0 then
+			tip.AnchorPoint = Vector2.new(0.5, 0)
+			tip.Position = UDim2.fromOffset(tipX, cellY + 108 + 16)
+		else
+			tip.AnchorPoint = Vector2.new(0.5, 1)
+			tip.Position = UDim2.fromOffset(tipX, cellY - 16)
+		end
 		tipIndex = index
-		tip.Visible = true
+		if bubble then
+			bubble.setSide(if row == 0 then "top" else "bottom", tailAt)
+			bubble.show()
+		else
+			tip.Visible = true
+		end
 	end
 	tip.MouseButton1Click:Connect(hideTip)
 

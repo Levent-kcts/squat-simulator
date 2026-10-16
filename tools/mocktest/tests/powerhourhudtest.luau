@@ -35,6 +35,7 @@ local banner = findNamed(root, "PowerHourBanner")
 local badge = findNamed(root, "PowerHourBadge")
 assert(banner and badge, "PowerHourBanner ve PowerHourBadge kurulmalı")
 assert(findNamed(root, "PowerHourPill") == nil, "eski üst hap kaldırıldı")
+assert(findNamed(root, "PowerHourTooltip") and findNamed(root, "BubbleTail"), "rozetin açıklaması konuşma balonu olmalı (tıklayınca bildirim değil)")
 assert(rawget(banner, "Visible") == false and rawget(badge, "Visible") == false, "öznitelik yokken hepsi gizli")
 
 -- Yakında başlayacak: yine gizli (geri sayım yok)

@@ -400,13 +400,17 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	-- Açıklama kutusu
 	local tooltip = create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -10, 0, 84),
+		Position = UDim2.new(1, -10, 0, 100), -- arkadaş dairesinin 15 birim altı: kuyruğa yer
 		Size = UDim2.fromOffset(236, 106),
 		BackgroundColor3 = Color3.fromRGB(40, 44, 70),
 		Visible = false,
+		ZIndex = 2,
 	}, cornerRoot)
 	create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, tooltip)
 	UIStyle.soften(tooltip, { radius = 12, strength = 0.2, shine = false })
+	-- Konuşma balonu: kuyruk yukarıdaki arkadaş dairesini gösterir (dairenin ortası kutunun sağından 30 birim içeride); yazılar balondan sonra kurulur
+	local okBubble, SpeechBubble = pcall(require, script.Parent.SpeechBubble)
+	local friendBubble = if okBubble then SpeechBubble.decorate(tooltip, { side = "top", at = (236 - 30) / 236 }) else nil
 	text(tooltip, {
 		Position = UDim2.fromOffset(12, 6),
 		Size = UDim2.new(1, -24, 0, 24),
@@ -430,10 +434,24 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Text = "Click to invite friends!",
 		TextColor3 = Color3.fromRGB(120, 255, 140),
 	}, 1.5)
+	for _, child in tooltip:GetChildren() do
+		if child:IsA("TextLabel") then
+			child.ZIndex = 3 -- yazılar balon kuyruğunun örtülerinin (ZIndex 2) üstünde
+		end
+	end
 
 	local hovering, pinned = false, false
 	local function refreshTooltip()
-		tooltip.Visible = hovering or pinned
+		local want = hovering or pinned
+		if friendBubble then
+			if want then
+				friendBubble.show()
+			else
+				friendBubble.hide()
+			end
+		else
+			tooltip.Visible = want
+		end
 	end
 	friends.MouseEnter:Connect(function()
 		hovering = true

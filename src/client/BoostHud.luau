@@ -8,6 +8,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
+local okBubble, SpeechBubble = pcall(require, script.Parent.SpeechBubble) -- açıklama kutusu konuşma balonu (kuyruk + açılma animasyonu)
 
 local BoostHud = {}
 
@@ -65,6 +66,8 @@ function BoostHud.init(screenGui)
 	local tipTitle = tipText(UDim2.fromOffset(10, 6), UDim2.new(1, -20, 0, 24), Enum.Font.FredokaOne, Color3.fromRGB(30, 30, 45))
 	local tipDescription = tipText(UDim2.fromOffset(10, 32), UDim2.new(1, -20, 0, 36), Enum.Font.GothamMedium, Color3.fromRGB(70, 74, 92))
 	local tipTime = tipText(UDim2.fromOffset(10, 70), UDim2.new(1, -20, 0, 18), Enum.Font.FredokaOne, Color3.fromRGB(40, 150, 70))
+	-- Konuşma balonu: kuyruk aşağıdaki şişeyi gösterir (şişenin ortası kutunun solundan SLOT_WIDTH / 2 içeride)
+	local bubble = if okBubble then SpeechBubble.decorate(tooltip, { side = "bottom", at = (SLOT_WIDTH / 2) / 214 }) else nil
 
 	for _, potion in Config.Potions.List do
 		local slot = create("TextButton", {
@@ -116,11 +119,19 @@ function BoostHud.init(screenGui)
 			tipTitle.Text = hovered.potion.name
 			tipDescription.Text = hovered.potion.description or hovered.potion.effect
 			tipTime.Text = `Time left: {clock(hovered.remaining)}`
-			tooltip.Position = UDim2.new(0, hovered.slot.Position.X.Offset, 1, -(MARGIN + SLOT_HEIGHT + 8))
-			tooltip.Visible = true
+			tooltip.Position = UDim2.new(0, hovered.slot.Position.X.Offset, 1, -(MARGIN + SLOT_HEIGHT + 16)) -- kuyruğa yer: şişenin 16 birim üstü
+			if bubble then
+				bubble.show()
+			else
+				tooltip.Visible = true
+			end
 		else
 			hovered = nil
-			tooltip.Visible = false
+			if bubble then
+				bubble.hide()
+			else
+				tooltip.Visible = false
+			end
 		end
 	end
 

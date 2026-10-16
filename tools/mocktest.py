@@ -50,7 +50,7 @@ def module_names(folder, skip):
     return sorted(names)
 
 
-CLIENT_TESTS = ("ctest.luau", "clienttest.luau", "loadingtest.luau", "giftstest.luau", "perftest.luau", "taptest.luau", "leveluptest.luau", "guidetourtest.luau", "objectivetest.luau", "revealtest.luau", "shopbadgetest.luau", "trailpaneltest.luau", "loginpaneltest.luau", "powerhourhudtest.luau", "whatsnewcardtest.luau", "spookypaneltest.luau", "evolvetest.luau", "masterypaneltest.luau", "uistyletest.luau", "calmtest.luau", "musicoverridetest.luau")  # istemci taklidiyle (c klasöründe) koşan testler
+CLIENT_TESTS = ("ctest.luau", "clienttest.luau", "loadingtest.luau", "giftstest.luau", "perftest.luau", "taptest.luau", "leveluptest.luau", "guidetourtest.luau", "objectivetest.luau", "revealtest.luau", "shopbadgetest.luau", "trailpaneltest.luau", "loginpaneltest.luau", "powerhourhudtest.luau", "whatsnewcardtest.luau", "spookypaneltest.luau", "evolvetest.luau", "masterypaneltest.luau", "uistyletest.luau", "calmtest.luau", "musicoverridetest.luau", "speechbubbletest.luau")  # istemci taklidiyle (c klasöründe) koşan testler
 SHARED = module_names("shared", "")
 SERVER = module_names("server", "init.server.luau")  # init.server 'serverMain' olarak ayrıca kurulur
 CLIENT = module_names("client", "init.client.luau")  # init.client 'clientMain' olarak ayrıca kurulur
