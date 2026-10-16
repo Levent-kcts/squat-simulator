@@ -446,6 +446,7 @@ return {
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
+		Daily = "rbxassetid://136280654978055", -- sağ üstteki günlük giriş ödülü dairesi ve Daily penceresi başlığı (takvim; assets/icons/daily.png, boşken 📅)
 		Index = "rbxassetid://86290456757551", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "rbxassetid://128930779424288", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
 		Trash = "rbxassetid://72909566398443", -- Pets menüsündeki çöp kutusu simgesi: sahibinin yüklediği gri çöp kutusu (assets/icons/trash.png, Image türü, doğrulandı). Boş bırakılırsa aynı görünümde Frame'lerden çizilir

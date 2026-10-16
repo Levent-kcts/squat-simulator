@@ -95,7 +95,8 @@ function LoginPanel.init(screenGui, showToast)
 
 	local header = create("Frame", { Size = UDim2.new(1, 0, 0, 56), BackgroundColor3 = Color3.fromRGB(255, 170, 50) }, panel)
 	UIStyle.soften(header, { radius = 14, strength = 0.25 })
-	text(header, { Position = UDim2.fromOffset(16, 6), Size = UDim2.new(1, -90, 1, -12), Text = "📅 DAILY REWARDS", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 3)
+	UIStyle.headerIcon(header, Config.Icons.Daily, "📅", { Position = UDim2.fromOffset(12, 4), Size = UDim2.fromOffset(48, 48) }) -- sağ üstteki Daily dairesiyle aynı simge
+	text(header, { Position = UDim2.fromOffset(66, 6), Size = UDim2.new(1, -140, 1, -12), Text = "DAILY REWARDS", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 3)
 	local close = create("TextButton", {
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -10, 0.5, 0),
