@@ -122,7 +122,7 @@ Oyun yayında (16+), Robux ürünleri satışta, kod GitHub'da. 14-16 Ekim'de 'b
 
 **Sahibinin kararını bekleyenler:**
 6. ~~Mastery~~ KALICI OLARAK SİLİNDİ (2026-10-16, sahibi istedi; geri istenirse commit 476eab6).
-7. UIStyle'daki kullanılmayan 'Soft Dark Candy' API'si silinsin mi?
+7. ~~Kullanılmayan 'Soft Dark Candy' tema kodu~~ SİLİNDİ (2026-10-16, sahibi istedi; UIStyle 1710 > 583 satır, Calm UI'ın kullandığı calm/loopTween kaldı).
 8. Power Hour saatleri (her gün 18:00 ve 00:00 UTC = TR 21:00 ve 03:00, 1 saat) uygun mu?
 9. İz simgeleri (`assets/icons/AI_PROMPTS_TRAILS.md`) üretilecek mi?
 10. İKİNCİ DÜNYA ne zaman (en büyük iş; ilk oyuncular ~10 günde oyunun sonuna ulaşır).
