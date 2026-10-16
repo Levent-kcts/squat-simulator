@@ -35,7 +35,7 @@ Oyunda Settings > Redeem code'dan girilir. Lansman kodları: **LAUNCH, SQUAT, SM
 
 - **Friend Referral banner'ı:** Creator Hub > Engagement > Referral Rewards > "Add Reward Details" (ad, resim, tarih, davetçi başına limit 3) > Save > Publish. Kodu ben yazıyorum, banner'ı sen açıyorsun.
 - ~~İz (trail) ürünlerinin adlarını ve fiyatını güncelle~~ **YAPILDI (2026-10-16).**
-- Yeni Robux ürünleri (başlangıç paketi gibi) için ID'ler: kodu hazır yazıp pasif tutacağım, sen ürünü açınca ID'yi bana veririm. Sıra: sen karar verince.
+- ~~Starter Pack ürünü~~ **YAPILDI (2026-10-16, ID 3718993924 oyuna bağlı).** Diğer yeni Robux ürünleri için ID'ler: kodu hazır yazıp pasif tutacağım, sen ürünü açınca ID'yi bana veririm. Sıra: sen karar verince.
 
 ## C2) Rozetleri aç (isteğe bağlı, oyuncu profilinde görünür)
 Creator Hub > oyun > **Engagement > Badges > Create**: kod 9 rozeti hazır (`src/shared/Config.luau` > `Badges`; ad ve açıklamalar orada yazılı). Rozet oluşturmak Roblox'ta küçük Robux ücreti isteyebilir; **önce en önemli 3-5 tanesini aç** (welcome, rebirth1, stage10, legendary, mythic). Her rozetin ID'sini bana ver, `Config.Badges.<anahtar>.id` değerine yazarım (id 0 iken o rozet kapalıdır, oyun etkilenmez).
