@@ -110,7 +110,11 @@ function PowerHourHud.init(screenGui, showToast)
 		Position = UDim2.new(0.5, 0, 0, 0),
 		Size = UDim2.fromOffset(58, 58),
 	})
+	-- Ayrı 'x2' rozeti sadece emoji yedeğinde: yüklenen simgenin (assets/icons/powerhour.png) üstünde zaten 'x2' yazıyor
+	local imageId = Config.Icons and Config.Icons.PowerHour
+	local hasImage = type(imageId) == "string" and imageId ~= ""
 	local multChip = create("Frame", {
+		Visible = not hasImage,
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(1, 2, 0, 12),
 		Size = UDim2.fromOffset(34, 22),
