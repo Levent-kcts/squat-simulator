@@ -227,17 +227,25 @@ function PowerHourHud.init(screenGui, showToast)
 		fall()
 		-- Hareketli giriş müziği: arka plan müziği süresince kısılır (Settings'te efekt sesi kapalıysa Sfx.play çalmaz)
 		if okSfx then
-			pcall(Sfx.play, "PowerHour")
-			if not player or player:GetAttribute("SfxOn") ~= false then
-				pcall(Sfx.duckMusic, settings.ThemeSeconds or 9.6, 0.2)
-			end
-			-- Giriş müziği bitince patlama kısmının döngüsü LoopMinutes dk normal müziğin yerine çalar (Power Hour daha önce biterse kesilir)
+			-- TEMA TEK DOSYA, İKİ BÖLÜM (sahibi 'bitiş kısmından sonra loop geliyor, kötü duruyor; bitiş müziği loop bittikten sonra çalsın' dedi):
+			-- başta temanın GİRİŞ + PATLAMA kısmı (0 - ThemeSeconds) çalar ve döngü tam o anda başlar; döngü LoopMusic.minutes dk sonra bir turunu bitirince
+			-- temanın BİTİŞ vuruşu (ThemeSeconds'tan sona) çalar. Döngü yoksa tema baştan sona tek parça çalar.
 			local loopMusic = settings.LoopMusic
-			if loopMusic and loopMusic.id ~= "" then
+			local hasLoop = loopMusic ~= nil and loopMusic.id ~= ""
+			local introSeconds = settings.ThemeSeconds or 8
+			pcall(Sfx.play, "PowerHour", if hasLoop then { stopAfter = introSeconds - 0.05 } else nil) -- bitiş vuruşunun ilk anı duyulmasın diye hafif erken
+			if not player or player:GetAttribute("SfxOn") ~= false then
+				pcall(Sfx.duckMusic, introSeconds + (if hasLoop then 0 else 1.6), 0.2)
+			end
+			if hasLoop then
 				local startedFor = announcedFor
-				task.delay(settings.ThemeSeconds or 9.6, function()
+				task.delay(introSeconds, function()
 					if announcedFor == startedFor and Workspace:GetAttribute("PowerHourActive") == true then
-						pcall(Sfx.playMusicOverride, loopMusic.id, (loopMusic.minutes or 5) * 60, loopMusic.gain)
+						pcall(Sfx.playMusicOverride, loopMusic.id, (loopMusic.minutes or 5) * 60, loopMusic.gain, function()
+							if announcedFor == startedFor and Workspace:GetAttribute("PowerHourActive") == true then
+								pcall(Sfx.play, "PowerHour", { startAt = introSeconds })
+							end
+						end)
 					end
 				end)
 			end

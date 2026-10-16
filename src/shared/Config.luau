@@ -266,8 +266,8 @@ return {
 	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 18:00 UTC = Türkiye 21:00 / Avrupa akşamı, 00:00 UTC = ABD doğu 20:00 / batı 17:00 (Roblox'un en kalabalık saatleri).
 	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın sağ ve sol kenarında yukarıdan aşağı hafifçe şimşek yağar (FallEvery sn'de bir; Icons.PowerHourFall).
 	-- DEV paneli 'Power Hour (test)' sunucuda hemen başlatır / bitirir. Baskı/kıtlık dili YOK (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
-	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 9.6,
-		-- ARKA PLAN DÖNGÜSÜ: giriş müziğinden SONRA LoopMinutes dk boyunca normal müziğin YERİNE çalar (üst üste binmez; sonra normal müzik yumuşakça döner).
+	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 8.0, -- ThemeSeconds: temada giriş+patlamanın bittiği, bitiş vuruşunun başladığı an (1 ölçü yükseliş + 4 ölçü x 1.6 sn @150 BPM)
+		-- ARKA PLAN DÖNGÜSÜ: temanın giriş+patlama kısmından SONRA en az minutes dk normal müziğin YERİNE çalar (üst üste binmez); süre dolunca bir turunu BİTİRDİĞİ anda temanın bitiş vuruşu çalar ve normal müzik döner.
 		-- assets/sounds/powerhour_loop.ogg (25.6 sn kesintisiz döngü, giriş müziğinin patlama kısmından; tools/sounds/make_powerhour.py). id boşken normal müzik çalmaya devam eder.
 		LoopMusic = { id = "rbxassetid://94015375261968", minutes = 5, gain = 1 } },
 

@@ -76,7 +76,8 @@ local function acquire(id)
 	return pool[1]
 end
 
--- opts (isteğe bağlı): { volume = çarpan, speed = çarpan } olayın ses ve perdesini o çalış için ölçekler (Reveal: yumurta büyüdükçe 'dum' yükselir)
+-- opts (isteğe bağlı): { volume = çarpan, speed = çarpan } olayın ses ve perdesini o çalış için ölçekler (Reveal: yumurta büyüdükçe 'dum' yükselir);
+-- startAt = parçanın bu saniyesinden başlat, stopAfter = bu kadar sn sonra (0.06 sn'de sönerek) dur: TEK dosyadan bölüm çalmak için (Power Hour teması: giriş ve bitiş ayrı anlarda)
 function Sfx.play(name, opts)
 	local def = Config.Sounds and Config.Sounds[name]
 	if not def then
@@ -100,8 +101,24 @@ function Sfx.play(name, opts)
 	-- fallback çalıyorsa (asıl ses henüz yüklenmedi/yüklenemedi) ona özel perde: fallbackSpeed
 	local speed = if id == def.fallback and def.fallbackSpeed then def.fallbackSpeed else def.speed
 	sound.PlaybackSpeed = (if speed then rng:NextNumber(speed[1], speed[2]) else 1) * (opts and opts.speed or 1)
-	sound.TimePosition = def.startAt or 0
+	sound.TimePosition = (opts and opts.startAt) or def.startAt or 0
 	sound:Play()
+	local stopAfter = opts and opts.stopAfter
+	if stopAfter then
+		local volume = sound.Volume
+		task.delay(stopAfter, function()
+			if not sound.IsPlaying then
+				return
+			end
+			for i = 1, 3 do
+				sound.Volume = volume * (1 - i / 3)
+				task.wait(0.02)
+			end
+			sound:Stop()
+			sound.Volume = volume
+		end)
+	end
+	return sound
 end
 
 -- Tüm ses dosyalarını önceden kurar ve yükler; yüklenemeyenleri işaretler (Sfx.play onları atlar)
@@ -188,8 +205,10 @@ local function applyMusicVolume()
 	end
 end
 
--- Özel parçayı seconds sn boyunca DÖNGÜDE çalar (müzik kademesi, Music anahtarı ve duraklatma geçerlidir), sonra 2 sn'de söner ve normal müzik döner. id boşsa hiçbir şey yapmaz.
-function Sfx.playMusicOverride(id, seconds, gain)
+-- Özel parçayı en az seconds sn boyunca DÖNGÜDE çalar (müzik kademesi, Music anahtarı ve duraklatma geçerlidir). id boşsa hiçbir şey yapmaz.
+-- onEnd verilirse: süre dolduktan sonraki İLK döngü sınırında (parça tam bir turu bitirince, DidLoop) SÖNMEDEN durur ve onEnd çağrılır (Power Hour: döngü bitince
+-- temanın bitiş vuruşu gelsin, ortasında kesilmesin). onEnd yoksa süre dolunca 2 sn'de söner. Her iki durumda normal müzik döner.
+function Sfx.playMusicOverride(id, seconds, gain, onEnd)
 	if type(id) ~= "string" or id == "" then
 		return false
 	end
@@ -207,11 +226,28 @@ function Sfx.playMusicOverride(id, seconds, gain)
 	if not musicPaused then
 		sound:Play()
 	end
-	task.delay(seconds, function()
-		if overrideToken == token then
-			Sfx.stopMusicOverride()
-		end
-	end)
+	local started = os.clock()
+	if onEnd then
+		-- Süre dolduysa bu döngü sınırında dur ve bitişi çal (duraklatılan süre de sayılır; önemli değil)
+		sound.DidLoop:Connect(function()
+			if overrideToken == token and os.clock() - started >= seconds then
+				Sfx.stopMusicOverride(true)
+				task.spawn(onEnd)
+			end
+		end)
+		-- Güvenlik: DidLoop hiç gelmezse (parça yüklenemedi vb.) süre + 60 sn sonra sönerek dur
+		task.delay(seconds + 60, function()
+			if overrideToken == token then
+				Sfx.stopMusicOverride()
+			end
+		end)
+	else
+		task.delay(seconds, function()
+			if overrideToken == token then
+				Sfx.stopMusicOverride()
+			end
+		end)
+	end
 	return true
 end
 
