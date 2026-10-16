@@ -371,8 +371,6 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 			return false, "The event is not available right now."
 		end
 		return SeasonEvent.claim(player, math.floor(id))
-	elseif action == "BuyMastery" and type(id) == "string" then
-		return PlayerStats.buyMastery(player, id)
 	elseif action == "NotifAsked" then
 		return PlayerStats.markNotifAsked(player)
 	elseif action == "SeenWhatsNew" then

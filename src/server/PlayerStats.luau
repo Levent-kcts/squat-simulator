@@ -241,7 +241,7 @@ end
 
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
-	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Mastery = {}, Event = {}, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
+	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Event = {}, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
 		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
@@ -455,14 +455,6 @@ local function sanitize(raw)
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
 	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true, notif = true, group = true })
-	-- Mastery kademeleri { [dal id] = kademe }: bilinmeyen dal atılır, kademe 0..MaxLevel'e sıkıştırılır
-	for _, branch in Config.Mastery.Branches do
-		local stored = 0
-		if type(raw.Mastery) == "table" and type(raw.Mastery[branch.id]) == "number" then
-			stored = raw.Mastery[branch.id]
-		end
-		data.Mastery[branch.id] = math.clamp(math.floor(stored), 0, Config.Mastery.MaxLevel)
-	end
 	-- Sezonluk etkinlik durumu (Config.Event; server/SeasonEvent): { id, candy, total, claimed = { [kilometre taşı] = true }, bought = { [ürün] = adet }, perks = { title, trail } }
 	do
 		local source = if type(raw.Event) == "table" then raw.Event else {}
@@ -824,19 +816,7 @@ local function refresh(player)
 		* Progression.levelMultiplier(level)
 		* Progression.rebirthMultiplier(rebirths)
 		* auraMultiplier
-	-- Mastery bonusları (yüzde): power tıklama başı kasa, smash duvar hasarına, fortune Win pedi ödülüne eklenir
-	local masteryPercent = {}
-	local masteryLevels = {}
-	for _, branch in Config.Mastery.Branches do
-		local level = profile.mastery[branch.id] or 0
-		masteryPercent[branch.id] = level * branch.perLevel
-		table.insert(masteryLevels, `{branch.id}:{level}`)
-	end
-	profile.smashPercent = masteryPercent.smash or 0
-	profile.fortunePercent = masteryPercent.fortune or 0
-	player:SetAttribute("MasteryLevels", table.concat(masteryLevels, ","))
-	player:SetAttribute("MasteryPower", masteryPercent.power or 0)
-	local percentMultiplier = boostMultiplier * (1 + friendPercent / 100) * (1 + indexPercent / 100) * (1 + (masteryPercent.power or 0) / 100)
+	local percentMultiplier = boostMultiplier * (1 + friendPercent / 100) * (1 + indexPercent / 100)
 	local totalMultiplier = coreMultiplier * percentMultiplier
 
 	-- Skinin sabit bonusu çarpanlardan sonra eklenir, yüzde bonuslarıyla birlikte çarpılır
@@ -960,7 +940,6 @@ local function save(player, mode)
 		Codes = setToList(profile.codes),
 		Training = profile.training,
 		WhatsNew = profile.whatsNew,
-		Mastery = profile.mastery,
 		Event = {
 			id = profile.event.id,
 			candy = profile.event.candy,
@@ -1203,7 +1182,6 @@ local function setup(player)
 	local profile = {
 		taps = 0,
 		whatsNew = 0, -- 'Neler yeni' kartında görülen sürüm (kayıtlı)
-		mastery = {}, -- Mastery kademeleri { [dal] = kademe } (kayıtlı)
 		event = { id = "", candy = 0, total = 0, claimed = {}, bought = {}, perks = {} }, -- sezonluk etkinlik durumu (kayıtlı, server/SeasonEvent)
 		training = {}, -- Eğitim yumurtası sayaçları { [yumurta id] = açılış sayısı } (kayıtlı)
 		login = { next = 1, last = -1, total = 0 }, -- günlük giriş ödülü durumu (kayıtlı)
@@ -1324,7 +1302,6 @@ local function setup(player)
 	profile.codes = data.Codes
 	profile.training = data.Training
 	profile.whatsNew = data.WhatsNew
-	profile.mastery = data.Mastery
 	profile.event = data.Event
 	profile.login = data.Login
 	-- Kas her ARTTIĞINDA (tıklama, Win/çark/görev ödülü, Robux paketi, çevrimdışı kazanç...) ömür boyu toplama eklenir; azalma (rebirth, DEV sıfırlama) eklenmez. Yükleme ataması yukarıda
@@ -1736,46 +1713,6 @@ function PlayerStats.grantGroupReward(player, rewards, message)
 	return PlayerStats.grantPotions(player, rewards, message)
 end
 
--- MASTERY: dalın bir sonraki kademesini Win ile alır (ilk rebirth'ten sonra açılır). Dönüş: başarılı mı, mesaj
-function PlayerStats.buyMastery(player, branchId)
-	local profile = profiles[player]
-	local wins = getStat(player, Config.StatWins)
-	local rebirthStat = getStat(player, Config.StatRebirths)
-	if not profile or not profile.loaded or not wins or not rebirthStat then
-		return false, "Loading your data, please wait."
-	end
-	local settings = Config.Mastery
-	if settings.Enabled ~= true then
-		return false, "Mastery is not available yet."
-	end
-	if rebirthStat.Value < settings.UnlockRebirths then
-		return false, `Mastery unlocks at your first Rebirth.`
-	end
-	local branch
-	for _, candidate in settings.Branches do
-		if candidate.id == branchId then
-			branch = candidate
-		end
-	end
-	if not branch then
-		return false, "That upgrade does not exist."
-	end
-	local level = profile.mastery[branch.id] or 0
-	if level >= settings.MaxLevel then
-		return false, `{branch.name} is already maxed!`
-	end
-	local cost = Layout.masteryCost(branch, level, settings.CostMult)
-	if wins.Value < cost then
-		return false, `Not enough Wins (need {Format.compact(cost)}).`
-	end
-	wins.Value -= cost
-	econ(player, "Sink", cost, "Shop", `mastery_{branch.id}`)
-	profile.mastery[branch.id] = level + 1
-	refresh(player)
-	requestSave(player)
-	return true, `{branch.name} level {level + 1}! +{(level + 1) * branch.perLevel}% {branch.detail}`
-end
-
 function PlayerStats.rebirth(player, force)
 	local profile = profiles[player]
 	local levelStat = getStat(player, Config.StatLevel)
@@ -2121,7 +2058,7 @@ function PlayerStats.getDamageMultiplier(player)
 	if not profile then
 		return 1
 	end
-	return (profile.damageMultiplier or 1) * (1 + (profile.smashPercent or 0) / 100) -- ayakkabı x Mastery 'smash'
+	return profile.damageMultiplier or 1
 end
 
 function PlayerStats.addWin(player, amount)
@@ -2129,7 +2066,7 @@ function PlayerStats.addWin(player, amount)
 	local stat = getStat(player, Config.StatWins)
 	if profile and profile.loaded and stat then
 		local boost = if potionActive(profile, "boostWinsUntil") then Config.Potions.Mult else 1
-		local granted = math.floor((amount or 1) * boost * (1 + (profile.fortunePercent or 0) / 100)) -- Mastery 'fortune' Win ödülünü artırır
+		local granted = math.floor((amount or 1) * boost)
 		stat.Value += granted
 		econ(player, "Source", granted, "Gameplay", "stage_win")
 		emit("stagewin", player, granted)

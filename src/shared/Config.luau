@@ -347,21 +347,6 @@ return {
 		Decor = { Pumpkins = 10, Ghosts = 5 },
 	},
 
-	-- MASTERY AĞACI (2026-10-14 büyüme planı 3.1; client/MasteryPanel, PlayerStats.buyMastery): ilk rebirth'ten sonra açılan, WIN ile alınan KALICI ve DETERMİNİSTİK yükseltmeler (rastgelelik yok, rebirth SIFIRLAMAZ).
-	-- Geç oyunda Win'e anlam verir. Üç dal, her biri MaxLevel kademe; kademe başına bonus YÜZDE olarak eklenir (tam sayı çarpan kuralı bozulmaz, arkadaş/Index yüzdeleri gibi). Maliyet = Layout.reward(startStage + mevcut kademe) x CostMult:
-	-- yani dalın n. kademesi, startStage + n. aşamanın Win ödülü kadardır (üç dal toplamı ~112K Win: oyunun ortasından sonuna). power: tıklama başı kas, smash: duvar hasarı, fortune: Win pedi ödülü.
-	Mastery = {
-		Enabled = false, -- RAFA KALDIRILDI (2026-10-16, sahibi 'sol HUD çok dolu, Mastery'yi şimdilik rafa kaldırıyoruz' dedi): kod ve testler duruyor, true yapınca geri gelir. Silinecekse CLAUDE.md 'MASTERY RAFTA' notuna bak
-		UnlockRebirths = 1,
-		MaxLevel = 10,
-		CostMult = 1,
-		Branches = {
-			{ id = "power", name = "Iron Legs", emoji = "🦵", detail = "Leg Muscle per click", perLevel = 3, startStage = 4 },
-			{ id = "smash", name = "Brick Breaker", emoji = "💥", detail = "Damage to walls", perLevel = 3, startStage = 5 },
-			{ id = "fortune", name = "Win Magnet", emoji = "🏆", detail = "Wins from Win pads", perLevel = 5, startStage = 6 },
-		},
-	},
-
 	-- GRUP ÖDÜLÜ (büyüme planı 3.5; server/GroupReward): Id = 0 iken PASİF. Sahibi Roblox'ta bir grup açıp oyunu ona bağlayınca grup kimliğini yazar; üye oyuncu bir kez Rewards alır (iksirler, Robux'suz).
 	Group = {
 		Id = 0,
