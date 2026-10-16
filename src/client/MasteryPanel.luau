@@ -61,11 +61,11 @@ function MasteryPanel.init(screenGui, showToast)
 		UIStyle.label(card, { text = branch.name, role = "bold", color = COLORS.text, props = { Position = UDim2.fromOffset(64, 8), Size = UDim2.new(1, -190, 0, 22) } })
 		local effect = UIStyle.label(card, { name = "Effect", text = "", role = "caption", color = COLORS.textDim, props = { Position = UDim2.fromOffset(64, 30), Size = UDim2.new(1, -190, 0, 18) } })
 		local bar = UIStyle.progressBar(card, { accent = accent, value = 0, text = "", name = "Bar", props = { Position = UDim2.fromOffset(64, 56), Size = UDim2.new(1, -190, 0, 22) } })
-		local nextLabel = UIStyle.label(card, { name = "Next", text = "", role = "caption", color = COLORS.textMute, props = { Position = UDim2.fromOffset(64, 80), Size = UDim2.new(1, -190, 0, 16) } })
+		local nextLabel = UIStyle.label(card, { name = "Next", text = "", role = "caption", color = COLORS.textDim, props = { Position = UDim2.fromOffset(64, 80), Size = UDim2.new(1, -190, 0, 16) } })
 		local buy = UIStyle.button(card, {
 			name = "BuyButton",
 			text = "BUY",
-			kind = "primary",
+			kind = "success",
 			size = "md",
 			width = 108,
 			anchor = Vector2.new(1, 0.5),
@@ -116,7 +116,7 @@ function MasteryPanel.init(screenGui, showToast)
 				local cost = Layout.masteryCost(branch, level, settings.CostMult)
 				row.nextLabel.Text = `Next: +{(level + 1) * branch.perLevel}%`
 				UIStyle.setButtonText(row.buy, `🏆 {Format.compact(cost)}`)
-				UIStyle.setButtonKind(row.buy, if wins >= cost then "primary" else "secondary")
+				UIStyle.setButtonKind(row.buy, if wins >= cost then "success" else "secondary")
 				UIStyle.setButtonEnabled(row.buy, true)
 			end
 		end

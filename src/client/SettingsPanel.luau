@@ -87,7 +87,7 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 	-- Yükseklik satır sayısına bağlı: 60 başlık + 104 kod kartı + ayarlar (64 + 8) + Neler yeni; ekranı aşarsa içerik kayar
 	local rowCount = #settings + (if openWhatsNew then 1 else 0)
 	local contentHeight = 12 + 104 + 8 + rowCount * 72 + PAD
-	local height = math.min(60 + contentHeight, 560)
+	local height = math.min(60 + contentHeight, 470)
 
 	local panel = UIStyle.panel(screenGui, {
 		name = "SettingsPanel",
@@ -117,8 +117,11 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 		Size = UDim2.new(1, 0, 1, -60),
 		CanvasSize = UDim2.new(),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollBarThickness = 4,
+		ScrollBarThickness = 7, -- belirgin çubuk: liste kaydırılabilir (QA 2026-10-15)
+		ScrollBarImageColor3 = Color3.fromRGB(150, 170, 255),
+		ScrollBarImageTransparency = 0.15,
 		ScrollingDirection = Enum.ScrollingDirection.Y,
+		Active = true,
 	}, panel)
 	create("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, PAD), PaddingLeft = UDim.new(0, PAD), PaddingRight = UDim.new(0, PAD) }, list)
 	create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, list)

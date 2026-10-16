@@ -38,7 +38,7 @@ local function text(parent, props, strokeThickness)
 end
 
 -- openGifts / openIndex / openStats: pencereleri açıp kapatan fonksiyonlar; showToast(ok, mesaj): kısa bildirim (hepsini init.client verir)
-function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, openQuests)
+function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, openQuests, openDaily)
 	local player = Players.LocalPlayer
 
 	local container = create("Frame", {
@@ -315,6 +315,43 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 	player:GetAttributeChangedSignal("QuestData"):Connect(refreshQuestBadge)
 	player:GetAttributeChangedSignal("StarterState"):Connect(refreshQuestBadge) -- yeni oyuncu görevleri de sayıya girer
 	refreshQuestBadge()
+
+	-- GÜNLÜK GİRİŞ ÖDÜLÜ (sol menüden taşındı, sahibi 'Daily'yi questin yanına aynı yuvarlağa al' dedi): Quests'in solundaki 4. daire; ödül hazırken altında sarı 'READY!' ve nabız
+	local daily = circleButton("DailyButton", 4, Config.Icons.Daily, "📅")
+	local dailyLabel = text(daily, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 41),
+		Size = UDim2.fromOffset(62, 32),
+		Text = "",
+		TextColor3 = C.primary.base,
+		ZIndex = 3,
+	}, 3)
+	local dailyDisc = daily:FindFirstChildOfClass("Frame")
+	local dailyPulseScale = create("UIScale", { Scale = 1 }, dailyDisc)
+	local dailyPulse = UIStyle.loopTween(TweenService:Create(dailyPulseScale, TweenInfo.new(0.55, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Scale = 1.12 }), dailyPulseScale, { Scale = 1 })
+	local dailyPulsing = false
+	daily.MouseButton1Click:Connect(function()
+		if openDaily then
+			openDaily()
+		elseif showToast then
+			showToast(false, "Daily rewards are coming soon!")
+		end
+	end)
+	local function refreshDaily()
+		local ready = player:GetAttribute("DataLoaded") == true and player:GetAttribute("LoginReady") == true
+		dailyLabel.Text = if ready then "READY!" else ""
+		if ready and not dailyPulsing then
+			dailyPulsing = true
+			dailyPulse:Play()
+		elseif not ready and dailyPulsing then
+			dailyPulsing = false
+			dailyPulse:Cancel()
+			dailyPulseScale.Scale = 1
+		end
+	end
+	player:GetAttributeChangedSignal("LoginReady"):Connect(refreshDaily)
+	player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshDaily)
+	refreshDaily()
 
 	-- ---------------- 2) FRIEND BONUS (sağ üst köşe) ----------------
 	-- Referans oyundaki gibi küçük iki yüzlü simge ve altında yüzde: arkadaş yokken "0%", her arkadaşta +%10 ("10%", "20%" ...).

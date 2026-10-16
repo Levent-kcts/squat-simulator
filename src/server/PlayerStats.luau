@@ -1745,6 +1745,9 @@ function PlayerStats.buyMastery(player, branchId)
 		return false, "Loading your data, please wait."
 	end
 	local settings = Config.Mastery
+	if settings.Enabled ~= true then
+		return false, "Mastery is not available yet."
+	end
 	if rebirthStat.Value < settings.UnlockRebirths then
 		return false, `Mastery unlocks at your first Rebirth.`
 	end

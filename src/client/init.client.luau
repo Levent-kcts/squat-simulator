@@ -327,11 +327,8 @@ local settingsButton = makeGridButton(3, "⚙️", "Settings", { Color3.fromRGB(
 local backpackButton = makeGridButton(4, "🎒", "Backpack", { Color3.fromRGB(70, 230, 235), Color3.fromRGB(60, 110, 255) }, icons.Backpack)
 local petsButton = makeGridButton(5, "🐾", "Pets", { Color3.fromRGB(255, 215, 70), Color3.fromRGB(190, 120, 30) }, icons.Pets)
 local giftsButton = makeGridButton(6, "🎁", "Gifts", { Color3.fromRGB(110, 235, 100), Color3.fromRGB(40, 150, 75) }, icons.Gifts)
--- GÜNLÜK GİRİŞ ÖDÜLÜ düğmesi (2026-10-14: sahibi onayladı; client/LoginPanel): 7. sol buton (sütun 0, 4. satır); ikon yüklenmediyse emoji. Bugünün ödülü hazırken köşesinde kırmızı '!' rozeti
-local dailyButton = makeGridButton(7, "📅", "Daily", { Color3.fromRGB(255, 190, 60), Color3.fromRGB(235, 110, 30) }, icons.Daily)
-
 -- SEZONLUK ETKİNLİK düğmesi (Spooky Gym; client/SpookyPanel): 8. sol buton, SADECE etkinlik açıkken görünür; altındaki yazı Candy sayısını gösterir
-local spookyButton, spookyCaption = makeGridButton(8, Config.Event and Config.Event.Emoji or "🎃", "Spooky", { Color3.fromRGB(255, 140, 40), Color3.fromRGB(110, 50, 170) }, nil)
+local spookyButton, spookyCaption = makeGridButton(7, Config.Event and Config.Event.Emoji or "🎃", "Spooky", { Color3.fromRGB(255, 140, 40), Color3.fromRGB(110, 50, 170) }, nil)
 spookyButton.Name = "SpookyButton"
 spookyButton.Visible = false
 do
@@ -348,14 +345,14 @@ do
 end
 
 -- MASTERY düğmesi (client/MasteryPanel): 9. sol buton, İLK REBIRTH'ten sonra görünür (Config.Mastery.UnlockRebirths)
-local masteryButton = makeGridButton(9, "🎓", "Mastery", { Color3.fromRGB(255, 200, 61), Color3.fromRGB(217, 150, 26) }, nil)
+local masteryButton = makeGridButton(8, "🎓", "Mastery", { Color3.fromRGB(255, 200, 61), Color3.fromRGB(217, 150, 26) }, nil)
 masteryButton.Name = "MasteryButton"
 masteryButton.Visible = false
 do
 	local function refreshMastery()
 		local leaderstats = player:FindFirstChild("leaderstats")
 		local rebirths = leaderstats and leaderstats:FindFirstChild(Config.StatRebirths)
-		masteryButton.Visible = Config.Mastery ~= nil and player:GetAttribute("DataLoaded") == true and rebirths ~= nil and rebirths.Value >= Config.Mastery.UnlockRebirths
+		masteryButton.Visible = Config.Mastery ~= nil and Config.Mastery.Enabled == true and player:GetAttribute("DataLoaded") == true and rebirths ~= nil and rebirths.Value >= Config.Mastery.UnlockRebirths
 	end
 	player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshMastery)
 	task.defer(function()
@@ -390,31 +387,6 @@ local giftsBadgeText = makeText(giftsBadge, {
 	TextColor3 = Color3.new(1, 1, 1),
 	ZIndex = 9,
 }, 16, 1)
-
-local loginBadge = create("Frame", {
-	Name = "LoginBadge",
-	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.new(1, -4, 0, 4),
-	Size = UDim2.fromOffset(28, 28),
-	BackgroundColor3 = C.danger.base,
-	Visible = false,
-	ZIndex = 8,
-}, dailyButton)
-create("UICorner", { CornerRadius = UDim.new(1, 0) }, loginBadge)
-create("UIStroke", { Thickness = 1.5, Color = C.bg, Transparency = 0.1 }, loginBadge)
-makeText(loginBadge, {
-	Position = UDim2.fromScale(0.1, 0.1),
-	Size = UDim2.fromScale(0.8, 0.8),
-	Text = "!",
-	TextColor3 = Color3.new(1, 1, 1),
-	ZIndex = 9,
-}, 16, 1)
-local function refreshLoginBadge()
-	loginBadge.Visible = player:GetAttribute("DataLoaded") == true and player:GetAttribute("LoginReady") == true
-end
-player:GetAttributeChangedSignal("LoginReady"):Connect(refreshLoginBadge)
-player:GetAttributeChangedSignal("DataLoaded"):Connect(refreshLoginBadge)
-refreshLoginBadge()
 
 -- Backpack: Trails/Auras sekmeleri, açık olan panelin SOL tarafında dikey iki buton olarak durur.
 local backpackMenu = create("Frame", {
@@ -1116,14 +1088,7 @@ end
 local toggleIndex = loadPanel("IndexPanel", screenGui)
 local toggleStats = loadPanel("StatsPanel", screenGui)
 local toggleQuests = loadPanel("QuestPanel", screenGui, showToast)
-local toggleLogin = loadPanel("LoginPanel", screenGui, showToast) -- günlük giriş ödülü penceresi (sol menüdeki Daily düğmesi)
-dailyButton.MouseButton1Click:Connect(function()
-	if toggleLogin then
-		toggleLogin()
-	else
-		showToast(false, "Daily rewards are coming soon!")
-	end
-end)
+local toggleLogin = loadPanel("LoginPanel", screenGui, showToast) -- günlük giriş ödülü penceresi (sağ üstteki Daily dairesi, RightHud)
 local toggleMastery = loadPanel("MasteryPanel", screenGui, showToast) -- Mastery ağacı penceresi (sol menüdeki Mastery düğmesi)
 masteryButton.MouseButton1Click:Connect(function()
 	if toggleMastery then
@@ -1167,7 +1132,7 @@ do
 		end
 		reminded = true
 		task.delay(6, function()
-			showToast(true, "Daily reward ready! Tap Daily (left menu).")
+			showToast(true, "Daily reward ready! Tap the 📅 Daily button (top right).")
 		end)
 	end
 	player:GetAttributeChangedSignal("DataLoaded"):Connect(remindLogin)
@@ -1217,7 +1182,7 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 		showToast(false, `The daily wheel could not start: {startupErrors.WheelController or "unknown error"}`)
 	end
 end)
-safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests)
+safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests, toggleLogin)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",

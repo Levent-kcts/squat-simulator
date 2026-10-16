@@ -343,6 +343,7 @@ return {
 	-- Geç oyunda Win'e anlam verir. Üç dal, her biri MaxLevel kademe; kademe başına bonus YÜZDE olarak eklenir (tam sayı çarpan kuralı bozulmaz, arkadaş/Index yüzdeleri gibi). Maliyet = Layout.reward(startStage + mevcut kademe) x CostMult:
 	-- yani dalın n. kademesi, startStage + n. aşamanın Win ödülü kadardır (üç dal toplamı ~112K Win: oyunun ortasından sonuna). power: tıklama başı kas, smash: duvar hasarı, fortune: Win pedi ödülü.
 	Mastery = {
+		Enabled = false, -- RAFA KALDIRILDI (2026-10-16, sahibi 'sol HUD çok dolu, Mastery'yi şimdilik rafa kaldırıyoruz' dedi): kod ve testler duruyor, true yapınca geri gelir. Silinecekse CLAUDE.md 'MASTERY RAFTA' notuna bak
 		UnlockRebirths = 1,
 		MaxLevel = 10,
 		CostMult = 1,

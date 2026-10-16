@@ -5,6 +5,7 @@ local Layout = require("./Layout")
 local PlayerStats = require("./PlayerStats")
 
 local settings = Config.Mastery
+settings.Enabled = true -- test için aç (üretimde raftadır)
 local function branchOf(id)
 	for _, branch in settings.Branches do
 		if branch.id == id then

@@ -127,6 +127,7 @@ function RebirthPanel.init(screenGui, showToast)
 		kind = "hot",
 		size = "lg",
 		width = 220,
+		anchor = Vector2.new(0.5, 0),
 		position = UDim2.new(0.34, 0, 0, 332),
 	})
 	local skipButton = UIStyle.button(panel, {
@@ -135,6 +136,7 @@ function RebirthPanel.init(screenGui, showToast)
 		kind = "secondary",
 		size = "md",
 		width = 140,
+		anchor = Vector2.new(0.5, 0),
 		position = UDim2.new(0.8, 0, 0, 332),
 	})
 	local hintLabel = UIStyle.label(panel, {
