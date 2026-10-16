@@ -172,12 +172,71 @@ end
 
 local duckFactor = 1 -- Sfx.duckMusic: özel bir müzik (Power Hour girişi) çalarken arka plan müziği bu oranda kısılır
 local duckToken = 0
+-- MÜZİK DEĞİŞTİRME (Sfx.playMusicOverride): Power Hour döngüsü gibi özel bir parça bir süre normal müziğin YERİNE çalar (normal müzik o sürede sessizdir, üst üste binmez)
+local overrideSound = nil
+local overrideGain = 1
+local overrideToken = 0
 
 local function applyMusicVolume()
+	local step = (Config.Music and Config.Music.volumeStep) or 0.045
+	local base = if player:GetAttribute("MusicOn") == false then 0 else musicLevel * step
 	if musicSound then
-		local step = Config.Music.volumeStep or 0.045
-		musicSound.Volume = if player:GetAttribute("MusicOn") == false then 0 else musicLevel * step * duckFactor
+		musicSound.Volume = if overrideSound then 0 else base * duckFactor
 	end
+	if overrideSound then
+		overrideSound.Volume = base * overrideGain
+	end
+end
+
+-- Özel parçayı seconds sn boyunca DÖNGÜDE çalar (müzik kademesi, Music anahtarı ve duraklatma geçerlidir), sonra 2 sn'de söner ve normal müzik döner. id boşsa hiçbir şey yapmaz.
+function Sfx.playMusicOverride(id, seconds, gain)
+	if type(id) ~= "string" or id == "" then
+		return false
+	end
+	Sfx.stopMusicOverride(true)
+	overrideToken += 1
+	local token = overrideToken
+	local sound = Instance.new("Sound")
+	sound.Name = "MusicOverride"
+	sound.SoundId = id
+	sound.Looped = true
+	sound.Parent = SoundService
+	overrideSound = sound
+	overrideGain = gain or 1
+	applyMusicVolume()
+	if not musicPaused then
+		sound:Play()
+	end
+	task.delay(seconds, function()
+		if overrideToken == token then
+			Sfx.stopMusicOverride()
+		end
+	end)
+	return true
+end
+
+-- Özel parçayı bitirir (instant = true ise sönmeden); normal müzik sesine döner
+function Sfx.stopMusicOverride(instant)
+	local sound = overrideSound
+	if not sound then
+		return
+	end
+	overrideToken += 1
+	overrideSound = nil
+	applyMusicVolume()
+	if instant then
+		sound:Destroy()
+		return
+	end
+	-- 2 sn'de yumuşakça söner
+	task.spawn(function()
+		local start = sound.Volume
+		for i = 1, 20 do
+			sound.Volume = start * (1 - i / 20)
+			task.wait(0.1)
+		end
+		sound:Destroy()
+	end)
 end
 
 -- Arka plan müziğini seconds sn boyunca factor oranına kısar, sonra eski sesine döner (üst üste çağrılırsa son çağrı geçerli)
@@ -254,6 +313,16 @@ local function setPaused(paused)
 			musicSound:Pause()
 		elseif musicSound.IsPaused then
 			musicSound:Resume()
+		end
+	end
+	-- Power Hour döngüsü de teypin duraklat düğmesine uyar
+	if overrideSound then
+		if paused then
+			overrideSound:Pause()
+		elseif overrideSound.IsPaused then
+			overrideSound:Resume()
+		else
+			overrideSound:Play()
 		end
 	end
 	for _, listener in pauseListeners do

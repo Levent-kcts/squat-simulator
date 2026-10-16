@@ -208,6 +208,9 @@ function PowerHourHud.init(screenGui, showToast)
 	end
 
 	local function hideAll()
+		if badgeShown and okSfx and Sfx.stopMusicOverride then
+			pcall(Sfx.stopMusicOverride) -- Power Hour bitti (ya da DEV ile durduruldu): döngü susar, normal müzik döner
+		end
 		badgeShown = false
 		badge.Visible = false
 		banner.Visible = false
@@ -227,6 +230,16 @@ function PowerHourHud.init(screenGui, showToast)
 			pcall(Sfx.play, "PowerHour")
 			if not player or player:GetAttribute("SfxOn") ~= false then
 				pcall(Sfx.duckMusic, settings.ThemeSeconds or 9.6, 0.2)
+			end
+			-- Giriş müziği bitince patlama kısmının döngüsü LoopMinutes dk normal müziğin yerine çalar (Power Hour daha önce biterse kesilir)
+			local loopMusic = settings.LoopMusic
+			if loopMusic and loopMusic.id ~= "" then
+				local startedFor = announcedFor
+				task.delay(settings.ThemeSeconds or 9.6, function()
+					if announcedFor == startedFor and Workspace:GetAttribute("PowerHourActive") == true then
+						pcall(Sfx.playMusicOverride, loopMusic.id, (loopMusic.minutes or 5) * 60, loopMusic.gain)
+					end
+				end)
 			end
 		end
 		task.delay(announceSeconds, function()

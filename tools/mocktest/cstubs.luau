@@ -292,6 +292,7 @@ local services = {
 		UpdateAsync = function(_, key, fn) local updated = fn(M.datastore[key]) if updated ~= nil then M.datastore[key] = updated end return M.datastore[key] end,
 	} end },
 	ReplicatedStorage = ReplicatedStorage,
+	SoundService = newInstance("SoundService"), -- sesler buraya kurulur (musicoverridetest çocukları arar)
 	Workspace = (function()
 		local ws = newInstance("Workspace")
 		for _, name in { "ShoeShop", "SkinShop", "TrainingArea", "EggShop", "Hub", "Course", "Lobby" } do

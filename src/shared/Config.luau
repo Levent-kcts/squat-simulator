@@ -266,7 +266,10 @@ return {
 	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 18:00 UTC = Türkiye 21:00 / Avrupa akşamı, 00:00 UTC = ABD doğu 20:00 / batı 17:00 (Roblox'un en kalabalık saatleri).
 	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın sağ ve sol kenarında yukarıdan aşağı hafifçe şimşek yağar (FallEvery sn'de bir; Icons.PowerHourFall).
 	-- DEV paneli 'Power Hour (test)' sunucuda hemen başlatır / bitirir. Baskı/kıtlık dili YOK (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
-	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 9.6 },
+	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 9.6,
+		-- ARKA PLAN DÖNGÜSÜ: giriş müziğinden SONRA LoopMinutes dk boyunca normal müziğin YERİNE çalar (üst üste binmez; sonra normal müzik yumuşakça döner).
+		-- assets/sounds/powerhour_loop.ogg (25.6 sn kesintisiz döngü, giriş müziğinin patlama kısmından; tools/sounds/make_powerhour.py). id boşken normal müzik çalmaya devam eder.
+		LoopMusic = { id = "", minutes = 5, gain = 1 } },
 
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.

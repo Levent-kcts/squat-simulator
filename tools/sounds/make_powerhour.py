@@ -261,3 +261,89 @@ def save(name, audio):
 
 
 save("powerhour_theme", finish(mix))
+
+
+# =====================================================================
+# POWER HOUR ARKA PLAN DÖNGÜSÜ (2026-10-16, sahibi 'orta kısmındaki müziği power hour zamanında arkadan sürekli versin, çakışırsa 5 dk normal şarkı gibi çalsın' dedi):
+# giriş müziğinin PATLAMA kısmından türetilmiş 16 ölçülük (25.6 sn) KESİNTİSİZ döngü. Oyunda giriş müziğinden sonra normal müziğin YERİNE 5 dk çalar (üst üste binmez).
+# Tek 4 ölçüyü döndürmek bir süre sonra yorar: A (aynı patlama) - B (farklı arpej, 16'lık zil) - C (kırılma: 2 ölçü davulsuz, sonra yükseliş) - D (melodi bir oktav yukarıda).
+# Döngü sınırını aşan sesler başa sarılır (dairesel yerleştirme) ve süzgeç de daireseldir (FFT): döngü noktasında tık ya da boşluk olmaz. Giriş müziği yukarıda AYNI kalır.
+# =====================================================================
+LOOP_BARS = 16
+LN = int(SR * LOOP_BARS * BAR)
+loop = np.zeros(LN)
+
+
+def place_loop(signal, start, gain=1.0):
+    i = int(start * SR) % LN
+    end = i + len(signal)
+    if end <= LN:
+        loop[i:end] += signal * gain
+    else:
+        first = LN - i
+        loop[i:] += signal[:first] * gain
+        rest = signal[first:]
+        loop[: len(rest)] += rest * gain
+
+
+for bar in range(LOOP_BARS):
+    start = bar * BAR
+    chord = CHORDS[bar % 4]
+    section = bar // 4  # 0 A, 1 B, 2 C, 3 D
+    breakdown = section == 2 and bar % 4 < 2
+    if bar % 4 == 0 and section != 2:
+        place_loop(crash(), start, 0.4)
+    for beat in range(4):
+        bt = start + beat * BEAT
+        if not breakdown:
+            place_loop(kick(), bt, 1.0)
+            if beat in (1, 3):
+                place_loop(clap(), bt, 0.55)
+            place_loop(hat(open_=True), bt + BEAT / 2, 0.22)
+            if section == 1:
+                for s16 in (1, 3):
+                    place_loop(hat(), bt + s16 * BEAT / 4, 0.12)
+                place_loop(hat(), bt, 0.08)
+            else:
+                place_loop(hat(), bt + BEAT / 4, 0.12)
+                place_loop(hat(), bt + 3 * BEAT / 4, 0.12)
+            place_loop(bass_note(chord["root"], BEAT / 2 * 0.85), bt, 0.55)
+            place_loop(bass_note(chord["root"] + 12, BEAT / 2 * 0.85), bt + BEAT / 2, 0.42)
+    if breakdown:
+        # kırılma: uzun bas + uzun brass akor (yastık), seyrek 8'lik melodi
+        place_loop(bass_note(chord["root"], BAR * 0.95), start, 0.5)
+        place_loop(brass_chord(chord["tones"], BAR * 0.9), start, 0.42)
+        tones = chord["tones"] + [chord["tones"][0] + 12]
+        for step in range(8):
+            place_loop(lead_note(tones[[0, 2, 1, 3, 2, 1, 3, 2][step]] + 12, BEAT / 2 * 0.7), start + step * BEAT / 2, 0.17)
+        continue
+    pattern = [0, 2, 1, 3, 2, 1, 0, 1] if section == 1 else [0, 1, 2, 1, 0, 1, 2, 3]
+    octave = 24 if section == 3 else 12
+    lead_gain = 0.17 if section == 3 else 0.22
+    tones = chord["tones"] + [chord["tones"][0] + 12]
+    for step in range(16):
+        place_loop(lead_note(tones[pattern[step % 8]] + octave, BEAT / 4 * 0.8), start + step * BEAT / 4, lead_gain)
+    place_loop(brass_chord(chord["tones"], BEAT * 0.9), start, 0.62)
+    if section != 1:
+        place_loop(brass_chord(chord["tones"], BEAT * 0.45), start + 1.5 * BEAT, 0.38)
+    # bölüm geçişleri: 4. ölçünün son vuruşunda trampet dizisi; kırılmadan çıkarken (C'nin son ölçüsü) tam ölçü hızlanan dizi + yükselen gürültü
+    if section == 2 and bar % 4 == 3:
+        rolls = [i * BEAT / 2 for i in range(4)] + [2 * BEAT + i * BEAT / 4 for i in range(4)] + [3 * BEAT + i * BEAT / 8 for i in range(8)]
+        for index, time in enumerate(rolls):
+            place_loop(snare(), start + time, 0.25 + 0.5 * index / len(rolls))
+        t_r = t_axis(BAR)
+        riser_loop = spectral_filter(rng.randn(len(t_r)), low=400, high=7000) * (t_r / BAR) ** 2 * 0.3
+        place_loop(riser_loop, start)
+    elif bar % 4 == 3:
+        for i in range(4):
+            place_loop(snare(), start + 3 * BEAT + i * BEAT / 4, 0.35 + 0.1 * i)
+
+
+def finish_loop(audio, peak=0.85):
+    audio = spectral_filter(audio, low=90, high=8000, order=2)  # FFT süzgeci daireseldir: döngü noktası temiz kalır
+    audio = audio / np.max(np.abs(audio))
+    audio = np.tanh(audio * 1.6) / np.tanh(1.6)
+    return audio / np.max(np.abs(audio)) * peak
+
+
+save("powerhour_loop", finish_loop(loop))
