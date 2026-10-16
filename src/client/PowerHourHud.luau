@@ -208,7 +208,7 @@ function PowerHourHud.init(screenGui, showToast)
 	end
 
 	local function hideAll()
-		if badgeShown and okSfx and Sfx.stopMusicOverride then
+		if okSfx and Sfx.isOverrideActive and Sfx.isOverrideActive() then
 			pcall(Sfx.stopMusicOverride) -- Power Hour bitti (ya da DEV ile durduruldu): döngü susar, normal müzik döner
 		end
 		badgeShown = false
@@ -226,28 +226,25 @@ function PowerHourHud.init(screenGui, showToast)
 		banner.Visible = true
 		fall()
 		-- Hareketli giriş müziği: arka plan müziği süresince kısılır (Settings'te efekt sesi kapalıysa Sfx.play çalmaz)
-		if okSfx then
-			-- TEMA TEK DOSYA, İKİ BÖLÜM (sahibi 'bitiş kısmından sonra loop geliyor, kötü duruyor; bitiş müziği loop bittikten sonra çalsın' dedi):
-			-- başta temanın GİRİŞ + PATLAMA kısmı (0 - ThemeSeconds) çalar ve döngü tam o anda başlar; döngü LoopMusic.minutes dk sonra bir turunu bitirince
-			-- temanın BİTİŞ vuruşu (ThemeSeconds'tan sona) çalar. Döngü yoksa tema baştan sona tek parça çalar.
+		if okSfx and Sfx.playMusicOverride then
+			-- POWER HOUR MÜZİĞİ TEYPTEN (sahibi 'ses yükselme azalma olmasın, sağ alttaki radyoya entegre olsun, hep aynı seste çalsın' dedi): tema ve döngü normal müziğin
+			-- YERİNE teypin ses kademesinde çalar, teypte '⚡ POWER HOUR' yazar. Sıra (tema TEK dosya, iki bölüm; sahibi 'bitiş müziği loop bittikten sonra çalsın' dedi):
+			-- temanın giriş + patlaması (0 - ThemeSeconds) > döngü (en az LoopMusic.minutes dk, tur bitince) > temanın bitiş vuruşu (ThemeSeconds'tan sona) > normal müzik.
+			local themeId = Config.Sounds and Config.Sounds.PowerHour and Config.Sounds.PowerHour.id or ""
 			local loopMusic = settings.LoopMusic
-			local hasLoop = loopMusic ~= nil and loopMusic.id ~= ""
 			local introSeconds = settings.ThemeSeconds or 8
-			pcall(Sfx.play, "PowerHour", if hasLoop then { stopAfter = introSeconds - 0.05 } else nil) -- bitiş vuruşunun ilk anı duyulmasın diye hafif erken
-			if not player or player:GetAttribute("SfxOn") ~= false then
-				pcall(Sfx.duckMusic, introSeconds + (if hasLoop then 0 else 1.6), 0.2)
+			local parts
+			if themeId ~= "" and loopMusic and loopMusic.id ~= "" then
+				parts = {
+					{ id = themeId, stopAt = introSeconds },
+					{ id = loopMusic.id, loopFor = (loopMusic.minutes or 5) * 60 },
+					{ id = themeId, startAt = introSeconds },
+				}
+			elseif themeId ~= "" then
+				parts = { { id = themeId } }
 			end
-			if hasLoop then
-				local startedFor = announcedFor
-				task.delay(introSeconds, function()
-					if announcedFor == startedFor and Workspace:GetAttribute("PowerHourActive") == true then
-						pcall(Sfx.playMusicOverride, loopMusic.id, (loopMusic.minutes or 5) * 60, loopMusic.gain, function()
-							if announcedFor == startedFor and Workspace:GetAttribute("PowerHourActive") == true then
-								pcall(Sfx.play, "PowerHour", { startAt = introSeconds })
-							end
-						end)
-					end
-				end)
+			if parts then
+				pcall(Sfx.playMusicOverride, parts, `⚡ {settings.Name} x{settings.Multiplier} ⚡`, loopMusic and loopMusic.gain or 1)
 			end
 		end
 		task.delay(announceSeconds, function()

@@ -187,113 +187,144 @@ local function musicMaxLevel()
 	return (Config.Music and Config.Music.maxLevel) or 10
 end
 
-local duckFactor = 1 -- Sfx.duckMusic: özel bir müzik (Power Hour girişi) çalarken arka plan müziği bu oranda kısılır
-local duckToken = 0
--- MÜZİK DEĞİŞTİRME (Sfx.playMusicOverride): Power Hour döngüsü gibi özel bir parça bir süre normal müziğin YERİNE çalar (normal müzik o sürede sessizdir, üst üste binmez)
+-- MÜZİK DEĞİŞTİRME (Sfx.playMusicOverride): Power Hour müziği bir süre normal müziğin YERİNE, sağ alttaki TEYPTEN çalar (2026-10-16, sahibi 'ses yükselme
+-- azalma olmasın, sağ alttaki radyoya entegre olsun, hep aynı seste çalsın' dedi): ses = teypin müzik kademesi (normal müzikle AYNI), kısma/sönme YOK, geçişler anında;
+-- normal parça o sürede DURAKLATILIR ve sonra kaldığı yerden devam eder; teypte şarkı adı olarak override adı görünür; teypin duraklat düğmesi geçerli, ileri/geri basmak
+-- özel müziği bitirir. Parçalar sırayla çalar: { id, startAt = baştan sn, stopAt = bu sn'de geç, loopFor = en az bu kadar sn DÖNGÜDE çal ve bir tur bitince geç }.
 local overrideSound = nil
 local overrideGain = 1
 local overrideToken = 0
+local overrideActive = false
+local playlistTrack = nil -- özel müzik çalarken normal listenin (görünmeyen) güncel parçası
 
 local function applyMusicVolume()
 	local step = (Config.Music and Config.Music.volumeStep) or 0.045
 	local base = if player:GetAttribute("MusicOn") == false then 0 else musicLevel * step
 	if musicSound then
-		musicSound.Volume = if overrideSound then 0 else base * duckFactor
+		musicSound.Volume = base
 	end
 	if overrideSound then
 		overrideSound.Volume = base * overrideGain
 	end
 end
 
--- Özel parçayı en az seconds sn boyunca DÖNGÜDE çalar (müzik kademesi, Music anahtarı ve duraklatma geçerlidir). id boşsa hiçbir şey yapmaz.
--- onEnd verilirse: süre dolduktan sonraki İLK döngü sınırında (parça tam bir turu bitirince, DidLoop) SÖNMEDEN durur ve onEnd çağrılır (Power Hour: döngü bitince
--- temanın bitiş vuruşu gelsin, ortasında kesilmesin). onEnd yoksa süre dolunca 2 sn'de söner. Her iki durumda normal müzik döner.
-function Sfx.playMusicOverride(id, seconds, gain, onEnd)
-	if type(id) ~= "string" or id == "" then
-		return false
-	end
-	Sfx.stopMusicOverride(true)
-	overrideToken += 1
-	local token = overrideToken
-	local sound = Instance.new("Sound")
-	sound.Name = "MusicOverride"
-	sound.SoundId = id
-	sound.Looped = true
-	sound.Parent = SoundService
-	overrideSound = sound
-	overrideGain = gain or 1
-	applyMusicVolume()
-	if not musicPaused then
-		sound:Play()
-	end
-	local started = os.clock()
-	if onEnd then
-		-- Süre dolduysa bu döngü sınırında dur ve bitişi çal (duraklatılan süre de sayılır; önemli değil)
-		sound.DidLoop:Connect(function()
-			if overrideToken == token and os.clock() - started >= seconds then
-				Sfx.stopMusicOverride(true)
-				task.spawn(onEnd)
-			end
-		end)
-		-- Güvenlik: DidLoop hiç gelmezse (parça yüklenemedi vb.) süre + 60 sn sonra sönerek dur
-		task.delay(seconds + 60, function()
-			if overrideToken == token then
-				Sfx.stopMusicOverride()
-			end
-		end)
-	else
-		task.delay(seconds, function()
-			if overrideToken == token then
-				Sfx.stopMusicOverride()
-			end
-		end)
-	end
-	return true
-end
-
--- Özel parçayı bitirir (instant = true ise sönmeden); normal müzik sesine döner
-function Sfx.stopMusicOverride(instant)
-	local sound = overrideSound
-	if not sound then
-		return
-	end
-	overrideToken += 1
-	overrideSound = nil
-	applyMusicVolume()
-	if instant then
-		sound:Destroy()
-		return
-	end
-	-- 2 sn'de yumuşakça söner
-	task.spawn(function()
-		local start = sound.Volume
-		for i = 1, 20 do
-			sound.Volume = start * (1 - i / 20)
-			task.wait(0.1)
-		end
-		sound:Destroy()
-	end)
-end
-
--- Arka plan müziğini seconds sn boyunca factor oranına kısar, sonra eski sesine döner (üst üste çağrılırsa son çağrı geçerli)
-function Sfx.duckMusic(seconds, factor)
-	duckToken += 1
-	local token = duckToken
-	duckFactor = factor or 0.25
-	applyMusicVolume()
-	task.delay(seconds, function()
-		if duckToken == token then
-			duckFactor = 1
-			applyMusicVolume()
-		end
-	end)
-end
-
-local function setTrack(name, index, total)
-	currentTrack = { name = name, index = index, total = total }
+local function notifyTrack()
 	for _, listener in trackListeners do
 		task.spawn(listener, currentTrack)
 	end
+end
+
+-- Özel müziği bitirir (anında, sönmeden): normal parça kaldığı yerden devam eder, teypte eski şarkı adı döner
+function Sfx.stopMusicOverride()
+	if not overrideActive then
+		return
+	end
+	overrideToken += 1
+	overrideActive = false
+	if overrideSound then
+		overrideSound:Destroy()
+		overrideSound = nil
+	end
+	if musicSound and not musicPaused and musicSound.IsPaused then
+		musicSound:Resume()
+	end
+	if playlistTrack then
+		currentTrack = playlistTrack
+		notifyTrack()
+	end
+	applyMusicVolume()
+end
+
+-- parts: sırayla çalınacak bölümler (yukarıdaki açıklama). displayName: teypte görünecek ad. gain: müzik kademesine göre çarpan (1 = normal müzikle aynı ses).
+function Sfx.playMusicOverride(parts, displayName, gain)
+	if type(parts) ~= "table" or #parts == 0 or type(parts[1].id) ~= "string" or parts[1].id == "" then
+		return false
+	end
+	Sfx.stopMusicOverride()
+	overrideToken += 1
+	local token = overrideToken
+	overrideActive = true
+	overrideGain = gain or 1
+	if musicSound and musicSound.IsPlaying then
+		musicSound:Pause() -- normal parça burada bekler (playlist döngüsü overrideActive iken ilerlemez)
+	end
+	playlistTrack = currentTrack
+	currentTrack = { name = displayName or "Special", index = playlistTrack.index, total = playlistTrack.total, override = true }
+	notifyTrack()
+
+	task.spawn(function()
+		for _, part in parts do
+			if overrideToken ~= token or type(part.id) ~= "string" or part.id == "" then
+				break
+			end
+			local sound = Instance.new("Sound")
+			sound.Name = "MusicOverride"
+			sound.SoundId = part.id
+			sound.Looped = part.loopFor ~= nil
+			sound.Parent = SoundService
+			local previous = overrideSound
+			overrideSound = sound
+			applyMusicVolume()
+			sound.TimePosition = part.startAt or 0
+			sound:Play()
+			if musicPaused then
+				sound:Pause()
+			end
+			if previous then
+				previous:Destroy() -- anında geçiş (sönme yok)
+			end
+			-- Bölümün bitmesini bekle. Bekleme sınırı sadece ÇALAN süreyi sayar (teyp duraklatılınca durur): parça yüklenemezse sonsuza kadar takılmasın.
+			local played = 0
+			local last = os.clock()
+			local function tick()
+				task.wait()
+				local now = os.clock()
+				if not musicPaused then
+					played += now - last
+				end
+				last = now
+			end
+			if part.loopFor then
+				local loops = 0
+				local done = false
+				local connection = sound.DidLoop:Connect(function()
+					loops += 1
+					if loops * (sound.TimeLength or 0) >= part.loopFor then
+						done = true -- süre doldu ve tur TAM bitti: sıradaki bölüm (bitiş) tam bu anda başlar
+					end
+				end)
+				while not done and overrideToken == token and played < part.loopFor + 120 do
+					tick()
+				end
+				connection:Disconnect()
+			elseif part.stopAt then
+				while overrideToken == token and (sound.TimePosition or 0) < part.stopAt and played < part.stopAt - (part.startAt or 0) + 20 do
+					tick()
+				end
+			else
+				while overrideToken == token and (sound.IsPlaying or sound.IsPaused or played < 3) and played < 600 do
+					tick()
+				end
+			end
+		end
+		if overrideToken == token then
+			Sfx.stopMusicOverride()
+		end
+	end)
+	return true
+end
+
+function Sfx.isOverrideActive()
+	return overrideActive
+end
+
+local function setTrack(name, index, total)
+	if overrideActive then
+		playlistTrack = { name = name, index = index, total = total } -- özel müzik çalarken teyp onun adını gösterir; liste parçası sonra geri gelir
+		return
+	end
+	currentTrack = { name = name, index = index, total = total }
+	notifyTrack()
 end
 
 function Sfx.getMusicLevel()
@@ -344,14 +375,14 @@ local function setPaused(paused)
 		return
 	end
 	musicPaused = paused
-	if musicSound then
+	if musicSound and not overrideActive then
 		if paused then
 			musicSound:Pause()
 		elseif musicSound.IsPaused then
 			musicSound:Resume()
 		end
 	end
-	-- Power Hour döngüsü de teypin duraklat düğmesine uyar
+	-- Özel müzik (Power Hour) de teypin duraklat düğmesine uyar
 	if overrideSound then
 		if paused then
 			overrideSound:Pause()
@@ -376,6 +407,12 @@ end
 
 -- Sonraki / önceki parçaya geç. Duraklatılmışsa yeni parça çalmaya başlar.
 local function skipTrack(step)
+	if overrideActive then
+		-- Power Hour müziği çalarken ileri/geri: özel müzik biter, normal parça kaldığı yerden devam eder
+		Sfx.stopMusicOverride()
+		setPaused(false)
+		return
+	end
 	pendingStep = step
 	skipRequested = true
 	setPaused(false)
@@ -457,8 +494,8 @@ local function playlist(music)
 				probe:Destroy()
 			end)
 			setTrack(track.name, index, #tracks)
-			-- Duraklatılmışken parça başlamaz; devam edilince çalar
-			while musicPaused and not skipRequested do
+			-- Duraklatılmışken ya da özel müzik (Power Hour) çalarken parça başlamaz; sonra çalar
+			while (musicPaused or overrideActive) and not skipRequested do
 				task.wait(0.2)
 			end
 			if not skipRequested then
@@ -467,7 +504,7 @@ local function playlist(music)
 				end
 				-- Parça bitene, duraklatılana ya da önceki/sonraki istenene kadar bekle (çalmaya başlaması için 3 sn tolerans)
 				local began = os.clock()
-				while not skipRequested and (sound.IsPlaying or musicPaused or os.clock() - began < 3) do
+				while not skipRequested and (sound.IsPlaying or musicPaused or overrideActive or os.clock() - began < 3) do
 					task.wait(0.2)
 				end
 			end

@@ -175,7 +175,9 @@ function MusicPlayer.init(screenGui)
 		end
 		local track = Sfx.getTrack()
 		local label
-		if track.index == 0 then
+		if track.override then
+			label = `{track.name}      ` -- Power Hour müziği (Sfx.playMusicOverride)
+		elseif track.index == 0 then
 			label = "🎵 Loading music...   "
 		elseif track.name == "Loading..." then
 			label = `🎵 Loading ({track.index}/{track.total})...   `

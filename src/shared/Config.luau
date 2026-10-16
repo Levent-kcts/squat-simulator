@@ -229,7 +229,7 @@ return {
 		-- id yüklenemezse (ya da boşsa) fallback çalar, fallbackSpeed fallback'in perdesidir (Roblox'un hazır sesleri tok bir 'dum' vermez, alçak perdeyle yaklaştırıldı).
 		EggDum = { id = "rbxassetid://113970207572163", fallback = "rbxasset://sounds/action_footsteps_plastic.mp3", fallbackSpeed = { 0.5, 0.55 }, volume = 0.7, gap = 0.1 },
 		-- POWER HOUR giriş müziği (2026-10-16, sahibi 'ilk çıktığı zaman çalacak hareketli, heyecanlandıran özel bir şarkı' istedi): assets/sounds/powerhour_theme.ogg (9.6 sn, 150 BPM;
-		-- tools/sounds/make_powerhour.py ile üretildi). Sahibi yükleyince ID'yi id'ye yaz; boşken Roblox'un yerleşik zafer sesi çalar. Çalarken arka plan müziği kısılır (Sfx.duckMusic).
+		-- tools/sounds/make_powerhour.py ile üretildi; sahibi yükledi). Efekt olarak DEĞİL, teypten müzik olarak çalar (client/PowerHourHud > Sfx.playMusicOverride; müzik kademesi, kısma yok).
 		PowerHour = { id = "rbxassetid://122339680780821", fallback = "rbxasset://sounds/victory.mp3", volume = 0.7, gap = 5 },
 		EggPuf = { id = "rbxassetid://111670510027497", fallback = "rbxasset://sounds/impact_water.mp3", fallbackSpeed = { 1.0, 1.1 }, volume = 0.6, gap = 0.2 },
 		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca

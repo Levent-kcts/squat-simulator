@@ -1,37 +1,19 @@
--- MÜZİK DEĞİŞTİRME (client/Sfx.playMusicOverride): Power Hour döngüsü normal müziğin YERİNE çalar (üst üste binmez), duraklatmaya uyar, bitince normal müzik sesine döner.
+-- MÜZİK DEĞİŞTİRME (client/Sfx.playMusicOverride): Power Hour müziği normal müziğin YERİNE teypten çalar (üst üste binmez), teypte adı görünür,
+-- ses müzik kademesinde sabittir (kısma/sönme yok), bitince normal parça ve adı geri gelir.
 local S = require("../cstubs")
 local Sfx = require("./Sfx")
 
 -- id boşsa hiçbir şey yapmaz
-assert(Sfx.playMusicOverride("", 10) == false, "boş id ile döngü başlamamalı")
+assert(Sfx.playMusicOverride({}, "X") == false, "boş liste ile başlamamalı")
+assert(Sfx.playMusicOverride({ { id = "" } }, "X") == false, "boş id ile başlamamalı")
 
-local soundService = S.game:GetService("SoundService")
-local function findOverride()
-	for _, child in rawget(soundService, "_children") or {} do
-		if rawget(child, "Name") == "MusicOverride" then
-			return child
-		end
-	end
-	return nil
-end
+local before = Sfx.getTrack().name
+assert(Sfx.playMusicOverride({ { id = "rbxassetid://1", stopAt = 8 }, { id = "rbxassetid://2", loopFor = 300 }, { id = "rbxassetid://1", startAt = 8 } }, "⚡ POWER HOUR x2 ⚡", 1) == true, "özel müzik başlamalı")
+assert(Sfx.isOverrideActive() == true, "özel müzik etkin olmalı")
+assert(Sfx.getTrack().name == "⚡ POWER HOUR x2 ⚡" and Sfx.getTrack().override == true, "teypte Power Hour adı görünmeli")
 
-assert(Sfx.playMusicOverride("rbxassetid://123", 300, 1) == true, "döngü başlamalı")
-local sound = findOverride()
-assert(sound, "MusicOverride sesi kurulmalı")
-assert(rawget(sound, "Looped") == true, "döngüde çalmalı")
-assert(rawget(sound, "SoundId") == "rbxassetid://123", "doğru parça")
-
--- ikinci çağrı eskisini hemen kaldırır (aynı anda iki döngü olmaz)
-Sfx.playMusicOverride("rbxassetid://456", 300, 1)
-local count = 0
-for _, child in rawget(soundService, "_children") or {} do
-	if rawget(child, "Name") == "MusicOverride" then
-		count += 1
-	end
-end
-assert(count == 1, "aynı anda tek döngü olmalı: " .. count)
-
--- anında durdurma: döngü kalkar
-Sfx.stopMusicOverride(true)
-assert(findOverride() == nil, "durdurunca döngü kalkmalı")
+-- durdurunca: etkin değil, teypte eski ad
+Sfx.stopMusicOverride()
+assert(Sfx.isOverrideActive() == false, "durunca etkin olmamalı")
+assert(Sfx.getTrack().name == before, "teypte eski şarkı adı dönmeli")
 print("music override ok")
