@@ -30,6 +30,7 @@ JOBS = {
     "potion_wins": ("Gemini_Generated_Image_15n63x15n63x15n6 (7).jpg", False, "potions"),
     "potion_rainbow": ("Gemini_Generated_Image_15n63x15n63x15n6 (8).jpg", False, "potions"),
     "potion_auto": ("potion_auto.webp", False, "potions"),
+    "daily": ("daily_2048.png", {"min": 400, "top": 0.3}, None),
     "quests": ("Gemini_Generated_Image_15n63x15n63x15n6 (9).jpg", False, None),
     "trophy": ("Gemini_Generated_Image_15n63x15n63x15n6.jpg", {"min": 4000}, None),
     "stats": ("Gemini_Generated_Image_ahpjimahpjimahpj (1).jpg", False, None),
