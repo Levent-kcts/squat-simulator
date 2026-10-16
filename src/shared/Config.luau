@@ -230,7 +230,7 @@ return {
 		EggDum = { id = "rbxassetid://113970207572163", fallback = "rbxasset://sounds/action_footsteps_plastic.mp3", fallbackSpeed = { 0.5, 0.55 }, volume = 0.7, gap = 0.1 },
 		-- POWER HOUR giriş müziği (2026-10-16, sahibi 'ilk çıktığı zaman çalacak hareketli, heyecanlandıran özel bir şarkı' istedi): assets/sounds/powerhour_theme.ogg (9.6 sn, 150 BPM;
 		-- tools/sounds/make_powerhour.py ile üretildi). Sahibi yükleyince ID'yi id'ye yaz; boşken Roblox'un yerleşik zafer sesi çalar. Çalarken arka plan müziği kısılır (Sfx.duckMusic).
-		PowerHour = { id = "", fallback = "rbxasset://sounds/victory.mp3", volume = 0.7, gap = 5 },
+		PowerHour = { id = "rbxassetid://122339680780821", fallback = "rbxasset://sounds/victory.mp3", volume = 0.7, gap = 5 },
 		EggPuf = { id = "rbxassetid://111670510027497", fallback = "rbxasset://sounds/impact_water.mp3", fallbackSpeed = { 1.0, 1.1 }, volume = 0.6, gap = 0.2 },
 		Rare = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.4, speed = { 2.2, 2.4 } }, -- Epic ve üstü pet çıkınca
 		Buy = { id = "rbxasset://sounds/volume_slider.ogg", volume = 0.3, speed = { 1.3, 1.4 } },
@@ -269,7 +269,7 @@ return {
 	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 9.6,
 		-- ARKA PLAN DÖNGÜSÜ: giriş müziğinden SONRA LoopMinutes dk boyunca normal müziğin YERİNE çalar (üst üste binmez; sonra normal müzik yumuşakça döner).
 		-- assets/sounds/powerhour_loop.ogg (25.6 sn kesintisiz döngü, giriş müziğinin patlama kısmından; tools/sounds/make_powerhour.py). id boşken normal müzik çalmaya devam eder.
-		LoopMusic = { id = "", minutes = 5, gain = 1 } },
+		LoopMusic = { id = "rbxassetid://94015375261968", minutes = 5, gain = 1 } },
 
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.
