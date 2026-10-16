@@ -233,6 +233,10 @@ function EnvironmentService.init()
 	-- Sadece SAĞ taraftaki kule kaldı. Sağın ikinci kulesi ve yerdeki tuğlası önce kaldırıldı (antrenman rampasına giriyordu); SOL taraftaki yığın (4 katlı kule, 2 katlı kule,
 	-- yerdeki turuncu tuğla) da 2026-10-16'da sahibi ekran görüntüsüyle 'bunu sil' dedi diye KALDIRILDI, geri ekleme.
 	tower(23.5, -58, 4, 4, 0.4)
+	-- SOL tarafta eski yığının yerine KÜÇÜK bir köşe (2026-10-16, sahibi 'tekrar lego ekle ama eskisi kadar yer kaplamasın' dedi): 2 katlı alçak kule + yanında tek tuğla
+	-- (eski 4 + 2 katlı kule ve öndeki dağınık tuğla gibi büyütme)
+	tower(-23.5, -58, 2, 1, -0.3)
+	brick(-30, floorTop, -59, 4, 3, 4, BRICK_COLORS[4 % #BRICK_COLORS + 1], -0.35)
 
 	-- SAĞ ARKA KÖŞE (x > 56, z 36-64) ve çarkın arkası: çarkın eski yeri. Çark yumurta standının yanına taşındı (sahibi 'uzak kısma legolar falan olsun' dedi): köşe lego kuleleri ve tek parçalarla dolar.
 	-- Antrenman alanı z = 31'de biter, çark x <= 60 olduğu için çakışma yok. Konumlar sağ duvara göre ayarlanır (widthRight).
