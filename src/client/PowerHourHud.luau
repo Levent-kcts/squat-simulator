@@ -1,7 +1,7 @@
 -- POWER HOUR göstergesi (Config.PowerHour, server/ServerEvents). 2026-10-16 sahibi 'üstteki hap ekranı çok kaplıyor' dedi, yeni düzen:
 -- (1) Başlarken üstte (eski hapın yerinde) kısa 'POWER HOUR!' duyurusu (Config.PowerHour.AnnounceSeconds), (2) duyuru küçülerek SOL ALTA, iksirlerin olduğu sıraya iner ve
 -- 'PowerHourBadge' olur: ⚡ simge, altında kalan süre, yanında 'x2' (BoostHud iksirleri bu rozetin sağına kaydırır), (3) sürerken ekranın sağından ve solundan ara ara
--- (FlybyEvery sn) küçük ⚡ simgesi geçer (Calm UI'da geçmez). Başlamadan önce geri sayım YOK, ortada büyük yazı YOK. Rozete dokununca kısa bilgi bildirimi çıkar.
+-- (FallEvery sn) yanlardan hafifçe AŞAĞI YAĞAN küçük şimşekler (Config.Icons.PowerHourFall: x2'siz lego şimşek; sahibi 'yanlarda çevrede hafif hafif aşağı doğru yağsın' dedi; Calm UI'da yağmaz). Başlamadan önce geri sayım YOK, ortada büyük yazı YOK. Rozete dokununca kısa bilgi bildirimi çıkar.
 -- Sadece görsel: çarpanı sunucu uygular.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,14 +44,18 @@ local function outlined(parent, props, thickness)
 	return label
 end
 
--- Simge: Config.Icons.PowerHour yüklendiyse resim, yoksa ⚡ emojisi
-local function iconInto(parent, props)
-	local imageId = Config.Icons and Config.Icons.PowerHour
+-- Simge: Config.Icons[key] (varsayılan 'PowerHour') yüklendiyse resim, yoksa ⚡ emojisi
+local function iconInto(parent, props, key)
+	local imageId = Config.Icons and Config.Icons[key or "PowerHour"]
 	if type(imageId) == "string" and imageId ~= "" then
 		props.BackgroundTransparency = 1
 		props.Image = imageId
 		props.ScaleType = Enum.ScaleType.Fit
 		return create("ImageLabel", props, parent)
+	end
+	if props.ImageTransparency ~= nil then
+		props.TextTransparency = props.ImageTransparency -- emoji yedeği TextLabel: resim saydamlığı yazıya geçer
+		props.ImageTransparency = nil
 	end
 	props.Text = "⚡"
 	props.TextColor3 = GOLD
@@ -69,7 +73,7 @@ function PowerHourHud.init(screenGui, showToast)
 		return
 	end
 	local announceSeconds = settings.AnnounceSeconds or 3.5
-	local flybyEvery = settings.FlybyEvery or 22
+	local fallEvery = settings.FallEvery or 2.5
 
 	-- (1) Üstteki duyuru (eski hapın yerinde, kısa süreli)
 	local banner = create("Frame", {
@@ -154,27 +158,34 @@ function PowerHourHud.init(screenGui, showToast)
 		end
 	end)
 
-	-- (3) Ekranın bir yanından öbürüne geçen küçük simge
-	local function flyby()
+	-- (3) Ekranın SAĞ ve SOL kenarında yukarıdan aşağı hafifçe yağan küçük şimşek (ortayı ve karakteri kapatmaz; yarı saydam, yavaş, hafif salınır)
+	local function fall()
 		if calm() then
 			return
 		end
-		local fromLeft = math.random() < 0.5
-		local y = 0.22 + math.random() * 0.4
+		local left = math.random() < 0.5
+		local x = if left then 0.02 + math.random() * 0.13 else 0.85 + math.random() * 0.13
+		local size = 30 + math.random(0, 14)
+		local tilt = math.random(-20, 20)
 		local holder = create("Frame", {
-			Name = "PowerHourFlyby",
+			Name = "PowerHourFall",
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(if fromLeft then 0 else 1, if fromLeft then -40 else 40, y, 0),
-			Size = UDim2.fromOffset(46, 46),
+			Position = UDim2.new(x, 0, 0, -size),
+			Size = UDim2.fromOffset(size, size),
 			BackgroundTransparency = 1,
-			Rotation = if fromLeft then -12 else 12,
+			Rotation = tilt,
 		}, screenGui)
-		iconInto(holder, { Size = UDim2.fromScale(1, 1) })
-		local duration = 3.2 + math.random() * 1.2
+		local icon = iconInto(holder, { Size = UDim2.fromScale(1, 1), ImageTransparency = 0.25 }, "PowerHourFall")
+		local duration = 5 + math.random() * 2.5
+		local drift = (math.random() - 0.5) * 0.04
 		TweenService:Create(holder, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-			Position = UDim2.new(if fromLeft then 1 else 0, if fromLeft then 40 else -40, y - 0.06 + math.random() * 0.12, 0),
-			Rotation = if fromLeft then 12 else -12,
+			Position = UDim2.new(x + drift, 0, 1, size),
+			Rotation = tilt + math.random(-25, 25),
 		}):Play()
+		if icon:IsA("ImageLabel") then
+			-- alt kısımda yavaşça solar
+			TweenService:Create(icon, TweenInfo.new(duration * 0.35, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, duration * 0.65), { ImageTransparency = 1 }):Play()
+		end
 		task.delay(duration + 0.1, function()
 			holder:Destroy()
 		end)
@@ -182,7 +193,7 @@ function PowerHourHud.init(screenGui, showToast)
 
 	local announcedFor = nil -- hangi bitiş zamanı için duyuru yapıldı
 	local badgeShown = false
-	local flybyClock = 0
+	local fallClock = 0
 
 	local function showBadge()
 		if badgeShown then
@@ -208,7 +219,7 @@ function PowerHourHud.init(screenGui, showToast)
 		bannerText.TextTransparency = 0
 		bannerStroke.Transparency = 0
 		banner.Visible = true
-		flyby()
+		fall()
 		task.delay(announceSeconds, function()
 			if Workspace:GetAttribute("PowerHourActive") ~= true then
 				banner.Visible = false
@@ -253,13 +264,13 @@ function PowerHourHud.init(screenGui, showToast)
 			task.wait(0.5)
 			render()
 			if badgeShown then
-				flybyClock += 0.5
-				if flybyClock >= flybyEvery then
-					flybyClock = 0
-					flyby()
+				fallClock += 0.5
+				if fallClock >= fallEvery then
+					fallClock = 0
+					fall()
 				end
 			else
-				flybyClock = 0
+				fallClock = 0
 			end
 		end
 	end)

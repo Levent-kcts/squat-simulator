@@ -261,9 +261,9 @@ return {
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
 	-- POWER HOUR (server/ServerEvents, client/PowerHourHud): HER GÜN StartHoursUTC saatlerinde DurationMinutes dakika boyunca SUNUCUDAKİ HERKESE kas kazancı x Multiplier (tüm sunucularda aynı anda).
 	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 18:00 UTC = Türkiye 21:00 / Avrupa akşamı, 00:00 UTC = ABD doğu 20:00 / batı 17:00 (Roblox'un en kalabalık saatleri).
-	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın iki yanından ara ara (FlybyEvery sn) küçük simge geçer.
+	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın sağ ve sol kenarında yukarıdan aşağı hafifçe şimşek yağar (FallEvery sn'de bir; Icons.PowerHourFall).
 	-- DEV paneli 'Power Hour (test)' sunucuda hemen başlatır / bitirir. Baskı/kıtlık dili YOK (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
-	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FlybyEvery = 22 },
+	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 2.5 },
 
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.
@@ -448,7 +448,8 @@ return {
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
-		PowerHour = "", -- Power Hour rozeti ve ekrandan geçen simge (client/PowerHourHud); boşken ⚡ emojisi
+		PowerHour = "", -- Power Hour rozeti (sol alt; client/PowerHourHud): x2 yazılı lego şimşek, assets/icons/powerhour.png; boşken ⚡ emojisi + ayrı x2
+		PowerHourFall = "", -- Power Hour sürerken ekranın yanlarından yağan x2'siz lego şimşek (assets/icons/powerhour_bolt.png); boşken ⚡ emojisi
 		Daily = "rbxassetid://136280654978055", -- sağ üstteki günlük giriş ödülü dairesi ve Daily penceresi başlığı (takvim; assets/icons/daily.png, boşken 📅)
 		Index = "rbxassetid://86290456757551", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "rbxassetid://128930779424288", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)
