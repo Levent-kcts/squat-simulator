@@ -259,9 +259,11 @@ return {
 	-- Arkadaş bonusu: aynı sunucudaki her arkadaş için bacak kası kazancına +PercentPerFriend yüzdesi eklenir (en çok MaxFriends arkadaş sayılır).
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
-	-- POWER HOUR (2026-10-14 büyüme planı sprint 2; server/ServerEvents, client/PowerHourHud): her PeriodMinutes dakikada DurationMinutes dakika boyunca SUNUCUDAKİ HERKESE kas kazancı x Multiplier. Zamanlama UTC saatine bağlıdır
-	-- (tüm sunucularda aynı anda başlar: xx:00-xx:05 ve xx:30-xx:35), küçük üst sayaç gösterir (ortada büyük yazı yok). Baskı/kıtlık dili YOK, hiçbir şey kaçmaz (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
-	PowerHour = { Enabled = true, PeriodMinutes = 30, DurationMinutes = 5, Multiplier = 2, Name = "POWER HOUR" },
+	-- POWER HOUR (server/ServerEvents, client/PowerHourHud): HER GÜN StartHoursUTC saatlerinde DurationMinutes dakika boyunca SUNUCUDAKİ HERKESE kas kazancı x Multiplier (tüm sunucularda aynı anda).
+	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 18:00 UTC = Türkiye 21:00 / Avrupa akşamı, 00:00 UTC = ABD doğu 20:00 / batı 17:00 (Roblox'un en kalabalık saatleri).
+	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın iki yanından ara ara (FlybyEvery sn) küçük simge geçer.
+	-- DEV paneli 'Power Hour (test)' sunucuda hemen başlatır / bitirir. Baskı/kıtlık dili YOK (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
+	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FlybyEvery = 22 },
 
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.
@@ -369,7 +371,7 @@ return {
 		Lines = {
 			{ icon = "📅", text = "DAILY rewards: claim every day, no streak loss" },
 			{ icon = "🎟", text = "Promo codes in Settings: free potions + Wins" },
-			{ icon = "⚡", text = "POWER HOUR: x2 Leg Muscle, 5 min every 30 min" },
+			{ icon = "⚡", text = "POWER HOUR: x2 Leg Muscle for 1 hour, twice a day" },
 			{ icon = "💸", text = "Lower Shop prices on almost everything" },
 			{ icon = "🏅", text = "Rank titles + a live feed of rare pets" },
 		},
@@ -446,6 +448,7 @@ return {
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
+		PowerHour = "", -- Power Hour rozeti ve ekrandan geçen simge (client/PowerHourHud); boşken ⚡ emojisi
 		Daily = "rbxassetid://136280654978055", -- sağ üstteki günlük giriş ödülü dairesi ve Daily penceresi başlığı (takvim; assets/icons/daily.png, boşken 📅)
 		Index = "rbxassetid://86290456757551", -- sağ üstteki Pet Index düğmesinin simgesi (görsel yüklenince ID; boşken 📖 emojisi)
 		Stats = "rbxassetid://128930779424288", -- sağ üstteki Stats düğmesinin simgesi (boşken 📊 emojisi)

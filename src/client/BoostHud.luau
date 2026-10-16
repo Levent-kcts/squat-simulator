@@ -126,7 +126,9 @@ function BoostHud.init(screenGui)
 
 	local function refresh()
 		local now = Workspace:GetServerTimeNow()
-		local shown = 0
+		-- Power Hour rozeti (client/PowerHourHud, 'PowerHourBadge') açıkken sıranın ilk yuvası onundur: iksirler bir yuva sağa kayar
+		local powerBadge = screenGui:FindFirstChild("PowerHourBadge")
+		local shown = if powerBadge and powerBadge.Visible then 1 else 0
 		for _, entry in slots do
 			local untilTime = player:GetAttribute(entry.potion.attribute)
 			local remaining = if type(untilTime) == "number" then untilTime - now else 0

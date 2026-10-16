@@ -10,6 +10,7 @@ local WallService = require(script.Parent.WallService)
 local AutoClickPass = require(script.Parent.AutoClickPass)
 local EggPasses = require(script.Parent.EggPasses)
 local AreaPasses = require(script.Parent.AreaPasses)
+local okEvents, ServerEvents = pcall(require, script.Parent.ServerEvents)
 
 local DevTools = {}
 
@@ -69,6 +70,14 @@ function DevTools.init(notifyEvent)
 			player:SetAttribute("DevAreaPasses", if on then true else nil)
 			AreaPasses.recheck(player)
 			ok, message = true, if on then "Coach pads UNLOCKED (test): Prism and Shadow work" else "Coach pads back to normal"
+		elseif command == "TogglePowerHour" then
+			-- Power Hour'u saatini beklemeden denemek için: bu sunucuda hemen başlatır (tam süre) ya da bitirir
+			if okEvents and ServerEvents.devToggle then
+				local on = ServerEvents.devToggle()
+				ok, message = true, if on then "POWER HOUR started (test): x2 Leg Muscle for everyone in this server" else "Power Hour stopped (test)"
+			else
+				ok, message = false, "Power Hour is not available"
+			end
 		else
 			ok, message = PlayerStats.dev(player, command, amount)
 			-- Rebirth ve sıfırlama duvarları da baştan kurmalı
