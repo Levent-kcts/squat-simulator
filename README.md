@@ -4,7 +4,7 @@ Bu dosya, konuşma/oturum sıfırlandığında **nerede kaldığımızı** hatı
 
 - Proje sahibi: IT öğrencisi, Roblox deneyimi yok. Sohbet **Türkçe**, oyun içindeki TÜM yazılar **İngilizce**. Kod yorumları Türkçe.
 - Kodu Claude yazar, sahibi Studio'da dener; ekran görüntüsü ve Output'taki kırmızı hata yazılarını yollar.
-- Oyunun adı: **Squat Simulator**. Roblox'taki adı yayınlarken sahibi girecek.
+- Oyunun adı: **+1 Squat Evolution: Smash Walls** (2026-10-11'den beri; eskiden Squat Simulator). Oyun YAYINDA (Creator Hub deneyim kimliği 10769004038), kod özel GitHub deposunda (Levent-kcts/squat-simulator, dal `main`).
 
 ## 1. Çalıştırma (her oturum başında)
 
@@ -110,6 +110,26 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 
 ## 5. Yapılacaklar
 
+### GÜNCEL DURUM VE BEKLEYENLER (2026-10-16; önce burayı oku)
+Oyun yayında (16+), Robux ürünleri satışta, kod GitHub'da. 14-16 Ekim'de 'büyüme turu' yapıldı (plan: `OYUN_BUYUME_PLANI.md`, sahibinin Creator Hub işleri: `SAHIBI_YAPACAK_LISTE.md`). Ayrıntılı kurallar CLAUDE.md'de, ne yapıldığı §7 madde 28-31'de.
+
+**Sahibinin yapacakları (para harcatmayan):**
+1. **En geç 23 Ekim'de Studio'dan yayınla** (Rojo senkron > File > Publish): Spooky Gym etkinliği 24 Ekim 00:00 UTC'de kendiliğinden açılır; 14-16 Ekim'deki her şey de ancak yayınla oyuncuya gider.
+2. Creator Hub > Engagement > Events: Halloween için Experience Event kaydı (24 Ekim - 8 Kasım).
+3. Oyun sayfası: 15-30 sn oynanış videosu, 3-5 küçük resim, açıklamanın ilk cümlesi, promosyon kodlarını açıklamaya yaz (LAUNCH, SQUAT, SMASHWALLS, EVOLUTION, LEGDAY, FRIENDS, THANKS).
+4. Her kanal için ayrı Share Link; Ads Manager'da otomatik kredi yüklemeyi kapat.
+5. Kodu hazır, ID bekleyenler: rozetler (önce 3-5 tanesi; `Config.Badges`), Roblox grubu (`Config.Group.Id`), Friend Referral banner'ı. Starter Pack görselini Creator Hub'daki ürüne 'Change Image' ile ekle (`assets/icons/starterpack.png`).
+
+**Sahibinin kararını bekleyenler:**
+6. Mastery: kalıcı silinsin mi, ileride açılsın mı (şu an `Config.Mastery.Enabled = false`, silme listesi CLAUDE.md 'SOL HUD SADELEŞTİRİLDİ').
+7. UIStyle'daki kullanılmayan 'Soft Dark Candy' API'si silinsin mi?
+8. Power Hour saatleri (her gün 18:00 ve 00:00 UTC = TR 21:00 ve 03:00, 1 saat) uygun mu?
+9. İz simgeleri (`assets/icons/AI_PROMPTS_TRAILS.md`) üretilecek mi?
+10. İKİNCİ DÜNYA ne zaman (en büyük iş; ilk oyuncular ~10 günde oyunun sonuna ulaşır).
+11. Cevaplanmamış fikirler (`OYUN_TASARIM_ANALIZI.md` §4): Boss Wall, Goals sekmesi, 4./5. pet yuvası ve spor salonu yükseltmeleri, Hall of Fame + haftalık pano, rebirth 'Evolution' sahnesi, gizli Altın Tuğlalar, çoklu yumurtada büyük kart, gerçek bildirimler (Open Cloud), klip/Capture istemi, ek Robux ürünleri (etkinlik paketi, Event Booster, özel sunucu).
+
+**Studio'da sahibin görmesi gerekenler (16 Ekim değişiklikleri; mantık testleri geçti, görünüm denenmedi):** Power Hour (DEV > 'Power Hour (test)': üst duyuru, sol alt rozet + balon, yağan şimşekler, teypte müzik ve bitiş vuruşu), konuşma balonları (iksir, Power Hour, Gifts, arkadaş bonusu), Welcome Back karartması, Daily ve Starter Pack görselleri, duvar can barının son canları, telefonda sol HUD yüksekliği, koridor girişi solundaki küçük lego köşesi.
+
 ### YAYIN KONTROL LİSTESİ (2026-10-10, sahibi 'oyunu çıkarmak için son detayları yapalım' dedi)
 **DURUM (2026-10-10): OYUN YAYINLANDI.** Sahibi Studio'dan yayınladı (API erişimi + R15 ayarlandı), Studio dosyasının yedeğini Google Drive'a, kodu özel GitHub deposuna (Levent-kcts/squat-simulator) aldı ve gerçek Roblox uygulamasında kontrol etti: 'oyun gayet iyi çalışıyor'. KALANLAR: oyun sayfası (açıklama, simge, küçük resimler), yaş/içerik anketi, 'Herkese Açık' yapmak, ilk günlerin analitiği; sonra oyuncu geri bildirimine göre düzeltme turları.
 **Claude tarafında YAPILDI:** (1) `Config.DevTools.Enabled = false` (yayında DEV paneli kapalı; Studio'da hep açık). (2) Veri güvenliği: oturum kilidi, kayıt yeniden denemeleri, satın almada 'önce kaydet', Shop hız sınırı (bkz. CLAUDE.md > DataStore maddesi; test sessionlocktest). (3) Config'teki 50 Roblox varlığı (28 simge, 12 ses, 10 müzik) doğrulandı: hepsi var ve doğru türde (müzikler Creator Store/Distrokid). (4) Robux ürünleri: 39 ürünün ID'si bağlı; game pass'lerin (VIP, Auto Click, yumurta x2, antrenör x2) adı ve fiyatı Roblox'ta doğrulandı; Developer Product fiyatlarını sahibi güncelledi (API ile okunamaz).
@@ -167,7 +187,7 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 
 **C2) Referans oyunla karşılaştırma (2026-10-05)** — YAPILDI: sağ taraf (FREE REWARD kutusu; lobi sandığı denendi ve kaldırıldı), arkadaş bonusu, lobi okunaklılığı (etiketler, ped renkleri, pano boyutu), sol HUD butonları ve sayaçlar (koyu zemin, gradyan çerçeve, büyük ikon, hapsız sayaç). REDDEDİLDİ: üstteki oyuncu ilerleme şeridi (sahibi istemedi, ekleme). YAPILDI: Auto Click butonu gökkuşağı + OFF/ON rozeti. YAPILDI (2026-10-06): alt yazı '17 Leg Muscle' biçiminde, büyük sayılar K/M/B ile kısalır. KALANLAR (sahibi seçince): hub'da NPC'ler (görev panosu, Index ve sağ üst daireler YAPILDI; pet takılıyken yanımızda görünüyor mu kontrol edilmeli). Robux gerektirenler D'de.
 
-**D) EN SON: TÜM ROBUX İŞLERİ (sahibinin kararı: Blender modellerinden de SONRA yapılacak, o zamana kadar dokunma/hatırlatma sadece sıra gelince)**
+**D) [TARİHÇE: YAPILDI; 2026-10-10'dan beri bütün ürünlerin ID'si bağlı, fiyatlar 2026-10-16'da Creator Hub'da güncellendi, bkz. §7 madde 31] TÜM ROBUX İŞLERİ (sahibinin kararı: Blender modellerinden de SONRA yapılacak, o zamana kadar dokunma/hatırlatma sadece sıra gelince)**
 Kodun hepsi hazır ve ID'ler 0 olduğu için inert: butonlar 'SOON' / 'COMING SOON' der, satın alma penceresi açılmaz, oyun Robux'suz da eksiksiz çalışır. Sıra gelince sahibi Creator Hub'da ürünleri oluşturur, ID'leri Claude'a (ya da Config'e) yazar:
 - VIP game pass → `Config.VipGamePassId` (Win odalarındaki pembe VIP pedi, 2x Win).
 - Shop pencere ürünleri (Luck/Muscle/Wins/Rainbow iksirleri, +1K/+10K/+100K Power, Win Pack, Mega Win Pack, Pet Space) → `Config.Shop.Products[].productId`; fiyatlar (`robux`) geçicidir.
@@ -180,7 +200,7 @@ Makbuz işleme (`server/Purchases`, ProcessReceipt, tekrar ödül vermeyen makbu
 
 - Referans: "Punch simulator" tarzı oyunlar (lego çıkıntılı pastel salon, şeker renkli duvarlar, kalın siyah kenarlı FredokaOne yazı, pembe level çubuğu). Aşırı parlak olmasın.
 - Arayüz kalabalık olmasın; referans görsellere benzesin. Sahibi referans ekran görüntüleri verir: ölçüyü karakter boyuna oranlayarak oradan al (cetvel = karakter, ~5.3 stud), tahminle yapma.
-- İSTEMEDİKLERİ (geri ekleme): üstte oyuncu ilerleme şeridi, lobide 3B FREE REWARD sandığı, 'sıradaki hedef' diye bir pedin parlaması, neon kırmızı pedler, ekranı saran bloom/aşırı parlak ışık paneli, ışınlanma butonları, tek Sounds butonu, günlük ödül, kod girişi (CODES), squat/kas kazanımı sesi.
+- İSTEMEDİKLERİ (geri ekleme): üstte oyuncu ilerleme şeridi, lobide 3B FREE REWARD sandığı, 'sıradaki hedef' diye bir pedin parlaması, neon kırmızı pedler, ekranı saran bloom/aşırı parlak ışık paneli, ışınlanma butonları, tek Sounds butonu, squat/kas kazanımı sesi, 'modernleştirilmiş' koyu arayüz teması (2026-10-16 geri alındı). NOT: günlük giriş ödülü ve promosyon kodları eskiden reddedilmişti, 2026-10-14'te sahibi ONAYLADI ve eklendi.
 - Robux işleri en sona (Blender'dan da sonra). Robux gerektirmeyen bonuslar (arkadaş bonusu, çevrimdışı kazanç) serbest.
 - Roblox'a yüklenen görseller: sahibi Asset Manager > Bulk Import ile yükler, ID'yi yazar; Claude ID'yi `economy.roblox.com/v2/assets/<id>/details` ile doğrular (ad ve tür Image olmalı).
 - Sahibi 'ara ara not tut' der: README.md ve CLAUDE.md'yi her anlamlı değişiklikte güncelle, eskiyen satırları çıkar (bu dosyanın özeti §7'de).
@@ -189,9 +209,9 @@ Makbuz işleme (`server/Purchases`, ProcessReceipt, tekrar ödül vermeyen makbu
 
 ## 7. Şimdiye kadar yapılanlar (özet geçmiş)
 
-(Not: Promosyon kodları özelliği — CODES butonu, `CodesPanel`, `PlayerStats.redeemCode`, `Config.Codes` — sahibinin isteğiyle tamamen kaldırıldı; geri eklenecekse git geçmişinden bakılır.)
+(Not: promosyon kodları bir ara kaldırılmıştı; 2026-10-14'te sahibi onaylayınca Settings > Redeem code olarak YENİDEN eklendi, bkz. madde 28.)
 
-Ayrıntılı kurallar `CLAUDE.md`'de, kod değişiklikleri yerel git geçmişinde (`git log`; hiçbir yere push edilmedi). Eski bir hâle dönmek gerekirse `git log` ile ilgili commit bulunup `git checkout <commit> -- src` ile `src` o commit'e döndürülebilir.
+Ayrıntılı kurallar `CLAUDE.md`'de, kod değişiklikleri git geçmişinde (`git log`; 2026-10-10'dan beri her commit özel GitHub deposuna da gönderilir: `git push origin master:main`). Eski bir hâle dönmek gerekirse `git log` ile ilgili commit bulunup `git checkout <commit> -- src` ile `src` o commit'e döndürülebilir.
 
 1. **Temel oyun:** ekrana tıklayınca bacak kası, tekme/squat hareketleri (kodla, animasyon asset'i yok), her hareket bitince tek puan ve hasar, 100 duvarlı koridor (20 aşama x 5), oyuncuya özel duvarlar (sunucu can tutar, istemci çizer), Win pedleri ve ödül merdiveni, DataStore ile kayıt (30 sn + olaylarda), level (toplam kastan) ve rebirth, karakter büyümesi, bacak kasları, siyah şort, görünüm temizliği (katmanlı kıyafet kalkar).
 2. **HUD ve kozmetik:** referans oyundan esinli HUD (hedef şeridi, sayaçlar, 2x3 buton, level çubuğu, Auto Click), Pets paneli, Gifts (oyun süresi ödülleri), Backpack > Trails ve Auras, Rebirth onay ekranı, DEV test paneli.
@@ -220,3 +240,7 @@ Ayrıntılı kurallar `CLAUDE.md`'de, kod değişiklikleri yerel git geçmişind
 25. **Günlük çark:** sağ arka köşede dönen yuvarlak ödül çarkı + E ile açılan karartmalı çark arayüzü, günde 1 hak, ödüller sunucuda; ayrıntı §4'teki 'GÜNLÜK ÇARK' notunda.
 26. **Blender modelleri (2026-10-07):** 13 pet, 6 yumurta ve 15 ayakkabı Studio'da çalışıyor; 10 antrenör modeli (`coaches.py`) üretildi, Studio'ya aktarılınca `server/Mannequin` onları kullanır (yoksa kod mankeni); ayrıntı §5 madde 6. Antrenörler (10) ve bacak kasları (6 aşama x uyluk/popo/baldır) da Studio'da denendi ve ÇALIŞIYOR (sahibi 2026-10-07 onayladı; kas için 3 tur: renk dokusuz Color ile çözüldü, taşma sığ kabartıyla çözüldü). Blender modelleme aşaması BİTTİ: pet, yumurta, ayakkabı, antrenör, kas. Sıradaki büyük iş: Robux işleri (§5).
 27. **Antrenörler ve bacak kasları Blender modeli (2026-10-07):** koçlar Studio'da çalışıyor; 12 bacak kası meshi (`muscles.py`) üretildi, `LegGrowth` model varsa onu kullanıyor (yoksa küre kaslar); Studio'ya aktarma bekleniyor, ayrıntı §5 madde 6 BACAK KASLARI.
+28. **Büyüme turu (2026-10-14, sahibi 'araştır, planla, tam yetkiyle oyunu popüler yap' dedi):** 5 araştırma raporu (`research/`), plan `OYUN_BUYUME_PLANI.md`, sahibinin listesi `SAHIBI_YAPACAK_LISTE.md`. Eklenenler (hepsi CLAUDE.md'de ayrı maddeler, her birinin mocktest'i var): çapraz sunucu duyuru akışı (GlobalFeed/FeedHud), Friend Referral ödülü, promosyon kodları (Settings > Redeem code), günlük giriş ödülü (7 gün, nazik seri; artık sağ üst daire), Starter Pack, 9 rozet (pasif, ID bekliyor) + rebirth unvanları, kısıtlı hesaplar için sabit sıralı Eğitim Yumurtası, ölçüm olayları (Analytics), What's New kartı, Spooky Gym Halloween etkinliği (Candy, deterministik mağaza, lobi süsü; 24 Ekim-8 Kasım), lobi bölge renkleri, Calm UI ayarı, bildirim izni, grup ödülü (pasif), evrim anı (Form-Up), Mastery ağacı (sonra RAFA kaldırıldı). Bütün Robux fiyatları düşürüldü (`ROBUX_FIYAT_DEGISIKLIGI.md`).
+29. **Arayüz yenilemesi ve geri alınışı (2026-10-14/16):** bütün paneller 'Soft Dark Candy' temasına taşındı; sahibi 'çok problemli' deyince 1fd16a0'daki ESKİ temaya geri dönüldü (kalın siyah kontur, FredokaOne). Korunan işlevler: Daily sağ üst daire, LabelScaler (dünya etiketleri mesafeye göre ölçeklenir), kamera zoom sınırları, bildirim izni, telefonda 7+ sol butonların 3. sütunu. Sol HUD sadeleşti (Daily sağ üste, Mastery kapandı). Studio QA'yı ayrı bir Claude oturumu yaptı (`research/qa_ss_2026-10-15*/`).
+30. **16 Ekim düzeltmeleri ve Power Hour yenilemesi:** Welcome Back karartması tam ekran (OfflineGui); Daily takvim simgesi (`assets/icons/daily.png`); duvar can barı iki katmanlı dolgu (taşmaz, son canlarda da azalır); telefonda sol HUD 55 birim yukarı; koridor girişi solundaki büyük lego yığını yerine küçük köşe. POWER HOUR baştan yazıldı: her gün 18:00 ve 00:00 UTC'de 1 saat x2 kas; üstte kısa duyuru, sol altta iksirlerin yanında rozet (lego şimşek simgesi + süre + x2, konuşma balonu), yanlardan yağan şimşekler, DEV 'Power Hour (test)'; kendi müziği (Blender Python ile üretildi: `tools/sounds/make_powerhour.py`, giriş + 25.6 sn kesintisiz döngü + bitiş vuruşu) teypten, normal müziğin yerine, müzik kademesinde çalar. Bütün bilgi kutuları kuyruklu, açılış animasyonlu KONUŞMA BALONU oldu (`client/SpeechBubble`).
+31. **Creator Hub işleri Claude tarafından (2026-10-16, sahibinin tam yetkisiyle, uygulamanın kendi tarayıcısında):** 6 game pass + 33 Developer Product'ın fiyatı ve 9 iz ürününün adı güncellendi, liste sayfalarından doğrulandı; Starter Pack Developer Product'ı oluşturuldu (ID 3718993924, 49 R$, Managed pricing kapalı) ve oyuna bağlandı, Shop kartı kendi görselini kullanır (`Config.Icons.StarterPack`). Şifre girilmez: sahibi tarayıcıda kendisi oturum açar. Listede kullanılmayan eski bir 'VIP' Developer Product'ı (3717471559) duruyor (VIP game pass'tir), dokunulmadı.
