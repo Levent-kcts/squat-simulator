@@ -433,10 +433,12 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 		end, product.badge)
 		if product.once then
 			-- Tek seferlik ürün (Başlangıç Paketi): alındıktan sonra kart kalkar (sunucu 'StarterPackOwned' özniteliğini koyar)
+			-- Pakette Luck iksiri var: ücretli rastgele ürün kısıtlı hesapta (Luck/Rainbow iksiri gibi) satılmaz
 			local function refreshOnce()
-				card.Visible = player:GetAttribute("StarterPackOwned") ~= true
+				card.Visible = player:GetAttribute("StarterPackOwned") ~= true and player:GetAttribute("PaidRandomRestricted") == false
 			end
 			player:GetAttributeChangedSignal("StarterPackOwned"):Connect(refreshOnce)
+			player:GetAttributeChangedSignal("PaidRandomRestricted"):Connect(refreshOnce)
 			refreshOnce()
 		end
 	end

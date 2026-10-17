@@ -1187,6 +1187,7 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 	end
 end)
 safeInit("RightHud", loadOptional("RightHud"), screenGui, toggleGifts, showToast, toggleIndex, toggleStats, toggleQuests, toggleLogin)
+safeInit("StarterOffer", loadOptional("StarterOffer"), screenGui, showToast) -- sağda FREE REWARD altında kapatılabilir Starter Pack kartı (RightHud'dan SONRA: onun sütununa yerleşir)
 
 local trailsPanel = CosmeticPanel.init(screenGui, showToast, {
 	title = "Trails",
