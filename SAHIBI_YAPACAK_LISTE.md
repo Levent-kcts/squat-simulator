@@ -49,3 +49,4 @@ Creator Hub > oyun > **Engagement > Badges > Create**: kod 9 rozeti hazır (`src
 
 ## E) 2026-10-17 Claude'un tarayıcıdan yaptıkları
 - 34 Developer Product'a görsel yüklendi (doğrulandı), Starter Pack ürünü açıldı, eski VIP ürünü satıştan kaldırıldı, bütün fiyatlar güncellendi.
+- Halloween Experience Event kaydı oluşturuldu ('Spooky Gym', Festival, Public, 24 Ekim 00:00 - 9 Kasım 00:00 UTC). Görseli yok; 'Submit for Featuring' açılmadı.

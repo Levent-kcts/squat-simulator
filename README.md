@@ -115,7 +115,7 @@ Oyun yayında (16+), Robux ürünleri satışta, kod GitHub'da. 14-16 Ekim'de 'b
 
 **Sahibinin yapacakları (para harcatmayan):**
 1. **En geç 23 Ekim'de Studio'dan yayınla** (Rojo senkron > File > Publish): Spooky Gym etkinliği 24 Ekim 00:00 UTC'de kendiliğinden açılır; 14-16 Ekim'deki her şey de ancak yayınla oyuncuya gider.
-2. Creator Hub > Engagement > Events: Halloween için Experience Event kaydı (24 Ekim - 8 Kasım).
+2. ~~Halloween Experience Event kaydı~~ YAPILDI (2026-10-17, Claude oluşturdu: 'Spooky Gym', Festival, Public, 24 Ekim 00:00 - 9 Kasım 00:00 UTC; Scheduled listesinde). Görseli YOK (isteğe bağlı; Creator Hub > Events > Spooky Gym > Upload Image). Submit for Featuring açılmadı.
 3. Oyun sayfası: 15-30 sn oynanış videosu, 3-5 küçük resim, açıklamanın ilk cümlesi, promosyon kodlarını açıklamaya yaz (LAUNCH, SQUAT, SMASHWALLS, EVOLUTION, LEGDAY, FRIENDS, THANKS).
 4. Her kanal için ayrı Share Link; Ads Manager'da otomatik kredi yüklemeyi kapat.
 5. Kodu hazır, ID bekleyenler: rozetler (önce 3-5 tanesi; `Config.Badges`), Roblox grubu (`Config.Group.Id`), Friend Referral banner'ı. Starter Pack görselini Creator Hub'daki ürüne 'Change Image' ile ekle (`assets/icons/starterpack.png`).
