@@ -137,7 +137,7 @@ return {
 		Products = {
 			-- BAŞLANGIÇ PAKETİ (2026-10-14 büyüme planı; rakiplerde standart ilk satın alma ürünü): TEK SEFERLİK (once = true: alındıktan sonra Shop'tan kalkar), sayaç/baskı yok. İçerik Config.StarterPack.
 			-- productId 0 iken kartta fiyat yazar ama basınca 'coming soon' der: Creator Hub'da Developer Product açıp ID'yi robux_ids.txt'e 'shop:starterPack=ID' yaz (tools/set_robux_ids.py).
-			{ id = "starterPack", name = "Starter Pack", detail = "2 Rainbow + Luck + 25 Pets", icon = "🎁", imageKey = "StarterPack", kind = "starterPack", once = true, robux = 49, productId = 3718993924, color = Color3.fromRGB(255, 150, 50) },
+			{ id = "starterPack", name = "Starter Pack", detail = "3 Potions + 25 Pet Slots", icon = "🎁", imageKey = "StarterPack", kind = "starterPack", once = true, robux = 49, productId = 3718993924, color = Color3.fromRGB(255, 150, 50) },
 			{ id = "petSpace25", name = "Pet Space", detail = "+25 pet slots", icon = "🎒", imageKey = "PetSpace", badge = "+", kind = "petSpace", amount = 25, robux = 49, productId = 3717466379, color = Color3.fromRGB(235, 70, 70) },
 			-- HIZLI SATIN ALMA (quick = true): Auto Click'in solundaki '+1K Power / +10K Power / +100K Power' düğmeleri (sahibi referans görselle istedi); amount kadar tıklamalık bacak kası (kazanç x amount) anında verilir. Fiyatlar geçicidir
 			{ id = "power1k", name = "+1K Power", detail = "1,000 squats of leg power", icon = "🦵", imageKey = "LegMuscle", kind = "moves", amount = 1000, robux = 15, productId = 3717466555, quick = true, color = Color3.fromRGB(255, 45, 140) },
