@@ -443,7 +443,7 @@ return {
 
 	Icons = {
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
-		StarterPack = "rbxassetid://129524546313020", -- Shop > PACKS Starter Pack kartı (assets/icons/starterpack.png; boşken 🎁)
+		StarterPack = "rbxassetid://94826644179807", -- Shop > PACKS Starter Pack kartı + sağdaki teklif kartı; 2026-10-17 Yeti'li yeni görsel (assets/icons/starterpack.png; boşken 🎁)
 		PowerHour = "rbxassetid://86577652430738", -- Power Hour rozeti (sol alt; client/PowerHourHud): x2 yazılı lego şimşek, assets/icons/powerhour.png; boşken ⚡ emojisi + ayrı x2
 		PowerHourFall = "rbxassetid://88513574142485", -- Power Hour sürerken ekranın yanlarından yağan x2'siz lego şimşek (assets/icons/powerhour_bolt.png); boşken ⚡ emojisi
 		Daily = "rbxassetid://136280654978055", -- sağ üstteki günlük giriş ödülü dairesi ve Daily penceresi başlığı (takvim; assets/icons/daily.png, boşken 📅)
