@@ -41,13 +41,14 @@ function RightHud.init(screenGui, openGifts, showToast, openIndex, openStats, op
 		Name = "RightHud",
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -14, 0.4, 0),
-		Size = UDim2.fromOffset(200, 190),
+		Size = UDim2.fromOffset(200, 230), -- Starter Pack kartı (client/StarterOffer, LayoutOrder 0) + FREE REWARD sığsın
 		BackgroundTransparency = 1,
 	}, screenGui)
 	create("UIListLayout", {
 		Padding = UDim.new(0, 10),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		HorizontalAlignment = Enum.HorizontalAlignment.Right,
+		VerticalAlignment = Enum.VerticalAlignment.Bottom, -- FREE REWARD hep altta aynı yerde; Starter Pack kartı varken onun ÜSTÜNDE durur (sahibi istedi), kalkınca boşluk üstte kalır
 	}, container)
 
 	-- ---------------- 1) FREE REWARD ----------------
