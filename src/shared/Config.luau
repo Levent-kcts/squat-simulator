@@ -263,10 +263,10 @@ return {
 	-- Arkadaşlığı Roblox söyler (server/FriendBonus). Oyuncuya arkadaşını oyuna çağırtmak için; sağ taraftaki FRIEND BONUS kutusunda görünür.
 	Friends = { Enabled = true, PercentPerFriend = 10, MaxFriends = 5 },
 	-- POWER HOUR (server/ServerEvents, client/PowerHourHud): HER GÜN StartHoursUTC saatlerinde DurationMinutes dakika boyunca SUNUCUDAKİ HERKESE kas kazancı x Multiplier (tüm sunucularda aynı anda).
-	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 18:00 UTC = Türkiye 21:00 / Avrupa akşamı, 00:00 UTC = ABD doğu 20:00 / batı 17:00 (Roblox'un en kalabalık saatleri).
+	-- 2026-10-16 sahibi 'insanların en çok girdiği saatlerde, 5 dk değil 1 saat olsun' dedi (eskiden her 30 dk'da 5 dk): 2026-10-17 sahibi 'Roblox'ta en çok aktif oyuncu olduğu saatte olsun' dedi: TEK pencere 19:00-20:00 UTC (RoWatcher'ın 89 günlük ölçümü: Roblox'un haftalık zirvesi Cumartesi ~19:00 UTC ~16 milyon; her gün sabah UTC'de dip, öğleden sonra-akşam zirve) = TR 22:00, ABD doğu 15:00 (yaz saatinde) / 14:00 (kışın), Avrupa 20:00-21:00. Eski: 18 ve 00 UTC iki pencere.
 	-- Görünüm: başlarken üstte AnnounceSeconds sn 'POWER HOUR!' yazar, sonra sol alta (iksirlerin yanına) iner: simge + altında süre + yanında x2; sürerken ekranın sağ ve sol kenarında yukarıdan aşağı hafifçe şimşek yağar (FallEvery sn'de bir; Icons.PowerHourFall).
 	-- DEV paneli 'Power Hour (test)' sunucuda hemen başlatır / bitirir. Baskı/kıtlık dili YOK (sadece bonus). Kas kazancına PlayerStats.addMuscle'da uygulanır.
-	PowerHour = { Enabled = true, StartHoursUTC = { 18, 0 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 8.0, -- ThemeSeconds: temada giriş+patlamanın bittiği, bitiş vuruşunun başladığı an (1 ölçü yükseliş + 4 ölçü x 1.6 sn @150 BPM)
+	PowerHour = { Enabled = true, StartHoursUTC = { 19 }, DurationMinutes = 60, Multiplier = 2, Name = "POWER HOUR", AnnounceSeconds = 3.5, FallEvery = 1.6, ThemeSeconds = 8.0, -- ThemeSeconds: temada giriş+patlamanın bittiği, bitiş vuruşunun başladığı an (1 ölçü yükseliş + 4 ölçü x 1.6 sn @150 BPM)
 		-- ARKA PLAN DÖNGÜSÜ: temanın giriş+patlama kısmından SONRA en az minutes dk normal müziğin YERİNE çalar (üst üste binmez); süre dolunca bir turunu BİTİRDİĞİ anda temanın bitiş vuruşu çalar ve normal müzik döner.
 		-- assets/sounds/powerhour_loop.ogg (25.6 sn kesintisiz döngü, giriş müziğinin patlama kısmından; tools/sounds/make_powerhour.py). id boşken normal müzik çalmaya devam eder.
 		LoopMusic = { id = "rbxassetid://94015375261968", minutes = 5, gain = 1 } },
@@ -362,7 +362,7 @@ return {
 		Lines = {
 			{ icon = "📅", text = "DAILY rewards: claim every day, no streak loss" },
 			{ icon = "🎟", text = "Promo codes in Settings: free potions + Wins" },
-			{ icon = "⚡", text = "POWER HOUR: x2 Leg Muscle for 1 hour, twice a day" },
+			{ icon = "⚡", text = "POWER HOUR: x2 Leg Muscle, 1 hour every day" },
 			{ icon = "💸", text = "Lower Shop prices on almost everything" },
 			{ icon = "🏅", text = "Rank titles + a live feed of rare pets" },
 		},

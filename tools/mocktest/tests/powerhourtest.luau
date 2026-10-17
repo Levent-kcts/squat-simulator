@@ -25,8 +25,16 @@ for _, hour in settings.StartHoursUTC do
 	assert(active == false and remaining == 1, "başlangıçtan 1 sn önce pasif, kalan 1")
 end
 -- Sıradaki başlangıca kalan süre gün aşımında da doğru (18:00 ve 00:00 için: 20:00'de sonraki 00:00'a 4 saat)
-local active, remaining = ServerEvents.powerHourState(base + 20 * 3600)
-assert(active == false and remaining == 4 * 3600, "20:00 UTC'de sonraki başlangıç 4 saat sonra (00:00): " .. tostring(remaining))
+-- Gün aşımı: son başlangıçtan 1 sn önce bitiş + bir sonraki başlangıca kalan doğru (en erken saat ertesi güne sarar)
+local first = settings.StartHoursUTC[1]
+for _, hour in settings.StartHoursUTC do
+	first = math.min(first, hour)
+end
+local active, remaining = ServerEvents.powerHourState(base + DAY - 1)
+assert(active == false or first == 23, "günün son saniyesinde (23:59:59) pasif olmalı")
+if active == false then
+	assert(remaining == 1 + first * 3600, "gece yarısından sonraki ilk başlangıca kalan doğru olmalı: " .. tostring(remaining))
+end
 
 -- 2) Kapalıyken hiç aktif olmaz
 settings.Enabled = false
