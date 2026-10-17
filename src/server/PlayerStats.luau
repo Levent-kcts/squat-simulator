@@ -1900,6 +1900,19 @@ local function applyProduct(player, profile, product)
 			giveItem(player, profile, potion.kind, potion.minutes)
 		end
 		profile.petSlots = math.min(profile.petSlots + Config.StarterPack.PetSlots, Config.MaxExtraPetSlots)
+		-- Güçlü pet (envanter doluysa da verilir: Robux ile alındı) ve Win paketi kadar Win
+		local starterPet = Config.StarterPack.Pet and Catalog.PetById[Config.StarterPack.Pet]
+		if starterPet then
+			table.insert(profile.pets, starterPet.id)
+			if #profile.equipped < Config.MaxEquippedPets then
+				table.insert(profile.equipped, starterPet.id)
+			end
+		end
+		if Config.StarterPack.WinsStage then
+			local amount = Layout.reward(Config.StarterPack.WinsStage)
+			wins.Value += amount
+			econ(player, "Source", amount, "IAP", "iap_starterPack")
+		end
 		profile.flags.starter = true
 	elseif product.kind == "petSpace" then
 		profile.petSlots = math.min(profile.petSlots + product.amount, Config.MaxExtraPetSlots) -- üst sınırda da satın alma işlenmiş sayılır (Robux boşa gitmesin)
