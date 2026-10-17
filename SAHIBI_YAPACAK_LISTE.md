@@ -46,3 +46,6 @@ Creator Hub > oyun > **Engagement > Badges > Create**: kod 9 rozeti hazır (`src
 - "Beğen = ödül" ve "ücretsiz Robux" başlığı/açıklaması. Yanıltıcı küçük resim.
 - Oyun içine Discord daveti veya link yazmak.
 - Reklam kredisi harcamak (reklamla gelenler Roblox'un öneri sinyallerine sayılmıyor ve "highly engaged" sayacına dönüşümü düşük bildiriliyor).
+
+## E) 2026-10-17 Claude'un tarayıcıdan yaptıkları
+- 34 Developer Product'a görsel yüklendi (doğrulandı), Starter Pack ürünü açıldı, eski VIP ürünü satıştan kaldırıldı, bütün fiyatlar güncellendi.
