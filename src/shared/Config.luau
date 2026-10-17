@@ -171,6 +171,10 @@ return {
 		PetSlots = 25,
 		Pet = "yeti",
 		WinsStage = 8,
+		-- YENİ OYUNCU FIRSATI (2026-10-17, sahibi 'yeni başlayanlara ucuz ve hızlı gelişme fırsatı olsun, oyunu ilk açana 1 saatlik geri sayım başlasın, üstünde starter pack olsun, basınca satın alma ekranı çıksın' dedi):
+		-- paket SADECE bu süre içinde satılır (sağdaki teklif kartı + Shop kartı; süre bitince ikisi de kalkar, sahte sayaç değil). Süre OYUN SÜRESİDİR (çevrimdışıyken akmaz, kalan saniye kayıtlı 'StarterOffer').
+		-- Eski oyuncular (özellik gelmeden önce katılanlar) da bir sonraki girişlerinde aynı 1 saatlik pencereyi bir kez alır.
+		OfferSeconds = 3600,
 	},
 
 	-- Çevrimdışı kazanç (Offline Earnings): oyundan uzakta geçen süre için bacak kası birikir; girişte açılan pencerede CLAIM'e basınca verilir.

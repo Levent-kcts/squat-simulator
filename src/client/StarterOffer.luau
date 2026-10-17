@@ -1,13 +1,16 @@
 -- BAŞLANGIÇ PAKETİ TEKLİF KARTI (2026-10-17, sahibi referans oyunun sağ üstündeki 'Starter Pack' kartını gösterip 'bunun gibi bir UI ekle, kapatılabilsin' dedi):
 -- sağdaki FREE REWARD kutusunun ALTINDA küçük kart: gökkuşağı 'Starter Pack' başlığı, lego desenli sarı kutu içinde paketin görseli (Config.Icons.StarterPack),
--- altında 'ONLY R$ 49'. Karta basınca Roblox satın alma penceresi açılır (Shop'taki kartla aynı Developer Product). Köşedeki X bu oturum için gizler
--- (bir sonraki girişte yeniden çıkar; baskı/sayaç dili YOK). Görünür olduğu durumlar: ürün satışta (productId > 0), oyuncu almamış ('StarterPackOwned'),
--- eğitimi bitmiş ('TutorialDone': yeni oyuncunun ilk dakikalarında ekran sade kalsın) ve hesap ücretli rastgele ürün kısıtlı DEĞİL (pakette Luck iksiri var;
--- Shop da kısıtlı hesapta Luck/Rainbow satmaz). Sadece görsel/kısayol: satın almayı ve ödülü sunucu işler (Purchases).
+-- görselin altında 'ONLY R$ 49' şeridi, kartın ALTINDA GERİ SAYIM (2026-10-17, sahibi 'yeni başlayanlara 1 saatlik geri sayım, üstünde starter pack, basınca satın alma ekranı' dedi).
+-- Geri sayım GERÇEKTİR: paket yalnız Config.StarterPack.OfferSeconds'lık OYUN SÜRESİ içinde satılır (sunucu 'StarterOfferUntil'; süre bitince bu kart ve Shop kartı kalkar).
+-- Karta basınca Roblox satın alma penceresi açılır (Shop'taki kartla aynı Developer Product). Köşedeki X bu oturum için gizler (bir sonraki girişte, süre bitmediyse yeniden çıkar).
+-- Görünür olduğu durumlar: ürün satışta (productId > 0), veri yüklü, oyuncu almamış ('StarterPackOwned'), fırsat süresi bitmemiş ve hesap ücretli rastgele ürün
+-- kısıtlı DEĞİL (pakette Luck iksiri var; Shop da kısıtlı hesapta Luck/Rainbow satmaz). Eğitim sırasında da görünür (süre ilk girişte başlar).
+-- Sadece görsel/kısayol: satın almayı ve ödülü sunucu işler (Purchases).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
@@ -16,7 +19,7 @@ local StarterOffer = {}
 
 local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel karakter)
 local FONT = Enum.Font.FredokaOne
-local WIDTH, HEIGHT = 150, 116
+local WIDTH, HEIGHT = 150, 120
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -34,6 +37,18 @@ local function outlined(parent, props, thickness)
 	local label = create("TextLabel", props, parent)
 	create("UIStroke", { Thickness = thickness or 2.5, Color = Color3.new(0, 0, 0) }, label)
 	return label
+end
+
+-- Kalan süre yazısı: 1 saat ve üstünde 'h:mm:ss', altında 'mm:ss'
+function StarterOffer.formatTime(seconds)
+	seconds = math.max(0, math.floor(seconds))
+	local hours = seconds // 3600
+	local minutes = (seconds % 3600) // 60
+	local secs = seconds % 60
+	if hours > 0 then
+		return string.format("%d:%02d:%02d", hours, minutes, secs)
+	end
+	return string.format("%02d:%02d", minutes, secs)
 end
 
 local function findProduct()
@@ -109,12 +124,26 @@ function StarterOffer.init(screenGui, showToast)
 	end
 	local cardScale = create("UIScale", { Scale = 1 }, card)
 
-	-- Fiyat
-	outlined(holder, {
-		Position = UDim2.fromOffset(0, 91),
-		Size = UDim2.new(1, 0, 0, 24),
-		Text = `ONLY {ROBUX} {product.robux}`,
-		TextColor3 = Color3.new(1, 1, 1),
+	-- Fiyat: kartın alt kenarına binen küçük yeşil şerit
+	local price = create("Frame", {
+		Name = "PriceTag",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.5, 0, 1, 0),
+		Size = UDim2.fromOffset(96, 22),
+		BackgroundColor3 = Color3.fromRGB(90, 220, 90),
+		ZIndex = 4,
+	}, card)
+	create("UIStroke", { Thickness = 2.5, Color = Color3.new(0, 0, 0) }, price)
+	UIStyle.soften(price, { radius = 11, strength = 0.2 })
+	outlined(price, { Size = UDim2.fromScale(1, 1), Text = `ONLY {ROBUX} {product.robux}`, TextColor3 = Color3.new(1, 1, 1), ZIndex = 5 }, 2)
+
+	-- Geri sayım (fırsat süresi; sunucunun 'StarterOfferUntil' anına kadar)
+	local timer = outlined(holder, {
+		Name = "OfferTimer",
+		Position = UDim2.fromOffset(0, 97),
+		Size = UDim2.new(1, 0, 0, 23),
+		Text = "",
+		TextColor3 = Color3.fromRGB(255, 225, 80),
 	}, 2.5)
 
 	-- Kapatma (bu oturum için)
@@ -135,12 +164,17 @@ function StarterOffer.init(screenGui, showToast)
 	local dismissed = false
 
 	local function refresh()
+		local untilTime = player:GetAttribute("StarterOfferUntil")
+		local remaining = if type(untilTime) == "number" then untilTime - Workspace:GetServerTimeNow() else 0
 		holder.Visible = not dismissed
 			and product.productId > 0
+			and remaining > 0
 			and player:GetAttribute("DataLoaded") == true
 			and player:GetAttribute("StarterPackOwned") ~= true
-			and player:GetAttribute("TutorialDone") == true
 			and player:GetAttribute("PaidRandomRestricted") == false
+		if holder.Visible then
+			timer.Text = `⏰ {StarterOffer.formatTime(remaining)}`
+		end
 	end
 
 	card.MouseButton1Click:Connect(function()
@@ -157,10 +191,17 @@ function StarterOffer.init(screenGui, showToast)
 		refresh()
 	end)
 
-	for _, attribute in { "DataLoaded", "StarterPackOwned", "TutorialDone", "PaidRandomRestricted" } do
+	for _, attribute in { "DataLoaded", "StarterPackOwned", "StarterOfferUntil", "PaidRandomRestricted" } do
 		player:GetAttributeChangedSignal(attribute):Connect(refresh)
 	end
 	refresh()
+	task.spawn(function()
+		while holder.Parent and player:GetAttribute("StarterPackOwned") ~= true do
+			task.wait(0.5)
+			refresh()
+		end
+	end)
+	return refresh -- testler zamanı ilerletip yeniden çizdirir
 end
 
 return StarterOffer

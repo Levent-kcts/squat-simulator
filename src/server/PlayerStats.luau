@@ -242,7 +242,7 @@ end
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
 	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Event = {}, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
-		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
+		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, StarterOffer = Config.StarterPack.OfferSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -416,6 +416,10 @@ local function sanitize(raw)
 		data.AutoTrial = math.clamp(math.floor(raw.AutoTrial), 0, Config.AutoClick.TrialSeconds or 0)
 	elseif data.TutorialDone then
 		data.AutoTrial = 0
+	end
+	-- Başlangıç Paketi fırsatının kalan oyun süresi (sn); alanı olmayan eski kayıt da tam süre alır (bir kez)
+	if type(raw.StarterOffer) == "number" then
+		data.StarterOffer = math.clamp(math.floor(raw.StarterOffer), 0, Config.StarterPack.OfferSeconds or 0)
 	end
 	-- Pet Index ödülleri: geriye dönük VERİLİR (eski oyuncu ulaştığı eşiklerin ödülünü bir sonraki yenilemede alır)
 	if type(raw.IndexRewards) == "table" then
@@ -985,6 +989,7 @@ local function save(player, mode)
 			return list
 		end)(),
 		AutoTrial = math.max(0, math.floor(profile.trialUntil - workspace:GetServerTimeNow())),
+		StarterOffer = if profile.offerUntil > 0 then math.max(0, math.floor(profile.offerUntil - workspace:GetServerTimeNow())) else 0,
 		Quests = profile.quests,
 		WheelDay = profile.wheelDay,
 		PetSlots = profile.petSlots,
@@ -1219,6 +1224,7 @@ local function setup(player)
 		wheelDay = 0, -- günlük çarkın son çevrildiği UTC gün (os.time() / 86400); bugüne eşitse bugünkü hak kullanılmış demektir (kayıtlı)
 		tutorialClicks = 0, -- eğitimin ilk adımı: Config.Tutorial.ClickGoal kez tıklama sayısı (kayıtlı)
 		starterWins = false, -- başlangıç Win hediyesi verildi mi (kayıtlı)
+		offerUntil = 0, -- Başlangıç Paketi fırsatının bitişi (sunucu saati, GetServerTimeNow; 0 = bitti); kayıtta KALAN saniye tutulur (çevrimdışıyken akmaz)
 		trialUntil = 0, -- ücretsiz Auto Click denemesinin bitişi (sunucu saati, GetServerTimeNow); kayıtta KALAN saniye tutulur (çevrimdışıyken akmaz)
 		indexRewards = {}, -- ödülü alınmış Pet Index eşikleri [tür sayısı] = true (kayıtlı)
 		starterDone = {}, -- biten yeni oyuncu görevleri [id] = true (kilitlenir: level/rebirth sıfırlansa da kalır; kayıtlı)
@@ -1260,6 +1266,8 @@ local function setup(player)
 	profile.guideSeen = data.GuideSeen
 	profile.trialUntil = if data.AutoTrial > 0 then workspace:GetServerTimeNow() + data.AutoTrial else 0
 	player:SetAttribute("AutoClickTrialUntil", profile.trialUntil) -- istemci Auto Click'i deneme süresince açık sayar
+	profile.offerUntil = if data.StarterOffer > 0 then workspace:GetServerTimeNow() + data.StarterOffer else 0
+	player:SetAttribute("StarterOfferUntil", profile.offerUntil) -- istemci Starter Pack kartını ve geri sayımı bu ana kadar gösterir (client/StarterOffer, ShopPanel)
 	profile.quests = data.Quests
 	profile.wheelDay = data.WheelDay
 	profile.petSlots = data.PetSlots
@@ -2234,6 +2242,17 @@ local function grantRewardList(player, profile, rewards)
 end
 
 -- Yeni oyuncu görevinin ödülünü alır (sunucu görevin bittiğini kendi hesabıyla doğrular). Dönüş: başarılı mı, mesaj
+-- Başlangıç Paketi fırsatını tam süreyle yeniden başlatır (DEV: RestartTutorial, Reset, 'Starter Offer (test)')
+function PlayerStats.restartStarterOffer(player)
+	local profile = profiles[player]
+	if not profile then
+		return
+	end
+	local seconds = Config.StarterPack.OfferSeconds or 0
+	profile.offerUntil = if seconds > 0 then workspace:GetServerTimeNow() + seconds else 0
+	player:SetAttribute("StarterOfferUntil", profile.offerUntil)
+end
+
 function PlayerStats.claimStarter(player, id)
 	local profile = profiles[player]
 	if not profile or not profile.loaded then
@@ -2944,6 +2963,16 @@ function PlayerStats.dev(player, command, amount)
 		-- İksirleri denemek için: envantere 15 dakikalık (Auto Click Potion: sabit 30 dk) 1 iksir ekler; Shop > Potions'ta USE ile içilir
 		local kind = "boost" .. string.sub(command, 7)
 		message = giveItem(player, profile, kind, 15) -- envantere 1 adet (Shop > Potions'tan içilir)
+	elseif command == "StarterOffer" then
+		-- Başlangıç Paketi fırsatını denemek için: sürüyorsa 20 sn'ye indirir (bitişi görmek için), bittiyse tam süreyle yeniden başlatır
+		if profile.offerUntil > workspace:GetServerTimeNow() + 20 then
+			profile.offerUntil = workspace:GetServerTimeNow() + 20
+			player:SetAttribute("StarterOfferUntil", profile.offerUntil)
+			message = "Starter Pack offer ends in 20 seconds (test)"
+		else
+			PlayerStats.restartStarterOffer(player)
+			message = "Starter Pack offer restarted: 1 hour (test)"
+		end
 	elseif command == "WheelReset" then
 		profile.wheelDay = 0
 		publishWheel(player)
@@ -3030,6 +3059,7 @@ function PlayerStats.dev(player, command, amount)
 		profile.guideSeen = {}
 		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
 		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
+		PlayerStats.restartStarterOffer(player)
 		PlayerStats.setSetting(player, "GuideOn", true) -- Guide anahtarı kapalıysa tekrar açılır
 		message = "Tutorial restarted: you are a new player again (level, Wins, shoes, skins, pets and quests reset)"
 	elseif command == "Reset" then
@@ -3068,6 +3098,7 @@ function PlayerStats.dev(player, command, amount)
 		profile.guideSeen = {}
 		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
 		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
+		PlayerStats.restartStarterOffer(player)
 		profile.quests = newQuestState(currentQuestDay())
 		profile.wheelDay = 0
 		publishQuests(player)

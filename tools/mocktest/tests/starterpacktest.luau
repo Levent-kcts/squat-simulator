@@ -21,6 +21,15 @@ for _, product in Config.Shop.Products do
 	end
 end
 assert(pack and pack.kind == "starterPack" and pack.once == true and pack.robux > 0 and pack.robux <= 99, "Başlangıç Paketi tanımlı, tek seferlik ve ucuz olmalı")
+-- YENİ OYUNCU FIRSATI (Config.StarterPack.OfferSeconds): girişte oyun süresi sayacı başlar ('StarterOfferUntil'), DEV ile kısaltılıp yeniden başlatılır
+local offerSeconds = Config.StarterPack.OfferSeconds
+local function offerLeft()
+	return (player:GetAttribute("StarterOfferUntil") or 0) - S.workspace:GetServerTimeNow()
+end
+assert(offerSeconds == 3600, "fırsat 1 saat olmalı (sahibi istedi)")
+assert(offerLeft() > offerSeconds - 5 and offerLeft() <= offerSeconds + 1, "yeni oyuncuda fırsat tam süreyle başlamalı: " .. tostring(offerLeft()))
+assert(PlayerStats.dev(player, "StarterOffer") and offerLeft() <= 21, "DEV fırsatı 20 sn'ye indirmeli")
+assert(PlayerStats.dev(player, "StarterOffer") and offerLeft() > offerSeconds - 5, "DEV ikinci basışta tam süreyle yeniden başlatmalı")
 assert(player:GetAttribute("StarterPackOwned") == false, "başta sahip olunmamalı")
 local capacityBefore = player:GetAttribute("PetCapacity")
 local Layout = require("./Layout")

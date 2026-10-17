@@ -300,6 +300,7 @@ local services = {
 			folder.Name = name
 			folder.Parent = ws
 		end
+		rawset(ws, "GetServerTimeNow", function() return os.time() + 0.0 end) -- sunucu saati (geri sayımlar: StarterOffer, BoostHud)
 		return ws
 	end)(),
 	HttpService = {
