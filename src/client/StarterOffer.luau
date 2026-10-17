@@ -1,16 +1,12 @@
--- BAŞLANGIÇ PAKETİ TEKLİF KARTI (2026-10-17, sahibi referans oyunun sağ üstündeki 'Starter Pack' kartını gösterip 'bunun gibi bir UI ekle, kapatılabilsin' dedi):
--- sağdaki FREE REWARD kutusunun ÜSTÜNDE (2026-10-17'den beri) çerçevesiz kart: büyük paket görseli (Config.Icons.StarterPack), sol üstte eğik yeşil fiyat rozeti, gökkuşağı 'Starter Pack' yazısı,
--- en altta GERİ SAYIM (2026-10-17, sahibi 'yeni başlayanlara 1 saatlik geri sayım, üstünde starter pack, basınca satın alma ekranı' dedi).
--- Geri sayım GERÇEKTİR: paket yalnız Config.StarterPack.OfferSeconds'lık OYUN SÜRESİ içinde satılır (sunucu 'StarterOfferUntil'; süre bitince bu kart ve Shop kartı kalkar).
--- Karta basınca Roblox satın alma penceresi açılır (Shop'taki kartla aynı Developer Product). Köşedeki X bu oturum için gizler (bir sonraki girişte, süre bitmediyse yeniden çıkar).
--- Görünür olduğu durumlar: ürün satışta (productId > 0), veri yüklü, oyuncu almamış ('StarterPackOwned'), fırsat süresi bitmemiş ve hesap ücretli rastgele ürün
--- kısıtlı DEĞİL (pakette Luck iksiri var; Shop da kısıtlı hesapta Luck/Rainbow satmaz). Eğitim sırasında da görünür (süre ilk girişte başlar).
--- Sadece görsel/kısayol: satın almayı ve ödülü sunucu işler (Purchases).
+-- BAŞLANGIÇ PAKETİ TEKLİF KARTI (2026-10-17, sahibi referans oyunun sağ üstündeki 'Starter Pack' kartını gösterdi): sağdaki FREE REWARD kutusunun ÜSTÜNDE çerçevesiz kart:
+-- büyük paket görseli (Config.Icons.StarterPack), sol üstte eğik yeşil fiyat rozeti, altında gökkuşağı 'Starter Pack' yazısı. Görsele basınca Roblox satın alma penceresi açılır
+-- (Shop'taki kartla aynı Developer Product). GERİ SAYIM ve KAPATMA DÜĞMESİ YOK (sahibi önce 1 saatlik sayaç + X istedi, sonra 'geri sayım olmasın, kapama tuşu olmasın' dedi).
+-- Görünür olduğu durumlar: ürün satışta (productId > 0), veri yüklü, oyuncu almamış ('StarterPackOwned') ve hesap ücretli rastgele ürün kısıtlı DEĞİL
+-- (pakette Luck iksiri var; Shop da kısıtlı hesapta Luck/Rainbow satmaz). Eğitim sırasında da görünür. Sadece görsel/kısayol: satın almayı ve ödülü sunucu işler (Purchases).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
@@ -19,7 +15,7 @@ local StarterOffer = {}
 
 local ROBUX = utf8.char(0xE002) -- Roblox'un Robux simgesi (yazı tipinde özel karakter)
 local FONT = Enum.Font.FredokaOne
-local WIDTH, HEIGHT = 150, 156
+local WIDTH, HEIGHT = 150, 136
 
 local function create(className, props, parent)
 	local instance = Instance.new(className)
@@ -37,18 +33,6 @@ local function outlined(parent, props, thickness)
 	local label = create("TextLabel", props, parent)
 	create("UIStroke", { Thickness = thickness or 2.5, Color = Color3.new(0, 0, 0) }, label)
 	return label
-end
-
--- Kalan süre yazısı: 1 saat ve üstünde 'h:mm:ss', altında 'mm:ss'
-function StarterOffer.formatTime(seconds)
-	seconds = math.max(0, math.floor(seconds))
-	local hours = seconds // 3600
-	local minutes = (seconds % 3600) // 60
-	local secs = seconds % 60
-	if hours > 0 then
-		return string.format("%d:%02d:%02d", hours, minutes, secs)
-	end
-	return string.format("%02d:%02d", minutes, secs)
 end
 
 local function findProduct()
@@ -69,7 +53,7 @@ function StarterOffer.init(screenGui, showToast)
 
 	-- Sağdaki RightHud sütununun EN ÜSTÜNE (FREE REWARD'ın ÜSTÜNE; sahibi 'hediye paketini aşağı al, bunu onun üstüne koy' dedi) yerleşir; sütun yoksa aynı yere kendisi konur.
 	-- GÖRÜNÜM referans oyundaki gibi (2026-10-17): kutu/çerçeve YOK, paketin görseli büyük ve serbest durur, sol üstünde eğik yeşil fiyat rozeti,
-	-- altında gökkuşağı 'Starter Pack' yazısı ve geri sayım, sağ üstte küçük kırmızı KARE içinde X.
+	-- altında gökkuşağı 'Starter Pack' yazısı.
 	local column = screenGui:FindFirstChild("RightHud")
 	local holder = create("Frame", {
 		Name = "StarterOffer",
@@ -139,44 +123,11 @@ function StarterOffer.init(screenGui, showToast)
 		}),
 	}, title)
 
-	-- Geri sayım (fırsat süresi; sunucunun 'StarterOfferUntil' anına kadar)
-	local timer = outlined(holder, {
-		Name = "OfferTimer",
-		Position = UDim2.fromOffset(0, 134),
-		Size = UDim2.new(1, 0, 0, 20),
-		Text = "",
-		TextColor3 = Color3.fromRGB(255, 225, 80),
-	}, 2.5)
-
-	-- Kapatma: sağ üstte küçük kırmızı KARE içinde X (bu oturum için; oyuna tekrar girince kart yine gelir)
-	local close = create("TextButton", {
-		Name = "CloseOffer",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(1, -10, 0, 10),
-		Size = UDim2.fromOffset(22, 22),
-		Text = "",
-		AutoButtonColor = true,
-		BackgroundColor3 = Color3.fromRGB(235, 50, 60),
-		ZIndex = 6,
-	}, holder)
-	create("UICorner", { CornerRadius = UDim.new(0, 5) }, close)
-	create("UIStroke", { Thickness = 2.5, Color = Color3.new(0, 0, 0) }, close)
-	outlined(close, { Size = UDim2.fromScale(1, 1), Text = "X", TextColor3 = Color3.new(1, 1, 1), ZIndex = 7 }, 1.5)
-
-	local dismissed = false
-
 	local function refresh()
-		local untilTime = player:GetAttribute("StarterOfferUntil")
-		local remaining = if type(untilTime) == "number" then untilTime - Workspace:GetServerTimeNow() else 0
-		holder.Visible = not dismissed
-			and product.productId > 0
-			and remaining > 0
+		holder.Visible = product.productId > 0
 			and player:GetAttribute("DataLoaded") == true
 			and player:GetAttribute("StarterPackOwned") ~= true
 			and player:GetAttribute("PaidRandomRestricted") == false
-		if holder.Visible then
-			timer.Text = `⏰ {StarterOffer.formatTime(remaining)}`
-		end
 	end
 
 	card.MouseButton1Click:Connect(function()
@@ -188,22 +139,10 @@ function StarterOffer.init(screenGui, showToast)
 			showToast(false, `{product.name} is coming soon!`)
 		end
 	end)
-	close.MouseButton1Click:Connect(function()
-		dismissed = true
-		refresh()
-	end)
-
-	for _, attribute in { "DataLoaded", "StarterPackOwned", "StarterOfferUntil", "PaidRandomRestricted" } do
+	for _, attribute in { "DataLoaded", "StarterPackOwned", "PaidRandomRestricted" } do
 		player:GetAttributeChangedSignal(attribute):Connect(refresh)
 	end
 	refresh()
-	task.spawn(function()
-		while holder.Parent and player:GetAttribute("StarterPackOwned") ~= true do
-			task.wait(0.5)
-			refresh()
-		end
-	end)
-	return refresh -- testler zamanı ilerletip yeniden çizdirir
 end
 
 return StarterOffer

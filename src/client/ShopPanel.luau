@@ -13,7 +13,6 @@ require(Shared:WaitForChild("Catalog")) -- iksir ürünlerine (Config.Shop.Potio
 local UIStyle = require(script.Parent.UIStyle)
 local PanelManager = require(script.Parent.PanelManager)
 local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 
 local ShopPanel = {}
 
@@ -423,7 +422,6 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 	refreshAuto()
 	player:GetAttributeChangedSignal("HasAutoClick"):Connect(refreshAuto)
 
-	local onceRefreshers = {} -- tek seferlik kartların görünürlüğü (fırsat süresi dolunca pencere açılırken de yenilenir)
 	for _, product in Config.Shop.Products do
 		order += 1
 		local card = addCard(order, product.color, product.icon, product.imageKey and Config.Icons[product.imageKey], product.name, product.detail, `{ROBUX} {product.robux}`, function()
@@ -436,16 +434,11 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 		if product.once then
 			-- Tek seferlik ürün (Başlangıç Paketi): alındıktan sonra kart kalkar (sunucu 'StarterPackOwned' özniteliğini koyar)
 			-- Pakette Luck iksiri var: ücretli rastgele ürün kısıtlı hesapta (Luck/Rainbow iksiri gibi) satılmaz
-			-- Başlangıç Paketi yalnız fırsat süresi içinde satılır (sunucu 'StarterOfferUntil'; client/StarterOffer'daki geri sayımla aynı an)
 			local function refreshOnce()
-				local untilTime = player:GetAttribute("StarterOfferUntil")
-				local offerOpen = product.kind ~= "starterPack" or (type(untilTime) == "number" and untilTime > Workspace:GetServerTimeNow())
-				card.Visible = offerOpen and player:GetAttribute("StarterPackOwned") ~= true and player:GetAttribute("PaidRandomRestricted") == false
+				card.Visible = player:GetAttribute("StarterPackOwned") ~= true and player:GetAttribute("PaidRandomRestricted") == false
 			end
 			player:GetAttributeChangedSignal("StarterPackOwned"):Connect(refreshOnce)
 			player:GetAttributeChangedSignal("PaidRandomRestricted"):Connect(refreshOnce)
-			player:GetAttributeChangedSignal("StarterOfferUntil"):Connect(refreshOnce)
-			table.insert(onceRefreshers, refreshOnce)
 			refreshOnce()
 		end
 	end
@@ -457,9 +450,6 @@ function ShopPanel.init(screenGui, showToast, shopButton)
 	-- Döner: pencereyi açıp kapatan fonksiyon. section = 'packs' verilirse pencere AÇILIR ve 'PACKS & MORE' (Win paketleri) bölümüne kaydırılır
 	-- (yumurtada Win yetmeyince yönlendirme; sahibi istedi). Ölçek: arayüz UIScale ile büyütülüyor, ekran piksel farkı birime çevrilir.
 	return function(section)
-		for _, refreshOnce in onceRefreshers do
-			refreshOnce()
-		end
 		if section ~= "packs" then
 			PanelManager.toggle(panel)
 			return

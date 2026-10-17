@@ -39,7 +39,6 @@ local BUTTONS = {
 	{ "Egg Upgrades (test)", "ToggleEggPasses" },
 	{ "Coach Pads (test)", "ToggleAreaPasses" },
 	{ "Power Hour (test)", "TogglePowerHour" },
-	{ "Starter Offer (test)", "StarterOffer" },
 	{ "Break Stage", "BreakStage" },
 	{ "TP to Walls", "TeleportToWalls" },
 	{ "Gifts +10 min", "GiftTime", 10 },
