@@ -33,7 +33,7 @@ JOBS = {
     "daily": ("daily_2048.png", {"min": 400, "top": 0.3}, None),
     "powerhour": ("powerhour_2048.png", False, None),
     "powerhour_bolt": ("powerhour_bolt_2048.png", False, None),
-    "starterpack": ("starterpack_2048.png", False, None),
+    "starterpack": ("starterpack_v2_2048.png", False, None),
     "quests": ("Gemini_Generated_Image_15n63x15n63x15n6 (9).jpg", False, None),
     "trophy": ("Gemini_Generated_Image_15n63x15n63x15n6.jpg", {"min": 4000}, None),
     "stats": ("Gemini_Generated_Image_ahpjimahpjimahpj (1).jpg", False, None),
