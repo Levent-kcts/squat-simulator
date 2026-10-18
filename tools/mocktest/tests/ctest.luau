@@ -420,6 +420,25 @@ waitSeconds(0.4)
 runRender()
 assert(math.abs(moveHumanoid.HipHeight - 1) < 1e-6, "rebirth sonrası HipHeight küçük boyun asıl değeri olmalı: " .. moveHumanoid.HipHeight)
 print("moves keep playing across scale changes ok")
+-- YÜRÜRKEN (2026-10-18): squat sürer, tekme başlamaz; tekmede eller göğüs önünde birleşir (omuzlar zıt yönde içe döner)
+local rootPart = S.newInstance("Part")
+rootPart.Name = "HumanoidRootPart"
+rootPart.AssemblyLinearVelocity = S.Vector3.new(16, 0, 0) -- yürüyor
+rootPart.Parent = moveCharacter
+Moves.play(moveCharacter, "Squat")
+waitSeconds(0.22)
+runRender()
+assert(moveHumanoid.HipHeight < 1 * 0.9, "yürürken squat oynamalı (HipHeight düşmeli): " .. moveHumanoid.HipHeight)
+waitSeconds(0.4)
+runRender()
+Moves.play(moveCharacter, "Kick") -- yürürken: başlamaz (hata vermemeli)
+waitSeconds(0.1)
+runRender()
+rootPart.AssemblyLinearVelocity = S.Vector3.new(0, 0, 0)
+local kick = Moves.KICK_END
+assert(kick.RightShoulder > 45 and kick.LeftShoulder > 45 and kick.RightShoulderY > 15 and kick.LeftShoulderY < -15, "tekmede iki kol öne kalkıp ortada birleşmeli")
+assert(kick.RightHip > 80 and kick.RightKnee == 0, "tekmede sağ bacak düz ileri uzanmalı")
+print("walking squat + hands-together kick ok")
 
 -- 7) Takipçi petler: Boss pet efektli (parçacık + çizgi; saydam kabuk/hale Config.PetFusion.BossShell = false iken YOK), diğer boylar düz küre ve boyları büyür
 S.localPlayer:SetAttribute("EquippedPets", "cat@4,dog,bunny@3")

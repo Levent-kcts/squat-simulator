@@ -14,10 +14,21 @@ local DEBUG = false
 
 -- Pozlar derece cinsindendir. Anahtar eksikse eklem dinlenme pozisyonunda kalır.
 -- Bacak/kol için + = öne doğru, belden + = geriye yaslanma, - = öne eğilme. Drop = gövdenin çökme oranı (0-1).
-local KICK_END = {
-	RightHip = 95, RightKnee = 0, LeftHip = 8, LeftKnee = -12,
-	Waist = 10, RightShoulder = -30, LeftShoulder = 40,
+-- '<eklem>Y' anahtarı aynı eklemi dikey eksende döndürür (omuzlarda: + sağ kolu, - sol kolu gövdenin ortasına çeker).
+-- TEKME (2026-10-18, sahibi 'duvara vurma animasyonunu geliştir, iki el birbirine birleşsin ve tekme atsın' dedi): kollar öne kalkıp elleri göğsün
+-- önünde birleştirir (dövüş duruşu), sağ diz kalkar, sonra bacak duvara uzanır; eller tekme boyunca birleşik kalır.
+local HANDS_TOGETHER = { RightShoulder = 75, RightShoulderY = 38, LeftShoulder = 75, LeftShoulderY = -38 }
+local KICK_CHAMBER = {
+	RightHip = 70, RightKnee = -95, LeftHip = 6, LeftKnee = -14, Waist = 6,
+	RightShoulder = HANDS_TOGETHER.RightShoulder, RightShoulderY = HANDS_TOGETHER.RightShoulderY,
+	LeftShoulder = HANDS_TOGETHER.LeftShoulder, LeftShoulderY = HANDS_TOGETHER.LeftShoulderY,
 }
+local KICK_END = {
+	RightHip = 95, RightKnee = 0, LeftHip = 8, LeftKnee = -12, Waist = 12,
+	RightShoulder = HANDS_TOGETHER.RightShoulder, RightShoulderY = HANDS_TOGETHER.RightShoulderY,
+	LeftShoulder = HANDS_TOGETHER.LeftShoulder, LeftShoulderY = HANDS_TOGETHER.LeftShoulderY,
+}
+Moves.KICK_END = KICK_END -- testler poza bakar
 local SQUAT_DOWN = {
 	RightHip = 85, LeftHip = 85, RightKnee = -95, LeftKnee = -95,
 	Waist = -20, RightShoulder = 80, LeftShoulder = 80, Drop = 1,
@@ -28,7 +39,7 @@ local MOVES = {
 		duration = 0.4,
 		keys = {
 			{ t = 0, pose = {} },
-			{ t = 0.10, pose = { RightHip = 30, RightKnee = -85, LeftHip = 8, LeftKnee = -12, Waist = 4, RightShoulder = -25, LeftShoulder = 35 } },
+			{ t = 0.10, pose = KICK_CHAMBER },
 			{ t = 0.20, pose = KICK_END },
 			{ t = 0.28, pose = KICK_END },
 			{ t = 0.40, pose = {} },
@@ -69,9 +80,11 @@ local JOINTS = {
 
 local active = {} -- [character] = { move, start, rig }
 
--- Oyuncu YÜRÜYORSA hareket oynatılmaz / bırakılır (playtest: 'squat sırasında yürüyünce animasyon glitchliyor': Roblox'un yürüme animasyonu ile bizim eklem dönüşlerimiz çakışıyordu).
+-- YÜRÜRKEN: SQUAT DEVAM EDER (2026-10-18, sahibi 'yürürken squat yapmaya devam etsin' dedi; eskiden yürüyünce squat başlamaz/kesilirdi), TEKME ise yürürken
+-- başlamaz ve kesilir (WALK_STOPS). Eski gerekçe: Roblox'un yürüme animasyonu bizim eklem dönüşlerimizle birleşiyordu ('glitchliyor').
 -- Niyete (MoveDirection) DEĞİL gerçek hıza bakılır: duvara dayanıp ileri tuşuna basan oyuncu durduğu için tekmesi kesilmez. Kendi karakterimizde de diğerlerinde de aynı ölçü (kök parçanın yatay hızı).
 local WALK_SPEED_LIMIT = 4 -- stud/sn; yürüme hızı 16, dururken ~0
+local WALK_STOPS = { Kick = true } -- yürürken oynamayan hareketler
 local function isWalking(character)
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then
@@ -185,8 +198,9 @@ local function apply(rig, pose)
 			end
 		else
 			local angle = math.rad(pose[key] or 0)
-			-- Eklem konumu (güncel) sabit kalır, dönüş karakterin X ekseni etrafında eklenir
-			setBase(joint, CFrame.new(currentBase(joint).Position) * CFrame.Angles(angle, 0, 0) * joint.c0.Rotation)
+			local turn = math.rad(pose[key .. "Y"] or 0)
+			-- Eklem konumu (güncel) sabit kalır: önce X ekseninde (öne/arkaya), sonra dikey eksende (içe/dışa) döner
+			setBase(joint, CFrame.new(currentBase(joint).Position) * CFrame.Angles(0, turn, 0) * CFrame.Angles(angle, 0, 0) * joint.c0.Rotation)
 		end
 	end
 end
@@ -216,8 +230,8 @@ function Moves.play(character, name)
 	if state and state.name == name then
 		return -- aynı hareket zaten oynuyor, bitince yenisi başlar
 	end
-	if isWalking(character) then
-		return -- yürürken hareket başlamaz (görsel; kas ve hasar sunucuda yine sayılır)
+	if WALK_STOPS[name] and isWalking(character) then
+		return -- yürürken tekme başlamaz (görsel; kas ve hasar sunucuda yine sayılır)
 	end
 
 	local rig = getRig(character)
@@ -251,8 +265,8 @@ RunService.RenderStepped:Connect(function()
 			-- Hareket sırasında zıpladı: bacak sallanması karakteri döndürmesin diye hareketi hemen bırak
 			restore(state.rig)
 			active[character] = nil
-		elseif character.Parent and isWalking(character) then
-			-- Hareket sırasında yürümeye başladı: hareketi hemen bırak, yürüme animasyonuyla çakışmasın
+		elseif character.Parent and WALK_STOPS[state.name] and isWalking(character) then
+			-- Tekme sırasında yürümeye başladı: hareketi hemen bırak (squat yürürken sürer)
 			restore(state.rig)
 			active[character] = nil
 		elseif t >= state.move.duration or not character.Parent then
