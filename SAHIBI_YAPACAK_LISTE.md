@@ -47,6 +47,16 @@ Creator Hub > oyun > **Engagement > Badges > Create**: kod 9 rozeti hazır (`src
 - Oyun içine Discord daveti veya link yazmak.
 - Reklam kredisi harcamak (reklamla gelenler Roblox'un öneri sinyallerine sayılmıyor ve "highly engaged" sayacına dönüşümü düşük bildiriliyor).
 
+## F) 2026-10-18 Claude'un yaptıkları (sahibinin onayıyla)
+- Reach: 'Reach 250 highly engaged players' 1/250 (18 Ekim 08:00); kimlik, 2FA, içerik anketi ve yayın ücreti TAMAM (ücret 8 Ocak 2027'de iade). Advanced settings doğru: öneriden hariç DEĞİL, Free to Play, Desktop/Mobile/Tablet.
+- Oyun açıklaması yenilendi (ilk cümle anahtar kelimeli, kodlar dahil SPOOKY, Spooky Gym ve Power Hour satırları; 989/1000). Küçük resimler: 5 aktif, kişiselleştirme açık (dokunulmadı).
+- Share Link'ler: TikTok https://www.roblox.com/join/0lfze , YouTube https://www.roblox.com/join/n8ou0 , Discord/topluluk https://www.roblox.com/join/i5zge ('Discord' adı Roblox filtresine takıldı, kampanya adı 'Community').
+- Ads Manager: otomatik yükleme ZATEN kapalı, kredi 0.
+- Rozetler: 5'i açıldı ve oyuna bağlandı (Welcome, First Rebirth, Wall Smasher, Legendary, Mythic; görseller Gemini). Kalan 4 rozet yarın (günde 5 bedava).
+- Friend Referral banner'ı YAYINDA: 'Friend Potions', 31 Aralık 2026'ya kadar.
+- Studio > Deneyim Ayarları > İletişim: Sesli Sohbet ve Kamera KAPATILDI.
+- Yapılmadı: Roblox grubu (100 Robux ister, onay bekliyor), oynanış videosu (sahibi çeker).
+
 ## E) 2026-10-17 Claude'un tarayıcıdan yaptıkları
 - 34 Developer Product'a görsel yüklendi (doğrulandı), Starter Pack ürünü açıldı, eski VIP ürünü satıştan kaldırıldı, bütün fiyatlar güncellendi.
 - Halloween Experience Event kaydı oluşturuldu ('Spooky Gym', Festival, Public, 24 Ekim 00:00 - 9 Kasım 00:00 UTC). Görseli Gemini ile üretilip yüklendi (assets/cover/UPLOAD/ETKINLIK_spooky_gym.jpg); 'Submit for Featuring' açılmadı.
