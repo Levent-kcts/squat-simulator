@@ -12,6 +12,7 @@ local Progression = require(Shared:WaitForChild("Progression"))
 local OverheadTags = {}
 
 local TAG_NAME = "StatTag"
+local TAG_W, TAG_H = 120, 54 -- baş üstü etiketinin piksel boyutu (ref mesafede)
 
 local function styledLabel(parent, yScale, heightScale, color)
 	local label = Instance.new("TextLabel")
@@ -62,12 +63,13 @@ local function attach(targetPlayer, character)
 
 	local gui = Instance.new("BillboardGui")
 	gui.Name = TAG_NAME
-	gui.Size = UDim2.fromOffset(190, 84) -- PİKSEL boyutu (3 satır: güç, ad, rütbe unvanı): kameraya yaklaşınca ekranı kaplamaz (QA 2026-10-15)
+	-- PİKSEL boyutu (3 satır: güç, ad, rütbe unvanı): kameraya yaklaşınca ekranı kaplamaz (QA 2026-10-15). 2026-10-18 sahibi 'ekranda çok yer kaplıyor' dedi: 190x84 > 120x54
+	gui.Size = UDim2.fromOffset(TAG_W, TAG_H)
 	gui.MaxDistance = 60
 	gui.Adornee = head
 	gui.Parent = head
 	if okScaler then
-		LabelScaler.register(gui, 190, 84, 18)
+		LabelScaler.register(gui, TAG_W, TAG_H, 18)
 	end
 
 	-- Settings'te "Name tags" kapalıysa etiket görünmez (bu oyuncunun ekranında)

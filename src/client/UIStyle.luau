@@ -225,8 +225,9 @@ local function modelViewportIcon(parent, modelName, props)
 end
 
 function UIStyle.petModelIcon(parent, pet, props)
-	-- 'lite' (uzun listelerdeki kartlar: Pets menüsü, Pet Index): hafif grafik modunda (telefon) 3B ViewportFrame yerine çizilmiş yüz kullanılır; onlarca ViewportFrame aynı anda çizilince telefon takılıyordu
-	if props and props.lite and okPerf and Performance.low then
+	-- 'lite' (uzun listelerdeki kartlar: Pets menüsü, Pet Index): SADECE TELEFONDA (Performance.mobile) 3B ViewportFrame yerine çizilmiş yüz kullanılır; onlarca ViewportFrame aynı anda çizilince telefon takılıyordu.
+	-- 2026-10-18 sahibi 'petlerin eskisi gibi 3D fotolarını koy' dedi: masaüstünde kare hızı düşünce açılan hafif mod (Performance.low) artık kartları çizilmiş yüze çevirmez
+	if props and props.lite and okPerf and Performance.mobile then
 		return nil
 	end
 	return modelViewportIcon(parent, "pet_" .. (pet.baseId or pet.id), props)
