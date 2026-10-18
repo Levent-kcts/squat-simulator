@@ -1,5 +1,7 @@
 # Trail (iz) simgeleri: SIFIRDAN yapay zekâ promptları
 
+DURUM (2026-10-18): 10 simgenin hepsi Gemini ile ÜRETİLDİ, temizlendi (assets/icons/trail_*.png), Roblox'a yüklendi ve Config.Icons.Trail_<id> ile kartlara bağlandı.
+
 Neden: trail kartları şimdiye kadar oyundaki hazır simgeleri (tuğla, pati, kupa, bacak kası) yeniden kullanıyordu; hepsi birbirine benziyordu. Her iz için kendine ÖZEL bir simge çiziliyor.
 Referans: `assets/icons/reference/game-icon-set.png` (AI aracına EKLE). Gelen görselleri `assets/icons/new/` içine koy (dosya adları aşağıdaki gibi); Claude arka planı temizler (`tools/icons/cutout.py` JOBS tablosuna `trail_*` satırları), sen Studio'ya yüklersin, ID'ler `Config.Trails[].icon` yerine yeni `Config.Icons.Trail_<id>` anahtarlarına yazılır.
 

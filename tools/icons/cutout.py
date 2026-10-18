@@ -40,6 +40,16 @@ JOBS = {
     "jackpot": ("Gemini_Generated_Image_ahpjimahpjimahpj (2).jpg", False, None),
     "pet": ("Gemini_Generated_Image_ahpjimahpjimahpj (3).jpg", False, None),
     "index": ("Gemini_Generated_Image_ahpjimahpjimahpj.jpg", False, None),
+    "trail_red": ("trail_red.jpg", False, "trails"),
+    "trail_orange": ("trail_orange.jpg", False, "trails"),
+    "trail_yellow": ("trail_yellow.jpg", False, "trails"),
+    "trail_green": ("trail_green.jpg", False, "trails"),
+    "trail_cyan": ("trail_cyan.jpg", False, "trails"),
+    "trail_blue": ("trail_blue.jpg", False, "trails"),
+    "trail_purple": ("trail_purple.jpg", False, "trails"),
+    "trail_pink": ("trail_pink.jpg", False, "trails"),
+    "trail_rainbow": ("trail_rainbow.jpg", False, "trails"),
+    "trail_pumpkin": ("trail_pumpkin.jpg", False, "trails"),
 }
 
 WORK = 1024

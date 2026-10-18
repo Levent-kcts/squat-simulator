@@ -353,7 +353,7 @@ return {
 		},
 		Title = "Pumpkin King", -- unvan yazısı (isim etiketinin 3. satırı; rütbe unvanının yerine geçer)
 		-- Kalıcı etkinlik izi (Config.Trails'e girmez; Catalog.TrailById'ye eklenir, Backpack > Trails'te yalnızca sahibine görünür)
-		Trail = { id = "pumpkin", name = "Pumpkin Patch", fx = "pumpkin", emoji = "🎃", speed = 14, color = Color3.fromRGB(255, 140, 30), eventOnly = true },
+		Trail = { id = "pumpkin", name = "Pumpkin Patch", fx = "pumpkin", icon = "Trail_pumpkin", emoji = "🎃", speed = 14, color = Color3.fromRGB(255, 140, 30), eventOnly = true },
 		-- Lobi süsü (server/EventDecor): balkabakları yol kenarlarında, hayaletler havada; sadece görünüm
 		Decor = { Pumpkins = 10, Ghosts = 5 },
 	},
@@ -449,6 +449,18 @@ return {
 	UI = { ReferenceHeight = 663, MinScale = 0.58, MaxScale = 1.75, Phone = { LeftShiftX = -8, LeftShiftY = -55, MusicShiftX = -140 } },
 
 	Icons = {
+		-- İZ (TRAIL) KART SİMGELERİ (2026-10-18, sahibi 'iz simgelerini Gemini'de üret' dedi; assets/icons/AI_PROMPTS_TRAILS.md, assets/icons/trail_*.png;
+		-- Claude Creator Hub'a decal olarak yükledi, buradaki sayılar decal'in İÇİNDEKİ resim ID'leridir). Sadece Backpack > Trails kartlarında görünür (parçacıklar kendi simgelerini kullanır).
+		Trail_red = "rbxassetid://110075450123911",
+		Trail_orange = "rbxassetid://129080836801148",
+		Trail_yellow = "rbxassetid://82221653648557",
+		Trail_green = "rbxassetid://119555579020833",
+		Trail_cyan = "rbxassetid://74721247329688",
+		Trail_blue = "rbxassetid://129887516870572",
+		Trail_purple = "rbxassetid://112932855727472",
+		Trail_pink = "rbxassetid://128670978623697",
+		Trail_rainbow = "rbxassetid://107337467516545",
+		Trail_pumpkin = "rbxassetid://111008809763259",
 		Quests = "rbxassetid://112150273608516", -- sağ üstteki günlük görevler düğmesinin simgesi (boşken 📜 emojisi)
 		StarterPack = "rbxassetid://94826644179807", -- Shop > PACKS Starter Pack kartı + sağdaki teklif kartı; 2026-10-17 Yeti'li yeni görsel (assets/icons/starterpack.png; boşken 🎁)
 		PowerHour = "rbxassetid://86577652430738", -- Power Hour rozeti (sol alt; client/PowerHourHud): x2 yazılı lego şimşek, assets/icons/powerhour.png; boşken ⚡ emojisi + ayrı x2
@@ -1051,15 +1063,15 @@ return {
 	-- E3 (fiyatlar): Win fiyatları aynı (hepsi oyunun ilk ~1,6 saatine sığar: simulate.py 'Fiyat merdiveni'); ROBUX fiyatları üst izlerde düşürüldü (blue 45 > 40, purple 60 > 50, pink 75 > 60, rainbow 110 > 75): GÖSTERİLEN fiyat
 	-- değişince Creator Hub'daki Developer Product'ın gerçek fiyatını da aynı yapmak sahibe düşer (ROBUX_FIYAT_DEGISIKLIGI.md).
 	Trails = {
-		{ id = "red", name = "Brick Dust", fx = "dust", icon = "LoadingBrick", iconTint = true, emoji = "💨", speed = 4, winPrice = 30, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
-		{ id = "orange", name = "Sweat Drops", fx = "drops", emoji = "💧", speed = 6, winPrice = 60, robuxPrice = 12, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
-		{ id = "yellow", name = "Protein Powder", fx = "powder", emoji = "✨", speed = 8, winPrice = 250, robuxPrice = 15, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
-		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "LoadingBrick", emoji = "🧱", speed = 10, winPrice = 1000, robuxPrice = 19, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
-		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Pet", emoji = "🐾", speed = 12, winPrice = 2000, robuxPrice = 22, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Wins", emoji = "🏆", speed = 14, winPrice = 4000, robuxPrice = 25, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
-		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "LegMuscle", emoji = "💪", speed = 16, winPrice = 8000, robuxPrice = 29, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Kick Sparks", fx = "sparks", emoji = "💥", speed = 18, winPrice = 16000, robuxPrice = 35, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", emoji = "🌈", speed = 24, winPrice = 32000, robuxPrice = 45, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Brick Dust", fx = "dust", icon = "Trail_red", emoji = "💨", speed = 4, winPrice = 30, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
+		{ id = "orange", name = "Sweat Drops", fx = "drops", icon = "Trail_orange", emoji = "💧", speed = 6, winPrice = 60, robuxPrice = 12, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
+		{ id = "yellow", name = "Protein Powder", fx = "powder", icon = "Trail_yellow", emoji = "✨", speed = 8, winPrice = 250, robuxPrice = 15, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
+		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "Trail_green", emoji = "🧱", speed = 10, winPrice = 1000, robuxPrice = 19, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
+		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Trail_cyan", emoji = "🐾", speed = 12, winPrice = 2000, robuxPrice = 22, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Trail_blue", emoji = "🏆", speed = 14, winPrice = 4000, robuxPrice = 25, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
+		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "Trail_purple", emoji = "💪", speed = 16, winPrice = 8000, robuxPrice = 29, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Kick Sparks", fx = "sparks", icon = "Trail_pink", emoji = "💥", speed = 18, winPrice = 16000, robuxPrice = 35, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", icon = "Trail_rainbow", emoji = "🌈", speed = 24, winPrice = 32000, robuxPrice = 45, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
