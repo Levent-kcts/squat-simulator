@@ -114,7 +114,7 @@ Tek sıra halinde 100 duvarlı koridor (20 aşama x 5 duvar) + büyük kapalı l
 Oyun yayında (16+), Robux ürünleri satışta, kod GitHub'da. 14-16 Ekim'de 'büyüme turu' yapıldı (plan: `OYUN_BUYUME_PLANI.md`, sahibinin Creator Hub işleri: `SAHIBI_YAPACAK_LISTE.md`). Ayrıntılı kurallar CLAUDE.md'de, ne yapıldığı §7 madde 28-31'de.
 
 **Sahibinin yapacakları (para harcatmayan):**
-1. **En geç 23 Ekim'de Studio'dan yayınla** (Rojo senkron > File > Publish): Spooky Gym etkinliği 24 Ekim 00:00 UTC'de kendiliğinden açılır; 14-16 Ekim'deki her şey de ancak yayınla oyuncuya gider.
+1. ~~En geç 23 Ekim'de Studio'dan yayınla~~ **YAYINLANDI (2026-10-18, sahibi Studio'da kontrol etti, 'her şey okey'; Claude Rojo senkronuyla Dosya > Roblox'ta yayınla yaptı).** Eski not: (Rojo senkron > File > Publish): Spooky Gym etkinliği 24 Ekim 00:00 UTC'de kendiliğinden açılır; 14-16 Ekim'deki her şey de ancak yayınla oyuncuya gider.
 2. ~~Halloween Experience Event kaydı~~ YAPILDI (2026-10-17, Claude oluşturdu: 'Spooky Gym', Festival, Public, 24 Ekim 00:00 - 9 Kasım 00:00 UTC; Scheduled listesinde). Görseli VAR (2026-10-17, Claude Gemini'de promptla üretti [`assets/cover/ETKINLIK_SPOOKY_GYM_PROMPT.md`], indirdi ve etkinliğe yükledi: `assets/cover/UPLOAD/ETKINLIK_spooky_gym.jpg`, 2752x1536; listede küçük resim moderasyondan sonra görünür). Submit for Featuring açılmadı.
 3. Oyun sayfası: 15-30 sn oynanış videosu, 3-5 küçük resim, açıklamanın ilk cümlesi, promosyon kodlarını açıklamaya yaz (LAUNCH, SQUAT, SMASHWALLS, EVOLUTION, LEGDAY, FRIENDS, THANKS).
 4. Her kanal için ayrı Share Link; Ads Manager'da otomatik kredi yüklemeyi kapat.
