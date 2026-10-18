@@ -118,6 +118,11 @@ return {
 		{ id = "multi", name = "Multi Open", GamePassId = 2026754291, Robux = 99, attribute = "HasEggMulti", count = 10, detail = "Open 3 or 10 eggs at once" },
 	},
 	MoveContact = { Kick = 0.5 }, -- Moves.luau'daki tekme animasyonunda bacak 0.20 / 0.40 = %50'de tam uzanır (animasyonu değiştirirsen bunu da ayarla)
+	-- GERÇEK KARAKTER ANİMASYONLARI (2026-10-18, sahibi 'tekme pozlarını oyuna karakter animasyonu şeklinde ekle' dedi): Roblox Animation asset ID'si (sayı).
+	-- 0 iken Moves.luau'nun kodla çizdiği yedek hareket oynar. Kaynak: tools/animations/make_kick.py -> assets/animations/SquatKick.rbxmx; Studio'da Workspace'e sürükle,
+	-- KeyframeSequence'e sağ tık > 'Roblox'a Kaydet' (Save to Roblox) > ID'yi buraya yaz. Animasyon oyunun SAHİBİNE ait olmalı (başkasının animasyonu oyunda oynamaz).
+	-- Hız animasyon uzunluğundan MoveDuration'a ölçeklenir; vuruş anı animasyonun yarısında olmalı (MoveContact).
+	Animations = { Kick = 76756005487877 }, -- SquatKick (2026-10-18, Claude Studio'dan sahibin hesabına yükledi)
 
 	-- Kayıt sistemi
 	-- Mağaza RemoteFunction'ına (server/init.server 'Shop') hız sınırı: saniyede PerSecond çağrı, ani seri için Burst. Normal kullanım çok altındadır; Pets menüsü onlarca pet silerken çağrıları art arda yapar (bu yüzden cömert)

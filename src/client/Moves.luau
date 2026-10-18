@@ -17,16 +17,19 @@ local DEBUG = false
 -- '<eklem>Y' anahtarı aynı eklemi dikey eksende döndürür (omuzlarda: + sağ kolu, - sol kolu gövdenin ortasına çeker).
 -- TEKME (2026-10-18, sahibi 'duvara vurma animasyonunu geliştir, iki el birbirine birleşsin ve tekme atsın' dedi): kollar öne kalkıp elleri göğsün
 -- önünde birleştirir (dövüş duruşu), sağ diz kalkar, sonra bacak duvara uzanır; eller tekme boyunca birleşik kalır.
-local HANDS_TOGETHER = { RightShoulder = 75, RightShoulderY = 38, LeftShoulder = 75, LeftShoulderY = -38 }
+-- tools/animations/make_kick.py HANDS ile AYNI değerler (gerçek animasyon ve yedek aynı görünsün)
+local HANDS_TOGETHER = { RightShoulder = 70, RightShoulderY = 65, LeftShoulder = 70, LeftShoulderY = -65, RightElbow = 40, LeftElbow = 40 }
 local KICK_CHAMBER = {
 	RightHip = 70, RightKnee = -95, LeftHip = 6, LeftKnee = -14, Waist = 6,
 	RightShoulder = HANDS_TOGETHER.RightShoulder, RightShoulderY = HANDS_TOGETHER.RightShoulderY,
 	LeftShoulder = HANDS_TOGETHER.LeftShoulder, LeftShoulderY = HANDS_TOGETHER.LeftShoulderY,
+	RightElbow = HANDS_TOGETHER.RightElbow, LeftElbow = HANDS_TOGETHER.LeftElbow,
 }
 local KICK_END = {
 	RightHip = 95, RightKnee = 0, LeftHip = 8, LeftKnee = -12, Waist = 12,
 	RightShoulder = HANDS_TOGETHER.RightShoulder, RightShoulderY = HANDS_TOGETHER.RightShoulderY,
 	LeftShoulder = HANDS_TOGETHER.LeftShoulder, LeftShoulderY = HANDS_TOGETHER.LeftShoulderY,
+	RightElbow = HANDS_TOGETHER.RightElbow, LeftElbow = HANDS_TOGETHER.LeftElbow,
 }
 Moves.KICK_END = KICK_END -- testler poza bakar
 local SQUAT_DOWN = {
@@ -76,15 +79,17 @@ local JOINTS = {
 	LeftKnee = { "LeftKnee" },
 	RightShoulder = { "RightShoulder", "Right Shoulder" },
 	LeftShoulder = { "LeftShoulder", "Left Shoulder" },
+	RightElbow = { "RightElbow" },
+	LeftElbow = { "LeftElbow" },
 }
 
 local active = {} -- [character] = { move, start, rig }
 
--- YÜRÜRKEN: SQUAT DEVAM EDER (2026-10-18, sahibi 'yürürken squat yapmaya devam etsin' dedi; eskiden yürüyünce squat başlamaz/kesilirdi), TEKME ise yürürken
--- başlamaz ve kesilir (WALK_STOPS). Eski gerekçe: Roblox'un yürüme animasyonu bizim eklem dönüşlerimizle birleşiyordu ('glitchliyor').
+-- YÜRÜRKEN HAREKETLER SÜRER (2026-10-18, sahibi 'yürürken squat yapmaya devam etsin' dedi; sonra 'duvara giderken squat yapıyorsak tekme atmıyor' dedi:
+-- duvara doğru hâlâ hareket eden oyuncunun tekmesi sessizce atlanıyordu, eller-önde pozu da bu yüzden hiç görünmedi). WALK_STOPS boş: hiçbir hareket yürüyünce kesilmez.
 -- Niyete (MoveDirection) DEĞİL gerçek hıza bakılır: duvara dayanıp ileri tuşuna basan oyuncu durduğu için tekmesi kesilmez. Kendi karakterimizde de diğerlerinde de aynı ölçü (kök parçanın yatay hızı).
 local WALK_SPEED_LIMIT = 4 -- stud/sn; yürüme hızı 16, dururken ~0
-local WALK_STOPS = { Kick = true } -- yürürken oynamayan hareketler
+local WALK_STOPS = {} -- yürürken oynamayan hareketler (şimdilik yok)
 local function isWalking(character)
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then
@@ -219,10 +224,50 @@ local function restore(rig)
 	end
 end
 
+-- GERÇEK ANİMASYON (Config.Animations[name] > 0): Animator ile oynatılır, hızı MoveDuration'a ölçeklenir. Kendi karakterimizde oynatılan iz Roblox tarafından
+-- diğer oyunculara kendiliğinden iletilir; bu yüzden başkasının karakterinde (MoveEvent) tekrar oynatılmaz. Yüklenemezse yedek (kodla çizilen) hareket oynar.
+local tracks = {} -- [humanoid] = { [ad] = AnimationTrack }
+local function playAnimation(character, humanoid, name)
+	local id = Config.Animations and Config.Animations[name]
+	if type(id) ~= "number" or id <= 0 then
+		return false
+	end
+	if character ~= Players.LocalPlayer.Character then
+		return true -- başkasının animasyonu Roblox'tan zaten geliyor
+	end
+	local ok, played = pcall(function()
+		local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+		tracks[humanoid] = tracks[humanoid] or {}
+		local track = tracks[humanoid][name]
+		if not track then
+			local animation = Instance.new("Animation")
+			animation.AnimationId = "rbxassetid://" .. id
+			track = animator:LoadAnimation(animation)
+			track.Priority = Enum.AnimationPriority.Action
+			track.Looped = false
+			tracks[humanoid][name] = track
+		end
+		local length = track.Length
+		local speed = if length and length > 0 then length / Config.MoveDuration[name] else 1
+		track:Play(0.05, 1, speed)
+		return true
+	end)
+	return ok and played
+end
+
 function Moves.play(character, name)
 	local move = MOVES[name]
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not move or not humanoid or humanoid.Health <= 0 then
+		return
+	end
+	if playAnimation(character, humanoid, name) then
+		-- Kodla çizilen bir hareket (ör. yürürken squat) sürüyorsa bırak: eklemler gerçek animasyonla çakışmasın
+		local running = active[character]
+		if running then
+			restore(running.rig)
+			active[character] = nil
+		end
 		return
 	end
 
