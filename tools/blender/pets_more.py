@@ -227,22 +227,41 @@ def polarbear(m, C):
 
 
 def yeti(m, C):
-    face = (120, 175, 225)
-    fur = lighter(C, 0.5)
-    P.base(m, C, feet=darker(C, 0.15))
-    for index in range(9):  # yüzün çevresinde sert tüy dikenleri
-        a = math.pi * 0.05 + index * math.pi * 0.9 / 8
-        m.cone((math.cos(a) * 1.0, 0.25, CZ + 0.1 + math.sin(a) * 0.95), 0.2, 0.02, 0.6, fur, rot=(0, 90 - math.degrees(a), 0), verts=5, name="FurSpike")
-    m.ball((0, FRONT - 0.05, CZ - 0.02), (0.82, 0.18, 0.7), face, seg=16, rings=10, name="Face")
-    for s in (-1, 1):
-        m.cone((0.62 * s, 0.0, TOP + 0.18), 0.18, 0.03, 0.5, WHITE, rot=(0, 16 * s, 0), verts=5, name="Horn")
-        m.cone((0.3 * s, FRONT + 0.0, CZ - 0.5), 0.1, 0.02, 0.3, WHITE, rot=(180, 0, 0), verts=4, name="Tusk")
-        m.box((0.5 * s, FRONT + 0.06, CZ + 0.46), (0.5, 0.07, 0.12), darker(C, 0.35), bevel=0.02, rot=(0, -16 * s, 0), name="Brow")
-    P.eyes(m, "bead", size=1.0, dz=0.18)
-    m.box((0, FRONT + 0.06, CZ - 0.38), (0.6, 0.05, 0.1), (60, 70, 110), bevel=0.02, name="Mouth")
-    P.nose(m, (60, 70, 110), -0.18, 1.2)
-    P.cheeks(m, (255, 170, 200), 0.85, -0.3)
-    P.tail_ball(m, fur, 0.3)
+    """SEVİMLİ YETİ (2026-10-18, sahibi eski modele 'çok kötü duruyor, yeniden modelle' dedi: kızgın kaşlar, dişler ve sert tüy dikenleri kaldırıldı).
+    Starter Pack görselindeki Yeti'ye göre: buz mavisi kutu gövde, başın üstünde ve yanaklarda YUMUŞAK beyaz tüy topları, tüyün arasından çıkan
+    küçük kıvrık boynuzlar, iri parlak gözler, gülümseme, pembe yanaklar, bir pati el sallıyor."""
+    fur = (250, 252, 255)
+    fur_shade = (226, 238, 250)
+    face = lighter(C, 0.45)
+    horn = (245, 236, 215)
+    P.base(m, C, feet=fur_shade)
+    # yüz: gövdeden açık renkli yumuşak oval
+    m.ball((0, FRONT - 0.07, CZ - 0.1), (0.86, 0.09, 0.66), face, seg=18, rings=10, name="Face")
+    # başın üstünde kabarık tüy şapkası (iç içe toplar)
+    for x, y, r in ((-0.62, 0.05, 0.36), (-0.25, 0.25, 0.42), (0.18, 0.2, 0.44), (0.6, 0.02, 0.36),
+                    (-0.35, -0.35, 0.36), (0.32, -0.32, 0.38), (0.0, -0.05, 0.4), (0.0, 0.48, 0.3)):
+        m.ball((x, y, TOP + 0.06), (r, r, r * 0.72), fur, seg=12, rings=8, name="FurCap")
+    m.ball((0.05, 0.3, TOP + 0.36), (0.22, 0.2, 0.26), fur, seg=10, rings=6, name="FurTuft")  # tepede küçük kâkül
+    for s_ in (-1, 1):
+        # yanlarda kabarık yanak tüyleri
+        m.ball((1.02 * s_, 0.25, CZ - 0.05), (0.26, 0.42, 0.42), fur, seg=12, rings=8, name="SideFur")
+        m.ball((1.0 * s_, 0.42, CZ - 0.42), (0.22, 0.3, 0.26), fur_shade, seg=10, rings=6, name="SideFur")
+        # küçük kıvrık boynuzlar (tüyün arasından yukarı-dışarı)
+        m.tube([(0.78 * s_, 0.0, TOP - 0.02), (1.05 * s_, 0.02, TOP + 0.22), (1.0 * s_, 0.04, TOP + 0.46)], 0.14, horn, name="Horn")
+        m.ball((1.0 * s_, 0.04, TOP + 0.48), (0.11, 0.11, 0.11), horn, seg=8, rings=5, name="HornTip")
+    # iri parlak gözler (beyaz + koyu mavi göz bebeği + parıltı)
+    P.eyes(m, "white", spread=0.42, dz=0.1, size=1.18, color=(40, 60, 110), iris=(50, 80, 140))
+    # gülümseme
+    for s_ in (-1, 1):
+        m.box((0.1 * s_, FRONT + 0.05, CZ - 0.36), (0.22, 0.05, 0.06), (60, 70, 110), bevel=0.015, rot=(0, -28 * s_, 0), name="Smile")
+    m.ball((0, FRONT + 0.05, CZ - 0.2), (0.09, 0.05, 0.06), (90, 110, 160), seg=8, rings=5, name="Nose")
+    P.cheeks(m, (255, 165, 195), 0.66, -0.22, 0.9)
+    # el sallayan sağ pati (yukarıda) ve sol pati (yanda aşağıda)
+    m.ball((1.12, 0.35, CZ + 0.62), (0.22, 0.2, 0.3), C, seg=10, rings=6, name="WaveArm")
+    m.ball((1.18, 0.42, CZ + 0.92), (0.2, 0.18, 0.2), fur, seg=10, rings=6, name="WavePaw")
+    m.ball((-1.1, 0.35, CZ - 0.45), (0.2, 0.2, 0.26), C, seg=10, rings=6, name="Arm")
+    m.ball((-1.12, 0.42, CZ - 0.66), (0.18, 0.17, 0.16), fur, seg=10, rings=6, name="Paw")
+    P.tail_ball(m, fur, 0.32)
 
 
 # ------------------------------------------------------------------ yumurta 5 (lava)

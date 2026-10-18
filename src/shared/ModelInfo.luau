@@ -64,7 +64,7 @@ return {
 	pet_titan = { size = Vector3.new(2.36, 3.02, 2.515), center = Vector3.new(0.0, 1.49, 0.1325) },
 	pet_unicorn = { size = Vector3.new(2.1, 3.4065, 2.7505), center = Vector3.new(0.0, 1.6832, 0.3152) },
 	pet_wolf = { size = Vector3.new(2.8, 2.7542, 3.7), center = Vector3.new(0.0, 1.3571, 0.4) },
-	pet_yeti = { size = Vector3.new(2.5739, 2.5282, 2.45), center = Vector3.new(0.0, 1.2441, 0.145) },
+	pet_yeti = { size = Vector3.new(2.6614, 2.72, 2.44), center = Vector3.new(0.0395, 1.34, 0.17) },
 	shoe_canvas = { size = Vector3.new(1.5732, 2.0168, 3.8793), center = Vector3.new(0.0, 1.0084, 0.002) },
 	shoe_cleats = { size = Vector3.new(1.5788, 2.2084, 3.8793), center = Vector3.new(0.0, 0.8342, 0.002) },
 	shoe_crystal = { size = Vector3.new(2.27, 2.7139, 3.8793), center = Vector3.new(0.0, 1.357, 0.002) },
