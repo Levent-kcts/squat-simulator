@@ -56,6 +56,7 @@ Creator Hub > oyun > **Engagement > Badges > Create**: kod 9 rozeti hazır (`src
 - Friend Referral banner'ı YAYINDA: 'Friend Potions', 31 Aralık 2026'ya kadar.
 - Studio > Deneyim Ayarları > İletişim: Sesli Sohbet ve Kamera KAPATILDI.
 - Yapılmadı: Roblox grubu (100 Robux ister, onay bekliyor), oynanış videosu (sahibi çeker).
+- Iz simgeleri: Gemini ile 10 ozel simge uretildi, oyunda Backpack > Trails kartlarina baglandi ve 9 iz Robux urununun Creator Hub gorseli bu simgelerle degistirildi (hepsi 'Successfully updated', Brick Dust sayfadan dogrulandi). Spooky Gym 'Submit for Featuring' ACILAMADI: etkinlik en az 7 gun sonra baslamali (24 Ekim 6 gun sonra).
 
 ## E) 2026-10-17 Claude'un tarayıcıdan yaptıkları
 - 34 Developer Product'a görsel yüklendi (doğrulandı), Starter Pack ürünü açıldı, eski VIP ürünü satıştan kaldırıldı, bütün fiyatlar güncellendi.
