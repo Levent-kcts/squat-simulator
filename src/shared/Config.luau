@@ -278,13 +278,13 @@ return {
 	-- ROBLOX ROZETLERİ (2026-10-14 büyüme planı; server/Badges): her başarı bir Roblox rozetidir (oyuncunun profilinde görünür). id = 0 iken PASİF; sahibi Creator Hub > Engagement > Badges'ta rozeti oluşturup kimliğini buraya yazar.
 	-- (Rozet oluşturma Roblox'ta küçük Robux ücreti isteyebilir: önce en önemli 3-5 tanesini aç, kalanı pasif bırak.) name/description Creator Hub'a yazılacak metinlerdir.
 	Badges = {
-		welcome = { id = 0, name = "Welcome to the Gym", description = "Played +1 Squat Evolution: Smash Walls for the first time." },
-		rebirth1 = { id = 0, name = "First Rebirth", description = "Did your first Rebirth." },
+		welcome = { id = 3364548939552456, name = "Welcome to the Gym", description = "Played +1 Squat Evolution: Smash Walls for the first time." },
+		rebirth1 = { id = 748012790022651, name = "First Rebirth", description = "Did your first Rebirth." },
 		rebirth10 = { id = 0, name = "Rebirth Champion", description = "Reached Rebirth 10." },
-		stage10 = { id = 0, name = "Wall Smasher", description = "Cleared stage 10 of the wall corridor." },
+		stage10 = { id = 3484600394061960, name = "Wall Smasher", description = "Cleared stage 10 of the wall corridor." },
 		stage20 = { id = 0, name = "Blackhole Breaker", description = "Cleared all 20 stages." },
-		legendary = { id = 0, name = "Legendary Hatch", description = "Hatched a Legendary pet." },
-		mythic = { id = 0, name = "Mythic Hatch", description = "Hatched a Mythic pet." },
+		legendary = { id = 765266493747323, name = "Legendary Hatch", description = "Hatched a Legendary pet." },
+		mythic = { id = 770565940820499, name = "Mythic Hatch", description = "Hatched a Mythic pet." },
 		boss = { id = 0, name = "Boss Pet", description = "Merged a pet all the way to Boss size." },
 		index30 = { id = 0, name = "Pet Collector", description = "Discovered every pet in the Pet Index." },
 	},

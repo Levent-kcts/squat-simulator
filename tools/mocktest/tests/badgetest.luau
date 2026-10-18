@@ -22,6 +22,10 @@ for _, key in { "welcome", "rebirth1", "rebirth10", "stage10", "stage20", "legen
 	assert(Config.Badges[key], "rozet tanımlı olmalı: " .. key)
 end
 
+-- Gerçek rozet ID'leri (2026-10-18, Creator Hub'da açıldı) testte sıfırlanır: pasif durumu ve sayaç taklidi önce denenir
+for _, def in Config.Badges do
+	def.id = 0
+end
 PlayerStats.init()
 local function join(userId, name)
 	local player = S.newInstance("Player")
