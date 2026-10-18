@@ -118,7 +118,7 @@ Oyun yayında (16+), Robux ürünleri satışta, kod GitHub'da. 14-16 Ekim'de 'b
 2. ~~Halloween Experience Event kaydı~~ YAPILDI (2026-10-17, Claude oluşturdu: 'Spooky Gym', Festival, Public, 24 Ekim 00:00 - 9 Kasım 00:00 UTC; Scheduled listesinde). Görseli VAR (2026-10-17, Claude Gemini'de promptla üretti [`assets/cover/ETKINLIK_SPOOKY_GYM_PROMPT.md`], indirdi ve etkinliğe yükledi: `assets/cover/UPLOAD/ETKINLIK_spooky_gym.jpg`, 2752x1536; listede küçük resim moderasyondan sonra görünür). Submit for Featuring açılmadı.
 3. Oyun sayfası: 15-30 sn oynanış videosu, 3-5 küçük resim, açıklamanın ilk cümlesi, promosyon kodlarını açıklamaya yaz (LAUNCH, SQUAT, SMASHWALLS, EVOLUTION, LEGDAY, FRIENDS, THANKS).
 4. Her kanal için ayrı Share Link; Ads Manager'da otomatik kredi yüklemeyi kapat.
-5. Kodu hazır, ID bekleyenler: rozetler (önce 3-5 tanesi; `Config.Badges`), Roblox grubu (`Config.Group.Id`), Friend Referral banner'ı. Starter Pack görselini Creator Hub'daki ürüne 'Change Image' ile ekle (`assets/icons/starterpack.png`).
+5. Kodu hazır, ID bekleyenler: rozetler (önce 3-5 tanesi; `Config.Badges`), Roblox grubu (`Config.Group.Id`), Friend Referral banner'ı. (Starter Pack görseli YAPILDI 2026-10-17: Yeti'li yeni görsel Creator Hub'a yüklendi, oyun içi ID 94826644179807.)
 
 **Sahibinin kararını bekleyenler:**
 6. ~~Mastery~~ KALICI OLARAK SİLİNDİ (2026-10-16, sahibi istedi; geri istenirse commit 476eab6).
