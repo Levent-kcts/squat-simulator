@@ -310,6 +310,8 @@ return {
 		{ code = "LEGDAY", potions = { { kind = "boostMuscle", minutes = 15 }, { kind = "boostWins", minutes = 15 } } },
 		{ code = "FRIENDS", wins = 60, potions = { { kind = "boostLuck", minutes = 15 } } },
 		{ code = "THANKS", muscleClicks = 5000, wins = 50 },
+		-- Spooky Gym etkinlik kodu (2026-10-18): etkinlik bitince (9 Kasım 00:00 UTC) süresi dolar
+		{ code = "SPOOKY", wins = 100, potions = { { kind = "boostRainbow", minutes = 15 } }, expires = 1794182400 },
 	},
 	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
 
@@ -368,7 +370,7 @@ return {
 			{ icon = "🎟", text = "Promo codes in Settings: free potions + Wins" },
 			{ icon = "⚡", text = "POWER HOUR: x2 Leg Muscle, 1 hour every day" },
 			{ icon = "💸", text = "Lower Shop prices on almost everything" },
-			{ icon = "🏅", text = "Rank titles + a live feed of rare pets" },
+			{ icon = "🎃", text = "SPOOKY GYM Oct 24-Nov 8! Code: SPOOKY" },
 		},
 	},
 
