@@ -43,4 +43,10 @@ assert(hit2 == true and broken2 == 2, "aşama sonunu geçmemeli, kırılan: " ..
 local hit3, broken3 = Wall.hit(player, 10 ^ 12)
 print("hit(1e12) out of reach:", hit3, broken3)
 assert(hit3 == false, "menzil dışındayken hasar işlememeli")
+-- SQUAT YOK BOLGESI (2026-10-18): HitRange'in NoSquatRange gerisine kadar 'yakin' sayilir, daha uzagi sayilmaz
+local frontZ = Layout.wallZ(1) + Config.Wall.Thickness / 2
+local extra = Config.Wall.NoSquatRange
+local inBuffer = S.Vector3.new(0, 3, frontZ + Config.Wall.HitRange + extra / 2)
+assert(not Layout.withinReach(1, inBuffer) and Layout.withinReach(1, inBuffer, extra), 'tampon bolgede tekme yok ama squat yok bolgesi var')
+assert(not Layout.withinReach(1, S.Vector3.new(0, 3, frontZ + Config.Wall.HitRange + extra + 1), extra), 'tamponun disi serbest')
 print("DONE")

@@ -842,6 +842,9 @@ local function playMove()
 		return false
 	end
 	local near = WallClient.isNearWall(root.Position)
+	if not near and WallClient.isNearWall(root.Position, Config.Wall.NoSquatRange or 0) then
+		return false -- duvarın hemen önündeki 'squat yok' bölgesi: animasyon yok (tıklama yine kas verir), menzile girince tekme hemen başlar
+	end
 	local move = if near then "Kick" else "Squat"
 	if near then
 		root.CFrame = CFrame.lookAt(root.Position, root.Position + Vector3.new(0, 0, -1))

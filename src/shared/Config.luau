@@ -686,6 +686,9 @@ return {
 		StartZ = -66.5, -- ilk duvarın Z konumu (salonun ön duvarı Z = -65 olacak şekilde; spawn salonun tam ortasında, 0)
 
 		HitRange = 9, -- ilk sağlam duvarın ÖN YÜZÜNE bu mesafeden yakınsan tekme atar ve hasar verirsin (stud)
+		-- SQUAT YOK BÖLGESİ (2026-10-18, sahibi 'squat atarken tekme atmaya çalışıyor, kötü duruyor; hasar verebileceği uzaklığın biraz gerisinde squat yapamasın' dedi):
+		-- HitRange'in bu kadar gerisine kadar squat ANİMASYONU oynamaz (tıklama yine kas verir), böylece menzile girince süren bir squat tekmeyi geciktirmez.
+		NoSquatRange = 6,
 		RespawnDelay = 15, -- 100. duvar kırılınca (Win'e basılmazsa) kaç saniye sonra tur başa sarılsın
 
 		-- Win ödülü: 1. aşama = 1, sonraki = bir öncekinin RewardGrowth katı + 1  ->  1, 3, 7, 15, 31 ...

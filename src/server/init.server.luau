@@ -310,6 +310,9 @@ clickEvent.OnServerEvent:Connect(function(player)
 	if not idle then
 		return -- hareket sürüyor: squat'ta kas verildi, tekmede tıklama sayılmaz
 	end
+	if move == "Squat" and not area and WallService.isNearWall(player, Config.Wall.NoSquatRange or 0) then
+		return -- duvarın hemen önündeki 'squat yok' bölgesi: kas verildi, squat hareketi başlamaz (diğer oyunculara da gitmez), menzile girince tekme hemen başlar
+	end
 
 	local duration = Config.MoveDuration[move]
 	busyUntil[player] = now + duration - MOVE_TOLERANCE

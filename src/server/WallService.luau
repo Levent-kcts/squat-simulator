@@ -410,14 +410,15 @@ function WallService.resetPlayer(player)
 end
 
 -- Oyuncu kendi ilk sağlam duvarının vuruş menzilinde mi? (tekme mi squat mı seçmek için)
-function WallService.isNearWall(player)
+-- extra: menzile eklenen mesafe (Config.Wall.NoSquatRange ile 'squat yok' bölgesi); verilmezse tekme/hasar menzili
+function WallService.isNearWall(player, extra)
 	local run = runs[player]
 	local root = getRoot(player)
 	if not run or not root then
 		return false
 	end
 	advanceFrontier(run)
-	return run.frontier <= cfg.Count and Layout.withinReach(run.frontier, root.Position)
+	return run.frontier <= cfg.Count and Layout.withinReach(run.frontier, root.Position, extra)
 end
 
 -- Oyuncunun kendi ilk sağlam duvarına yakınsa, hasarı sırayla duvarlara uygular.

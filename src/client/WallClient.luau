@@ -32,8 +32,8 @@ function WallClient.getFrontier()
 end
 
 -- Oyuncu, ilk sağlam duvarın vuruş menzilinde mi? (tekme mi squat mı seçmek için)
-function WallClient.isNearWall(position)
-	return currentFrontier <= cfg.Count and Layout.withinReach(currentFrontier, position)
+function WallClient.isNearWall(position, extra)
+	return currentFrontier <= cfg.Count and Layout.withinReach(currentFrontier, position, extra)
 end
 
 -- Duvar yüzündeki yazı: ortalanmış, kalın siyah kenarlı

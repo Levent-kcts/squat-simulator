@@ -72,9 +72,10 @@ function Layout.padX()
 end
 
 -- Pozisyon, index'inci duvarın önünde vuruş menzilinde mi? (duvarın ön yüzüne yatay mesafe)
-function Layout.withinReach(index, position)
+-- extra: menzile eklenen mesafe (squat yok bölgesi için Config.Wall.NoSquatRange; verilmezse tam tekme/hasar menzili)
+function Layout.withinReach(index, position, extra)
 	local frontZ = Layout.wallZ(index) + cfg.Thickness / 2
-	return math.abs(position.Z - frontZ) <= cfg.HitRange and math.abs(position.X) <= cfg.Width / 2 + 2
+	return math.abs(position.Z - frontZ) <= cfg.HitRange + (extra or 0) and math.abs(position.X) <= cfg.Width / 2 + 2
 end
 
 function Layout.stageName(stage)
