@@ -131,6 +131,9 @@ return {
 	Save = {
 		StoreName = "PlayerData_v2", -- ismi değiştirirsen herkesin kaydı sıfırlanır! (2026-10-10: yayın öncesi temiz başlangıç için v1 -> v2; YAYINDAN SONRA ASLA DEĞİŞTİRME)
 		AutosaveInterval = 30, -- saniye (ayrıca Win/satın alma/pet sonrası da hemen kaydedilir)
+		-- ÇEKİM MODU (2026-10-19, tanıtım videosu çekimi): true iken STUDIO test oturumu kaydı OKUR ama YAZMAZ (DEV ile küçültme/büyütme gerçek kaydı bozmasın).
+		-- Canlı oyunu etkilemez (sadece RunService:IsStudio()). Çekimden sonra false yap.
+		StudioReadOnly = false,
 	},
 
 	-- Shop (sol menüdeki Shop butonu): Robux ile alınan Developer Product'lar. productId: Creator Hub > Monetization > Developer Products'ta

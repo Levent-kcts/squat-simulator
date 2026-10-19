@@ -932,6 +932,9 @@ local function save(player, mode)
 	if not profile or not profile.canSave or not muscle or not wins then
 		return false
 	end
+	if Config.Save.StudioReadOnly and RunService:IsStudio() then
+		return true -- çekim modu: Studio'da kayda yazılmaz (Config.Save.StudioReadOnly)
+	end
 
 	local data = {
 		Muscle = muscle.Value,
