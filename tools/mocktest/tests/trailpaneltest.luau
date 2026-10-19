@@ -46,6 +46,10 @@ assert(ok, "CosmeticPanel.init hata verdi: " .. tostring(panel))
 S.localPlayer:SetAttribute("OwnedTrails", Config.Trails[1].id)
 panel.show()
 assert(countNamed(root, "TrailIcon") == #Config.Trails, `her iz kartında tema simgesi olmalı: {countNamed(root, "TrailIcon")} / {#Config.Trails}`)
+-- 2026-10-18: her izin KENDİ resmi var (Config.Icons.Trail_<id>) ve kartta büyük durur
+for _, trail in Config.Trails do
+	assert(trail.icon == 'Trail_' .. trail.id and type(Config.Icons[trail.icon]) == 'string' and Config.Icons[trail.icon] ~= '', 'iz resmi bağlı olmalı: ' .. trail.id)
+end
 
 -- Sezonluk etkinlik izi sahibi değilken listede YOK, sahibi olunca eklenir (Equip düğmesiyle)
 S.localPlayer:SetAttribute("OwnedTrails", Config.Trails[1].id .. "," .. Config.Event.Trail.id)

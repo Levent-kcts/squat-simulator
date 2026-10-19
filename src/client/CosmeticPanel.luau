@@ -140,8 +140,16 @@ function CosmeticPanel.init(screenGui, showToast, options)
 			create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, card)
 			UIStyle.soften(card, { radius = 12, strength = 0.3 })
 
+			-- İZ KART SİMGESİ (2026-10-18, sahibi 'iz simgelerini üret, oyunda gerekli yerlerde olsun' dedi): izin kendi resmi varsa (Config.Icons.Trail_<id>)
+			-- kartın solunda BÜYÜK durur ve eski renk şeridinin yerini alır (simgenin içinde izin akışı zaten çizili); resim yoksa eski şerit + küçük simge/emoji
+			local trailImage = options.previewKind ~= "aura" and item.icon and Config.Icons[item.icon]
+			if type(trailImage) ~= "string" or trailImage == "" or item.iconTint then
+				trailImage = nil
+			end
+			local textX = if trailImage then 112 else 14
+
 			makeText(card, {
-				Position = UDim2.fromOffset(14, 6),
+				Position = UDim2.fromOffset(textX, 6),
 				Size = UDim2.new(0.55, 0, 0, 36),
 				Text = item.name,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -158,6 +166,16 @@ function CosmeticPanel.init(screenGui, showToast, options)
 				create("UICorner", { CornerRadius = UDim.new(1, 0) }, orb)
 				create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, orb)
 				create("UIGradient", { Color = if item.rainbow then RAINBOW else ColorSequence.new(item.color) }, orb)
+			elseif trailImage then
+				create("ImageLabel", {
+					Name = "TrailIcon",
+					Position = UDim2.fromOffset(8, 12),
+					Size = UDim2.fromOffset(96, 96),
+					BackgroundTransparency = 1,
+					Image = trailImage,
+					ScaleType = Enum.ScaleType.Fit,
+					ZIndex = 2,
+				}, card)
 			else
 				local preview = create("Frame", {
 					Position = UDim2.fromOffset(16, 52),
@@ -197,7 +215,7 @@ function CosmeticPanel.init(screenGui, showToast, options)
 			end
 
 			makeText(card, {
-				Position = UDim2.fromOffset(if options.previewKind == "aura" then 66 else 16, 86),
+				Position = UDim2.fromOffset(if trailImage then textX elseif options.previewKind == "aura" then 66 else 16, 86),
 				Size = UDim2.new(0.5, 0, 0, 26),
 				Text = options.bonusText(item),
 				TextXAlignment = Enum.TextXAlignment.Left,

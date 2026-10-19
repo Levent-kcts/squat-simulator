@@ -341,7 +341,7 @@ return {
 			{ id = "stash", name = "Win Stash", detail = "3x a stage reward in Wins", emoji = "💰", price = 50, limit = 5, reward = { winsStage = 3 } },
 			{ id = "crate", name = "Protein Crate", detail = "A big pile of Leg Muscle", emoji = "💪", price = 40, limit = 5, reward = { muscleClicks = 4000 } },
 			{ id = "title", name = "Pumpkin King", detail = "Name tag title (yours forever)", emoji = "👑", price = 150, limit = 1, perk = "title" },
-			{ id = "trail", name = "Pumpkin Patch Trail", detail = "Spooky trail, +14 speed (forever)", emoji = "🎃", price = 250, limit = 1, perk = "trail" },
+			{ id = "trail", name = "Pumpkin Patch Trail", detail = "Spooky trail, +14 speed (forever)", emoji = "🎃", image = "Trail_pumpkin", price = 250, limit = 1, perk = "trail" },
 		},
 		-- Toplam kazanılan Candy kilometre taşları (ücretsiz ödül, panelde CLAIM)
 		Milestones = {

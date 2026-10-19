@@ -201,7 +201,13 @@ function SpookyPanel.init(screenGui, showToast)
 			}, content)
 			create("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
 			UIStyle.soften(row, { radius = 10, strength = 0.12, shine = false })
-			text(row, { Position = UDim2.fromOffset(8, 8), Size = UDim2.fromOffset(40, 44), Text = item.emoji, TextColor3 = Color3.new(1, 1, 1) }, 0)
+			-- Ürünün kendi resmi varsa (item.image = Config.Icons anahtarı; ör. Pumpkin Patch izi 'Trail_pumpkin') emoji yerine o görünür
+			local imageId = item.image and Config.Icons[item.image]
+			if type(imageId) == "string" and imageId ~= "" then
+				create("ImageLabel", { Name = "ItemImage", Position = UDim2.fromOffset(4, 4), Size = UDim2.fromOffset(48, 52), BackgroundTransparency = 1, Image = imageId, ScaleType = Enum.ScaleType.Fit }, row)
+			else
+				text(row, { Position = UDim2.fromOffset(8, 8), Size = UDim2.fromOffset(40, 44), Text = item.emoji, TextColor3 = Color3.new(1, 1, 1) }, 0)
+			end
 			local nameLabel = text(row, { Position = UDim2.fromOffset(54, 6), Size = UDim2.new(1, -170, 0, 26), Text = item.name, TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, 2)
 			create("UITextSizeConstraint", { MaxTextSize = 20 }, nameLabel)
 			local detailLabel = text(row, { Position = UDim2.fromOffset(54, 33), Size = UDim2.new(1, -170, 0, 20), Text = item.detail, TextColor3 = Color3.fromRGB(190, 195, 215), TextXAlignment = Enum.TextXAlignment.Left }, 1)
