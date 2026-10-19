@@ -1,0 +1,6 @@
+std = "roblox"
+
+[lints]
+# Projede UDim2.new(oran, 0, oran, 0) yaygın ve bilinçli; gölgeleme de stil tercihi
+roblox_manual_fromscale_or_fromoffset = "allow"
+shadowing = "allow"

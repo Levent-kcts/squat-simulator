@@ -7,6 +7,9 @@
 
 sourcemap.json
 
+# Selene'in Roblox API listesi (tools/typecheck.py yoksa kendisi üretir)
+roblox.yml
+
 *.blend1
 
 __pycache__/

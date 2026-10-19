@@ -252,6 +252,27 @@ assert(objectiveId() == "pet", "yumurtaya yetecek Win varken güncel hedef ilk p
 GuideTour._tick()
 assert(visible() and cardHas(stepById("q_pet").title) and cardHas("NEW QUEST"), "güncel hedef 'ilk pet' iken kart da 'ilk pet' demeli")
 assert(not cardHas(stepById("q_wall").title), "ilk pet hedefiyken 'duvarları kır' kartı çıkmamalı")
+-- 5b) AÇIK PENCERE: bir PanelManager penceresi (Quests, Shop...) açıkken kart ve ok gizlenir, adım kaybolmaz; pencere kapanınca geri gelir
+--     (Studio QA 2026-10-20: Quests açıkken 'Auto Click' TIP kartı pencerenin üstüne çıkıp CLAIM düğmesini kapatıyordu)
+local PanelManager = require("./PanelManager")
+S.localPlayer:SetAttribute("CalmUI", true) -- kayma animasyonu olmadan anında aç/kapat
+local window = S.newInstance("Frame")
+window.Name = "TestWindow"
+window.Visible = false
+window.Parent = playerGui
+PanelManager.show(window)
+assert(PanelManager.anyOpen(), "açılan pencere anyOpen'da görünmeli")
+local stepBefore = GuideTour._state().current
+GuideTour._tick()
+assert(not visible(), "pencere açıkken rehber kartı gizlenmeli")
+assert(GuideTour._state().current == stepBefore, "pencere açıkken adım kaybolmamalı (sonra geri gelecek)")
+local suspendedCallout = GuideTour._state().callout
+assert(suspendedCallout == nil or rawget(suspendedCallout.container, "Visible") ~= true, "pencere açıkken rehber oku da gizlenmeli")
+PanelManager.hide(window)
+assert(not PanelManager.anyOpen(), "kapanan pencere anyOpen'dan düşmeli")
+GuideTour._tick()
+assert(visible() and cardHas(stepById("q_pet").title), "pencere kapanınca aynı kart geri gelmeli")
+S.localPlayer:SetAttribute("CalmUI", nil)
 S.lastInvoke = nil
 click(find(card, "GotIt"))
 assert(S.lastInvoke and S.lastInvoke[2] == "q_pet", "kart görüldü diye bildirilmeli: " .. tostring(S.lastInvoke and S.lastInvoke[2]))

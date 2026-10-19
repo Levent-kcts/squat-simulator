@@ -15,6 +15,7 @@ local Config = require(Shared:WaitForChild("Config"))
 local UIStyle = require(script.Parent.UIStyle)
 local PlayerSettings = require(script.Parent.PlayerSettings)
 local Objective = require(script.Parent.Objective)
+local PanelManager = require(script.Parent.PanelManager)
 
 local GuideTour = {}
 
@@ -421,8 +422,8 @@ function GuideTour.init(screenGui, showToast)
 		pcall(function()
 			local target = callout.target
 			local container = callout.container
-			if target.Parent == nil or not isShown(target) then
-				container.Visible = false
+			if callout.suspended or target.Parent == nil or not isShown(target) then
+				container.Visible = false -- suspended: bir pencere açık, ok pencerenin üstünde durmasın (tick)
 				return
 			end
 			local position, size = target.AbsolutePosition, target.AbsoluteSize
@@ -597,8 +598,29 @@ function GuideTour.init(screenGui, showToast)
 	end
 
 	-- ---------- Kapatma ----------
+	-- AÇIK PENCERE BEKLETMESİ (2026-10-20, Studio QA: Quests açıkken 'Auto Click' TIP kartı pencerenin üstüne çıkıp CLAIM düğmesini kapatıyordu):
+	-- bir PanelManager penceresi açıkken yeni kart/ok başlamaz; açık olan kart ve oku gizlenir, pencere kapanınca aynen geri gelir (görüldü sayılmaz).
+	-- Hızlı tur (intro) hariç: tur, işaretli düğmeye basınca pencere açıp sonraki durağa geçmek üzere kurulu.
+	local cardWanted = false -- güncel adım kart gösteriyor mu (claim oku kart göstermez)
+	local suspended = false
+	local function setSuspended(on)
+		if suspended == on then
+			return
+		end
+		suspended = on
+		card.Visible = cardWanted and not on
+		if activeCallout then
+			activeCallout.suspended = on
+			if on then
+				activeCallout.container.Visible = false
+			end
+		end
+	end
+
 	local function hide()
 		card.Visible = false
+		cardWanted = false
+		suspended = false
 		introBar.Visible = false
 		intro = nil
 		clearCallout()
@@ -727,6 +749,7 @@ function GuideTour.init(screenGui, showToast)
 		gotItLabel.Text = step.button or "Got it!"
 		tagLabel.Text = step.tag or "GUIDE"
 		card.Visible = true
+		cardWanted = true
 		local target = findTarget(player, step.target)
 		local onTargetClick = dismiss
 		if step.target == "QuestsButton" then
@@ -789,6 +812,9 @@ function GuideTour.init(screenGui, showToast)
 			end
 			return
 		end
+		local ok, open = pcall(PanelManager.anyOpen)
+		local blocked = ok and open == true and intro == nil
+		setSuspended(blocked and current ~= nil)
 		if current then
 			if rebirthValue.Value > 0 and not current.claim and not (current.when and string.find(current.when, "^quest:")) then
 				hide() -- ilk rebirth yapıldı: açık kart/tur kapanır (sadece 'ödülünü Quests'ten al' oku ve son görev [çark] kartı kalır)
@@ -803,6 +829,9 @@ function GuideTour.init(screenGui, showToast)
 				end
 			end
 			return
+		end
+		if blocked then
+			return -- pencere açık: yeni kart/ok pencere kapanınca
 		end
 		local seen = seenSet()
 		local sinceDismiss = os.clock() - lastDismiss

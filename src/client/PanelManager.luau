@@ -51,6 +51,16 @@ function PanelManager.isOpen(frame)
 	return PanelManager.register(frame).open
 end
 
+-- Herhangi bir kayıtlı pencere (sol menü + Quests/Index/Stats/Daily...) açık mı: rehber kartları açık pencerenin üstüne çıkmasın diye (client/GuideTour)
+function PanelManager.anyOpen()
+	for frame, entry in entries do
+		if entry.open and frame.Parent ~= nil then
+			return true
+		end
+	end
+	return false
+end
+
 function PanelManager.hide(frame)
 	local entry = PanelManager.register(frame)
 	if not entry.open then
