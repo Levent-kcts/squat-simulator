@@ -24,10 +24,10 @@
     "semantic_hash": "be3c3975919062e380ecd8ec6f52ceab"
   },
   "src/client/DevPanel.luau": {
-    "mtime": 1792242081.7296934,
-    "seen": 1792500530.5851517,
-    "ast_hash": "7939770810e318453510873b3554f79e",
-    "semantic_hash": "7939770810e318453510873b3554f79e"
+    "mtime": 1792523404.6674044,
+    "seen": 1792523559.0151348,
+    "ast_hash": "3815f449dc5bed255e84038a7cb78ec7",
+    "semantic_hash": ""
   },
   "src/client/EggShop.luau": {
     "mtime": 1792144280.268415,
@@ -54,10 +54,10 @@
     "semantic_hash": "e9301da5b2ec142386d65cd460e496c1"
   },
   "src/client/Guide.luau": {
-    "mtime": 1791903959.1295145,
-    "seen": 1792500530.5851588,
-    "ast_hash": "473918c1e940b858432486d3511a0e95",
-    "semantic_hash": "473918c1e940b858432486d3511a0e95"
+    "mtime": 1792523387.2532346,
+    "seen": 1792523559.0151446,
+    "ast_hash": "902d86bfb2b68087493597283291b523",
+    "semantic_hash": ""
   },
   "src/client/GuideTour.luau": {
     "mtime": 1792451651.9465182,
@@ -270,9 +270,9 @@
     "semantic_hash": "33f6a4d122c2544f03b58f6a1af5ef57"
   },
   "src/client/WallClient.luau": {
-    "mtime": 1792501655.310557,
-    "seen": 1792501754.4698186,
-    "ast_hash": "daab1a420b4a8e530dc207488d3c6d98",
+    "mtime": 1792523454.4090488,
+    "seen": 1792523559.0152092,
+    "ast_hash": "0e76742a469962926856bfc211f39a27",
     "semantic_hash": ""
   },
   "src/client/WhatsNewCard.luau": {
@@ -294,10 +294,10 @@
     "semantic_hash": "1702a26773e21e304598c41bebd40957"
   },
   "src/client/init.client.luau": {
-    "mtime": 1792483316.582892,
-    "seen": 1792500530.585213,
-    "ast_hash": "b963eb2eafb2396e0b1eb6790bad7e3f",
-    "semantic_hash": "b963eb2eafb2396e0b1eb6790bad7e3f"
+    "mtime": 1792523387.2552333,
+    "seen": 1792523559.0152183,
+    "ast_hash": "477912514836d3b8db0cf14a104de074",
+    "semantic_hash": ""
   },
   "src/loading/Loading.client.luau": {
     "mtime": 1791570742.2405212,
@@ -348,10 +348,10 @@
     "semantic_hash": "d359c84940fd41fffd227004a1b00e5a"
   },
   "src/server/DevTools.luau": {
-    "mtime": 1792150558.1540139,
-    "seen": 1792500530.5852246,
-    "ast_hash": "f95aea4936bfb5b66c16ab214eda3a26",
-    "semantic_hash": "f95aea4936bfb5b66c16ab214eda3a26"
+    "mtime": 1792523404.6674044,
+    "seen": 1792523559.0152338,
+    "ast_hash": "0481cfef5d48505d107eb1692d60b31d",
+    "semantic_hash": ""
   },
   "src/server/EggPasses.luau": {
     "mtime": 1791584122.9368749,
@@ -432,10 +432,10 @@
     "semantic_hash": "7dcc129cb58bd763e8575abc252600b3"
   },
   "src/server/PlayerStats.luau": {
-    "mtime": 1792483249.21703,
-    "seen": 1792500530.5852435,
-    "ast_hash": "9ddca905a1428f06bf8cfd1186447f1c",
-    "semantic_hash": "9ddca905a1428f06bf8cfd1186447f1c"
+    "mtime": 1792523473.1212313,
+    "seen": 1792523559.0152578,
+    "ast_hash": "8cde0050f36809dbe85dd800bfaf6b41",
+    "semantic_hash": ""
   },
   "src/server/Purchases.luau": {
     "mtime": 1791588501.8744693,
@@ -492,10 +492,10 @@
     "semantic_hash": "6671fdd863fc47c2565f35f02a031f2a"
   },
   "src/server/WallService.luau": {
-    "mtime": 1792322719.189956,
-    "seen": 1792500530.585258,
-    "ast_hash": "212390239e91bde78e61414a68cf7603",
-    "semantic_hash": "212390239e91bde78e61414a68cf7603"
+    "mtime": 1792523473.2719452,
+    "seen": 1792523559.015275,
+    "ast_hash": "6d9f3c1add5b7e9a1dc01f1e767ec48f",
+    "semantic_hash": ""
   },
   "src/server/WheelService.luau": {
     "mtime": 1791378402.5473702,
@@ -504,16 +504,16 @@
     "semantic_hash": "cdccc71aebe2b095440f42faf0d9bc99"
   },
   "src/server/WorldsGate.luau": {
-    "mtime": 1791569221.137267,
-    "seen": 1792500530.5852609,
-    "ast_hash": "e9b7baa51b261788d303f6328cce58f2",
-    "semantic_hash": "e9b7baa51b261788d303f6328cce58f2"
+    "mtime": 1792523106.469334,
+    "seen": 1792523559.0152783,
+    "ast_hash": "73ba7ba6c3428cd534915a0366c34408",
+    "semantic_hash": ""
   },
   "src/server/init.server.luau": {
-    "mtime": 1792483243.2965174,
-    "seen": 1792500530.585262,
-    "ast_hash": "6258724954a3adafcab09e3f82e2d302",
-    "semantic_hash": "6258724954a3adafcab09e3f82e2d302"
+    "mtime": 1792523082.3948157,
+    "seen": 1792523559.0152805,
+    "ast_hash": "b74ef43540991f5bf13d4a9a55502001",
+    "semantic_hash": ""
   },
   "src/shared/Catalog.luau": {
     "mtime": 1791993871.9588556,
@@ -522,9 +522,9 @@
     "semantic_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5"
   },
   "src/shared/Config.luau": {
-    "mtime": 1792501525.2022805,
-    "seen": 1792501754.4698906,
-    "ast_hash": "d18174e295373f63f7ef756fe2247e3e",
+    "mtime": 1792522771.46644,
+    "seen": 1792523559.0152833,
+    "ast_hash": "c9050828c8ceca73676d171afca559a7",
     "semantic_hash": ""
   },
   "src/shared/EggRules.luau": {
@@ -540,9 +540,9 @@
     "semantic_hash": "6bbfe9692f23a5d8ca9729f21d2ae49f"
   },
   "src/shared/Layout.luau": {
-    "mtime": 1792501089.6371336,
-    "seen": 1792501262.8036795,
-    "ast_hash": "8f2bd1430239bebbe2eae65246c6f9b7",
+    "mtime": 1792523473.1974783,
+    "seen": 1792523559.0152886,
+    "ast_hash": "d5ae44598aa83e5c189147483283c039",
     "semantic_hash": ""
   },
   "src/shared/LoadingScreen.luau": {
@@ -726,10 +726,10 @@
     "semantic_hash": "d64989a094000eecb44c1c78d8c078bf"
   },
   "tools/mocktest/stubs.luau": {
-    "mtime": 1791994370.8885765,
-    "seen": 1792500530.5853102,
-    "ast_hash": "0af2565cea2a95efe24902b59baa7713",
-    "semantic_hash": "0af2565cea2a95efe24902b59baa7713"
+    "mtime": 1792523246.6637766,
+    "seen": 1792523559.0153418,
+    "ast_hash": "4ae8ed485b461c56014010649e653139",
+    "semantic_hash": ""
   },
   "tools/mocktest/tests/analyticstest.luau": {
     "mtime": 1791993326.4671571,
@@ -1128,10 +1128,10 @@
     "semantic_hash": "9a3a4f2131b5040e7b38914af7e26263"
   },
   "tools/mocktest/tests/worldsgatetest.luau": {
-    "mtime": 1791579029.2425163,
-    "seen": 1792500530.5854106,
-    "ast_hash": "d2889c4aaa8a6af1bfb20ec80f570ca9",
-    "semantic_hash": "d2889c4aaa8a6af1bfb20ec80f570ca9"
+    "mtime": 1792523273.0524063,
+    "seen": 1792523559.0154724,
+    "ast_hash": "da24cc7f9894311cef4eec1fd46a56a3",
+    "semantic_hash": ""
   },
   "tools/padsim.py": {
     "mtime": 1791587431.9633756,
@@ -1552,5 +1552,17 @@
     "seen": 1792500530.585505,
     "ast_hash": "9d3015158df757961a0fd7d40e2a75ea",
     "semantic_hash": "9d3015158df757961a0fd7d40e2a75ea"
+  },
+  "src/client/WorldsGateClient.luau": {
+    "mtime": 1792523141.4138973,
+    "seen": 1792523559.0152164,
+    "ast_hash": "3a75d86169ef40aa96425f7c6d01bb09",
+    "semantic_hash": ""
+  },
+  "tools/mocktest/tests/worldtest.luau": {
+    "mtime": 1792523351.762452,
+    "seen": 1792523559.015474,
+    "ast_hash": "06e0b67ebceef8d306d4a36040d86593",
+    "semantic_hash": ""
   }
 }

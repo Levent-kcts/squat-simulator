@@ -175,7 +175,7 @@ TrainingArea.init(notifyEvent)
 do
 	local okGate, WorldsGate = pcall(require, script.WorldsGate)
 	if okGate then
-		local started, err = pcall(WorldsGate.init)
+		local started, err = pcall(WorldsGate.init, notifyEvent)
 		if not started then
 			warn(`[Server] WorldsGate init failed: {err}`)
 		end

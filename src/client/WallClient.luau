@@ -6,12 +6,13 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Config = require(Shared:WaitForChild("Config"))
 local Layout = require(Shared:WaitForChild("Layout"))
 local UIStyle = require(script.Parent.UIStyle)
 local Format = require(Shared:WaitForChild("Format"))
 
-local cfg = Config.Wall
+-- Oyuncunun bulunduğu dünyanın düzeni (sunucu "Sync" ile dünya kimliğini yollar; değişince duvarlar yeniden kurulur)
+local W = Layout.world(1)
+local cfg = W.cfg
 
 -- Efekt modülü korumalı yüklenir: hata verirse duvarlar yine çalışır
 local okJuice, Juice = pcall(require, script.Parent.Juice)
@@ -33,7 +34,12 @@ end
 
 -- Oyuncu, ilk sağlam duvarın vuruş menzilinde mi? (tekme mi squat mı seçmek için)
 function WallClient.isNearWall(position, extra)
-	return currentFrontier <= cfg.Count and Layout.withinReach(currentFrontier, position, extra)
+	return currentFrontier <= cfg.Count and W.withinReach(currentFrontier, position, extra)
+end
+
+-- Duvarların kurulu olduğu dünyanın düzeni (Layout.world nesnesi): yol gösterici ve ilerleme şeridi bunu okur
+function WallClient.getWorld()
+	return W
 end
 
 -- Duvar yüzündeki yazı: ortalanmış, kalın siyah kenarlı
@@ -174,7 +180,7 @@ end
 
 local function brickPattern(stage, theme)
 	local low = isLow()
-	local templateKey = if low then -stage else stage
+	local templateKey = (if low then "L:" else "H:") .. theme.name -- tema adına göre: dünyalar aynı aşama numarasını paylaşır
 	local rows = if low then LOW_BRICK_ROWS else BRICK_ROWS
 	local template = patternTemplates[templateKey]
 	if not template then
@@ -224,9 +230,9 @@ local function createWall(folder, index)
 	part.Name = `Wall_{index}`
 	part.Anchored = true
 	part.Size = Vector3.new(cfg.Width, cfg.Height, cfg.Thickness)
-	part.Position = Layout.wallPosition(index)
-	local stage = Layout.stageOf(index)
-	local theme = Layout.theme(stage)
+	part.Position = W.wallPosition(index)
+	local stage = W.stageOf(index)
+	local theme = W.theme(stage)
 	-- Duvarın gerçek 3B malzemesi temadan gelir (ahşap, tuğla, taş, metal, cam, lav...). Geçersiz ad yazılırsa Plastic'e düşer.
 	local okMaterial, material = pcall(function()
 		return Enum.Material[theme.material or "Plastic"]
@@ -324,7 +330,7 @@ local function createWall(folder, index)
 		end
 	end
 
-	local maxHp = Layout.maxHp(index)
+	local maxHp = W.maxHp(index)
 	return { part = part, gui = gui, label = label, fill = fill, maxHp = maxHp, hp = maxHp, theme = theme, ambient = ambient, baseTransparency = baseTransparency, stage = stage, active = false, pattern = nil }
 end
 
@@ -420,10 +426,23 @@ function WallClient.init(onProgress)
 	folder.Parent = Workspace
 
 	local walls = {}
-	for i = 1, cfg.Count do
-		walls[i] = createWall(folder, i)
-		setHp(walls[i], walls[i].maxHp)
+	-- Dünyanın duvarlarını (yeniden) kurar: dünya değişince eski duvarlar silinir
+	local function buildWalls(worldId)
+		for _, wall in walls do
+			if wall.ambient then
+				wall.ambient:Destroy()
+			end
+			wall.part:Destroy()
+		end
+		table.clear(walls)
+		W = Layout.world(worldId)
+		cfg = W.cfg
+		for i = 1, cfg.Count do
+			walls[i] = createWall(folder, i)
+			setHp(walls[i], walls[i].maxHp)
+		end
 	end
+	buildWalls(Players.LocalPlayer and Players.LocalPlayer:GetAttribute("World") or 1)
 
 	local function notify()
 		local frontier = 1
@@ -448,14 +467,21 @@ function WallClient.init(onProgress)
 		end)
 	end
 
-	event.OnClientEvent:Connect(function(action, data)
+	event.OnClientEvent:Connect(function(action, data, worldId)
 		if action == "Sync" then
+			-- Sync dünya kimliğini de taşır: başka dünyaya geçildiyse duvarlar o dünyanın koridorunda yeniden kurulur
+			if worldId and Layout.world(worldId) ~= W then
+				buildWalls(worldId)
+			end
 			for i, hp in data do
 				setHp(walls[i], hp)
 			end
 		elseif action == "Update" then
 			for _, change in data do
-				setHp(walls[change[1]], change[2])
+				local wall = walls[change[1]]
+				if wall then
+					setHp(wall, change[2])
+				end
 			end
 		end
 		notify()

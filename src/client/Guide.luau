@@ -189,17 +189,19 @@ function Guide.init(wallClient)
 		if wallClient.isNearWall(position) then
 			return nil
 		end
+		-- Duvarların kurulu olduğu dünya (World 2'de koridor yana kayıktır)
+		local W = if wallClient.getWorld then wallClient.getWorld() else Layout
 		local broken = frontier - 1
 		if broken > 0 and broken % cfg.GroupSize == 0 then
 			-- Aşama tamam: Win pedi henüz geçilmediyse oraya yönlendir
 			local stage = broken // cfg.GroupSize
-			local padZ = Layout.padZ(stage)
+			local padZ = W.padZ(stage)
 			if position.Z > padZ + 2 then
-				return Vector3.new(Layout.padX(), Layout.FloorTop + 0.6, padZ)
+				return Vector3.new((W.originX or 0) + W.padX(), Layout.FloorTop + 0.6, padZ)
 			end
 		end
 		-- Aksi halde sıradaki duvarın önündeki nokta
-		return Vector3.new(0, Layout.FloorTop + 0.6, Layout.wallZ(frontier) + cfg.Thickness / 2 + cfg.HitRange * 0.5)
+		return Vector3.new(W.originX or 0, Layout.FloorTop + 0.6, W.wallZ(frontier) + cfg.Thickness / 2 + cfg.HitRange * 0.5)
 	end
 
 	local elapsed = 0

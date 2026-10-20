@@ -775,7 +775,7 @@ local function onProgress(frontier)
 		progressText = "Walk into the corridor, get close to the walls and tap!"
 	elseif broken % cfg.GroupSize == 0 then
 		local done = broken // cfg.GroupSize
-		progressText = `Stage {done} complete! Step on the yellow WIN (+{Layout.reward(done)} Wins) or keep going`
+		progressText = `Stage {done} complete! Step on the yellow WIN (+{WallClient.getWorld().reward(done)} Wins) or keep going`
 	else
 		progressText = `Break the walls! ({broken % cfg.GroupSize}/{cfg.GroupSize})`
 	end
@@ -1006,6 +1006,7 @@ end
 notifyEvent.OnClientEvent:Connect(showToast)
 safeInit("NotifOptIn", loadOptional("NotifOptIn"), screenGui) -- ilk rebirth sonrası Roblox bildirim izni (bir kez)
 safeInit("HappyMoments", loadOptional("HappyMoments"), screenGui, showToast) -- mutlu anlarda ödülsüz klip (Moments) ve favori istemi
+safeInit("WorldsGateClient", loadOptional("WorldsGateClient")) -- WORLDS geçitlerinin yüz yazısı: bu oyuncu için açık mı (sadece görünüm)
 safeInit("PowerHourHud", loadOptional("PowerHourHud"), screenGui, showToast) -- Power Hour: başlarken üstte kısa duyuru, sonra sol altta iksirlerin yanında rozet (simge + süre + x2), ara ara ekrandan geçen simge
 
 -- Eğitim bitince (ilk skin alınınca) kısa tebrik

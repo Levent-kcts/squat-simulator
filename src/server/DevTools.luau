@@ -70,6 +70,14 @@ function DevTools.init(notifyEvent)
 			player:SetAttribute("DevAreaPasses", if on then true else nil)
 			AreaPasses.recheck(player)
 			ok, message = true, if on then "Coach pads UNLOCKED (test): Prism and Shadow work" else "Coach pads back to normal"
+		elseif command == "UnlockWorld" then
+			-- World 2'yi 20. aşamayı bitirmeden denemek için açar (kalıcı, kayda geçer; RESET ALL / RESTART TUTORIAL kapatır)
+			local id = if type(amount) == "number" then amount else 2
+			local opened = PlayerStats.unlockWorld(player, id)
+			ok, message = true, if opened then `World {id} UNLOCKED (test): walk into the WORLDS gate` else `World {id} is already unlocked`
+		elseif command == "GoWorld" then
+			-- Dünyalar arası geçişi kemere gitmeden denemek için (dünya açık olmalı)
+			ok, message = WallService.setWorld(player, if type(amount) == "number" then amount else 1)
 		elseif command == "TogglePowerHour" then
 			-- Power Hour'u saatini beklemeden denemek için: bu sunucuda hemen başlatır (tam süre) ya da bitirir
 			if okEvents and ServerEvents.devToggle then

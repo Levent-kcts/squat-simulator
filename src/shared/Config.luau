@@ -677,6 +677,50 @@ return {
 		ArchWidth = 12, -- kemer açıklığının genişliği (stud)
 		ArchStraight = 8, -- açıklığın düz kısmının yüksekliği (üstüne yarım daire biner: yarıçap ArchWidth / 2)
 		FrameThickness = 2.2, -- kemeri saran taş çerçevenin kalınlığı
+
+		-- DÜNYALAR (2026-10-20, sahibi World 2'yi onayladı: TAM 20 aşama, uzay teması, World 1'in 20. aşama Win pedine basınca kalıcı açılır,
+		-- uzakta ayrı küçük lobi, rebirth'te oyuncu bulunduğu dünyada kalır, güç yeni eşyalardan gelir [dünya çarpanı YOK]).
+		-- Layout.world(id) bu listeyi okur. Her dünyanın koridoru originX kadar yana kayar (Z ekseni aynı); duvar canı ve Win ödülü dünyalar
+		-- arasında KESİNTİSİZ sürer (World 2'nin 1. aşaması global 21. aşamadır). 'wall' yalnız değişen Config.Wall alanlarını yazar.
+		-- unlock: bu dünyayı açan koşul (world'ün son aşamasının Win pedine basmak). Liste sırası dünya sırasıdır, id'ler KAYITLIDIR: değiştirme.
+		List = {
+			{ id = 1, name = "World 1" },
+			{
+				id = 2,
+				name = "Space World",
+				originX = 1200, -- World 1'in salonundan (x -62..96) ve koridorundan çok uzak
+				unlock = { world = 1, stage = 20 },
+				lobby = { WidthLeft = 60, WidthRight = 60, BackZ = 45, Height = 44 }, -- küçük salon (120 x ~110)
+				wall = {
+					HealthGrowthAfter = 4.9, -- World 2 aşamaları arası can büyümesi (denge: tools/simulate.py)
+					CorridorTint = Color3.fromRGB(150, 150, 200), -- koridor yan duvar/tavan tonu: uzayda biraz daha koyu lavanta
+					FinalWallText = "COMING SOON",
+					-- 20 uzay teması, ZAYIFTAN GÜÇLÜYE (World 1 Blackhole ile biter, World 2 Ay tozundan Big Bang'e çıkar). Saydamlık YOK.
+					Themes = {
+						{ name = "Moon Dust", color = Color3.fromRGB(205, 205, 215), accent = Color3.fromRGB(255, 255, 255), material = "Slate", fx = "puff" },
+						{ name = "Asteroid Rock", color = Color3.fromRGB(120, 108, 98), accent = Color3.fromRGB(190, 175, 160), material = "Rock", fx = "chips" },
+						{ name = "Comet Ice", color = Color3.fromRGB(170, 225, 255), accent = Color3.fromRGB(235, 250, 255), material = "Ice", reflect = 0.1, fx = "gems", ambient = "sparkle" },
+						{ name = "Mars Rock", color = Color3.fromRGB(196, 92, 58), accent = Color3.fromRGB(240, 150, 110), material = "Sandstone", fx = "puff" },
+						{ name = "Nebula Brick", color = Color3.fromRGB(176, 110, 220), accent = Color3.fromRGB(255, 170, 240), material = "SmoothPlastic", fx = "gems", decor = "swirl" },
+						{ name = "Stardust", color = Color3.fromRGB(250, 220, 120), accent = Color3.fromRGB(255, 250, 200), material = "Sand", fx = "puff", ambient = "sparkle" },
+						{ name = "Saturn Ring", color = Color3.fromRGB(222, 190, 140), accent = Color3.fromRGB(255, 235, 190), material = "Marble", fx = "chips", decor = "lines" },
+						{ name = "Plasma", color = Color3.fromRGB(255, 90, 200), accent = Color3.fromRGB(255, 190, 240), material = "Foil", reflect = 0.15, fx = "sparks", decor = "shine" },
+						{ name = "Quasar", color = Color3.fromRGB(80, 200, 255), accent = Color3.fromRGB(200, 245, 255), material = "Glass", reflect = 0.2, fx = "gems", decor = "facet" },
+						{ name = "Pulsar", color = Color3.fromRGB(120, 255, 210), accent = Color3.fromRGB(220, 255, 245), material = "DiamondPlate", reflect = 0.2, fx = "sparks", decor = "shine" },
+						{ name = "Supernova", color = Color3.fromRGB(255, 150, 50), accent = Color3.fromRGB(255, 230, 120), materialColor = Color3.fromRGB(255, 190, 120), material = "CrackedLava", fx = "embers", ambient = "embers" },
+						{ name = "Dark Matter", color = Color3.fromRGB(70, 60, 110), accent = Color3.fromRGB(160, 140, 230), materialColor = Color3.fromRGB(120, 110, 170), material = "Basalt", fx = "implode" },
+						{ name = "Antimatter", color = Color3.fromRGB(235, 245, 255), accent = Color3.fromRGB(120, 200, 255), material = "Metal", reflect = 0.2, fx = "sparks", decor = "shine" },
+						{ name = "Cosmic Crystal", color = Color3.fromRGB(150, 120, 255), accent = Color3.fromRGB(230, 210, 255), material = "Glass", reflect = 0.25, fx = "gems", decor = "facet", ambient = "sparkle" },
+						{ name = "Wormhole", color = Color3.fromRGB(60, 120, 230), accent = Color3.fromRGB(160, 220, 255), material = "SmoothPlastic", fx = "implode", decor = "swirl", ambient = "implode" },
+						{ name = "Galaxy Core", color = Color3.fromRGB(255, 200, 240), accent = Color3.fromRGB(255, 255, 255), material = "Glass", reflect = 0.25, fx = "gems", decor = "swirl", ambient = "sparkle" },
+						{ name = "Star Forge", color = Color3.fromRGB(255, 120, 60), accent = Color3.fromRGB(255, 220, 140), materialColor = Color3.fromRGB(255, 170, 110), material = "CrackedLava", fx = "embers", ambient = "embers" },
+						{ name = "Void", color = Color3.fromRGB(40, 30, 70), accent = Color3.fromRGB(150, 110, 255), materialColor = Color3.fromRGB(90, 80, 140), material = "Basalt", fx = "implode", ambient = "implode" },
+						{ name = "Singularity", color = Color3.fromRGB(20, 20, 30), accent = Color3.fromRGB(255, 255, 255), material = "Neon", fx = "implode", decor = "swirl", ambient = "implode" },
+						{ name = "Big Bang", color = Color3.fromRGB(255, 245, 200), accent = Color3.fromRGB(255, 160, 255), material = "Neon", fx = "sparks", ambient = "sparkle" },
+					},
+				},
+			},
+		},
 	},
 
 	-- Tek sıra halinde ard arda duvarlar. En düşük canlı duvardan başlanır, can giderek artar.

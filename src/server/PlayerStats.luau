@@ -239,10 +239,27 @@ local function publishWheel(player)
 	player:SetAttribute("WheelNext", (today + 1) * 86400)
 end
 
+-- Geçerli dünya kimlikleri (Config.Worlds.List)
+local validWorlds = {}
+for index, def in Config.Worlds.List do
+	validWorlds[def.id or index] = true
+end
+
+-- Dünya öznitelikleri: 'World' (bulunulan), 'WorldsUnlocked' ('1,2'); istemci (kemer yazısı, duvarlar, rehber) bunları okur
+local function publishWorlds(player, profile)
+	local list = {}
+	for id in profile.worlds do
+		table.insert(list, id)
+	end
+	table.sort(list)
+	player:SetAttribute("WorldsUnlocked", table.concat(list, ","))
+	player:SetAttribute("World", profile.world)
+end
+
 -- Kayıtlı veriyi güvenli hale getirir (bozuk/eksik/silinmiş eşya id'lerine karşı)
 local function sanitize(raw)
 	local data = { Muscle = 0, LifetimeMuscle = 0, WhatsNew = 0, Event = {}, Training = {}, Login = { next = 1, last = -1, total = 0 }, Codes = {}, Referral = { by = 0, paid = false, secs = 0 }, Wins = 0, Level = 1, Taps = 0, Rebirths = 0, Items = {}, Pets = {}, AutoDelete = {}, Trails = {}, EquippedTrail = "", Auras = {}, EquippedAura = "", Skins = {}, EquippedItem = "", EquippedSkin = "", LastSeen = 0, OfflinePending = 0, OfflineSeconds = 0, Receipts = {}, EquippedPets = {}, Settings = {}, Discovered = {}, WheelDay = 0, PetSlots = 0, PotionItems = {}, BoostUntil = {}, TutorialDone = false, TutorialClicks = 0, Quests = newQuestState(0),
-		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {} }
+		StarterWins = false, AutoTrial = Config.AutoClick.TrialSeconds or 0, Funnel = {}, IndexRewards = {}, StarterDone = {}, StarterClaimed = {}, WallsBroken = 0, Flags = {}, GuideSeen = {}, Worlds = { 1 }, World = 1 }
 	if type(raw) ~= "table" then
 		return data
 	end
@@ -534,6 +551,17 @@ local function sanitize(raw)
 	end
 	if type(raw.WallsBroken) == "number" then
 		data.WallsBroken = math.max(0, math.floor(raw.WallsBroken))
+	end
+	-- DÜNYALAR (World 2): açık dünyalar listesi (World 1 hep açık) ve son bulunulan dünya. Eski kayıtta yok: World 1.
+	if type(raw.Worlds) == "table" then
+		for _, id in raw.Worlds do
+			if type(id) == "number" and validWorlds[id] and not table.find(data.Worlds, id) then
+				table.insert(data.Worlds, id)
+			end
+		end
+	end
+	if type(raw.World) == "number" and table.find(data.Worlds, raw.World) then
+		data.World = raw.World
 	end
 	if not readIds(raw.GuideSeen, data.GuideSeen, validSteps) and data.TutorialDone then
 		for id in validSteps do
@@ -974,6 +1002,15 @@ local function save(player, mode)
 		WallsBroken = profile.wallsBroken,
 		Flags = setToList(profile.flags),
 		GuideSeen = setToList(profile.guideSeen),
+		Worlds = (function()
+			local list = {}
+			for id in profile.worlds do
+				table.insert(list, id)
+			end
+			table.sort(list)
+			return list
+		end)(),
+		World = profile.world,
 		IndexRewards = (function()
 			local list = {}
 			for count in profile.indexRewards do
@@ -1230,6 +1267,8 @@ local function setup(player)
 		wallsBroken = 0, -- ömür boyu kırılan duvar sayısı (kayıtlı)
 		flags = {}, -- tek seferlik işaretler: gift (bir Playtime ödülü aldı), train (antrenman alanına girdi) (kayıtlı)
 		guideSeen = {}, -- gösterilmiş rehber turu adımları [id] = true (kayıtlı)
+		worlds = { [1] = true }, -- açık dünyalar [id] = true (World 2: World 1'in son aşama Win pedine basınca açılır; kayıtlı)
+		world = 1, -- oyuncunun bulunduğu dünya (girişte o dünyanın spawn'ında doğar; kayıtlı)
 		funnel = {}, -- analitik hunisine gönderilmiş adımlar [adım numarası] = true (kayıtlı, Config.Funnel)
 		toastSeq = 0, -- oyuncuya giden 'RewardToast' bildirim sayacı
 		discovered = {}, -- Pet Index: şimdiye kadar sahip olunan pet türleri [id] = true (kalıcı)
@@ -1262,6 +1301,12 @@ local function setup(player)
 	profile.wallsBroken = data.WallsBroken
 	profile.flags = data.Flags
 	profile.guideSeen = data.GuideSeen
+	profile.worlds = {}
+	for _, id in data.Worlds do
+		profile.worlds[id] = true
+	end
+	profile.world = data.World
+	publishWorlds(player, profile)
 	profile.trialUntil = if data.AutoTrial > 0 then workspace:GetServerTimeNow() + data.AutoTrial else 0
 	player:SetAttribute("AutoClickTrialUntil", profile.trialUntil) -- istemci Auto Click'i deneme süresince açık sayar
 	profile.quests = data.Quests
@@ -1594,6 +1639,43 @@ function PlayerStats.redeemCode(player, raw)
 	refresh(player)
 	requestSave(player)
 	return true, `Code {def.code} redeemed: {text}! Potions are in Shop > Potions.`
+end
+
+-- DÜNYALAR: dünya açık mı?
+function PlayerStats.worldUnlocked(player, id)
+	local profile = profiles[player]
+	return id == 1 or (profile ~= nil and profile.loaded == true and profile.worlds[id] == true)
+end
+
+-- Dünyayı kalıcı olarak açar (WallService: önceki dünyanın son aşama Win pedi). Yeni açıldıysa true döner.
+function PlayerStats.unlockWorld(player, id)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or not validWorlds[id] or profile.worlds[id] then
+		return false
+	end
+	profile.worlds[id] = true
+	publishWorlds(player, profile)
+	customEvent(player, "WorldUnlocked", id)
+	PlayerStats.saveNow(player)
+	return true
+end
+
+-- Oyuncunun bulunduğu dünyayı kaydeder (geçiş kararını ve ışınlamayı WallService verir)
+function PlayerStats.setWorld(player, id)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or not profile.worlds[id] or profile.world == id then
+		return false
+	end
+	profile.world = id
+	publishWorlds(player, profile)
+	requestSave(player)
+	return true
+end
+
+-- Oyuncunun bulunduğu dünya (veri yüklenmediyse 1)
+function PlayerStats.currentWorld(player)
+	local profile = profiles[player]
+	return if profile and profile.loaded then profile.world else 1
 end
 
 -- Oyuncunun verisi yüklenince fn(player) çağrılır (başka sunucu modülleri bağlanır; hata verirse oyun etkilenmez)
@@ -3049,6 +3131,9 @@ function PlayerStats.dev(player, command, amount)
 		profile.wallsBroken = 0
 		profile.flags = {}
 		profile.guideSeen = {}
+		profile.worlds = { [1] = true } -- yeni oyuncu: yalnız World 1 açık, oyuncu World 1'e döner (WallService.resetPlayer dünyayı okur)
+		profile.world = 1
+		publishWorlds(player, profile)
 		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
 		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
 		PlayerStats.setSetting(player, "GuideOn", true) -- Guide anahtarı kapalıysa tekrar açılır
@@ -3087,6 +3172,9 @@ function PlayerStats.dev(player, command, amount)
 		profile.wallsBroken = 0
 		profile.flags = {}
 		profile.guideSeen = {}
+		profile.worlds = { [1] = true } -- yeni oyuncu: yalnız World 1 açık, oyuncu World 1'e döner (WallService.resetPlayer dünyayı okur)
+		profile.world = 1
+		publishWorlds(player, profile)
 		profile.trialUntil = if (Config.AutoClick.TrialSeconds or 0) > 0 then workspace:GetServerTimeNow() + Config.AutoClick.TrialSeconds else 0
 		player:SetAttribute("AutoClickTrialUntil", profile.trialUntil)
 		profile.quests = newQuestState(currentQuestDay())

@@ -68,7 +68,12 @@ local function labelTexts(plate)
 	return out
 end
 assert(labelTexts(gate.GateTitle)[Config.Worlds.Title], "başlık yazısı Config.Worlds.Title olmalı")
-assert(labelTexts(gate.GateSoon)[Config.Worlds.SoonText], "yüzdeki yazı Config.Worlds.SoonText olmalı")
+-- World 2 varken (2026-10-20) geçit World 2'ye açılır: yüzde dünyanın adı, önünde tetik, klasörde hedef dünya
+local Layout = require("./Layout")
+assert(labelTexts(gate.GateSoon)[string.upper(Layout.world(2).name)], "yüzdeki yazı World 2'nin adı olmalı")
+assert(gate.GateTrigger, "geçidin önünde tetik parçası yok")
+assert(rawget(gate.GateTrigger, "CanCollide") == false, "tetik çarpışmasız olmalı")
+assert(rawget(children.WorldsGate, "_attrs").TargetWorld == 2, "geçit World 2'yi hedeflemeli")
 -- (Taklitte Position CFrame ile dünyaya çevrilmez: terasın üstünde durma ve kemerin şekli tools/worlds_gate_preview.py ile çizilerek denetlenir)
 
 -- Enabled = false: geçit kurulmaz (teras kalır)
