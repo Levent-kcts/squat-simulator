@@ -255,7 +255,9 @@ local function createWall(folder, index)
 	-- Okunaklılık plakası: desenli/dokulu malzemenin üstünde numara, isim ve can çubuğu net okunsun diye yarı saydam koyu zemin
 	local plate = Instance.new("Frame")
 	plate.AnchorPoint = Vector2.new(0.5, 0.5)
-	plate.Position = UDim2.fromScale(0.5, 0.39)
+	-- Kart duvarın ortasına yakın durur: üstünde tavandan sarkan aşama tabelası (Hub) var; duvar 2026-10-20'de 24'ten 32 stud'a uzayınca kart
+	-- tabelanın arkasına giriyordu, bu yüzden yazılar 0.06 aşağı kaydı (eskiden plaka 0.39, numara 0.2, isim 0.36, çubuk 0.56)
+	plate.Position = UDim2.fromScale(0.5, 0.45)
 	plate.Size = UDim2.fromScale(0.6, 0.56)
 	plate.BackgroundColor3 = Color3.new(0, 0, 0)
 	plate.BackgroundTransparency = 0.6
@@ -265,12 +267,12 @@ local function createWall(folder, index)
 	plate.Parent = gui
 	gui.Parent = part
 
-	makeText(gui, UDim2.fromScale(0.5, 0.2), UDim2.fromScale(0.2, 0.12), tostring(index))
-	makeText(gui, UDim2.fromScale(0.5, 0.36), UDim2.fromScale(0.5, 0.14), theme.name)
+	makeText(gui, UDim2.fromScale(0.5, 0.26), UDim2.fromScale(0.2, 0.12), tostring(index))
+	makeText(gui, UDim2.fromScale(0.5, 0.42), UDim2.fromScale(0.5, 0.14), theme.name)
 
 	local bar = Instance.new("Frame")
 	bar.AnchorPoint = Vector2.new(0.5, 0.5)
-	bar.Position = UDim2.fromScale(0.5, 0.56)
+	bar.Position = UDim2.fromScale(0.5, 0.62)
 	bar.Size = UDim2.fromScale(0.5, 0.13)
 	bar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 	bar.BorderSizePixel = 0

@@ -270,10 +270,10 @@
     "semantic_hash": "33f6a4d122c2544f03b58f6a1af5ef57"
   },
   "src/client/WallClient.luau": {
-    "mtime": 1792322719.189956,
-    "seen": 1792500530.5852075,
-    "ast_hash": "c7b295693eef45836f55591fe154a2c5",
-    "semantic_hash": "c7b295693eef45836f55591fe154a2c5"
+    "mtime": 1792501655.310557,
+    "seen": 1792501754.4698186,
+    "ast_hash": "daab1a420b4a8e530dc207488d3c6d98",
+    "semantic_hash": ""
   },
   "src/client/WhatsNewCard.luau": {
     "mtime": 1792149402.8295426,
@@ -522,9 +522,9 @@
     "semantic_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5"
   },
   "src/shared/Config.luau": {
-    "mtime": 1792501089.6356263,
-    "seen": 1792501262.8036747,
-    "ast_hash": "86496dd4327001b651795559cc1e12d4",
+    "mtime": 1792501525.2022805,
+    "seen": 1792501754.4698906,
+    "ast_hash": "d18174e295373f63f7ef756fe2247e3e",
     "semantic_hash": ""
   },
   "src/shared/EggRules.luau": {
@@ -1224,10 +1224,10 @@
     "semantic_hash": "b445c506c0134a0519efc7d3909ff99d"
   },
   "CLAUDE.md": {
-    "mtime": 1792484565.263035,
-    "seen": 1792500530.585432,
-    "ast_hash": "aaf1f26b21381c224ac35da6f3e45551",
-    "semantic_hash": "aaf1f26b21381c224ac35da6f3e45551"
+    "mtime": 1792501747.5221958,
+    "seen": 1792501754.4700902,
+    "ast_hash": "e5348ac3fc21eb7a4ba271b14b82174c",
+    "semantic_hash": ""
   },
   "OYUN_BUYUME_PLANI.md": {
     "mtime": 1792482345.917396,
@@ -1242,9 +1242,9 @@
     "semantic_hash": "9aa6c179d303c987327c8bf2fa9e5067"
   },
   "README.md": {
-    "mtime": 1792500562.2607465,
-    "seen": 1792501262.803877,
-    "ast_hash": "e92a5c6c144d2898641d556f5c35751c",
+    "mtime": 1792501747.5287273,
+    "seen": 1792501754.4700952,
+    "ast_hash": "a17a9a999196646c8c9df25f1a60579a",
     "semantic_hash": ""
   },
   "ROBUX_FIYAT_DEGISIKLIGI.md": {

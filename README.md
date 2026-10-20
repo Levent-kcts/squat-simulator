@@ -27,7 +27,7 @@ Kayıt (DataStore) Studio'da şunlar olmadan çalışmaz: oyunu yayınlamak (Fil
 
 Test için DEV paneli (sağ üstte arkadaş dairesinin altında, sadece Studio/oyun sahibi): level, rebirth, Win, kas, ayakkabı, skin, pet, duvar atlatma, Offline Earnings (1h/3h/8h, 'Offline Popup' yeniden aç, 'Clear Offline'), 'Gifts +10 min' (oyun süresini ileri sarar, FREE REWARD kutusunu/Gifts'i denemek için), 'Fake Friends 3/0' (Studio'da arkadaş bonusunu denemek için), 'Discover All Pets' (Pet Index'i denemek için), RESET ALL. `Config.DevTools.Enabled = false` yaparak kapatılır (yayından önce önerilir).
 
-KORİDOR BÜYÜTÜLDÜ (2026-10-20): duvar/koridor 42 stud (eskiden 32), Win odası 70, aşamalar arası 40; Win pedleri odanın ortasında (tekme menzilinin dışında; sahibi kazara pede bastıklarını söyledi). Ayrıntı CLAUDE.md 'KORİDOR VE DUVAR BOYU'.
+KORİDOR BÜYÜTÜLDÜ (2026-10-20): duvar/koridor 42 stud genişlik (eskiden 32) ve 32 stud yükseklik (eskiden 24; lobi 36 > 44), Win odası 70, aşamalar arası 40; Win pedleri odanın ortasında (tekme menzilinin dışında; sahibi kazara pede bastıklarını söyledi). Ayrıntı CLAUDE.md 'KORİDOR VE DUVAR BOYU'.
 
 ## 2. Oyun özeti
 

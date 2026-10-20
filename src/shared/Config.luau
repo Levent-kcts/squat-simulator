@@ -610,7 +610,7 @@ return {
 		WidthRight = 96, -- spawn'dan SAĞ duvara uzaklık (stud): antrenman alanı (64.5 stud derin) burada; salon toplam 158 x 130
 		-- (Eski tek anahtar HalfWidth kaldırıldı; WidthLeft/WidthRight kullan.)
 		BackZ = 65, -- salonun arka duvarının Z'si (ön duvar koridor girişidir; spawn tam ortadadır)
-		Height = 36, -- salonun yüksekliği (koridordan yüksek)
+		Height = 44, -- salonun yüksekliği (koridordan 12 yüksek: aradaki boşlukta koridor ağzının tabelası durur; 2026-10-20 koridor 32 olunca 36'dan 44'e)
 		SpawnPadSize = 8, -- klasik Roblox doğma yeri (beyaz zemin, siyah patlama deseni) kenar uzunluğu; klasiği 6, salon geniş olduğu için 8
 		-- Sol duvardaki raflar: duvar boyunca Z konumu (+ arka duvara/yumurtalara doğru). Her raf rampalarıyla ~51 stud yer kaplar.
 		-- 2026-10-09: sahibi rampaların arasındaki dar yarığı gösterip 'şu aradaki boşluğu kapat' dedi: iki raf arasında 2 stud, ayakkabı rafıyla giriş duvarı arasında 1 stud koyu yarık kalıyordu (rampalar 6.4 yüksek, yarık duvara kadar derindi).
@@ -699,8 +699,8 @@ return {
 		-- Eskiden 5 idi (20. aşama 83 saat), ondan önce 12; tools/simulate.py hp_growth= max_hits=
 
 		Width = 42, -- koridorun ve duvarın genişliği (stud). 2026-10-20: 32'den 42'ye (sahibi 'duvar çok küçük, oynarken sağdaki soldaki Win pedlerine yanlışlıkla dokunuyoruz, duvarı ve haritayı büyüt' dedi)
-		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır
-		CeilingHeight = 24, -- yan duvarların, tavanın ve lobinin yüksekliği
+		Height = 31.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 31.8 = 32 = tavanın alt yüzü (2026-10-20: genişlikle orantılı 23.8'den büyüdü, sahibi 'dikey olarak da orantılı büyüt' dedi). CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır
+		CeilingHeight = 32, -- koridorun yan duvarlarının ve tavanının yüksekliği (2026-10-20: 24'ten 32'ye, genişlik 32 > 42 ile orantılı)
 		Thickness = 3,
 		ChamberExtra = 14, -- her aşama sonundaki Win odası koridordan her yana bu kadar (stud) geniştir (0 = koridor genişliğinde); oda 70 stud (2026-10-20: 10'dan 14'e)
 		Spacing = 8, -- aynı gruptaki duvarlar arası mesafe (stud)
