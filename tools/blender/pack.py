@@ -6,6 +6,9 @@
     blender -b -P tools/blender/pack.py -- shoes    (15 ayakkabı)
     blender -b -P tools/blender/pack.py -- coaches  (10 antrenör)
     blender -b -P tools/blender/pack.py -- muscles  (12 bacak kası: 6 aşama x uyluk/baldır)
+    blender -b -P tools/blender/pack.py -- space_pets    (Dünya 2: 30 uzay peti, pets_space.py)
+    blender -b -P tools/blender/pack.py -- space_eggs    (Dünya 2: 6 uzay yumurtası, eggs_space.py)
+    blender -b -P tools/blender/pack.py -- space_shoes   (Dünya 2: 15 uzay ayakkabısı, shoes_space.py)
     blender -b -P tools/blender/pack.py -- cat dog egg_starter ...   (seçilenler: pet_<id> / egg_<id> / shoe_<id> / coach_<kıyafet> ya da çıplak id)
 Çıktı: assets/blender/fbx/pack_<ad>.fbx. Studio'da içe aktarınca bir Model oluşur, içinde her model bir MeshPart (adı pet_cat, egg_starter...).
 """
@@ -22,6 +25,9 @@ import eggs  # noqa: E402
 import shoes  # noqa: E402
 import coaches  # noqa: E402
 import muscles  # noqa: E402
+import pets_space  # noqa: E402
+import eggs_space  # noqa: E402
+import shoes_space  # noqa: E402
 
 PRESETS = {
     "test": ["pet_cat", "egg_starter"],
@@ -31,6 +37,9 @@ PRESETS = {
     "shoes": ["shoe_" + shoe_id for shoe_id, _, _ in shoes.SHOES],
     "coaches": ["coach_" + coach_id for coach_id, _, _ in coaches.COACHES],
     "muscles": [name for name, _, _ in muscles.MODELS],
+    "space_pets": ["pet_" + pet_id for pet_id, _, _ in pets_space.PETS],
+    "space_eggs": ["egg_" + egg_id for egg_id, _ in eggs_space.EGGS],
+    "space_shoes": ["shoe_" + shoe_id for shoe_id, _, _ in shoes_space.SHOES],
 }
 
 
@@ -39,11 +48,11 @@ def main():
     label = args[0] if len(args) == 1 and args[0] in PRESETS else "custom"
     names = PRESETS[args[0]] if label != "custom" else args
     builders = {}
-    for pet_id, builder, color in pets.PETS + pets_more.PETS:
+    for pet_id, builder, color in pets.PETS + pets_more.PETS + pets_space.PETS:
         builders["pet_" + pet_id] = lambda m, builder=builder, color=color: builder(m, color)
-    for egg_id, builder in eggs.EGGS:
+    for egg_id, builder in eggs.EGGS + eggs_space.EGGS:
         builders["egg_" + egg_id] = builder
-    for shoe_id, spec, extra in shoes.SHOES:
+    for shoe_id, spec, extra in shoes.SHOES + shoes_space.SHOES:
         builders["shoe_" + shoe_id] = lambda m, spec=spec, extra=extra: shoes.build(m, spec, extra)
     for coach_id, builder, color in coaches.COACHES:
         builders["coach_" + coach_id] = lambda m, builder=builder, color=color: builder(m, color)

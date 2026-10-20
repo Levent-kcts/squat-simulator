@@ -1,5 +1,5 @@
 """Tek bir petin YAKIN önizlemesi (3/4 açı): blender -b -P tools/blender/pet_closeup.py -- yeti
-Çıktı: assets/blender/previews/pet_<id>_closeup.png (pets_more.py / pets.py çizicilerini kullanır)."""
+Çıktı: assets/blender/previews/pet_<id>_closeup.png (pets.py / pets_more.py / pets_space.py çizicilerini kullanır)."""
 import os
 import sys
 
@@ -7,10 +7,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common as c  # noqa: E402
 import pets as P  # noqa: E402
 import pets_more as PM  # noqa: E402
+import pets_space as PS  # noqa: E402
 from lib import Model  # noqa: E402
 
 pet_id = c.argv_after_dashes()[0]
-builders = {pid: (fn, col) for pid, fn, col in PM.PETS}
+builders = {pid: (fn, col) for pid, fn, col in P.PETS + PM.PETS + PS.PETS}
 fn, col = builders[pet_id]
 c.reset()
 c.setup_render(resolution=900, samples=40)
