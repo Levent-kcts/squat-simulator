@@ -11,7 +11,7 @@ local FeedHud = {}
 
 local MAX_ENTRIES = 3
 local SHOW_SECONDS = 7
-local ICONS = { pet = "✨", rebirth = "★", stage = "🏆" }
+local ICONS = { pet = "✨", rebirth = "★", stage = "🏆", world = "🌍" }
 
 -- Duyurunun vurgu rengi: nadirlik adı (Config.Rarities) ya da 'rebirth'
 local function accent(tier)

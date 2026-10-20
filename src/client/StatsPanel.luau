@@ -48,6 +48,11 @@ function StatsPanel.init(screenGui)
 		{ "Leg Muscle", function() return Format.number(leaderstats[Config.StatLegMuscle].Value) end, Color3.fromRGB(255, 225, 90) },
 		{ "Level", function() return `{leaderstats[Config.StatLevel].Value} / {player:GetAttribute("MaxLevel") or "?"}` end, Color3.new(1, 1, 1) },
 		{ "Rebirths", function() return Format.number(leaderstats[Config.StatRebirths].Value) end, Color3.new(1, 1, 1) },
+		{ "World", function()
+			local id = player:GetAttribute("World") or 1
+			local def = Config.Worlds.List[id]
+			return if def then def.name else `World {id}`
+		end, Color3.fromRGB(190, 170, 255) },
 		{ "Wins", function() return Format.number(leaderstats[Config.StatWins].Value) end, Color3.fromRGB(255, 215, 70) },
 		{ "Muscle per click", function() return `+{Format.number(player:GetAttribute("PerClick") or 1)}` end, Color3.fromRGB(110, 255, 140) },
 		{ "Damage multiplier", function() return mult(player:GetAttribute("DamageMultiplier") or 1) end, Color3.fromRGB(255, 160, 120) },

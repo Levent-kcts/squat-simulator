@@ -4,9 +4,7 @@
   "9": "Blender shoe models",
   "11": "Blender scene helpers",
   "14": "Project rules (CLAUDE.md)",
-  "17": "Rising games and Faz B",
   "18": "Client test stubs",
-  "19": "Daily wheel and project status",
   "20": "Integer multipliers and catalog",
   "22": "Power Hour music generator",
   "24": "Pass icon renderer",
@@ -16,7 +14,6 @@
   "37": "Icon cutout tool",
   "38": "Syntax check and mock testing",
   "40": "Trail effects",
-  "41": "Blender potion models",
   "42": "Panel manager",
   "44": "Discovery and growth research",
   "45": "Competitor analysis",
@@ -40,8 +37,6 @@
   "83": "Lobby plan SVG",
   "84": "README handover",
   "94": "Top games trends",
-  "96": "Reveal tests",
-  "101": "Referral tests",
   "103": "MCP config",
   "105": "Memory copy README"
 }

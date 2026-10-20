@@ -65,3 +65,7 @@ Progress (2026-10-20): Faz B is DONE.
   - weekly Saturday 19:00 UTC update
   - World 2 within ~14 days
   - shorts per the 07c calendar
+
+Progress (2026-10-20): the World 2 'Space World' code is done (plan file ~/.claude/plans/agile-orbiting-bird.md; details in the CLAUDE.md "WORLD 2" section).
+- Still open: Blender models (a separate session), the world2 / w2stage20 badge ids, the [🌍W2] title and WORLD2 code announcement, and publishing.
+- Studio testing wrote to the owner's real save (StudioReadOnly was false): World 2 unlocked, 1 rebirth, a Moon egg hatched.

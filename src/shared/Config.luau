@@ -294,7 +294,10 @@ return {
 		legendary = { id = 765266493747323, name = "Legendary Hatch", description = "Hatched a Legendary pet." },
 		mythic = { id = 770565940820499, name = "Mythic Hatch", description = "Hatched a Mythic pet." },
 		boss = { id = 0, name = "Boss Pet", description = "Merged a pet all the way to Boss size." },
-		index30 = { id = 0, name = "Pet Collector", description = "Discovered every pet in the Pet Index." },
+		index30 = { id = 0, name = "Pet Collector", description = "Discovered every World 1 pet in the Pet Index." },
+		-- WORLD 2 (2026-10-20): id 0 = pasif; sahibi Creator Hub'da açınca kimliği yazar
+		world2 = { id = 0, name = "Space Traveler", description = "Unlocked World 2: Space World." },
+		w2stage20 = { id = 0, name = "Big Bang Breaker", description = "Cleared all 20 stages of Space World." },
 	},
 	-- RÜTBE UNVANLARI (2026-10-14): rebirth sayısına göre otomatik; baş üstü etiketinde ★N ve unvan görünür (rebirth'te silinmeyen KALICI statü). rebirths = bu unvanın başladığı rebirth sayısı.
 	Titles = {
@@ -324,6 +327,8 @@ return {
 		-- ziyaret sayısı eşiği geçince oyun sayfası açıklamasının İLK satırında 'NEW CODE: ...' diye duyurulur (kod siteleri ücretsiz yayar). Sonraki: WORLD2 (World 2 ile).
 		{ code = "100VISITS", wins = 120, potions = { { kind = "boostLuck", minutes = 15 } } },
 		{ code = "1KVISITS", wins = 300, potions = { { kind = "boostRainbow", minutes = 60 } } },
+		-- World 2 lansman kodu (07 pazarlama planı B3): oyun sayfası açıklamasında World 2 ile birlikte duyurulur
+		{ code = "WORLD2", wins = 500, potions = { { kind = "boostRainbow", minutes = 60 } } },
 	},
 	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
 

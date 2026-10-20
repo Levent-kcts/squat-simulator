@@ -1666,6 +1666,9 @@ function PlayerStats.unlockWorld(player, id)
 	profile.worlds[id] = true
 	publishWorlds(player, profile)
 	customEvent(player, "WorldUnlocked", id)
+	-- Çapraz sunucu duyurusu: 'X unlocked SPACE WORLD!' (Mythic rengi; hata verirse atlanır)
+	local def = Config.Worlds.List[id]
+	announce(player, "world", `unlocked {string.upper(def and def.name or "a new world")}!`, "Mythic")
 	PlayerStats.saveNow(player)
 	return true
 end

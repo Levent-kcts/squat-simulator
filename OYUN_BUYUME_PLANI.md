@@ -51,7 +51,7 @@ Kural: küçük n'de (16 oyuncu) D1 gibi oranlara bakarak karar verme (±7 puan 
 | 3.3 | **Bildirim izni** (`ExperienceNotificationService`): ilk rebirth'ten sonra bir kez, tek kişisel bildirim ("çarkın hazır") | S-M |
 | 3.4 | **Capture/Moments istemi** (Mythic hatch, rebirth, yeni vücut aşaması; API adları doğrulanır, anket güncellemesi sahibine) | S-M |
 
-### Sprint 4 (Kasım): "Dünya 2 alfa" (Worlds kemeri açılır; başlıkta [W2])
+### Sprint 4 (Kasım): "Dünya 2 alfa" (Worlds kemeri açılır; başlıkta [W2]) — KOD YAPILDI 2026-10-20 (tam 20 aşama, 6 yumurta, 30 pet, ayakkabı/skin rafları; modeller ve yayın bekliyor, CLAUDE.md "WORLD 2")
 Aynı çerçeve, yeni 20 tema, yeni yumurtalar, yeni ayakkabı/koç kademeleri, rebirth ile açılan kapı. En büyük iş; denge `tools/simulate.py` ile. Ayrıntı sprint 3 sonunda.
 
 ### Robux kalemleri (sahibi ürünü açınca aktif olur, kod pasif hazır): başlangıç paketi 49 R$, etkinlik paketi 99 R$, Event Booster 39 R$, özel sunucu 99 R$, (isteğe bağlı) abonelik. 150 R$ kuralı korunur. Ürün listesi ve metinler research/04 bölüm 7.

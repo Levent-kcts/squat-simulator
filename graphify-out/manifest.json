@@ -36,10 +36,10 @@
     "semantic_hash": ""
   },
   "src/client/FeedHud.luau": {
-    "mtime": 1792144251.5103617,
-    "seen": 1792500530.585155,
-    "ast_hash": "65a56c669cc3823161a1e1d669873b2f",
-    "semantic_hash": "65a56c669cc3823161a1e1d669873b2f"
+    "mtime": 1792526501.3728554,
+    "seen": 1792526630.7701952,
+    "ast_hash": "efbbd4d123fba896e4e1df81cb9a8365",
+    "semantic_hash": ""
   },
   "src/client/GiftState.luau": {
     "mtime": 1791902666.441445,
@@ -246,10 +246,10 @@
     "semantic_hash": "dfd4cdec94190651ed0042c464957c5c"
   },
   "src/client/StatsPanel.luau": {
-    "mtime": 1792144251.5412722,
-    "seen": 1792500530.5852015,
-    "ast_hash": "bdf3d43fde020e894674326d23964add",
-    "semantic_hash": "bdf3d43fde020e894674326d23964add"
+    "mtime": 1792526501.3772807,
+    "seen": 1792526630.7703555,
+    "ast_hash": "5759bd4bf43c6b8c8bd6e6f09a499437",
+    "semantic_hash": ""
   },
   "src/client/TapFilter.luau": {
     "mtime": 1791598532.3819988,
@@ -384,10 +384,10 @@
     "semantic_hash": "358ff5f79b62caaebd3c49531a2555c0"
   },
   "src/server/GlobalFeed.luau": {
-    "mtime": 1791977456.82112,
-    "seen": 1792500530.5852327,
-    "ast_hash": "c4428ebbc538c039da410fdb375fefef",
-    "semantic_hash": "c4428ebbc538c039da410fdb375fefef"
+    "mtime": 1792526501.3728554,
+    "seen": 1792526630.7704597,
+    "ast_hash": "9b52e22a579b04327773427f158b99f4",
+    "semantic_hash": ""
   },
   "src/server/GroupReward.luau": {
     "mtime": 1792011134.6344967,
@@ -432,9 +432,9 @@
     "semantic_hash": "7dcc129cb58bd763e8575abc252600b3"
   },
   "src/server/PlayerStats.luau": {
-    "mtime": 1792525859.8630962,
-    "seen": 1792526186.5666797,
-    "ast_hash": "773e643c6670aa845a3c1241321054f8",
+    "mtime": 1792526501.3762808,
+    "seen": 1792526630.7704923,
+    "ast_hash": "64f31db920ad6e273e5722321b5469eb",
     "semantic_hash": ""
   },
   "src/server/Purchases.luau": {
@@ -492,9 +492,9 @@
     "semantic_hash": "6671fdd863fc47c2565f35f02a031f2a"
   },
   "src/server/WallService.luau": {
-    "mtime": 1792523473.2719452,
-    "seen": 1792523559.015275,
-    "ast_hash": "6d9f3c1add5b7e9a1dc01f1e767ec48f",
+    "mtime": 1792526501.3772807,
+    "seen": 1792526630.7705336,
+    "ast_hash": "01be8653359f304621811cc61e2b44be",
     "semantic_hash": ""
   },
   "src/server/WheelService.luau": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "src/shared/Config.luau": {
-    "mtime": 1792526318.4761603,
-    "seen": 1792526458.5357099,
-    "ast_hash": "fe3f94294b8f60e480033995cb192289",
+    "mtime": 1792526501.371854,
+    "seen": 1792526630.7705595,
+    "ast_hash": "b6064ae1e0bdf30b5aa890deeffaaa57",
     "semantic_hash": ""
   },
   "src/shared/EggRules.luau": {
@@ -1224,16 +1224,16 @@
     "semantic_hash": "b445c506c0134a0519efc7d3909ff99d"
   },
   "CLAUDE.md": {
-    "mtime": 1792501747.5221958,
-    "seen": 1792501754.4700902,
-    "ast_hash": "e5348ac3fc21eb7a4ba271b14b82174c",
+    "mtime": 1792526602.4435096,
+    "seen": 1792526630.7711363,
+    "ast_hash": "14cf1376ead51334e0920ede4e915840",
     "semantic_hash": ""
   },
   "OYUN_BUYUME_PLANI.md": {
-    "mtime": 1792482345.917396,
-    "seen": 1792500530.5854332,
-    "ast_hash": "cec91f1335410b0e92fd91b72ab80aa7",
-    "semantic_hash": "cec91f1335410b0e92fd91b72ab80aa7"
+    "mtime": 1792526609.064976,
+    "seen": 1792526630.7711382,
+    "ast_hash": "8780368030d5abfc934dbfb744095fa2",
+    "semantic_hash": ""
   },
   "OYUN_TASARIM_ANALIZI.md": {
     "mtime": 1791974145.3663604,
@@ -1242,9 +1242,9 @@
     "semantic_hash": "9aa6c179d303c987327c8bf2fa9e5067"
   },
   "README.md": {
-    "mtime": 1792501747.5287273,
-    "seen": 1792501754.4700952,
-    "ast_hash": "a17a9a999196646c8c9df25f1a60579a",
+    "mtime": 1792526602.4465086,
+    "seen": 1792526630.7711415,
+    "ast_hash": "6771838c4849d5ef7d4047ff054ac2a0",
     "semantic_hash": ""
   },
   "ROBUX_FIYAT_DEGISIKLIGI.md": {
@@ -1308,10 +1308,10 @@
     "semantic_hash": "77f5bddba395b056cd05ceed70c12957"
   },
   "docs/claude_memory/roblox-marketing-plan-2026-10-20.md": {
-    "mtime": 1792500563.9094777,
-    "seen": 1792501262.8038952,
-    "ast_hash": "ca34acfbdd9a6ea187d854b84358d5bc",
-    "semantic_hash": "ca34acfbdd9a6ea187d854b84358d5bc"
+    "mtime": 1792526619.249365,
+    "seen": 1792526630.7711623,
+    "ast_hash": "f3fc4ee0f571153470355450e8fd1fbd",
+    "semantic_hash": ""
   },
   "docs/claude_memory/roblox-mocktest-tool.md": {
     "mtime": 1792500563.9390342,

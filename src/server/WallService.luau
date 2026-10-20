@@ -11,8 +11,6 @@ local Build = require(script.Parent.Build)
 
 
 local WallService = {}
--- Bir dünya ilk kez açılınca çağrılır (player, dünya id): init.server duyuru akışına bağlar; boşsa hiçbir şey yapmaz
-WallService.onWorldUnlocked = function(_player, _worldId) end
 
 -- Duvarlar her oyuncuya özeldir: sunucu sadece oyuncu başına canları tutar,
 -- duvar parçalarını her oyuncu kendi ekranında oluşturur (bkz. client/WallClient).
@@ -182,9 +180,6 @@ local function createWinButton(folder, W, stage, def)
 			local name = Layout.world(nextWorld).name
 			notifyEvent:FireClient(player, true, `{string.upper(name)} UNLOCKED! Walk through the WORLDS gate in the lobby.`)
 			PlayerStats.awardBadge(player, "world2")
-			if WallService.onWorldUnlocked then
-				pcall(WallService.onWorldUnlocked, player, nextWorld)
-			end
 		end
 		resetRun(player)
 		teleportToSpawn(player)

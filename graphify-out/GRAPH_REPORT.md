@@ -1,7 +1,7 @@
 # Graph Report - RobloxOyun  (2026-10-20)
 
 ## Corpus Check
-- 261 files · ~352,810 words
+- 261 files · ~353,543 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 4 file(s) not represented in the graph (top: (none) 2, .toml 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `04552084`
+- Built from commit: `c2c61c6b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -495,10 +495,10 @@ Cohesion: 0.29
 Nodes (9): refreshAll(), refreshGate(), unlockedSet(), WorldsGateClient.init(), World2Lobby.bounds(), World2Lobby.init(), onEnter(), Layout.forPlayer() (+1 more)
 
 ## Ambiguous Edges - Review These
+- `Evolution 'Form-Up' moment` → `Game theory reading (reinforcement schedules, SDT, Bartle, Hooked)`  [AMBIGUOUS]
+  OYUN_TASARIM_ANALIZI.md · relation: conceptually_related_to
 - `Run check.py and mocktest after edits` → `Server authoritative economy`  [AMBIGUOUS]
   CLAUDE.md · relation: conceptually_related_to
-- `Game theory reading (reinforcement schedules, SDT, Bartle, Hooked)` → `Evolution 'Form-Up' moment`  [AMBIGUOUS]
-  OYUN_TASARIM_ANALIZI.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
 - **47 isolated node(s):** `cmd.exe`, `Claude Memory Copy README`, `Each Pet Belongs To Exactly One Egg`, `Per-Click Leg Muscle, Kick Waits For Contact`, `Measure From Reference Screenshots` (+42 more)
@@ -509,20 +509,20 @@ Nodes (9): refreshAll(), refreshGate(), unlockedSet(), WorldsGateClient.init(), 
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Blender Models Then Robux Last (memory)` connect `Claude Memory Index` to `coaches.py`, `TrainingArea.luau`, `Moves.luau`, `os`, `pets.py`, `pets_more.py`, `README handover`, `Integer multipliers and catalog`, `math`, `EventDecor.luau`, `os`, `UIStyle.luau`?**
-  _High betweenness centrality (0.251) - this node is a cross-community bridge._
+  _High betweenness centrality (0.244) - this node is a cross-community bridge._
 - **What connects `cmd.exe`, `Claude Memory Copy README`, `Each Pet Belongs To Exactly One Egg` to the rest of the system?**
   _47 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Module wiring (init scripts)` be split into smaller, more focused modules?**
   _Cohesion score 0.05550416281221091 - nodes in this community are weakly interconnected._
-- **Why does `Project Status (memory)` connect `Claude Memory Index` to `Leaderboards.luau`, `Wheel image generator`, `Syntax check and mock testing`, `simulate.py`, `Hub.luau`, `Project rules (CLAUDE.md)`, `script_parent_uistyle`, `ctest.luau`, `README handover`, `StatsPanel.init`, `Pets panel`, `UIStyle.luau`?**
-  _High betweenness centrality (0.136) - this node is a cross-community bridge._
+- **Why does `CLAUDE.md project instructions` connect `Project rules (CLAUDE.md)` to `DevTools.luau`, `AppearanceCleaner.luau`, `Sound and music`, `Moves.luau`, `Claude Memory Index`, `ctest.luau`, `07a Rising Games Analysis`, `Integer multipliers and catalog`, `UIStyle.luau`, `GuideTour.luau`, `shared_waitforchild`, `Design analysis (OYUN_TASARIM_ANALIZI)`, `TrainingArea.luau`, `Paid random items policy`, `Panel manager`, `Analytics, friends and referrals`, `Robux passes and IDs`, `Growth plan and HEP gate`, `Loading screen`, `QuestPanel.luau`, `client/EggShop.luau`, `SettingsPanel.luau`, `Offline earnings panel`, `Right HUD circles`, `Price cuts and trails`, `README handover`, `OverheadTags.luau`, `Layout.luau`, `LabelScaler.register`, `script_parent_uistyle`?**
+  _High betweenness centrality (0.151) - this node is a cross-community bridge._
 - **Should `AppearanceCleaner.luau` be split into smaller, more focused modules?**
   _Cohesion score 0.12473118279569892 - nodes in this community are weakly interconnected._
 
 ### Low-confidence Hints
 _AMBIGUOUS edges — the extractor was unsure. Verify before acting on these._
 
-- **What is the exact relationship between `Run check.py and mocktest after edits` and `Server authoritative economy`?**
+- **What is the exact relationship between `Evolution 'Form-Up' moment` and `Game theory reading (reinforcement schedules, SDT, Bartle, Hooked)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `Game theory reading (reinforcement schedules, SDT, Bartle, Hooked)` and `Evolution 'Form-Up' moment`?**
+- **What is the exact relationship between `Run check.py and mocktest after edits` and `Server authoritative economy`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
