@@ -27,7 +27,8 @@ Durum (20 Ekim): toplam 18 ziyaret, 0 CCU, oyun hâlâ **yalnız yaş doğrulama
 
 **Kim:** "Claude" = kod, Creator Hub (Chrome eklentisiyle, sahibin verdiği yetkiyle), metin hazırlığı. "Sahibi" = para harcayan, hesap/grup açan, kendi adına sosyal medyada paylaşan işler. Sahibi 2026-10-20'de "ful yetki, bir daha soru sorma" dedi; yine de **para harcamak ve sahibin kişisel sosyal hesaplarında paylaşım** sahibine kalır (güvenlik kuralı).
 
-### Faz A: zemin (ilk oturum, 1-2 saat)
+### Faz A: zemin (ilk oturum, 1-2 saat) — YAPILDI 2026-10-20
+**Sonuç:** Audience Reach: HEP **1/250** (20 Eki 07:00); diğer tüm şartlar TAMAM (içerik derecelendirmesi, kimlik, 2FA, Kids & Select ücreti ödendi, 8 Ocak 2027'de iade). Gelişmiş ayarlar: All ages, Exclude from recommendations KAPALI, ücretsiz, Desktop/Mobile/Tablet açık (Console kapalı: gamepad desteği test edilmedi). Ad "[🎃] +1 Squat Evolution: Smash Walls" ve yeni açıklama yayında (API'den doğrulandı). Çeviri zaten açıktı (17 dil, isim/açıklama + oyun içi metin, Automatic Text Capture, Use Translated Content). Sunucu boyutu 20 > 10. Share Link'ler: `research/share_links.md` (7 kanal). Tür (genre) değişikliği 5 Kasım'a kadar kilitli. **9 Kasım'da [🎃] kaldırılmalı.**
 | # | İş | Kim | Dayanak |
 |---|---|---|---|
 | A1 | Creator Hub > Audience Reach: HEP sayısı, eksik şartlar, "Exclude from recommendations" KAPALI, Public, Genre/Subgenre doğrula; durumu not et | Claude (Chrome) | 07d #1 |
