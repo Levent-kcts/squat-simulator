@@ -19,7 +19,7 @@ import re
 import sys
 
 import os
-CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "shared", "Config.luau")
+CONFIG_PATH = os.environ.get("SIM_CONFIG") or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "shared", "Config.luau")  # SIM_CONFIG: deneme kopyası
 SRC = open(CONFIG_PATH, encoding="utf-8").read()
 
 
@@ -94,6 +94,7 @@ HEALTH_GROWTH = num(WALL, "HealthGrowthAfter")
 _steps = re.search(r"GroupHealthSteps = \{([^}]*)\}", WALL)
 GROUP_STEPS = [float(x) for x in _steps.group(1).split(",") if x.strip()] if _steps else [1.0] * 5
 REWARD_GROWTH = num(WALL, "RewardGrowth")
+REWARD_SCALE = num(WALL, "RewardScale", 1)
 STAGE_COUNT = int(num(WALL, "Count") // num(WALL, "GroupSize"))
 # World 2: aynı sayıda aşama, can büyümesi kendi HealthGrowthAfter'ı (Config.Worlds.List[2].wall)
 _worlds = block("Worlds")
@@ -175,7 +176,7 @@ def reward(stage):
     r = 0
     for _ in range(stage):
         r = math.floor(r * REWARD_GROWTH) + 1
-    return r
+    return r * REWARD_SCALE
 
 
 rng = random.Random(7)

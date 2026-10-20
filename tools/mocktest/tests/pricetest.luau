@@ -147,7 +147,7 @@ for index, aura in Config.Auras do
 	lastStage, lastPrice, lastMult = stage, aura.winPrice, aura.mult
 end
 assert(lastStage <= 16, "son aura oyunun ilk yarısında alınmalı (<= 16. aşama): aşama " .. lastStage)
-assert(lastMult == 8, "son aura çarpanı x8 kalmalı (oyunun tavanı; tam sayı çarpanlar 2026-10-13)")
+assert(lastMult == 14, "son aura çarpanı x14 kalmalı (2026-10-20 hızlı oyun dengesi: x8 -> x14; tam sayı çarpanlar)")
 
 -- WIN'İN ROBUX DEĞERİ (2026-10-10, sahibi 'oyuncu sadece Win paketi alıp çok daha ucuza istediğini alamasın' dedi): Win paketinin içindeki Win ile BİR SEFERDE alınabilecek iz/aura sepetinin doğrudan Robux toplamı,
 -- paket fiyatının MaxBasketRatio katını geçmemeli (yoksa paket yoldan almak doğrudan Robux'tan çok daha ucuz olur). Sepet = en pahalı alt küme (15 ürün: 2^15 olası sepet, kaba kuvvetle).

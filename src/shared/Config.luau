@@ -25,7 +25,7 @@ return {
 		CostPower = 7.7, -- 2026-10-13: TAM SAYI çarpanlara (level N = xN, rebirth +1, tam sayı pet/aura/ayakkabı) geçince 4.9 -> 8 (level maliyeti çok daha dik; tools/simulate.py ile ayarlandı)
 		TapsAtLevel10 = 22,
 		BaseMaxLevel = 22, -- hiç rebirth yapmamışken ulaşılabilecek en yüksek level (2026-10-13: 25 -> 22, ilk rebirth çok hızlı olsun: Auto Click'li ~2 dk, elle ~5 dk)
-		MaxLevelPerRebirth = 10, -- her rebirth bu kadar yüksek level izni verir
+		MaxLevelPerRebirth = 12, -- her rebirth bu kadar yüksek level izni verir
 		MultiplierPerLevel = 1, -- level N = xN (level 25 = x25); TAM SAYI çarpan (2026-10-13, sahibi 'ondalıklı çarpan olmasın, en az 2 olsun' dedi)
 	},
 
@@ -709,7 +709,7 @@ return {
 				wall = {
 					-- World 2 aşamaları arası can büyümesi (tools/simulate.py, 2026-10-20: Auto Click'li oyuncu World 1'i ~8.4 sa (r23), World 2'yi ~17.6 sa (r46) bitirir;
 					-- W2 aşama 5: +2.7 sa, 10: +5.3 sa, 15: +7.6 sa, 20: +9.2 sa. 4.9 ile 40 saatte W2'nin 3. aşaması bile zordu: güç World 2'de yeni eşyalarla gelir, büyüme düşük tutulur)
-					HealthGrowthAfter = 1.6,
+					HealthGrowthAfter = 1.65,
 					CorridorTint = Color3.fromRGB(150, 150, 200), -- koridor yan duvar/tavan tonu: uzayda biraz daha koyu lavanta
 					FinalWallText = "COMING SOON",
 					-- 20 uzay teması, ZAYIFTAN GÜÇLÜYE (World 1 Blackhole ile biter, World 2 Ay tozundan Big Bang'e çıkar). Saydamlık YOK.
@@ -778,6 +778,8 @@ return {
 		-- RewardGrowth 2 (veya üstü) olduğu sürece bir aşamanın ödülü, bir önceki aşamayı 2 kez
 		-- yapmanın ödülünden hep fazladır. Yani oyuncu için ilerlemek, aynı aşamayı tekrarlamaktan karlıdır.
 		RewardGrowth = 2,
+		-- Bütün Win ödüllerinin TAM SAYI çarpanı (2026-10-20 hızlı oyun dengesi): 1, 3, 7, 15 ... x RewardScale. Kural korunur (her aşama öncekinin 2 katından fazla).
+		RewardScale = 2,
 
 		-- Son aşamanın (20.) sonundaki bitiş duvarına konan tabelanın yazısı (WallService, 100. duvara DEĞİL): yeni dünya/aşamalar gelene kadar 'COMING SOON'. nil ya da boş yapılırsa tabela kalkar.
 		FinalWallText = "COMING SOON",
@@ -893,37 +895,37 @@ return {
 	-- oyun ilerledikçe (çarpanlar büyüdükçe) etkisi azalır; rebirth skinleri SIFIRLAMAZ (2026-10-13), skin bir kez alınır. Değerler fiyatın ~0.7. kuvvetine göre seçildi.
 	-- Rebirth skinleri ve ayakkabıları SIFIRLAMAZ. Sadece fantezi renkler var (gerçek ten tonları fiyat/güç sıralamasına girmesin diye).
 	Skins = {
-		{ id = "mint", name = "Mint", price = 3, bonus = 1, color = Color3.fromRGB(150, 235, 190) },
-		{ id = "lemon", name = "Lemon", price = 15, bonus = 3, color = Color3.fromRGB(255, 240, 110) },
-		{ id = "coral", name = "Coral", price = 40, bonus = 6, color = Color3.fromRGB(255, 127, 110) },
-		{ id = "bubblegum", name = "Bubblegum", price = 90, bonus = 10, color = Color3.fromRGB(255, 150, 200) },
-		{ id = "orange", name = "Orange Pop", price = 200, bonus = 20, color = Color3.fromRGB(255, 150, 50) },
-		{ id = "lime", name = "Lime Zap", price = 450, bonus = 35, color = Color3.fromRGB(140, 230, 60) },
-		{ id = "teal", name = "Ocean Teal", price = 900, bonus = 60, color = Color3.fromRGB(40, 200, 190) },
-		{ id = "sky", name = "Sky Blue", price = 1800, bonus = 100, color = Color3.fromRGB(80, 170, 255) },
-		{ id = "violet", name = "Violet", price = 3600, bonus = 170, color = Color3.fromRGB(150, 90, 230) },
-		{ id = "ruby", name = "Ruby Red", price = 7000, bonus = 280, color = Color3.fromRGB(225, 40, 60) },
-		{ id = "silver", name = "Silver", price = 14000, bonus = 450, color = Color3.fromRGB(205, 210, 220) },
-		{ id = "gold", name = "Golden", price = 28000, bonus = 700, color = Color3.fromRGB(255, 200, 40) },
-		{ id = "ice", name = "Frozen", price = 56000, bonus = 1100, color = Color3.fromRGB(150, 235, 255) },
-		{ id = "magma", name = "Magma", price = 110000, bonus = 1700, color = Color3.fromRGB(255, 90, 20) },
-		{ id = "galaxy", name = "Galaxy", price = 220000, bonus = 2600, color = Color3.fromRGB(70, 45, 150) },
+		{ id = "mint", name = "Mint", price = 3, bonus = 3, color = Color3.fromRGB(150, 235, 190) },
+		{ id = "lemon", name = "Lemon", price = 15, bonus = 9, color = Color3.fromRGB(255, 240, 110) },
+		{ id = "coral", name = "Coral", price = 40, bonus = 18, color = Color3.fromRGB(255, 127, 110) },
+		{ id = "bubblegum", name = "Bubblegum", price = 90, bonus = 30, color = Color3.fromRGB(255, 150, 200) },
+		{ id = "orange", name = "Orange Pop", price = 200, bonus = 60, color = Color3.fromRGB(255, 150, 50) },
+		{ id = "lime", name = "Lime Zap", price = 450, bonus = 105, color = Color3.fromRGB(140, 230, 60) },
+		{ id = "teal", name = "Ocean Teal", price = 900, bonus = 180, color = Color3.fromRGB(40, 200, 190) },
+		{ id = "sky", name = "Sky Blue", price = 1800, bonus = 300, color = Color3.fromRGB(80, 170, 255) },
+		{ id = "violet", name = "Violet", price = 3600, bonus = 510, color = Color3.fromRGB(150, 90, 230) },
+		{ id = "ruby", name = "Ruby Red", price = 7000, bonus = 840, color = Color3.fromRGB(225, 40, 60) },
+		{ id = "silver", name = "Silver", price = 14000, bonus = 1350, color = Color3.fromRGB(205, 210, 220) },
+		{ id = "gold", name = "Golden", price = 28000, bonus = 2100, color = Color3.fromRGB(255, 200, 40) },
+		{ id = "ice", name = "Frozen", price = 56000, bonus = 3300, color = Color3.fromRGB(150, 235, 255) },
+		{ id = "magma", name = "Magma", price = 110000, bonus = 5100, color = Color3.fromRGB(255, 90, 20) },
+		{ id = "galaxy", name = "Galaxy", price = 220000, bonus = 7800, color = Color3.fromRGB(70, 45, 150) },
 		-- WORLD 2 (uzay) skinleri: World 2 lobisinin rafında (world = 2); fiyatlar World 2 ayakkabılarıyla AYNI, bonus fiyatın ~0.7. kuvvetiyle sürer
-		{ id = "moondust", name = "Moon Dust", price = 3100000, bonus = 17000, color = Color3.fromRGB(225, 225, 240), world = 2 },
-		{ id = "stardust", name = "Stardust", price = 16000000, bonus = 54000, color = Color3.fromRGB(255, 230, 140), world = 2 },
-		{ id = "cometice", name = "Comet Ice", price = 42000000, bonus = 110000, color = Color3.fromRGB(150, 230, 255), world = 2 },
-		{ id = "nebula", name = "Nebula Pink", price = 94000000, bonus = 190000, color = Color3.fromRGB(240, 130, 230), world = 2 },
-		{ id = "plasma", name = "Plasma", price = 210000000, bonus = 330000, color = Color3.fromRGB(255, 80, 200), world = 2 },
-		{ id = "aurora", name = "Aurora", price = 470000000, bonus = 580000, color = Color3.fromRGB(110, 250, 170), world = 2 },
-		{ id = "quasar", name = "Quasar Blue", price = 940000000, bonus = 940000, color = Color3.fromRGB(70, 170, 255), world = 2 },
-		{ id = "solarflare", name = "Solar Flare", price = 1900000000, bonus = 1500000, color = Color3.fromRGB(255, 160, 40), world = 2 },
-		{ id = "cosmicteal", name = "Cosmic Teal", price = 3800000000, bonus = 2500000, color = Color3.fromRGB(40, 220, 200), world = 2 },
-		{ id = "meteor", name = "Meteor Red", price = 7300000000, bonus = 3900000, color = Color3.fromRGB(235, 70, 70), world = 2 },
-		{ id = "astral", name = "Astral Silver", price = 15000000000, bonus = 6500000, color = Color3.fromRGB(210, 215, 235), world = 2 },
-		{ id = "voidpurple", name = "Void Purple", price = 29000000000, bonus = 10000000, color = Color3.fromRGB(120, 70, 220), world = 2 },
-		{ id = "supernova", name = "Supernova", price = 59000000000, bonus = 17000000, color = Color3.fromRGB(255, 120, 80), world = 2 },
-		{ id = "darkmatter", name = "Dark Matter", price = 120000000000, bonus = 28000000, color = Color3.fromRGB(60, 45, 120), world = 2 },
-		{ id = "bigbang", name = "Big Bang", price = 230000000000, bonus = 44000000, color = Color3.fromRGB(255, 245, 190), world = 2 },
+		{ id = "moondust", name = "Moon Dust", price = 3100000, bonus = 51000, color = Color3.fromRGB(225, 225, 240), world = 2 },
+		{ id = "stardust", name = "Stardust", price = 16000000, bonus = 162000, color = Color3.fromRGB(255, 230, 140), world = 2 },
+		{ id = "cometice", name = "Comet Ice", price = 42000000, bonus = 330000, color = Color3.fromRGB(150, 230, 255), world = 2 },
+		{ id = "nebula", name = "Nebula Pink", price = 94000000, bonus = 570000, color = Color3.fromRGB(240, 130, 230), world = 2 },
+		{ id = "plasma", name = "Plasma", price = 210000000, bonus = 990000, color = Color3.fromRGB(255, 80, 200), world = 2 },
+		{ id = "aurora", name = "Aurora", price = 470000000, bonus = 1740000, color = Color3.fromRGB(110, 250, 170), world = 2 },
+		{ id = "quasar", name = "Quasar Blue", price = 940000000, bonus = 2820000, color = Color3.fromRGB(70, 170, 255), world = 2 },
+		{ id = "solarflare", name = "Solar Flare", price = 1900000000, bonus = 4500000, color = Color3.fromRGB(255, 160, 40), world = 2 },
+		{ id = "cosmicteal", name = "Cosmic Teal", price = 3800000000, bonus = 7500000, color = Color3.fromRGB(40, 220, 200), world = 2 },
+		{ id = "meteor", name = "Meteor Red", price = 7300000000, bonus = 11700000, color = Color3.fromRGB(235, 70, 70), world = 2 },
+		{ id = "astral", name = "Astral Silver", price = 15000000000, bonus = 19500000, color = Color3.fromRGB(210, 215, 235), world = 2 },
+		{ id = "voidpurple", name = "Void Purple", price = 29000000000, bonus = 30000000, color = Color3.fromRGB(120, 70, 220), world = 2 },
+		{ id = "supernova", name = "Supernova", price = 59000000000, bonus = 51000000, color = Color3.fromRGB(255, 120, 80), world = 2 },
+		{ id = "darkmatter", name = "Dark Matter", price = 120000000000, bonus = 84000000, color = Color3.fromRGB(60, 45, 120), world = 2 },
+		{ id = "bigbang", name = "Big Bang", price = 230000000000, bonus = 132000000, color = Color3.fromRGB(255, 245, 190), world = 2 },
 	},
 
 	-- Antrenman alanı (SAĞ duvar, 3 basamakta 4 + 3 + 3 = 10 büyük ped): pede girince karakter otomatik squat yapar ve kazanç o pedin
@@ -945,14 +947,14 @@ return {
 		-- Prism ~200-270, Shadow ~235-310 eder; Prism rebirth ile de açılabildiği için daha ucuz: 199 ve 299. Bu iki pass '150 Robux'u geçmesin' kuralının (egg pass'leri gibi) İSTİSNASIDIR (pricetest 150 < fiyat <= 400 denetler).
 		Areas = {
 			{ id = "green", name = "Green Zone", trainer = "Coach Sprout", outfit = "leaf", mult = 1, rebirths = 0, color = Color3.fromRGB(60, 220, 90) },
-			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 2, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
-			{ id = "red", name = "Red Zone", trainer = "Coach Blaze", outfit = "flame", mult = 3, rebirths = 3, color = Color3.fromRGB(255, 50, 50) },
-			{ id = "orange", name = "Orange Zone", trainer = "Coach Ember", outfit = "ember", mult = 5, rebirths = 5, color = Color3.fromRGB(255, 150, 30) },
-			{ id = "magenta", name = "Magenta Zone", trainer = "Coach Pixel", outfit = "pixel", mult = 9, rebirths = 8, color = Color3.fromRGB(255, 50, 230) },
-			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", outfit = "frost", mult = 18, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
-			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", outfit = "volt", mult = 36, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
-			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", outfit = "nova", mult = 100, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
-			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 250, rebirths = 32, robux = 129, gamePassId = 2027204299, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+			{ id = "blue", name = "Blue Zone", trainer = "Coach Wave", outfit = "wave", mult = 3, rebirths = 1, color = Color3.fromRGB(60, 100, 255) },
+			{ id = "red", name = "Red Zone", trainer = "Coach Blaze", outfit = "flame", mult = 5, rebirths = 3, color = Color3.fromRGB(255, 50, 50) },
+			{ id = "orange", name = "Orange Zone", trainer = "Coach Ember", outfit = "ember", mult = 10, rebirths = 5, color = Color3.fromRGB(255, 150, 30) },
+			{ id = "magenta", name = "Magenta Zone", trainer = "Coach Pixel", outfit = "pixel", mult = 20, rebirths = 8, color = Color3.fromRGB(255, 50, 230) },
+			{ id = "cyan", name = "Cyan Zone", trainer = "Coach Frost", outfit = "frost", mult = 40, rebirths = 12, color = Color3.fromRGB(50, 230, 255) },
+			{ id = "yellow", name = "Yellow Zone", trainer = "Coach Volt", outfit = "volt", mult = 80, rebirths = 17, color = Color3.fromRGB(255, 230, 40) },
+			{ id = "purple", name = "Purple Zone", trainer = "Coach Nova", outfit = "nova", mult = 200, rebirths = 24, color = Color3.fromRGB(160, 80, 255) },
+			{ id = "rainbow", name = "Rainbow Zone", trainer = "Coach Prism", outfit = "prism", mult = 400, rebirths = 32, robux = 129, gamePassId = 2027204299, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 			{ id = "black", name = "Black Zone", trainer = "Coach Shadow", outfit = "shadow", mult = 999, robuxOnly = true, robux = 199, gamePassId = 2026280297, color = Color3.fromRGB(35, 35, 48) },
 		},
 	},
@@ -1216,26 +1218,26 @@ return {
 	-- E3 (fiyatlar): Win fiyatları aynı (hepsi oyunun ilk ~1,6 saatine sığar: simulate.py 'Fiyat merdiveni'); ROBUX fiyatları üst izlerde düşürüldü (blue 45 > 40, purple 60 > 50, pink 75 > 60, rainbow 110 > 75): GÖSTERİLEN fiyat
 	-- değişince Creator Hub'daki Developer Product'ın gerçek fiyatını da aynı yapmak sahibe düşer (ROBUX_FIYAT_DEGISIKLIGI.md).
 	Trails = {
-		{ id = "red", name = "Brick Dust", fx = "dust", icon = "Trail_red", emoji = "💨", speed = 4, winPrice = 30, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
-		{ id = "orange", name = "Sweat Drops", fx = "drops", icon = "Trail_orange", emoji = "💧", speed = 6, winPrice = 60, robuxPrice = 12, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
-		{ id = "yellow", name = "Protein Powder", fx = "powder", icon = "Trail_yellow", emoji = "✨", speed = 8, winPrice = 250, robuxPrice = 15, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
-		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "Trail_green", emoji = "🧱", speed = 10, winPrice = 1000, robuxPrice = 19, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
-		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Trail_cyan", emoji = "🐾", speed = 12, winPrice = 2000, robuxPrice = 22, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Trail_blue", emoji = "🏆", speed = 14, winPrice = 4000, robuxPrice = 25, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
-		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "Trail_purple", emoji = "💪", speed = 16, winPrice = 8000, robuxPrice = 29, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Kick Sparks", fx = "sparks", icon = "Trail_pink", emoji = "💥", speed = 18, winPrice = 16000, robuxPrice = 35, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", icon = "Trail_rainbow", emoji = "🌈", speed = 24, winPrice = 32000, robuxPrice = 45, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Brick Dust", fx = "dust", icon = "Trail_red", emoji = "💨", speed = 5, winPrice = 60, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
+		{ id = "orange", name = "Sweat Drops", fx = "drops", icon = "Trail_orange", emoji = "💧", speed = 8, winPrice = 120, robuxPrice = 12, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
+		{ id = "yellow", name = "Protein Powder", fx = "powder", icon = "Trail_yellow", emoji = "✨", speed = 11, winPrice = 500, robuxPrice = 15, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
+		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "Trail_green", emoji = "🧱", speed = 14, winPrice = 2000, robuxPrice = 19, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
+		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Trail_cyan", emoji = "🐾", speed = 17, winPrice = 4000, robuxPrice = 22, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Trail_blue", emoji = "🏆", speed = 20, winPrice = 8000, robuxPrice = 25, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
+		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "Trail_purple", emoji = "💪", speed = 23, winPrice = 16000, robuxPrice = 29, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Kick Sparks", fx = "sparks", icon = "Trail_pink", emoji = "💥", speed = 26, winPrice = 32000, robuxPrice = 35, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", icon = "Trail_rainbow", emoji = "🌈", speed = 32, winPrice = 64000, robuxPrice = 45, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
-		{ id = "red", name = "Red Aura", mult = 2, winPrice = 15, robuxPrice = 9, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 3, winPrice = 100, robuxPrice = 12, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 4, winPrice = 400, robuxPrice = 15, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 5, winPrice = 1600, robuxPrice = 25, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 6, winPrice = 6500, robuxPrice = 49, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 8, winPrice = 26000, robuxPrice = 85, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "red", name = "Red Aura", mult = 2, winPrice = 30, robuxPrice = 9, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
+		{ id = "green", name = "Green Aura", mult = 4, winPrice = 200, robuxPrice = 12, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 6, winPrice = 800, robuxPrice = 15, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 8, winPrice = 3200, robuxPrice = 25, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 10, winPrice = 13000, robuxPrice = 49, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 14, winPrice = 52000, robuxPrice = 85, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.

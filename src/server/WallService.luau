@@ -386,19 +386,33 @@ function WallService.init(notify)
 	wallsEvent.Name = "WallsEvent"
 	wallsEvent.Parent = ReplicatedStorage
 
-	-- İstemci duvarlarını kurunca mevcut canları ister
+	-- İSTEMCİ HAZIR (StreamingEnabled): oyuncu her zaman World 1 lobisinde yüklenir; kayıtlı dünyası başkaysa oraya ANCAK istemci arayüzünü
+	-- kurduktan sonra ('ClientReady') ya da en geç READY_TIMEOUT sn sonra ışınlanır. Uzakta doğan oyuncunun istemcisi World 1 parçalarını bekleyip takılıyordu.
+	local READY_TIMEOUT = 45
+	local ready = {} -- [player] = true
+	local function placeIfNeeded(player)
+		local run = runs[player]
+		if run and PlayerStats.currentWorld(player) ~= run.world.id then
+			placeInWorld(player, true)
+		end
+	end
+
+	-- İstemci duvarlarını kurunca mevcut canları ister; arayüzü kurunca 'ClientReady' der
 	wallsEvent.OnServerEvent:Connect(function(player, action)
 		local run = runs[player]
 		if action == "Request" and run then
 			wallsEvent:FireClient(player, "Sync", run.hp, run.world.id)
+		elseif action == "ClientReady" and not ready[player] then
+			ready[player] = true
+			placeIfNeeded(player)
 		end
 	end)
 
 	local function onPlayerAdded(player)
 		runs[player] = newRun(Layout.world(1))
-		-- Karakter her doğduğunda (giriş, ölüm) oyuncu kendi dünyasının doğma yerine gelir (SpawnLocation World 1'dedir)
+		-- Karakter yeniden doğduğunda (ölüm) oyuncu kendi dünyasının doğma yerine gelir (SpawnLocation World 1'dedir); ilk girişte değil (yukarıdaki 'ClientReady')
 		player.CharacterAdded:Connect(function(character)
-			if PlayerStats.currentWorld(player) ~= 1 then
+			if ready[player] and PlayerStats.currentWorld(player) ~= 1 then
 				task.defer(function()
 					if character.Parent then
 						character:PivotTo(CFrame.new(playerWorld(player).spawn))
@@ -411,14 +425,21 @@ function WallService.init(notify)
 	for _, player in Players:GetPlayers() do
 		onPlayerAdded(player)
 	end
-	-- Kayıt yüklenince oyuncu kayıtlı dünyasına alınır (World 2'de çıkan World 2'de doğar)
+	-- Kayıt yüklenince oyuncu kayıtlı dünyasına alınır (World 2'de çıkan World 2'de doğar): istemci hazırsa hemen, değilse 'ClientReady' ile ya da zaman aşımıyla
 	PlayerStats.onLoaded(function(player)
-		local run = runs[player]
-		if run and PlayerStats.currentWorld(player) ~= run.world.id then
-			placeInWorld(player, true)
+		if ready[player] then
+			placeIfNeeded(player)
+		else
+			task.delay(READY_TIMEOUT, function()
+				if player.Parent and not ready[player] then
+					ready[player] = true
+					placeIfNeeded(player)
+				end
+			end)
 		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)
+		ready[player] = nil
 		runs[player] = nil
 		vipCache[player.UserId] = nil
 		lastVipPrompt[player.UserId] = nil
