@@ -1,17 +1,17 @@
 # Graph Report - RobloxOyun  (2026-10-20)
 
 ## Corpus Check
-- 261 files · ~353,543 words
+- 261 files · ~354,100 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 4 file(s) not represented in the graph (top: (none) 2, .toml 2)
 
 ## Summary
-- 1725 nodes · 3782 edges · 108 communities (84 shown, 24 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 337 edges (avg confidence: 0.85)
+- 1725 nodes · 3781 edges · 108 communities (84 shown, 24 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 336 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c2c61c6b`
+- Built from commit: `69a38d93`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

@@ -1352,3 +1352,9 @@ safeInit("OfflinePanel", loadOptional("OfflinePanel"), screenGui, showToast)
 
 -- Arayüz kuruldu: yükleme ekranı (ReplicatedFirst/Loading) bu işareti bekleyip kapanır
 player:SetAttribute("ClientReady", true)
+-- Sunucuya da haber ver: kayıtlı dünyası World 2 olan oyuncu ANCAK şimdi oraya ışınlanır (StreamingEnabled: World 1 lobisinin parçaları
+-- arayüz kurulurken yakında olsun; uzakta doğan oyuncuda raf/çark/antrenman modülleri gelmeyen parçaları bekleyip takılıyordu)
+local wallsEvent = ReplicatedStorage:FindFirstChild("WallsEvent")
+if wallsEvent then
+	wallsEvent:FireServer("ClientReady")
+end

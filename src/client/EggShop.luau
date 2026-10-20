@@ -91,8 +91,10 @@ function EggShop.init(screenGui, hooks)
 
 	-- ---------- Yumurtaların üstündeki etiketler ve ped renkleri ----------
 	local entries = {}
-	for _, egg in Config.Eggs do
-		local pad = eggFolder(egg):WaitForChild(`Pad_{egg.id}`)
+	local refreshPads -- aşağıda tanımlanır; ped sonradan gelince renkleri boyar
+	-- Bir yumurtanın etiketleri. StreamingEnabled: oyuncudan uzaktaki dünyanın pedleri istemciye ancak yaklaşınca gelir, bu yüzden her ped
+	-- KENDİ iş parçacığında beklenir (sırayla beklemek World 1'deki oyuncuda World 2 pedinde takılıp paneli hiç başlatmıyordu)
+	local function setupEgg(egg, pad)
 
 		-- Etiketler iki ayrı küçük kutudur (eskiden tek büyük 2 satırlı kutu yan yana/üst üste yumurtaların yazılarını karıştırıyordu):
 		--  * isim: yumurtanın üstünde tek satır,
@@ -128,6 +130,14 @@ function EggShop.init(screenGui, hooks)
 		}, 2)
 
 		table.insert(entries, { egg = egg, pad = pad, price = price })
+		if refreshPads then
+			refreshPads()
+		end
+	end
+	for _, egg in Config.Eggs do
+		task.spawn(function()
+			setupEgg(egg, eggFolder(egg):WaitForChild(`Pad_{egg.id}`, math.huge))
+		end)
 	end
 
 	local function petCount()
@@ -138,7 +148,7 @@ function EggShop.init(screenGui, hooks)
 		return count
 	end
 
-	local function refreshPads()
+	refreshPads = function()
 		local full = petCount() >= (player:GetAttribute("PetCapacity") or Config.MaxOwnedPets)
 		local wins = winValue.Value
 		for _, entry in entries do

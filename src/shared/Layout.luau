@@ -65,7 +65,7 @@ do
 	local reward = 0
 	for stage = 1, totalStages do
 		reward = math.floor(reward * base.RewardGrowth) + 1
-		rewards[stage] = reward
+		rewards[stage] = reward * (base.RewardScale or 1) -- RewardScale (tam sayı): bütün aşama ödüllerini katlar, "öncekinin 2 katından fazla" kuralı korunur
 	end
 end
 

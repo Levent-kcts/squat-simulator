@@ -1,17 +1,17 @@
 # Graph Report - gracious-gagarin-a4500c  (2026-10-20)
 
 ## Corpus Check
-- 265 files · ~365,475 words
+- 265 files · ~366,032 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .toml 2)
 
 ## Summary
-- 1822 nodes · 4097 edges · 118 communities (92 shown, 26 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 402 edges (avg confidence: 0.85)
+- 1822 nodes · 4096 edges · 118 communities (92 shown, 26 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 401 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b3458045`
+- Built from commit: `39afb8b6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
