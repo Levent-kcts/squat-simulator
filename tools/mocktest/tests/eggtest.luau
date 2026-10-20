@@ -18,10 +18,8 @@ end
 local count = 0
 for _, pet in Config.Pets do
 	assert(owner[pet.id], pet.id .. " hiçbir yumurtada çıkmıyor")
-	-- World 2 petlerinin Blender modelleri ayrı işte (tools/blender/pets_space.py); gelene kadar kod yedek yüz çizer: model şartı World 1 petlerinde
-	if Catalog.petWorld(pet.id) == 1 then
-		assert(ModelInfo["pet_" .. pet.id], "ModelInfo'da pet_" .. pet.id .. " yok (tools/blender/pets*.py)")
-	end
+	-- her petin Blender modeli olmalı (World 1: pets.py / pets_more.py, World 2: pets_space.py)
+	assert(ModelInfo["pet_" .. pet.id], "ModelInfo'da pet_" .. pet.id .. " yok (tools/blender/pets*.py)")
 	count += 1
 end
 assert(count == 60, "60 pet olmalı (World 1: 30, World 2: 30): " .. count)
