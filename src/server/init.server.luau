@@ -376,6 +376,8 @@ shopFunction.OnServerInvoke = function(player, action, id, value)
 		return SeasonEvent.claim(player, math.floor(id))
 	elseif action == "NotifAsked" then
 		return PlayerStats.markNotifAsked(player)
+	elseif action == "FavoritePrompt" then
+		return PlayerStats.markFavorite(player, id == true)
 	elseif action == "SeenWhatsNew" then
 		return PlayerStats.seenWhatsNew(player)
 	elseif action == "RedeemCode" and type(id) == "string" then

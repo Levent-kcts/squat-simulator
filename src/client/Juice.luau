@@ -552,6 +552,10 @@ function Juice.init(screenGui)
 			sfx(if evolved then "GrowBig" else "LevelUp")
 			if evolved then
 				pcall(Juice.evolve, newStage)
+				-- Mutlu an: klip / favori istemi (client/HappyMoments; yüklenemezse atlanır)
+				pcall(function()
+					require(script.Parent.HappyMoments).trigger("evolve")
+				end)
 			end
 		end
 	end)

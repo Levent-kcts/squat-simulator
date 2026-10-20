@@ -1005,6 +1005,7 @@ end
 
 notifyEvent.OnClientEvent:Connect(showToast)
 safeInit("NotifOptIn", loadOptional("NotifOptIn"), screenGui) -- ilk rebirth sonrası Roblox bildirim izni (bir kez)
+safeInit("HappyMoments", loadOptional("HappyMoments"), screenGui, showToast) -- mutlu anlarda ödülsüz klip (Moments) ve favori istemi
 safeInit("PowerHourHud", loadOptional("PowerHourHud"), screenGui, showToast) -- Power Hour: başlarken üstte kısa duyuru, sonra sol altta iksirlerin yanında rozet (simge + süre + x2), ara ara ekrandan geçen simge
 
 -- Eğitim bitince (ilk skin alınınca) kısa tebrik

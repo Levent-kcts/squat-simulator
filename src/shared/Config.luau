@@ -320,6 +320,10 @@ return {
 		{ code = "THANKS", muscleClicks = 5000, wins = 50 },
 		-- Spooky Gym etkinlik kodu (2026-10-18): etkinlik bitince (9 Kasım 00:00 UTC) süresi dolar
 		{ code = "SPOOKY", wins = 100, potions = { { kind = "boostRainbow", minutes = 15 } }, expires = 1794182400 },
+		-- KİLOMETRE TAŞI KODLARI (2026-10-20, pazarlama planı Faz B; yükselen oyunlarda '14KCCU' gibi): kod hemen çalışır ama
+		-- ziyaret sayısı eşiği geçince oyun sayfası açıklamasının İLK satırında 'NEW CODE: ...' diye duyurulur (kod siteleri ücretsiz yayar). Sonraki: WORLD2 (World 2 ile).
+		{ code = "100VISITS", wins = 120, potions = { { kind = "boostLuck", minutes = 15 } } },
+		{ code = "1KVISITS", wins = 300, potions = { { kind = "boostRainbow", minutes = 60 } } },
 	},
 	CodeAttempts = { PerMinute = 6 }, -- yanlış kod deneme sınırı (kaba kuvvet önlemi)
 

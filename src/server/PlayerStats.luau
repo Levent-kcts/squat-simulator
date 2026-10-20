@@ -454,7 +454,7 @@ local function sanitize(raw)
 	for id in data.StarterClaimed do
 		data.StarterDone[id] = true -- alınan görev tamamlanmıştır
 	end
-	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true, notif = true, group = true })
+	readIds(raw.Flags, data.Flags, { gift = true, train = true, starter = true, notif = true, group = true, fav = true })
 	-- Sezonluk etkinlik durumu (Config.Event; server/SeasonEvent): { id, candy, total, claimed = { [kilometre taşı] = true }, bought = { [ürün] = adet }, perks = { title, trail } }
 	do
 		local source = if type(raw.Event) == "table" then raw.Event else {}
@@ -851,6 +851,7 @@ local function refresh(player)
 	end
 	player:SetAttribute("WhatsNewSeen", profile.whatsNew) -- istemci kartı Config.WhatsNew.Version'dan küçükse gösterir
 	player:SetAttribute("NotifAsked", profile.flags.notif == true) -- bildirim izni bir kez soruldu mu (client/NotifOptIn)
+	player:SetAttribute("FavDone", profile.flags.fav == true) -- oyunu favoriledi mi (client/HappyMoments bir daha sormaz)
 	player:SetAttribute("StarterPackOwned", profile.flags.starter == true) -- Shop'taki Başlangıç Paketi kartı alındıktan sonra kalkar
 	publishWheel(player)
 	player:SetAttribute("DamageMultiplier", shoeDamage)
@@ -1682,6 +1683,23 @@ function PlayerStats.seenWhatsNew(player)
 	if profile.whatsNew < Config.WhatsNew.Version then
 		profile.whatsNew = Config.WhatsNew.Version
 		player:SetAttribute("WhatsNewSeen", profile.whatsNew)
+		requestSave(player)
+	end
+	return true
+end
+
+-- Favori istemi sonucu (client/HappyMoments; ödülsüz): 'done' = oyuncu favoriledi, bir daha sorulmaz. Her istem ölçülür (Analytics 'FavoritePrompt').
+function PlayerStats.markFavorite(player, done)
+	local profile = profiles[player]
+	if not profile or not profile.loaded then
+		return false
+	end
+	if okAnalytics then
+		pcall(Analytics.event, player, "FavoritePrompt", if done == true then 1 else 0)
+	end
+	if done == true and not profile.flags.fav then
+		profile.flags.fav = true
+		player:SetAttribute("FavDone", true)
 		requestSave(player)
 	end
 	return true

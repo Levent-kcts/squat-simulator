@@ -461,6 +461,10 @@ function Reveal.show(screenGui, results, ownedBefore, egg)
 	local title = best and RARITY_TITLE[best.name]
 	if title then
 		hold = HOLD + 0.8
+		-- Mutlu an: Epic+ pet (client/HappyMoments klip / favori istemi; yüklenemezse atlanır)
+		pcall(function()
+			require(script.Parent.HappyMoments).trigger(string.lower(best.name))
+		end)
 		local banner = label(content, {
 			AnchorPoint = Vector2.new(0.5, 1),
 			Position = UDim2.new(0.5, 0, 0.42, -(rows * (CARD_HEIGHT + CARD_GAP)) / 2 - 4), -- kartların hemen üstünde

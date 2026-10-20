@@ -39,7 +39,8 @@ Durum (20 Ekim): toplam 18 ziyaret, 0 CCU, oyun hâlâ **yalnız yaş doğrulama
 | A6 | Her kanal için ayrı Share Link üret (DevForum, Reddit, YouTube, TikTok, Discord) ve listesini `research/share_links.md`'ye yaz | Claude (Creator Hub) | 07b 3.1 |
 | A7 | Kids/Select ön şartları (2FA, ID, TAM olgunluk anketi) eksikse sahibine tek liste; 1.000 R$ iade edilebilir ücret/Plus kararı sahibinin | Sahibi | 07d #2 |
 
-### Faz B: oyun içi büyüme özellikleri (kod, 1-2 oturum)
+### Faz B: oyun içi büyüme özellikleri (kod, 1-2 oturum) — YAPILDI 2026-10-20 (B4 grup ödülü ve B5 Owner saati sahibinin isteğiyle ÇIKARILDI)
+**Sonuç:** B1+B2 `client/HappyMoments` (Juice evrim anı, Reveal Epic+, rebirth sayacı tetikler): ödülsüz favori istemi (oturum >= 4 dk, evrim/Epic+ anında oturumda bir kez; favorilerse 'FavDone' kalıcı, Analytics 'FavoritePrompt') ve 'Save this moment!' klip kartı (TakeScreenshotCaptureAsync + PromptSaveCapturesToGallery; oturumda en çok 2, pencere açıkken yok, IsContentSharingAllowed false ise yok). Studio'da iki Roblox penceresi de doğrulandı. B3: 100VISITS, 1KVISITS kodları (eşik geçince açıklamanın ilk satırına 'NEW CODE'). B6 ölçüm (Creator Hub, 20 Eki): son 56 günde yalnız 95 yeni kullanıcıya gösterim, 14 yeni oynayan (10 reklam, 3 arama, 1 diğer), yeni oyuncu oturumu **0,92 dk**, D1 %1,92, D7 %7,7; huni (Config.Funnel, takip başladığından beri) 5 kullanıcı, en büyük kayıp Clicked30 (1/5). Veri karar için çok az: oyun akışı DEĞİŞTİRİLMEDİ. Yeniden bakış: Moments/video trafiği gelince (>= 30 yeni oyuncu) Analytics > Funnels (Last 28 days) ve Engagement > New users session time; hedef yeni oyuncu oturumu > 3 dk, Clicked30 >= %85.
 | # | İş | Not |
 |---|---|---|
 | B1 | **Favori istemi**: ilk rebirth ya da ilk Epic+ pet anında, oturumda bir kez, ÖDÜLSÜZ `AvatarEditorService:PromptSetFavorite` (ödül karşılığı favori kural riski) | 07a hamle 4; favori oranı yükselenlerde %4-8,5 |

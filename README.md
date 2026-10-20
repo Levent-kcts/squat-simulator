@@ -219,6 +219,8 @@ Makbuz işleme (`server/Purchases`, ProcessReceipt, tekrar ödül vermeyen makbu
 
 (Not: promosyon kodları bir ara kaldırılmıştı; 2026-10-14'te sahibi onaylayınca Settings > Redeem code olarak YENİDEN eklendi, bkz. madde 28.)
 
+**2026-10-20 pazarlama turu (research/07_PAZARLAMA_PLANI.md):** oyun sayfasına 4 gerçek oyun içi küçük resim + 15 sn video (assets/marketing/2026-10-20), başlık "[🎃] ..." (9 Kasım'da kaldır), açıklama yükselenlerin kalıbında, sunucu 10 kişi, 7 kanal Share Link (research/share_links.md); kodda `client/HappyMoments` (ödülsüz favori istemi + Moments klip kartı), kodlar 100VISITS/1KVISITS, Settings'te büyük Redeem satırı, What's New rafta. Ölçüm: yeni oyuncu oturumu 0,92 dk, D1 %1,9 (veri az; Moments/video trafiğinden sonra yeniden bak). HEP 1/250 (Kasım'da eşik 100).
+
 Ayrıntılı kurallar `CLAUDE.md`'de, kod değişiklikleri git geçmişinde (`git log`; 2026-10-10'dan beri her commit özel GitHub deposuna da gönderilir: `git push origin master:main`). Eski bir hâle dönmek gerekirse `git log` ile ilgili commit bulunup `git checkout <commit> -- src` ile `src` o commit'e döndürülebilir.
 
 1. **Temel oyun:** ekrana tıklayınca bacak kası, tekme/squat hareketleri (kodla, animasyon asset'i yok), her hareket bitince tek puan ve hasar, 100 duvarlı koridor (20 aşama x 5), oyuncuya özel duvarlar (sunucu can tutar, istemci çizer), Win pedleri ve ödül merdiveni, DataStore ile kayıt (30 sn + olaylarda), level (toplam kastan) ve rebirth, karakter büyümesi, bacak kasları, siyah şort, görünüm temizliği (katmanlı kıyafet kalkar).
