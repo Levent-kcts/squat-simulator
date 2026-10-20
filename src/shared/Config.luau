@@ -371,6 +371,9 @@ return {
 	-- NELER YENİ KARTI (2026-10-14 büyüme planı 1.6; client/WhatsNewCard): geri dönen oyuncuya yeni özellikleri tek küçük kartla duyurur. Version her yeni duyuruda ARTIRILIR; oyuncu 'Got it!' deyince o sürüm görülmüş sayılır (kayıtlı).
 	-- Yeni oyuncuya (eğitimi bitirmemiş) hiç gösterilmez. Settings > 'What's New' ile her zaman yeniden açılır. Lines: en çok 5 satır, kısa tut (ekran sade kalsın).
 	WhatsNew = {
+		-- RAFA KALDIRILDI (2026-10-20, sahibi 'oyun daha çok yeni, öyle bir şey için zamanımız var' dedi): false iken kart hiç açılmaz ve Settings'te 'What's New' satırı yoktur.
+		-- Kod ve kayıt (görülen sürüm) duruyor: geri açmak için true yap, Lines'ı güncelle ve Version'ı artır.
+		Enabled = false,
 		Version = 1,
 		Title = "WHAT'S NEW!",
 		Lines = {

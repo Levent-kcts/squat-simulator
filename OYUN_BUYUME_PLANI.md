@@ -4,6 +4,8 @@ Sahibi 14 Ekim 2026'da 'araştır, planla, tam yetkiyle uygula, oyunu popüler y
 Bu belge kalıcı iş planıdır: 5 araştırma raporunu (`research/01..05_*.md`) ve tasarım incelemesini (`OYUN_TASARIM_ANALIZI.md`) birleştirir.
 SAHİBİNİN yapacakları: `SAHIBI_YAPACAK_LISTE.md`. Her sprintin durumu en altta.
 
+> **2026-10-20 GÜNCEL PAZARLAMA PLANI:** `research/07_PAZARLAMA_PLANI.md` (07a-07d raporlarının birleşimi: yükselen benzer oyunlar, solo geliştirici vakaları, kısa video/Moments, 2026 platform değişiklikleri). Sonraki oturumlar oradaki Faz A > B > C > D sırasını izler. Önemli değişiklik: HEP eşiği Kasım 2026'da 250'den 100'e iniyor (resmi).
+
 ## 0. Dürüst çerçeve (ajanlar, sayılar)
 
 - Popülerlik garantisi yok. Patlayan oyunların çoğu (Escape Tsunami, Speed Keyboard, Grow a Garden 2) zirveden %90+ düştü; kalıcı olanlar haftalık içerik verenler (research/01).

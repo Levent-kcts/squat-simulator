@@ -317,6 +317,20 @@ for _, key in { "Shop", "Rebirth", "Settings", "Pets", "Gifts", "Quests", "Index
 	assert(Config.Icons[key] ~= "" and headerImages[Config.Icons[key]], "pencere başlığında menüdeki görsel yok: " .. key)
 end
 print("window header icons ok")
+-- WHAT'S NEW RAFTA (Config.WhatsNew.Enabled = false, 2026-10-20): kart kurulmaz, Settings'te 'What's New' satırı yok; kod satırı (CodeRow) durur
+local namesFound = {}
+local function collectNames(instance)
+	for _, child in rawget(instance, "_children") do
+		namesFound[rawget(child, "Name")] = true
+		collectNames(child)
+	end
+end
+collectNames(S.localPlayer)
+assert(namesFound.CodeRow, "Settings'te promosyon kodu satırı olmalı")
+if not Config.WhatsNew.Enabled then
+	assert(not namesFound.WhatsNewCard and not namesFound.WhatsNewRow, "What's New rafta iken kart ve Settings satırı kurulmamalı")
+end
+print("whats new shelved ok")
 -- Tıklayınca çıkan kazanç yazısı (Juice.screenPop): veri yüklüyken kas artınca ekranda bacak görseli ve '+N' yazısı belirir
 local Juice = require("./Juice")
 S.localPlayer:SetAttribute("DataLoaded", true)

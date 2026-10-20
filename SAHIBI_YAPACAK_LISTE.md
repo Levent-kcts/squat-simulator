@@ -17,6 +17,8 @@ Ads Manager:
 
 ## B) BU HAFTA, para harcamadan (hepsi ücretsiz)
 
+> **2026-10-20 YAPILDI (Claude, Chrome eklentisiyle):** oyun detay sayfasındaki 3 gerçek görüntü (yumurta standı, skin/ayakkabı rafı, antrenman alanı; kopyaları `assets/cover/UPLOAD/02,04,07`) kaldırıldı, yerlerine `assets/marketing/2026-10-20` içindeki 4 yeni oyun içi küçük resim kondu. Sıra: 1-3 AI, 4 SMASH 100 WALLS (129470525198559), 5 AI lobi, 6 LVL 1>200 (88007178583687), 7 HATCH 30 PETS (130415816872547), 8 SQUAT GROW SMASH (95555361141684). 15 sn video yüklendi (Asset 124112593803350, inceleme 24 saate kadar; ayda 3 video hakkı). Home Page havuzu (ayrı liste, EN ÇOK 5 etkin) da güncellendi: eski 3 gerçek görüntü silindi, 4 yeni yüklendi; etkin 5 = AI lobi, AI Beginner>Legend, SMASH 100 WALLS, LVL 1>200, HATCH 30 PETS (dev karakter resmi havuzda ama kapalı). Roblox yeni test başlattı: 7 gün dokunma.
+
 5. **Oynanış videosu yükle.** Oyunun sayfasında Place > Videos. 15-30 saniye, ses ve yazı yok: karakter squat yapıyor, büyüyor, duvarı kırıyor. Roblox kendi testinde videolu oyunlarda oynama süresinin %39'a kadar arttığını söylüyor. Kayıt için oyunda **H tuşu** arayüzü gizler.
 6. **3-5 farklı küçük resim** yükle (16:9, birbirinden farklı) ve Thumbnail Personalization'ı aç (Creator Dashboard > Configurations > Places > Thumbnails). Yüklemeden sonra 7 gün dokunma. Hazır görsel promptları `research/05_marketing_visuals.md` bölüm 7'de var, eksik/zayıf olanları değiştirmek için `assets/marketing/` içine de koyacağım.
 7. **Share Link üret.** Her kanal için ayrı (TikTok, YouTube, Discord, arkadaşlar). Analytics > Acquisition > Share Links hangi kanalın oyuncu getirdiğini gösterir.

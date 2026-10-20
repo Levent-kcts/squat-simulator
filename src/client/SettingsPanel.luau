@@ -36,8 +36,10 @@ end
 function SettingsPanel.init(screenGui, openWhatsNew)
 	local player = Players.LocalPlayer
 	local ROW_HEIGHT, ROW_GAP = 54, 8
+	local CODE_EXTRA = ROW_HEIGHT -- promosyon kodu satırı diğerlerinin İKİ KATI yüksekliktedir (2026-10-20, sahibi 'bunu 2 katı boyutunda yap' dedi)
 	local settings = Config.Settings
-	local height = 68 + (#settings + 2) * (ROW_HEIGHT + ROW_GAP) + 4 -- ilk satır: promosyon kodu girişi, sonra ayarlar, son satır: Neler yeni
+	local rowCount = #settings + 1 + (if openWhatsNew then 1 else 0) -- ilk satır: promosyon kodu girişi, sonra ayarlar, son satır: Neler yeni (rafta değilse)
+	local height = 68 + CODE_EXTRA + rowCount * (ROW_HEIGHT + ROW_GAP) + 4
 
 	local panel = create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -89,47 +91,48 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 		local codeRow = create("Frame", {
 			Name = "CodeRow",
 			Position = UDim2.fromOffset(12, 68),
-			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
+			Size = UDim2.new(1, -24, 0, ROW_HEIGHT + CODE_EXTRA),
 			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
 		}, panel)
-		create("UICorner", { CornerRadius = UDim.new(0, 8) }, codeRow)
-		UIStyle.soften(codeRow, { radius = 10, strength = 0.12, shine = false })
+		create("UICorner", { CornerRadius = UDim.new(0, 12) }, codeRow)
+		UIStyle.soften(codeRow, { radius = 14, strength = 0.12, shine = false })
+		-- 1. satır: ipucu/sonuç yazısı tüm genişlikte; 2. satır: kod kutusu + REDEEM
 		local status = text(codeRow, {
 			Name = "CodeStatus",
-			Position = UDim2.fromOffset(12, 3),
-			Size = UDim2.new(1, -120, 0, 24),
+			Position = UDim2.fromOffset(14, 8),
+			Size = UDim2.new(1, -28, 0, 36),
 			Text = CODE_HINT,
 			TextColor3 = Color3.fromRGB(255, 230, 120),
 			TextXAlignment = Enum.TextXAlignment.Left,
-		}, 1)
-		create("UITextSizeConstraint", { MaxTextSize = 16 }, status)
+		}, 2)
+		create("UITextSizeConstraint", { MaxTextSize = 30 }, status)
 		local box = create("TextBox", {
 			Name = "CodeBox",
-			Position = UDim2.fromOffset(12, 29),
-			Size = UDim2.new(1, -120, 0, 21),
+			Position = UDim2.fromOffset(14, 52),
+			Size = UDim2.new(1, -196, 0, 46),
 			BackgroundColor3 = Color3.fromRGB(30, 33, 46),
 			TextColor3 = Color3.new(1, 1, 1),
 			PlaceholderText = "Enter code",
 			PlaceholderColor3 = Color3.fromRGB(140, 146, 170),
 			Font = FONT,
-			TextSize = 15,
+			TextSize = 26,
 			Text = "",
 			ClearTextOnFocus = false,
 			TextXAlignment = Enum.TextXAlignment.Left,
 		}, codeRow)
-		create("UICorner", { CornerRadius = UDim.new(0, 6) }, box)
-		create("UIPadding", { PaddingLeft = UDim.new(0, 8) }, box)
+		create("UICorner", { CornerRadius = UDim.new(0, 10) }, box)
+		create("UIPadding", { PaddingLeft = UDim.new(0, 12) }, box)
 		local redeem = create("TextButton", {
 			Name = "RedeemButton",
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -10, 0.5, 0),
-			Size = UDim2.fromOffset(84, 36),
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -12, 0, 48),
+			Size = UDim2.fromOffset(160, 54),
 			Text = "",
 			BackgroundColor3 = ON_COLOR,
 		}, codeRow)
-		create("UICorner", { CornerRadius = UDim.new(0, 18) }, redeem)
-		create("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0) }, redeem)
-		UIStyle.soften(redeem, { radius = 18, strength = 0.28 })
+		create("UICorner", { CornerRadius = UDim.new(0, 27) }, redeem)
+		create("UIStroke", { Thickness = 4, Color = Color3.new(0, 0, 0) }, redeem)
+		UIStyle.soften(redeem, { radius = 27, strength = 0.28 })
 		text(redeem, { Position = UDim2.fromScale(0.08, 0.15), Size = UDim2.fromScale(0.84, 0.7), Text = "REDEEM", TextColor3 = Color3.new(1, 1, 1) }, 2)
 
 		local busy = false
@@ -171,7 +174,7 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 
 	for index, setting in settings do
 		local row = create("Frame", {
-			Position = UDim2.fromOffset(12, 68 + index * (ROW_HEIGHT + ROW_GAP)),
+			Position = UDim2.fromOffset(12, 68 + CODE_EXTRA + index * (ROW_HEIGHT + ROW_GAP)),
 			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
 			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
 		}, panel)
@@ -228,7 +231,7 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 	if openWhatsNew then
 		local row = create("Frame", {
 			Name = "WhatsNewRow",
-			Position = UDim2.fromOffset(12, 68 + (#settings + 1) * (ROW_HEIGHT + ROW_GAP)),
+			Position = UDim2.fromOffset(12, 68 + CODE_EXTRA + (#settings + 1) * (ROW_HEIGHT + ROW_GAP)),
 			Size = UDim2.new(1, -24, 0, ROW_HEIGHT),
 			BackgroundColor3 = Color3.fromRGB(58, 63, 82),
 		}, panel)
@@ -252,6 +255,24 @@ function SettingsPanel.init(screenGui, openWhatsNew)
 			PanelManager.hide(panel)
 			openWhatsNew()
 		end)
+	end
+
+	-- EKRANA SIĞDIR: kod satırı büyüyünce pencere kısa ekranda (Studio, yatay telefon) üstten/alttan taşıyordu.
+	-- Pencerenin ekrandaki yüksekliği (Roblox üst çubuğu payı hariç) kullanılabilir alanı aşarsa kendi UIScale'iyle orantılı küçülür; büyük ekranda 1 kalır.
+	local fitScale = create("UIScale", { Name = "FitScale", Scale = 1 }, panel)
+	local function fit()
+		local camera = workspace.CurrentCamera
+		local shown = panel.AbsoluteSize.Y
+		if not camera or shown <= 0 then
+			return
+		end
+		local full = shown / fitScale.Scale -- FitScale olmadan ekrandaki yükseklik (ana arayüz ölçeği dahil)
+		local available = camera.ViewportSize.Y - 58 - 16 -- üst çubuk payı + kenar boşluğu
+		fitScale.Scale = math.clamp(available / full, 0.5, 1)
+	end
+	panel:GetPropertyChangedSignal("Visible"):Connect(fit)
+	if workspace.CurrentCamera then
+		workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
 	end
 
 	return function()
