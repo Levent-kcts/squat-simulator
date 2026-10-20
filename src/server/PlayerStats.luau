@@ -832,8 +832,18 @@ local function refresh(player)
 		table.insert(discoveredIds, id)
 	end
 	local indexPercent = #discoveredIds * Config.Index.PercentPerPet
-	if #discoveredIds >= #Config.Pets then
-		indexPercent += Config.Index.CompletionPercent -- Index tamamlandı: kalıcı ek bonus
+	-- Tamamlama bonusu DÜNYA BAŞINA: bir dünyanın bütün türleri keşfedildiyse +CompletionPercent (World 2 petleri eklenince World 1 bonusu kaybolmaz)
+	for _, ids in Catalog.WorldPetIds do
+		local complete = #ids > 0
+		for _, id in ids do
+			if not profile.discovered[id] then
+				complete = false
+				break
+			end
+		end
+		if complete then
+			indexPercent += Config.Index.CompletionPercent
+		end
 	end
 
 	-- Arkadaş bonusu: sunucudaki her arkadaş için +%X (Config.Friends)
@@ -2292,8 +2302,17 @@ grantIndexRewards = function(player, profile, count)
 		return
 	end
 	local messages = {}
-	if count >= #Config.Pets then
-		PlayerStats.awardBadge(player, "index30") -- bütün petler keşfedildi
+	-- 'Pet Collector' rozeti: World 1'in bütün türleri (30) keşfedildi
+	local worldOne = Catalog.WorldPetIds[1] or {}
+	local allWorldOne = #worldOne > 0
+	for _, id in worldOne do
+		if not profile.discovered[id] then
+			allWorldOne = false
+			break
+		end
+	end
+	if allWorldOne then
+		PlayerStats.awardBadge(player, "index30")
 	end
 	for _, reward in Config.Index.Rewards do
 		if count >= reward.count and not profile.indexRewards[reward.count] then

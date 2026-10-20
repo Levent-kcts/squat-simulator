@@ -35,7 +35,7 @@ end
 -- Bir Index ödülünü kısa yazıya çevirir ('+150 Wins', '60 min Luck Potion')
 local function describeReward(reward)
 	if reward.kind == "wins" then
-		return `+{reward.amount} Wins`
+		return `+{Format.compact(reward.amount)} Wins`
 	end
 	local potion = Catalog.PotionByKind[reward.kind]
 	return `{reward.minutes or Config.BoostMinutes} min {if potion then potion.name else "potion"}`
@@ -48,7 +48,7 @@ local function nextRewardText(count)
 			return `Next reward at {reward.count} pets: {describeReward(reward)}`
 		end
 	end
-	return `Index complete! +{Config.Index.CompletionPercent}% Leg Muscle forever!`
+	return `Index complete! +{Config.Index.CompletionPercent}% Leg Muscle forever for each world!`
 end
 
 -- Döner: pencereyi açıp kapatan fonksiyon

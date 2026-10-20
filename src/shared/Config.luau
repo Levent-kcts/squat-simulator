@@ -428,7 +428,16 @@ return {
 			{ count = 20, kind = "wins", amount = 800 },
 			{ count = 25, kind = "boostRainbow", minutes = 60 },
 			{ count = 30, kind = "wins", amount = 2000 },
+			-- WORLD 2 petleriyle Index 60 türe çıkar (2026-10-20): ödüller World 2 ekonomisinde
+			{ count = 35, kind = "wins", amount = 20000000 },
+			{ count = 40, kind = "boostLuck", minutes = 60 },
+			{ count = 45, kind = "wins", amount = 200000000 },
+			{ count = 50, kind = "boostRainbow", minutes = 60 },
+			{ count = 55, kind = "wins", amount = 2000000000 },
+			{ count = 60, kind = "wins", amount = 10000000000 },
 		},
+		-- TAMAMLAMA BONUSU DÜNYA BAŞINA (2026-10-20): bir dünyanın yumurtalarındaki bütün türler keşfedilince o dünya için +CompletionPercent
+		-- (World 1'i tamamlamış oyuncunun +%10'u World 2 petleri eklenince KAYBOLMAZ; ikisi tamamsa +%20).
 	},
 
 	-- Oyuncu ayarları (sol menüdeki Settings penceresi, client/SettingsPanel). key = Player özniteliği: false kapalı, yoksa/true açık.
@@ -1077,6 +1086,43 @@ return {
 		{ id = "robot", name = "Robot", mult = 80, color = Color3.fromRGB(100, 220, 255) },
 		{ id = "galaxy", name = "Galaxy Cat", mult = 120, color = Color3.fromRGB(120, 80, 255) },
 		{ id = "titan", name = "Titan", mult = 200, color = Color3.fromRGB(255, 220, 60) },
+		-- WORLD 2 (uzay) petleri: World 2 lobisinin yumurtalarından çıkar; çarpanlar World 1'in en güçlüsünden (200) devam eder (tam sayı, geçici: denge tools/simulate.py)
+		-- Moon Egg (World 2)
+		{ id = "astrocat", name = "Astro Cat", mult = 220, color = Color3.fromRGB(235, 235, 250) },
+		{ id = "moonbunny", name = "Moon Bunny", mult = 250, color = Color3.fromRGB(245, 240, 255) },
+		{ id = "craterpup", name = "Crater Pup", mult = 280, color = Color3.fromRGB(180, 180, 200) },
+		{ id = "lunarowl", name = "Lunar Owl", mult = 320, color = Color3.fromRGB(200, 210, 255) },
+		{ id = "mooncow", name = "Moon Cow", mult = 380, color = Color3.fromRGB(255, 250, 220) },
+		-- Asteroid Egg (World 2)
+		{ id = "rockbeetle", name = "Rock Beetle", mult = 420, color = Color3.fromRGB(130, 115, 100) },
+		{ id = "meteorpig", name = "Meteor Pig", mult = 480, color = Color3.fromRGB(240, 150, 140) },
+		{ id = "astercrab", name = "Aster Crab", mult = 550, color = Color3.fromRGB(230, 110, 80) },
+		{ id = "cometfox", name = "Comet Fox", mult = 650, color = Color3.fromRGB(255, 150, 70) },
+		{ id = "asteroidgolem", name = "Asteroid Golem", mult = 800, color = Color3.fromRGB(110, 100, 95) },
+		-- Nebula Egg (World 2)
+		{ id = "nebulajelly", name = "Nebula Jelly", mult = 900, color = Color3.fromRGB(255, 160, 230) },
+		{ id = "cloudsquid", name = "Cloud Squid", mult = 1000, color = Color3.fromRGB(190, 160, 255) },
+		{ id = "starfish", name = "Star Fish", mult = 1200, color = Color3.fromRGB(255, 220, 120) },
+		{ id = "nebulamoth", name = "Nebula Moth", mult = 1400, color = Color3.fromRGB(210, 130, 255) },
+		{ id = "nebuladragon", name = "Nebula Dragon", mult = 1700, color = Color3.fromRGB(170, 90, 255) },
+		-- Comet Egg (World 2)
+		{ id = "iceslug", name = "Ice Slug", mult = 2000, color = Color3.fromRGB(170, 230, 255) },
+		{ id = "cometbird", name = "Comet Bird", mult = 2300, color = Color3.fromRGB(120, 200, 255) },
+		{ id = "frostalien", name = "Frost Alien", mult = 2700, color = Color3.fromRGB(150, 255, 230) },
+		{ id = "cometwolf", name = "Comet Wolf", mult = 3200, color = Color3.fromRGB(190, 220, 255) },
+		{ id = "cometdragon", name = "Comet Dragon", mult = 4000, color = Color3.fromRGB(90, 170, 255) },
+		-- Supernova Egg (World 2)
+		{ id = "solarlion", name = "Solar Lion", mult = 4500, color = Color3.fromRGB(255, 190, 60) },
+		{ id = "sunbird", name = "Sun Bird", mult = 5200, color = Color3.fromRGB(255, 140, 50) },
+		{ id = "novabeast", name = "Nova Beast", mult = 6000, color = Color3.fromRGB(255, 110, 90) },
+		{ id = "flaredrake", name = "Flare Drake", mult = 7500, color = Color3.fromRGB(255, 90, 40) },
+		{ id = "novaking", name = "Nova King", mult = 10000, color = Color3.fromRGB(255, 230, 90) },
+		-- Black Hole Egg (World 2)
+		{ id = "voidbat", name = "Void Bat", mult = 12000, color = Color3.fromRGB(90, 70, 150) },
+		{ id = "darkoctopus", name = "Dark Octopus", mult = 15000, color = Color3.fromRGB(110, 60, 170) },
+		{ id = "voidcat", name = "Void Cat", mult = 20000, color = Color3.fromRGB(70, 50, 130) },
+		{ id = "voidserpent", name = "Void Serpent", mult = 30000, color = Color3.fromRGB(140, 80, 255) },
+		{ id = "singularity", name = "Singularity", mult = 50000, color = Color3.fromRGB(30, 25, 50) },
 	},
 
 	-- Yumurta paneli: "T" tuşu bu seçenekler arasında geçiş yapar (bir seferde kaç yumurta açılacağı)
@@ -1124,6 +1170,19 @@ return {
 			pets = { { id = "salamander", weight = 50 }, { id = "dragon", weight = 30 }, { id = "lavacrab", weight = 13 }, { id = "phoenix", weight = 5 }, { id = "golem", weight = 2 } } },
 		{ id = "galaxy", name = "Galaxy Egg", price = 50000, color = Color3.fromRGB(110, 70, 220), accent = Color3.fromRGB(255, 255, 255),
 			pets = { { id = "unicorn", weight = 50 }, { id = "alien", weight = 30 }, { id = "robot", weight = 13 }, { id = "galaxy", weight = 5 }, { id = "titan", weight = 2 } } },
+		-- WORLD 2 (uzay) yumurtaları: World 2 lobisinin arka duvarında (world = 2); fiyatlar geçici (World 1 x 2^20 civarı)
+		{ id = "moon", name = "Moon Egg", price = 5000000, world = 2, color = Color3.fromRGB(215, 220, 240), accent = Color3.fromRGB(150, 160, 200),
+			pets = { { id = "astrocat", weight = 50 }, { id = "moonbunny", weight = 30 }, { id = "craterpup", weight = 13 }, { id = "lunarowl", weight = 5 }, { id = "mooncow", weight = 2 } } },
+		{ id = "asteroid", name = "Asteroid Egg", price = 50000000, world = 2, color = Color3.fromRGB(140, 120, 105), accent = Color3.fromRGB(255, 170, 80),
+			pets = { { id = "rockbeetle", weight = 50 }, { id = "meteorpig", weight = 30 }, { id = "astercrab", weight = 13 }, { id = "cometfox", weight = 5 }, { id = "asteroidgolem", weight = 2 } } },
+		{ id = "nebula", name = "Nebula Egg", price = 500000000, world = 2, color = Color3.fromRGB(200, 120, 240), accent = Color3.fromRGB(255, 180, 240),
+			pets = { { id = "nebulajelly", weight = 50 }, { id = "cloudsquid", weight = 30 }, { id = "starfish", weight = 13 }, { id = "nebulamoth", weight = 5 }, { id = "nebuladragon", weight = 2 } } },
+		{ id = "comet", name = "Comet Egg", price = 2500000000, world = 2, color = Color3.fromRGB(150, 225, 255), accent = Color3.fromRGB(235, 250, 255),
+			pets = { { id = "iceslug", weight = 50 }, { id = "cometbird", weight = 30 }, { id = "frostalien", weight = 13 }, { id = "cometwolf", weight = 5 }, { id = "cometdragon", weight = 2 } } },
+		{ id = "supernova", name = "Supernova Egg", price = 10000000000, world = 2, color = Color3.fromRGB(255, 150, 60), accent = Color3.fromRGB(255, 240, 140),
+			pets = { { id = "solarlion", weight = 50 }, { id = "sunbird", weight = 30 }, { id = "novabeast", weight = 13 }, { id = "flaredrake", weight = 5 }, { id = "novaking", weight = 2 } } },
+		{ id = "blackhole", name = "Black Hole Egg", price = 50000000000, world = 2, color = Color3.fromRGB(50, 40, 90), accent = Color3.fromRGB(180, 140, 255),
+			pets = { { id = "voidbat", weight = 50 }, { id = "darkoctopus", weight = 30 }, { id = "voidcat", weight = 13 }, { id = "voidserpent", weight = 5 }, { id = "singularity", weight = 2 } } },
 	},
 
 	-- İz (trail) efektleri: karakterin arkasında renkli bir iz bırakır ve yürüme hızını artırır (speed = ek hız, stud/sn).

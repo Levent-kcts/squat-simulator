@@ -18,10 +18,14 @@ end
 local count = 0
 for _, pet in Config.Pets do
 	assert(owner[pet.id], pet.id .. " hiçbir yumurtada çıkmıyor")
-	assert(ModelInfo["pet_" .. pet.id], "ModelInfo'da pet_" .. pet.id .. " yok (tools/blender/pets*.py)")
+	-- World 2 petlerinin Blender modelleri ayrı işte (tools/blender/pets_space.py); gelene kadar kod yedek yüz çizer: model şartı World 1 petlerinde
+	if Catalog.petWorld(pet.id) == 1 then
+		assert(ModelInfo["pet_" .. pet.id], "ModelInfo'da pet_" .. pet.id .. " yok (tools/blender/pets*.py)")
+	end
 	count += 1
 end
-assert(count == 30, "30 pet olmalı: " .. count)
+assert(count == 60, "60 pet olmalı (World 1: 30, World 2: 30): " .. count)
+assert(#Catalog.WorldPetIds[1] == 30 and #Catalog.WorldPetIds[2] == 30, "her dünyada 30 pet türü olmalı")
 -- Luck Potion: luck 1 ağırlıkları aynen verir; luck 2'de en nadir pet x2, en sık pet x1 ağırlıkta kalır, nadirlerin yüzdesi artar
 for _, egg in Config.Eggs do
 	local base = Catalog.luckWeights(egg, 1)

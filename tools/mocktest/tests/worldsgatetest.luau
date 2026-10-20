@@ -19,7 +19,7 @@ Shelf.build({
 	frame = Shelf.backWallFrame(),
 	title = "PET EGGS",
 	signColor = Config.Eggs[1].color,
-	items = Config.Eggs,
+	items = require("./Catalog").forWorld(Config.Eggs, 1),
 	layout = EggShop.Layout,
 	buildDisplay = function() end,
 })
@@ -38,7 +38,7 @@ for name in egg do
 		pads += 1
 	end
 end
-assert(pads == #Config.Eggs, "ped sayısı yumurta sayısı olmalı: " .. pads)
+assert(pads == #require("./Catalog").forWorld(Config.Eggs, 1), "ped sayısı World 1 yumurta sayısı olmalı: " .. pads)
 -- Raf köşelerinde çıkıntılar birbirine girmez: ön çıkıntı iki yan çıkıntının arasında biter (köşede aynı yükseklikte iki studlu üst yüz çakışıp titreşiyordu)
 for _, row in { 1, 2, 3 } do
 	assert(egg["Rim_" .. row].Size.X == egg["Lane_" .. row].Size.X - 2 * egg["SideRim_" .. row .. "_1"].Size.X, "ön çıkıntı yan çıkıntıların arasında bitmeli: şerit " .. row)

@@ -19,6 +19,23 @@ for _, item in Config.Items do
 	Catalog.ItemById[item.id] = item
 end
 
+-- DÜNYALAR: petin dünyası (çıktığı yumurtanın 'world' alanı; yumurtasız pet World 1) ve bir dünyanın pet türleri (Pet Index tamamlama bonusu dünya başınadır)
+local petWorld = {}
+Catalog.WorldPetIds = {} -- [dünya] = { pet id, ... }
+for _, egg in Config.Eggs do
+	for _, entry in egg.pets do
+		petWorld[entry.id] = egg.world or 1
+	end
+end
+for _, pet in Config.Pets do
+	local world = petWorld[pet.id] or 1
+	Catalog.WorldPetIds[world] = Catalog.WorldPetIds[world] or {}
+	table.insert(Catalog.WorldPetIds[world], pet.id)
+end
+function Catalog.petWorld(petId)
+	return petWorld[petId] or 1
+end
+
 -- DÜNYALAR: bir listenin (Config.Items / Skins / Eggs) o dünyaya ait satırları; 'world' alanı yoksa World 1 sayılır. Sıra korunur.
 function Catalog.forWorld(list, worldId)
 	local out = {}

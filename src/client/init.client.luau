@@ -8,7 +8,6 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Format = require(Shared:WaitForChild("Format"))
-local Layout = require(Shared:WaitForChild("Layout"))
 
 -- Yükleme ekranı YEDEĞİ: normalde ReplicatedFirst/Loading betiği başlatır (oyundan önce); o senkronlanmadıysa (Rojo yeniden başlatılmadı vb.) ya da geç kaldıysa burada başlar.
 -- run() tek örnek korumalıdır: ekran zaten açıksa hemen çıkar. Hata verirse oyun yine açılır.
