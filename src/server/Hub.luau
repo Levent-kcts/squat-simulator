@@ -44,24 +44,32 @@ end
 -- ---------------------------------------------------------------------------------------------
 -- AŞAMA TABELALARI: her aşamanın ilk duvarının hemen önünde, tavandan asılı; aşama numarası, adı ve Win ödülü
 -- ---------------------------------------------------------------------------------------------
-local function buildStageSigns(folder)
-	local wall = Config.Wall
-	for stage = 1, Layout.StageCount do
-		local theme = Layout.theme(stage)
+-- Bir dünyanın aşama tabelaları (World 2'de 'W2 STAGE N'; koridor originX kadar kayık)
+local function buildWorldSigns(folder, W)
+	local wall = W.cfg
+	local x0 = W.originX
+	for stage = 1, W.StageCount do
+		local theme = W.theme(stage)
 		local firstWall = (stage - 1) * wall.GroupSize + 1
-		local z = Layout.wallZ(firstWall) + wall.Thickness / 2 + 3
+		local z = W.wallZ(firstWall) + wall.Thickness / 2 + 3
 		local centerY = wall.CeilingHeight - 4.2
-		local banner = Build.block(folder, `StageSign_{stage}`, Vector3.new(26, 4.6, 0.5), Vector3.new(0, centerY, z), theme.color:Lerp(Color3.new(0, 0, 0), 0.25), Enum.Material.SmoothPlastic)
+		local banner = Build.block(folder, if W.id == 1 then `StageSign_{stage}` else `StageSign_W{W.id}_{stage}`, Vector3.new(26, 4.6, 0.5), Vector3.new(x0, centerY, z), theme.color:Lerp(Color3.new(0, 0, 0), 0.25), Enum.Material.SmoothPlastic)
 		banner.CanCollide = false
 		banner.CanQuery = false
 		for _, side in { -1, 1 } do
-			local rod = Build.block(folder, "StageSignRod", Vector3.new(0.4, wall.CeilingHeight - (centerY + 2.3), 0.4), Vector3.new(side * 11, (wall.CeilingHeight + centerY + 2.3) / 2, z), Color3.fromRGB(60, 60, 70), Enum.Material.SmoothPlastic)
+			local rod = Build.block(folder, "StageSignRod", Vector3.new(0.4, wall.CeilingHeight - (centerY + 2.3), 0.4), Vector3.new(x0 + side * 11, (wall.CeilingHeight + centerY + 2.3) / 2, z), Color3.fromRGB(60, 60, 70), Enum.Material.SmoothPlastic)
 			rod.CanCollide = false
 			rod.CanQuery = false
 		end
 		local gui = newGui(banner, Enum.NormalId.Back, 30) -- koridora +Z'den giren oyuncuya bakan yüz
-		addLabel(gui, UDim2.fromScale(0.5, 0.3), UDim2.fromScale(0.9, 0.46), `STAGE {stage}`, Color3.new(1, 1, 1), 4)
-		addLabel(gui, UDim2.fromScale(0.5, 0.7), UDim2.fromScale(0.9, 0.34), `{theme.name}  -  Win +{Format.compact(Layout.reward(stage))}`, theme.accent:Lerp(Color3.new(1, 1, 1), 0.4), 3)
+		addLabel(gui, UDim2.fromScale(0.5, 0.3), UDim2.fromScale(0.9, 0.46), if W.id == 1 then `STAGE {stage}` else `W{W.id} STAGE {stage}`, Color3.new(1, 1, 1), 4)
+		addLabel(gui, UDim2.fromScale(0.5, 0.7), UDim2.fromScale(0.9, 0.34), `{theme.name}  -  Win +{Format.compact(W.reward(stage))}`, theme.accent:Lerp(Color3.new(1, 1, 1), 0.4), 3)
+	end
+end
+
+local function buildStageSigns(folder)
+	for worldId = 1, Layout.worldCount do
+		buildWorldSigns(folder, Layout.world(worldId))
 	end
 end
 

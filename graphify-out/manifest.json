@@ -138,10 +138,10 @@
     "semantic_hash": "15bbb7f13b3f34f85677a5924c59a1db"
   },
   "src/client/Performance.luau": {
-    "mtime": 1791994124.8160696,
-    "seen": 1792500530.5851781,
-    "ast_hash": "9cc65b85315212144c5e0fdde2505ccb",
-    "semantic_hash": "9cc65b85315212144c5e0fdde2505ccb"
+    "mtime": 1792523647.5974665,
+    "seen": 1792525431.6831164,
+    "ast_hash": "4c0c0b567f6a724ee9c8922f4c46d52a",
+    "semantic_hash": ""
   },
   "src/client/PetFollowers.luau": {
     "mtime": 1791589299.7820985,
@@ -396,10 +396,10 @@
     "semantic_hash": "802118e9896b56471b9940267ce94a38"
   },
   "src/server/Hub.luau": {
-    "mtime": 1791313875.6025362,
-    "seen": 1792500530.585235,
-    "ast_hash": "b7978e250e492943a346bb0774188da4",
-    "semantic_hash": "b7978e250e492943a346bb0774188da4"
+    "mtime": 1792523661.084226,
+    "seen": 1792525431.6832795,
+    "ast_hash": "d4e3c7c321779c264e429e332f11039c",
+    "semantic_hash": ""
   },
   "src/server/Leaderboards.luau": {
     "mtime": 1791973905.365095,
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "src/server/init.server.luau": {
-    "mtime": 1792523082.3948157,
-    "seen": 1792523559.0152805,
-    "ast_hash": "b74ef43540991f5bf13d4a9a55502001",
+    "mtime": 1792523647.5964665,
+    "seen": 1792525431.6833568,
+    "ast_hash": "7fdf06b875a2a68a5ff45a8454d45697",
     "semantic_hash": ""
   },
   "src/shared/Catalog.luau": {
@@ -1563,6 +1563,12 @@
     "mtime": 1792523351.762452,
     "seen": 1792523559.015474,
     "ast_hash": "06e0b67ebceef8d306d4a36040d86593",
+    "semantic_hash": ""
+  },
+  "src/server/World2Lobby.luau": {
+    "mtime": 1792525325.5144682,
+    "seen": 1792525431.6833484,
+    "ast_hash": "eb3415b04b88cfe81066e83e1bed2d94",
     "semantic_hash": ""
   }
 }
