@@ -16,3 +16,7 @@ __pycache__/
 
 # Yapay zekadan gelen buyuk ham simge JPG'leri (tools/icons/cutout.py bunlardan assets/icons/*.png uretir)
 assets/icons/new/*.jpg
+
+# graphify onbellegi ve maliyet izleyici (grafik graphify-out/graph.json depoda)
+graphify-out/cache/
+graphify-out/cost.json

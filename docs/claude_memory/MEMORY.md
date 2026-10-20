@@ -1,0 +1,14 @@
+- [Roblox workflow preferences](roblox-workflow-preferences.md) — Turkish chat/English game text, keep README+CLAUDE.md updated, user tests in Studio, proportion/skin rules
+- [Blender models, then Robux last](roblox-blender-models-last.md) — after the core game: Blender models for shoes/pets/eggs, and only AFTER that all Robux work; remind the user
+- [Syntax check lesson](roblox-syntax-check-lesson.md) — rojo build does not check Luau; run tools/luacheck.py after every edit (stray brace blanked the game once)
+- [Project status (autonomous turn)](roblox-project-status.md) — what was added untested on 2026-10-04, backups, pending user-side steps
+- [Owner design feedback](roblox-owner-design-feedback.md) — what the owner rejected (do not re-add), how to measure from reference screenshots
+- [Studio Turkish UI](roblox-studio-turkish-ui.md) — owner's Studio is Turkish: explain manual Studio steps with exact Turkish menu names
+- [Mock test tool](roblox-mocktest-tool.md) — python tools/mocktest.py runs the Luau logic with mocks (11 tests); heredoc backslash pitfall
+- [Cancelled UI items + next plan](roblox-cancelled-ui-items.md) — coach-label overlap and duplicate Rainbow bottles are cancelled for good; 2026-10-09: Robux phase + game balancing (update simulate.py first)
+- [Growth push 2026-10-14](roblox-growth-push-2026-10-14.md) — owner gave full authority to make the game popular; guardrails (no spending/publishing), research in research/, plan in OYUN_BUYUME_PLANI.md
+- [Owner approvals 2026-10-14](roblox-owner-approvals-2026-10-14.md) — promo codes + daily login now APPROVED, cut all prices, add all competitor features
+- [Keep the OLD UI theme](roblox-ui-keep-old-theme.md) — owner rejected the 2026-10-14 modern redesign; old thick-outline FredokaOne look restored, do not modernize again
+- [Video shoot (done 2026-10-20)](roblox-video-shoot-2026-10-19.md) — promo assets in assets/marketing/2026-10-20; StudioReadOnly back to false; shoot recipe
+- [Dev tooling 2026-10-20](roblox-dev-tooling-2026-10-20.md) — installed free tools (typecheck.py, Studio MCP, OBS...) and when to use them; use `py` not python
+- [Marketing plan 2026-10-20](roblox-marketing-plan-2026-10-20.md) — NEXT: execute research/07_PAZARLAMA_PLANI.md Faz A>B>C>D without asking; money/social posts stay with owner

@@ -1,0 +1,10 @@
+# graphify'ın taramayacağı yerler (büyük ikili dosyalar, ekran görüntüleri, kendi beceri dosyaları)
+assets/
+research/qa_ss_*/
+.claude/
+graphify-out/
+*.rbxl
+*.rbxlx
+*.rbxm
+*.blend
+*.fbx
