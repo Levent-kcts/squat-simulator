@@ -24,22 +24,22 @@
     "semantic_hash": "be3c3975919062e380ecd8ec6f52ceab"
   },
   "src/client/DevPanel.luau": {
-    "mtime": 1792242081.7296934,
-    "seen": 1792500530.5851517,
-    "ast_hash": "7939770810e318453510873b3554f79e",
-    "semantic_hash": "7939770810e318453510873b3554f79e"
+    "mtime": 1792523404.6674044,
+    "seen": 1792523559.0151348,
+    "ast_hash": "3815f449dc5bed255e84038a7cb78ec7",
+    "semantic_hash": ""
   },
   "src/client/EggShop.luau": {
-    "mtime": 1792144280.268415,
-    "seen": 1792500530.5851533,
-    "ast_hash": "1ebf964139b4f310b5a0d3c37244656f",
-    "semantic_hash": "1ebf964139b4f310b5a0d3c37244656f"
+    "mtime": 1792525859.8655045,
+    "seen": 1792526186.566437,
+    "ast_hash": "c3fc8f8205e33ebbf89be7af85bfd487",
+    "semantic_hash": ""
   },
   "src/client/FeedHud.luau": {
-    "mtime": 1792144251.5103617,
-    "seen": 1792500530.585155,
-    "ast_hash": "65a56c669cc3823161a1e1d669873b2f",
-    "semantic_hash": "65a56c669cc3823161a1e1d669873b2f"
+    "mtime": 1792526501.3728554,
+    "seen": 1792526630.7701952,
+    "ast_hash": "efbbd4d123fba896e4e1df81cb9a8365",
+    "semantic_hash": ""
   },
   "src/client/GiftState.luau": {
     "mtime": 1791902666.441445,
@@ -54,10 +54,10 @@
     "semantic_hash": "e9301da5b2ec142386d65cd460e496c1"
   },
   "src/client/Guide.luau": {
-    "mtime": 1791903959.1295145,
-    "seen": 1792500530.5851588,
-    "ast_hash": "473918c1e940b858432486d3511a0e95",
-    "semantic_hash": "473918c1e940b858432486d3511a0e95"
+    "mtime": 1792523387.2532346,
+    "seen": 1792523559.0151446,
+    "ast_hash": "902d86bfb2b68087493597283291b523",
+    "semantic_hash": ""
   },
   "src/client/GuideTour.luau": {
     "mtime": 1792451651.9465182,
@@ -72,10 +72,10 @@
     "semantic_hash": "334c067edb85f7afec4ead7efa499a94"
   },
   "src/client/IndexPanel.luau": {
-    "mtime": 1792144251.514265,
-    "seen": 1792500530.5851636,
-    "ast_hash": "1fec510f6101295d24f2b4471a3dc164",
-    "semantic_hash": "1fec510f6101295d24f2b4471a3dc164"
+    "mtime": 1792525859.8641114,
+    "seen": 1792526186.5664644,
+    "ast_hash": "65e10d521ba1079abd01e9ff2fc6926e",
+    "semantic_hash": ""
   },
   "src/client/Juice.luau": {
     "mtime": 1792483316.4580455,
@@ -138,10 +138,10 @@
     "semantic_hash": "15bbb7f13b3f34f85677a5924c59a1db"
   },
   "src/client/Performance.luau": {
-    "mtime": 1791994124.8160696,
-    "seen": 1792500530.5851781,
-    "ast_hash": "9cc65b85315212144c5e0fdde2505ccb",
-    "semantic_hash": "9cc65b85315212144c5e0fdde2505ccb"
+    "mtime": 1792523647.5974665,
+    "seen": 1792525431.6831164,
+    "ast_hash": "4c0c0b567f6a724ee9c8922f4c46d52a",
+    "semantic_hash": ""
   },
   "src/client/PetFollowers.luau": {
     "mtime": 1791589299.7820985,
@@ -210,10 +210,10 @@
     "semantic_hash": "792bf2084af71c1faa3184f06fbefa5a"
   },
   "src/client/ShoeShop.luau": {
-    "mtime": 1791245395.859962,
-    "seen": 1792500530.5851934,
-    "ast_hash": "714c95ed2ed7fcaf7fc69a7c1e3af1e1",
-    "semantic_hash": "714c95ed2ed7fcaf7fc69a7c1e3af1e1"
+    "mtime": 1792525618.4787238,
+    "seen": 1792525762.2129216,
+    "ast_hash": "28fb5b3bfe4aecae0cfa909e499b3b41",
+    "semantic_hash": ""
   },
   "src/client/ShopPanel.luau": {
     "mtime": 1792242081.7311997,
@@ -222,10 +222,10 @@
     "semantic_hash": "293b58598999f053ded44823d3c7e3c8"
   },
   "src/client/SkinShop.luau": {
-    "mtime": 1791211761.785676,
-    "seen": 1792500530.5851963,
-    "ast_hash": "852cb036717ba85af0617e6003813060",
-    "semantic_hash": "852cb036717ba85af0617e6003813060"
+    "mtime": 1792525618.5057614,
+    "seen": 1792525762.2129257,
+    "ast_hash": "107c162c0da1481c816230af827d5338",
+    "semantic_hash": ""
   },
   "src/client/SpeechBubble.luau": {
     "mtime": 1792156391.397823,
@@ -246,10 +246,10 @@
     "semantic_hash": "dfd4cdec94190651ed0042c464957c5c"
   },
   "src/client/StatsPanel.luau": {
-    "mtime": 1792144251.5412722,
-    "seen": 1792500530.5852015,
-    "ast_hash": "bdf3d43fde020e894674326d23964add",
-    "semantic_hash": "bdf3d43fde020e894674326d23964add"
+    "mtime": 1792526501.3772807,
+    "seen": 1792526630.7703555,
+    "ast_hash": "5759bd4bf43c6b8c8bd6e6f09a499437",
+    "semantic_hash": ""
   },
   "src/client/TapFilter.luau": {
     "mtime": 1791598532.3819988,
@@ -270,9 +270,9 @@
     "semantic_hash": "33f6a4d122c2544f03b58f6a1af5ef57"
   },
   "src/client/WallClient.luau": {
-    "mtime": 1792501655.310557,
-    "seen": 1792501754.4698186,
-    "ast_hash": "daab1a420b4a8e530dc207488d3c6d98",
+    "mtime": 1792526002.8125277,
+    "seen": 1792526186.5665839,
+    "ast_hash": "07136d7a6021b8864f13c806cb3b2f20",
     "semantic_hash": ""
   },
   "src/client/WhatsNewCard.luau": {
@@ -294,10 +294,10 @@
     "semantic_hash": "1702a26773e21e304598c41bebd40957"
   },
   "src/client/init.client.luau": {
-    "mtime": 1792483316.582892,
-    "seen": 1792500530.585213,
-    "ast_hash": "b963eb2eafb2396e0b1eb6790bad7e3f",
-    "semantic_hash": "b963eb2eafb2396e0b1eb6790bad7e3f"
+    "mtime": 1792526002.7396834,
+    "seen": 1792526186.5666027,
+    "ast_hash": "e103ee6fe600a06c87fdff95fc615d9f",
+    "semantic_hash": ""
   },
   "src/loading/Loading.client.luau": {
     "mtime": 1791570742.2405212,
@@ -348,10 +348,10 @@
     "semantic_hash": "d359c84940fd41fffd227004a1b00e5a"
   },
   "src/server/DevTools.luau": {
-    "mtime": 1792150558.1540139,
-    "seen": 1792500530.5852246,
-    "ast_hash": "f95aea4936bfb5b66c16ab214eda3a26",
-    "semantic_hash": "f95aea4936bfb5b66c16ab214eda3a26"
+    "mtime": 1792523404.6674044,
+    "seen": 1792523559.0152338,
+    "ast_hash": "0481cfef5d48505d107eb1692d60b31d",
+    "semantic_hash": ""
   },
   "src/server/EggPasses.luau": {
     "mtime": 1791584122.9368749,
@@ -360,10 +360,10 @@
     "semantic_hash": "3fa809c7c99af72a36f54cba598640bb"
   },
   "src/server/EggShop.luau": {
-    "mtime": 1791992519.7002535,
-    "seen": 1792500530.5852275,
-    "ast_hash": "768971d9966c67a7125baa6438e1278d",
-    "semantic_hash": "768971d9966c67a7125baa6438e1278d"
+    "mtime": 1792525864.975819,
+    "seen": 1792526186.5666406,
+    "ast_hash": "ac54e902458634c5ef04ee9cfb84e0db",
+    "semantic_hash": ""
   },
   "src/server/EnvironmentService.luau": {
     "mtime": 1792501089.6381435,
@@ -384,10 +384,10 @@
     "semantic_hash": "358ff5f79b62caaebd3c49531a2555c0"
   },
   "src/server/GlobalFeed.luau": {
-    "mtime": 1791977456.82112,
-    "seen": 1792500530.5852327,
-    "ast_hash": "c4428ebbc538c039da410fdb375fefef",
-    "semantic_hash": "c4428ebbc538c039da410fdb375fefef"
+    "mtime": 1792526501.3728554,
+    "seen": 1792526630.7704597,
+    "ast_hash": "9b52e22a579b04327773427f158b99f4",
+    "semantic_hash": ""
   },
   "src/server/GroupReward.luau": {
     "mtime": 1792011134.6344967,
@@ -396,10 +396,10 @@
     "semantic_hash": "802118e9896b56471b9940267ce94a38"
   },
   "src/server/Hub.luau": {
-    "mtime": 1791313875.6025362,
-    "seen": 1792500530.585235,
-    "ast_hash": "b7978e250e492943a346bb0774188da4",
-    "semantic_hash": "b7978e250e492943a346bb0774188da4"
+    "mtime": 1792526002.6816025,
+    "seen": 1792526186.5666597,
+    "ast_hash": "a67420fd7fb109f04c646c24189c15c3",
+    "semantic_hash": ""
   },
   "src/server/Leaderboards.luau": {
     "mtime": 1791973905.365095,
@@ -432,10 +432,10 @@
     "semantic_hash": "7dcc129cb58bd763e8575abc252600b3"
   },
   "src/server/PlayerStats.luau": {
-    "mtime": 1792483249.21703,
-    "seen": 1792500530.5852435,
-    "ast_hash": "9ddca905a1428f06bf8cfd1186447f1c",
-    "semantic_hash": "9ddca905a1428f06bf8cfd1186447f1c"
+    "mtime": 1792526501.3762808,
+    "seen": 1792526630.7704923,
+    "ast_hash": "64f31db920ad6e273e5722321b5469eb",
+    "semantic_hash": ""
   },
   "src/server/Purchases.luau": {
     "mtime": 1791588501.8744693,
@@ -462,22 +462,22 @@
     "semantic_hash": "57a2bd7f8cdc17534cd16f307ddd5520"
   },
   "src/server/Shelf.luau": {
-    "mtime": 1791579029.2415159,
-    "seen": 1792500530.5852504,
-    "ast_hash": "e3b4110ebd82230ad025e39c5bc6b283",
-    "semantic_hash": "e3b4110ebd82230ad025e39c5bc6b283"
+    "mtime": 1792525606.2497163,
+    "seen": 1792525762.2130013,
+    "ast_hash": "07a4e04f68bcdb6e8612690d3b8e6c2a",
+    "semantic_hash": ""
   },
   "src/server/ShoeShop.luau": {
-    "mtime": 1791385572.5859332,
-    "seen": 1792500530.585252,
-    "ast_hash": "f40643fe8964cb8e8738264a9efdace1",
-    "semantic_hash": "f40643fe8964cb8e8738264a9efdace1"
+    "mtime": 1792525618.3730185,
+    "seen": 1792525762.213003,
+    "ast_hash": "bb5466a3317129d567ea0331332fa1ff",
+    "semantic_hash": ""
   },
   "src/server/SkinShop.luau": {
-    "mtime": 1791131810.714757,
-    "seen": 1792500530.5852537,
-    "ast_hash": "c0fc12c8c54168d8912808096ef21a40",
-    "semantic_hash": "c0fc12c8c54168d8912808096ef21a40"
+    "mtime": 1792525618.3999295,
+    "seen": 1792525762.2130048,
+    "ast_hash": "e4859587c78b5bce18f49f75d8d3a2a0",
+    "semantic_hash": ""
   },
   "src/server/TrailService.luau": {
     "mtime": 1791994124.8150597,
@@ -492,10 +492,10 @@
     "semantic_hash": "6671fdd863fc47c2565f35f02a031f2a"
   },
   "src/server/WallService.luau": {
-    "mtime": 1792322719.189956,
-    "seen": 1792500530.585258,
-    "ast_hash": "212390239e91bde78e61414a68cf7603",
-    "semantic_hash": "212390239e91bde78e61414a68cf7603"
+    "mtime": 1792526501.3772807,
+    "seen": 1792526630.7705336,
+    "ast_hash": "01be8653359f304621811cc61e2b44be",
+    "semantic_hash": ""
   },
   "src/server/WheelService.luau": {
     "mtime": 1791378402.5473702,
@@ -504,27 +504,27 @@
     "semantic_hash": "cdccc71aebe2b095440f42faf0d9bc99"
   },
   "src/server/WorldsGate.luau": {
-    "mtime": 1791569221.137267,
-    "seen": 1792500530.5852609,
-    "ast_hash": "e9b7baa51b261788d303f6328cce58f2",
-    "semantic_hash": "e9b7baa51b261788d303f6328cce58f2"
+    "mtime": 1792523106.469334,
+    "seen": 1792523559.0152783,
+    "ast_hash": "73ba7ba6c3428cd534915a0366c34408",
+    "semantic_hash": ""
   },
   "src/server/init.server.luau": {
-    "mtime": 1792483243.2965174,
-    "seen": 1792500530.585262,
-    "ast_hash": "6258724954a3adafcab09e3f82e2d302",
-    "semantic_hash": "6258724954a3adafcab09e3f82e2d302"
+    "mtime": 1792523647.5964665,
+    "seen": 1792525431.6833568,
+    "ast_hash": "7fdf06b875a2a68a5ff45a8454d45697",
+    "semantic_hash": ""
   },
   "src/shared/Catalog.luau": {
-    "mtime": 1791993871.9588556,
-    "seen": 1792500530.5852644,
-    "ast_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5",
-    "semantic_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5"
+    "mtime": 1792525859.861576,
+    "seen": 1792526186.5667305,
+    "ast_hash": "e17a449b7ac332033342fcd42185b4ef",
+    "semantic_hash": ""
   },
   "src/shared/Config.luau": {
-    "mtime": 1792501525.2022805,
-    "seen": 1792501754.4698906,
-    "ast_hash": "d18174e295373f63f7ef756fe2247e3e",
+    "mtime": 1792526501.371854,
+    "seen": 1792526630.7705595,
+    "ast_hash": "b6064ae1e0bdf30b5aa890deeffaaa57",
     "semantic_hash": ""
   },
   "src/shared/EggRules.luau": {
@@ -540,9 +540,9 @@
     "semantic_hash": "6bbfe9692f23a5d8ca9729f21d2ae49f"
   },
   "src/shared/Layout.luau": {
-    "mtime": 1792501089.6371336,
-    "seen": 1792501262.8036795,
-    "ast_hash": "8f2bd1430239bebbe2eae65246c6f9b7",
+    "mtime": 1792523473.1974783,
+    "seen": 1792523559.0152886,
+    "ast_hash": "d5ae44598aa83e5c189147483283c039",
     "semantic_hash": ""
   },
   "src/shared/LoadingScreen.luau": {
@@ -570,10 +570,10 @@
     "semantic_hash": "d02108572091e344648b2b66d93b4bda"
   },
   "src/shared/ShoeModel.luau": {
-    "mtime": 1791213694.2474606,
-    "seen": 1792500530.5852764,
-    "ast_hash": "f89e187b9e458ada2f7ea9f6de7ed704",
-    "semantic_hash": "f89e187b9e458ada2f7ea9f6de7ed704"
+    "mtime": 1792525606.248196,
+    "seen": 1792525762.2130344,
+    "ast_hash": "4f2798c035899b80dbd42bac7ebd1afe",
+    "semantic_hash": ""
   },
   "src/shared/WheelFace.luau": {
     "mtime": 1791466894.855114,
@@ -726,10 +726,10 @@
     "semantic_hash": "d64989a094000eecb44c1c78d8c078bf"
   },
   "tools/mocktest/stubs.luau": {
-    "mtime": 1791994370.8885765,
-    "seen": 1792500530.5853102,
-    "ast_hash": "0af2565cea2a95efe24902b59baa7713",
-    "semantic_hash": "0af2565cea2a95efe24902b59baa7713"
+    "mtime": 1792523246.6637766,
+    "seen": 1792523559.0153418,
+    "ast_hash": "4ae8ed485b461c56014010649e653139",
+    "semantic_hash": ""
   },
   "tools/mocktest/tests/analyticstest.luau": {
     "mtime": 1791993326.4671571,
@@ -804,10 +804,10 @@
     "semantic_hash": "ee0b3dc28c8d7e900a7e2be4d9af672c"
   },
   "tools/mocktest/tests/eggtest.luau": {
-    "mtime": 1791397023.5874698,
-    "seen": 1792500530.5853283,
-    "ast_hash": "cd190ff2cb5486fd2b3d9948d9f010f4",
-    "semantic_hash": "cd190ff2cb5486fd2b3d9948d9f010f4"
+    "mtime": 1792525927.544341,
+    "seen": 1792526186.566888,
+    "ast_hash": "eb614c59b4e012dfa360ab515dd72b2b",
+    "semantic_hash": ""
   },
   "tools/mocktest/tests/envtest.luau": {
     "mtime": 1791248605.3048596,
@@ -1002,10 +1002,10 @@
     "semantic_hash": "6dfd04e787755a31265593387d09828c"
   },
   "tools/mocktest/tests/retentiontest.luau": {
-    "mtime": 1791904550.8151362,
-    "seen": 1792500530.5853736,
-    "ast_hash": "e99a3601776bde69422609d941f58ab7",
-    "semantic_hash": "e99a3601776bde69422609d941f58ab7"
+    "mtime": 1792525927.5453396,
+    "seen": 1792526186.5669994,
+    "ast_hash": "b3710b794cd48f6acd15e725bfc7a288",
+    "semantic_hash": ""
   },
   "tools/mocktest/tests/revealtest.luau": {
     "mtime": 1791914259.163295,
@@ -1128,10 +1128,10 @@
     "semantic_hash": "9a3a4f2131b5040e7b38914af7e26263"
   },
   "tools/mocktest/tests/worldsgatetest.luau": {
-    "mtime": 1791579029.2425163,
-    "seen": 1792500530.5854106,
-    "ast_hash": "d2889c4aaa8a6af1bfb20ec80f570ca9",
-    "semantic_hash": "d2889c4aaa8a6af1bfb20ec80f570ca9"
+    "mtime": 1792525952.5560727,
+    "seen": 1792526186.5670712,
+    "ast_hash": "ce611552d0f2c4701f8c8431530269a7",
+    "semantic_hash": ""
   },
   "tools/padsim.py": {
     "mtime": 1791587431.9633756,
@@ -1176,10 +1176,10 @@
     "semantic_hash": "f95a52d6fc2c722777d877a406438c1c"
   },
   "tools/simulate.py": {
-    "mtime": 1791890481.572273,
-    "seen": 1792500530.5854218,
-    "ast_hash": "f9ffa176f048c32685d7468f77812a9f",
-    "semantic_hash": "f9ffa176f048c32685d7468f77812a9f"
+    "mtime": 1792526263.4202232,
+    "seen": 1792526458.5362298,
+    "ast_hash": "bed3f2892eab6ba98de62b25c4b784dc",
+    "semantic_hash": ""
   },
   "tools/sounds/make_egg_sounds.py": {
     "mtime": 1791913749.8983626,
@@ -1224,16 +1224,16 @@
     "semantic_hash": "b445c506c0134a0519efc7d3909ff99d"
   },
   "CLAUDE.md": {
-    "mtime": 1792501747.5221958,
-    "seen": 1792501754.4700902,
-    "ast_hash": "e5348ac3fc21eb7a4ba271b14b82174c",
+    "mtime": 1792526602.4435096,
+    "seen": 1792526630.7711363,
+    "ast_hash": "14cf1376ead51334e0920ede4e915840",
     "semantic_hash": ""
   },
   "OYUN_BUYUME_PLANI.md": {
-    "mtime": 1792482345.917396,
-    "seen": 1792500530.5854332,
-    "ast_hash": "cec91f1335410b0e92fd91b72ab80aa7",
-    "semantic_hash": "cec91f1335410b0e92fd91b72ab80aa7"
+    "mtime": 1792526609.064976,
+    "seen": 1792526630.7711382,
+    "ast_hash": "8780368030d5abfc934dbfb744095fa2",
+    "semantic_hash": ""
   },
   "OYUN_TASARIM_ANALIZI.md": {
     "mtime": 1791974145.3663604,
@@ -1242,9 +1242,9 @@
     "semantic_hash": "9aa6c179d303c987327c8bf2fa9e5067"
   },
   "README.md": {
-    "mtime": 1792501747.5287273,
-    "seen": 1792501754.4700952,
-    "ast_hash": "a17a9a999196646c8c9df25f1a60579a",
+    "mtime": 1792526602.4465086,
+    "seen": 1792526630.7711415,
+    "ast_hash": "6771838c4849d5ef7d4047ff054ac2a0",
     "semantic_hash": ""
   },
   "ROBUX_FIYAT_DEGISIKLIGI.md": {
@@ -1308,10 +1308,10 @@
     "semantic_hash": "77f5bddba395b056cd05ceed70c12957"
   },
   "docs/claude_memory/roblox-marketing-plan-2026-10-20.md": {
-    "mtime": 1792500563.9094777,
-    "seen": 1792501262.8038952,
-    "ast_hash": "ca34acfbdd9a6ea187d854b84358d5bc",
-    "semantic_hash": "ca34acfbdd9a6ea187d854b84358d5bc"
+    "mtime": 1792526619.249365,
+    "seen": 1792526630.7711623,
+    "ast_hash": "f3fc4ee0f571153470355450e8fd1fbd",
+    "semantic_hash": ""
   },
   "docs/claude_memory/roblox-mocktest-tool.md": {
     "mtime": 1792500563.9390342,
@@ -1552,5 +1552,23 @@
     "seen": 1792500530.585505,
     "ast_hash": "9d3015158df757961a0fd7d40e2a75ea",
     "semantic_hash": "9d3015158df757961a0fd7d40e2a75ea"
+  },
+  "src/client/WorldsGateClient.luau": {
+    "mtime": 1792523141.4138973,
+    "seen": 1792523559.0152164,
+    "ast_hash": "3a75d86169ef40aa96425f7c6d01bb09",
+    "semantic_hash": ""
+  },
+  "tools/mocktest/tests/worldtest.luau": {
+    "mtime": 1792526411.1940308,
+    "seen": 1792526458.5361922,
+    "ast_hash": "b6788b05cadb57d02569b40cfc40e3e8",
+    "semantic_hash": ""
+  },
+  "src/server/World2Lobby.luau": {
+    "mtime": 1792525325.5144682,
+    "seen": 1792525431.6833484,
+    "ast_hash": "eb3415b04b88cfe81066e83e1bed2d94",
+    "semantic_hash": ""
   }
 }

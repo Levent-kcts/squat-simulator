@@ -21,7 +21,7 @@ Performance.mobile = UserInputService.TouchEnabled and ((not UserInputService.Ke
 Performance.low = Performance.mobile
 
 -- Kısılacak klasörler (server/EnvironmentService, Shelf, TrainingArea, EggShop, Hub, WheelService, WorldsGate...); duvarlar (MyWalls) KENDİ penceresini WallClient yönetir
-local FOLDERS = { "Lobby", "ShoeShop", "SkinShop", "TrainingArea", "EggShop", "Hub", "DailyWheel", "DailyWheelStand", "WorldsGate", "Course", "Leaderboards", "EventDecor" }
+local FOLDERS = { "Lobby", "ShoeShop", "SkinShop", "TrainingArea", "EggShop", "Hub", "DailyWheel", "DailyWheelStand", "WorldsGate", "Course", "Leaderboards", "EventDecor", "World2Lobby", "WorldsGate_W2", "Course_W2" }
 
 -- Kameraya göre görünürlük menzilleri (stud); [1] = normal, [2] = hafif mod
 local RANGES = {

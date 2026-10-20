@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local Catalog = require(Shared:WaitForChild("Catalog"))
 local ShoeModel = require(Shared:WaitForChild("ShoeModel"))
 local ModelLibrary = require(Shared:WaitForChild("ModelLibrary"))
 local PlayerStats = require(script.Parent.PlayerStats)
@@ -65,20 +66,27 @@ function ShoeShop.init(notifyEvent)
 		end
 	end
 
-	Shelf.build({
-		maxGlowIndex = maxGlowIndex,
-		lightScale = Config.ShoeGlow.ShelfLightScale, -- raftaki ayakkabıların ışığı kısık (sahibi parlaklığı kıstırdı)
-		name = "ShoeShop",
-		frame = Shelf.leftWallFrame(Config.Lobby.ShoeShelfZ),
-		title = "SHOE UPGRADES",
-		signColor = Color3.fromRGB(255, 205, 40),
-		items = Config.Items,
-		buildDisplay = buildShoes,
-		buy = function(player, item)
-			return PlayerStats.buyItem(player, item.id)
-		end,
-		notifyEvent = notifyEvent,
-	})
+	-- Her dünyanın kendi rafı: World 1 sol duvarda (klasör 'ShoeShop'), World 2 kendi salonunun sol duvarında ('ShoeShop_W2')
+	for worldId = 1, #Config.Worlds.List do
+		local items = Catalog.forWorld(Config.Items, worldId)
+		if #items > 0 then
+			local lobby = Shelf.worldLobby(worldId)
+			Shelf.build({
+				maxGlowIndex = if worldId == 1 then maxGlowIndex else 1,
+				lightScale = Config.ShoeGlow.ShelfLightScale, -- raftaki ayakkabıların ışığı kısık (sahibi parlaklığı kıstırdı)
+				name = if worldId == 1 then "ShoeShop" else `ShoeShop_W{worldId}`,
+				frame = if lobby then Shelf.leftWallFrame(lobby.ShelfZ, lobby) else Shelf.leftWallFrame(Config.Lobby.ShoeShelfZ),
+				title = if worldId == 1 then "SHOE UPGRADES" else "SPACE SHOES",
+				signColor = Color3.fromRGB(255, 205, 40),
+				items = items,
+				buildDisplay = buildShoes,
+				buy = function(player, item)
+					return PlayerStats.buyItem(player, item.id)
+				end,
+				notifyEvent = notifyEvent,
+			})
+		end
+	end
 end
 
 return ShoeShop

@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local Catalog = require(Shared:WaitForChild("Catalog"))
 local PlayerStats = require(script.Parent.PlayerStats)
 local PaidRandomPolicy = require(script.Parent.PaidRandomPolicy)
 local Shelf = require(script.Parent.Shelf)
@@ -107,15 +108,26 @@ function EggShop.checkPasses(player, count, auto)
 end
 
 function EggShop.init(notifyEvent)
-	local _, pads = Shelf.build({
-		name = "EggShop",
-		frame = Shelf.backWallFrame(),
-		title = "PET EGGS",
-		signColor = Color3.fromRGB(255, 110, 190),
-		items = Config.Eggs,
-		layout = LAYOUT,
-		buildDisplay = buildEgg,
-	})
+	-- Her dünyanın yumurta standı kendi salonunun arka duvarında: World 1 'EggShop', World 2 'EggShop_W2' (yumurta id'leri benzersiz: pedler tek tabloda)
+	local pads = {}
+	for worldId = 1, #Config.Worlds.List do
+		local eggs = Catalog.forWorld(Config.Eggs, worldId)
+		if #eggs > 0 then
+			local lobby = Shelf.worldLobby(worldId)
+			local _, worldPads = Shelf.build({
+				name = if worldId == 1 then "EggShop" else `EggShop_W{worldId}`,
+				frame = Shelf.backWallFrame(lobby),
+				title = if worldId == 1 then "PET EGGS" else "SPACE EGGS",
+				signColor = Color3.fromRGB(255, 110, 190),
+				items = eggs,
+				layout = LAYOUT,
+				buildDisplay = buildEgg,
+			})
+			for id, pad in worldPads do
+				pads[id] = pad
+			end
+		end
+	end
 
 	-- Yumurta açma isteği: istemci paneldeki E tuşunda / Open butonunda çağırır. Her şey sunucuda doğrulanır:
 	-- oyuncu yumurtaya yakın olmalı, Win yetmeli, çok sık istek atılamaz.

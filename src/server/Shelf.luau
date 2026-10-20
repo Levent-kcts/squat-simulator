@@ -47,18 +47,40 @@ local PLATFORM_COLOR = Color3.fromRGB(140, 150, 205)
 local RIM_COLOR = Color3.fromRGB(178, 186, 228) -- şeritleri çevreleyen açık renkli kenar
 
 -- Sol duvara yaslı raf çerçevesi. zOffset: rafın duvar boyunca kayması (stud, + arka duvara/yumurtalara doğru).
-function Shelf.leftWallFrame(zOffset)
-	return CFrame.new(-Config.Lobby.WidthLeft, 0, zOffset) * CFrame.Angles(0, -math.pi / 2, 0)
+-- DÜNYALAR: lobby verilirse (Shelf.worldLobby) raf o dünyanın salonuna kurulur; verilmezse World 1 salonu (Config.Lobby).
+local function hall(lobby)
+	if lobby then
+		return lobby.originX or 0, lobby.WidthLeft, lobby.WidthRight, lobby.BackZ
+	end
+	return 0, Config.Lobby.WidthLeft, Config.Lobby.WidthRight, Config.Lobby.BackZ
+end
+
+function Shelf.leftWallFrame(zOffset, lobby)
+	local x0, widthLeft = hall(lobby)
+	return CFrame.new(x0 - widthLeft, 0, zOffset) * CFrame.Angles(0, -math.pi / 2, 0)
 end
 
 -- Arka duvara yaslı raf çerçevesi (yumurtalar): salonun ortasında, yerel -Z salonun ortasına bakar.
-function Shelf.backWallFrame()
-	return CFrame.new(0, 0, Config.Lobby.BackZ)
+function Shelf.backWallFrame(lobby)
+	local x0, _, _, back = hall(lobby)
+	return CFrame.new(x0, 0, back)
 end
 
 -- Sağ duvara yaslı raf çerçevesi (yerel -Z yine salonun ortasına bakar).
-function Shelf.rightWallFrame(zOffset)
-	return CFrame.new(Config.Lobby.WidthRight, 0, zOffset) * CFrame.Angles(0, math.pi / 2, 0)
+function Shelf.rightWallFrame(zOffset, lobby)
+	local x0, _, widthRight = hall(lobby)
+	return CFrame.new(x0 + widthRight, 0, zOffset) * CFrame.Angles(0, math.pi / 2, 0)
+end
+
+-- Dünyanın salon bilgisi (Shelf çerçeveleri için): { originX, WidthLeft, WidthRight, BackZ, ShelfZ }; World 1 / bilinmeyen dünya: nil
+function Shelf.worldLobby(worldId)
+	local def = Config.Worlds.List[worldId]
+	if worldId == 1 or not def or not def.lobby then
+		return nil
+	end
+	local lobby = table.clone(def.lobby)
+	lobby.originX = def.originX or 0
+	return lobby
 end
 
 -- Raf kurar. spec:

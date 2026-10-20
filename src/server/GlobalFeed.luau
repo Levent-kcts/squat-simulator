@@ -12,7 +12,7 @@ local TOPIC = "SquatFeed_v1"
 local PER_PLAYER_GAP = 20 -- aynı oyuncudan duyuru arası en az saniye
 local PER_MINUTE = 8 -- bir sunucunun dakikada yayabileceği duyuru (yerel + dış)
 local MAX_LENGTH = 90
-local KINDS = { pet = true, rebirth = true, stage = true } -- izin verilen duyuru türleri
+local KINDS = { pet = true, rebirth = true, stage = true, world = true } -- izin verilen duyuru türleri
 local SERVER_ID = HttpService:GenerateGUID(false)
 
 local remote = nil

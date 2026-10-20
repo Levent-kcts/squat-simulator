@@ -2,6 +2,10 @@
 -- yumurta standının 3. katındaki terasın (Config.Worlds.TerraceHeight) üstünde, duvarın tam ortasında parlak taş kemer; üstünde cyan 'WORLDS',
 -- parlayan yüzünde 'COMING SOON'. Yeni dünya gelene kadar içi kapalıdır (arkası duvar). Her şey kodla kurulur, Studio'da elle model gerekmez.
 -- Yerel eksen: yumurta standı gibi arka duvar çerçevesi (Shelf.backWallFrame): yerel -Z salonun ortasına (izleyiciye) bakar, yerel X geçidin genişliği, Y yukarı.
+-- PORTAL (2026-10-20, World 2): kemerin parlayan yüzü artık bir GEÇİT'tir. Önündeki görünmez tetik parçaya giren oyuncu, hedef dünya
+-- kendisi için açıksa oraya ışınlanır (karar SUNUCUDA: WallService.setWorld), kapalıysa 'Clear World 1 Stage 20' bildirimi alır.
+-- Yüzdeki yazı her oyuncuya kendi durumunu gösterir (client/WorldsGateClient yerel olarak değiştirir). World 2 lobisindeki dönüş kemeri aynı kurucudur (WorldsGate.build).
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -12,6 +16,11 @@ local Build = require(script.Parent.Build)
 local Shelf = require(script.Parent.Shelf)
 
 local WorldsGate = {}
+
+local TOUCH_COOLDOWN = 2 -- aynı oyuncunun art arda geçiş denemesi arası (sn): ışınlanma sonrası tetik yeniden çalışmasın
+local LOCKED_COOLDOWN = 4 -- kilitli geçitte bildirim en sık bu kadar saniyede bir
+local lastTouch = {} -- [userId] = os.clock()
+local notifyEvent
 
 -- PARLAKLIK (2026-10-09): ilk sürümde yüz neredeyse beyaz Neon, taşlar açık beyazdı ve ışık geniş yayılıyordu: kemer ekranı boğdu, sahibi 'çok parlak' dedi. Yüz artık orta tonda mavi Neon (rengi koyu = az parlak),
 -- taşlar bir kademe koyu, ışık zayıf ve kısa menzilli. Tekrar açma: önce sahibine sor.
@@ -25,19 +34,47 @@ local OUTLINE_COLOR = Color3.fromRGB(20, 25, 50)
 local ARC_STONES = 15 -- yarım dairedeki taş sayısı
 local GLOW_SLABS = 16 -- yarım dairenin dolgusu bu kadar yatay dilimle çizilir
 
-function WorldsGate.init()
-	local cfg = Config.Worlds
-	if not cfg or not cfg.Enabled then
+-- Geçide giren oyuncu: hedef dünya açıksa oraya geçer (WallService), değilse kilit bildirimi
+local function onEnter(player, target)
+	local now = os.clock()
+	if now - (lastTouch[player.UserId] or 0) < TOUCH_COOLDOWN then
 		return
 	end
+	lastTouch[player.UserId] = now
+	local okStats, PlayerStats = pcall(require, script.Parent.PlayerStats)
+	local okWalls, WallService = pcall(require, script.Parent.WallService)
+	if not okStats or not okWalls then
+		return
+	end
+	if not PlayerStats.worldUnlocked(player, target) then
+		lastTouch[player.UserId] = now + LOCKED_COOLDOWN - TOUCH_COOLDOWN
+		if notifyEvent then
+			local def = (Config.Worlds.List or {})[target]
+			local unlock = def and def.unlock
+			local text = if unlock then `Locked! Clear World {unlock.world} Stage {unlock.stage} to unlock {Layout.world(target).name}.` else "This world is locked."
+			notifyEvent:FireClient(player, false, text)
+		end
+		return
+	end
+	local ok, message = WallService.setWorld(player, target)
+	if notifyEvent and message then
+		notifyEvent:FireClient(player, ok, message)
+	end
+end
 
-	local floorTop = Layout.FloorTop
-	local frame = Shelf.backWallFrame()
-	local terraceTop = floorTop + cfg.TerraceHeight
+-- Bir kemer/geçit kurar. spec: folderName, frame (CFrame; yerel -Z izleyiciye bakar), baseHeight (yerden kemerin tabanı),
+-- target (geçince gidilen dünya id; nil = süs), title, soonText, note
+function WorldsGate.build(spec)
+	local cfg = Config.Worlds
+	local frame = spec.frame
+	local terraceTop = Layout.FloorTop + (spec.baseHeight or 0)
 
 	local folder = Instance.new("Folder")
-	folder.Name = "WorldsGate"
+	folder.Name = spec.folderName
 	folder.Parent = Workspace
+	if spec.target then
+		folder:SetAttribute("TargetWorld", spec.target) -- istemci yüz yazısını oyuncunun durumuna göre değiştirir
+	end
 
 	local radius = cfg.ArchWidth / 2
 	local straight = cfg.ArchStraight
@@ -174,13 +211,51 @@ function WorldsGate.init()
 	-- Kemerin üstünde cyan 'WORLDS' (referanstaki gibi, kalın koyu kenarlı)
 	local archTop = straight + radius + thickness
 	textPlate("GateTitle", Vector3.new(22, 5.2, 0.2), 0, archTop + 3.6, {
-		{ name = "Title", text = cfg.Title, position = UDim2.fromScale(0.5, 0.5), size = UDim2.fromScale(1, 1), color = TITLE_COLOR, stroke = 6 },
+		{ name = "Title", text = spec.title or cfg.Title, position = UDim2.fromScale(0.5, 0.5), size = UDim2.fromScale(1, 1), color = TITLE_COLOR, stroke = 6 },
 	})
-	-- Parlayan yüzün ÜST kısmında (kemerin yuvarlak bölümünde) 'COMING SOON' ve altında kısa not: alttaki yumurtalar önde durduğu için yazı onların arkasında kalmasın
+	-- Parlayan yüzün ÜST kısmında (kemerin yuvarlak bölümünde) dünya adı / 'COMING SOON' ve altında kısa not: alttaki yumurtalar önde durduğu için yazı onların arkasında kalmasın
 	textPlate("GateSoon", Vector3.new(cfg.ArchWidth - 1, 6, 0.2), 0, straight + 0.5, {
-		{ name = "Soon", text = cfg.SoonText, position = UDim2.fromScale(0.5, 0.38), size = UDim2.fromScale(0.96, 0.4), color = SOON_COLOR, stroke = 5, strokeColor = Color3.fromRGB(70, 35, 0) },
-		{ name = "Note", text = "New worlds are on the way!", position = UDim2.fromScale(0.5, 0.7), size = UDim2.fromScale(0.86, 0.13), color = Color3.new(1, 1, 1), stroke = 3 },
+		{ name = "Soon", text = spec.soonText or cfg.SoonText, position = UDim2.fromScale(0.5, 0.38), size = UDim2.fromScale(0.96, 0.4), color = SOON_COLOR, stroke = 5, strokeColor = Color3.fromRGB(70, 35, 0) },
+		{ name = "Note", text = spec.note or "New worlds are on the way!", position = UDim2.fromScale(0.5, 0.7), size = UDim2.fromScale(0.86, 0.13), color = Color3.new(1, 1, 1), stroke = 3 },
 	})
+
+	-- GEÇİT TETİĞİ: parlayan yüzün önünde görünmez, çarpışmasız kutu; içine giren oyuncu hedef dünyaya geçer
+	if spec.target then
+		local trigger = Build.block(folder, "GateTrigger", Vector3.new(cfg.ArchWidth, straight + radius, 4), Vector3.zero, GLOW_COLOR, Enum.Material.SmoothPlastic)
+		trigger.Transparency = 1
+		trigger.CanCollide = false
+		trigger.CanQuery = false
+		trigger.CastShadow = false
+		place(trigger, 0, (straight + radius) / 2, -2.2)
+		trigger.Touched:Connect(function(hit)
+			local player = Players:GetPlayerFromCharacter(hit.Parent)
+			if player then
+				onEnter(player, spec.target)
+			end
+		end)
+	end
+	return folder
+end
+
+-- Lobinin arka duvarındaki kemer: World 2 varsa ona açılan geçit, yoksa süs ('COMING SOON')
+function WorldsGate.init(notify)
+	notifyEvent = notify
+	local cfg = Config.Worlds
+	if not cfg or not cfg.Enabled then
+		return
+	end
+	local nextWorld = if Layout.worldCount >= 2 then 2 else nil
+	WorldsGate.build({
+		folderName = "WorldsGate",
+		frame = Shelf.backWallFrame(),
+		baseHeight = cfg.TerraceHeight,
+		target = nextWorld,
+		soonText = if nextWorld then string.upper(Layout.world(nextWorld).name) else nil,
+		note = if nextWorld then "Clear Stage 20 to unlock" else nil,
+	})
+	Players.PlayerRemoving:Connect(function(player)
+		lastTouch[player.UserId] = nil
+	end)
 end
 
 return WorldsGate

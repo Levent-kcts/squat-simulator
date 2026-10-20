@@ -80,7 +80,11 @@ end
 function EggShop.init(screenGui, hooks)
 	hooks = hooks or {}
 	local player = Players.LocalPlayer
-	local folder = Workspace:WaitForChild("EggShop")
+	-- Yumurtanın standı: World 1 'EggShop', World 2 'EggShop_W2' (yumurtanın 'world' alanı)
+	local function eggFolder(egg)
+		local world = egg.world or 1
+		return Workspace:WaitForChild(if world == 1 then "EggShop" else `EggShop_W{world}`)
+	end
 	local winValue = player:WaitForChild("leaderstats"):WaitForChild(Config.StatWins)
 	local openFunction = ReplicatedStorage:WaitForChild("EggOpen")
 	local shopFunction = ReplicatedStorage:WaitForChild("Shop")
@@ -88,7 +92,7 @@ function EggShop.init(screenGui, hooks)
 	-- ---------- Yumurtaların üstündeki etiketler ve ped renkleri ----------
 	local entries = {}
 	for _, egg in Config.Eggs do
-		local pad = folder:WaitForChild(`Pad_{egg.id}`)
+		local pad = eggFolder(egg):WaitForChild(`Pad_{egg.id}`)
 
 		-- Etiketler iki ayrı küçük kutudur (eskiden tek büyük 2 satırlı kutu yan yana/üst üste yumurtaların yazılarını karıştırıyordu):
 		--  * isim: yumurtanın üstünde tek satır,

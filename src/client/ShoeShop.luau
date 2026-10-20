@@ -2,14 +2,16 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Catalog"))
 local ShelfClient = require(script.Parent.ShelfClient)
 
 local ShoeShop = {}
 
-function ShoeShop.init()
+-- Her dünyanın rafı ayrı klasördedir ('ShoeShop', 'ShoeShop_W2'): her biri kendi eşyalarıyla
+local function initShelf(folderName, items)
 	ShelfClient.init({
-		folderName = "ShoeShop",
-		items = Config.Items,
+		folderName = folderName,
+		items = items,
 		displayPrefix = "Shoes_",
 		ownedAttr = "OwnedItems",
 		equippedAttr = "EquippedShoe",
@@ -18,6 +20,15 @@ function ShoeShop.init()
 		end,
 		labelHeight = 4.3,
 	})
+end
+
+function ShoeShop.init()
+	for worldId = 1, #Config.Worlds.List do
+		local items = Catalog.forWorld(Config.Items, worldId)
+		if #items > 0 then
+			task.spawn(initShelf, if worldId == 1 then "ShoeShop" else `ShoeShop_W{worldId}`, items)
+		end
+	end
 end
 
 return ShoeShop

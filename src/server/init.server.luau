@@ -175,12 +175,25 @@ TrainingArea.init(notifyEvent)
 do
 	local okGate, WorldsGate = pcall(require, script.WorldsGate)
 	if okGate then
-		local started, err = pcall(WorldsGate.init)
+		local started, err = pcall(WorldsGate.init, notifyEvent)
 		if not started then
 			warn(`[Server] WorldsGate init failed: {err}`)
 		end
 	else
 		warn(`[Server] Could not load WorldsGate: {WorldsGate}`)
+	end
+end
+
+-- World 2 (uzay) lobisi: salon, koridor ağzı, World 1'e dönüş kemeri (sadece görünüm + geçit); hata verirse World 1 çalışmaya devam eder
+do
+	local okLobby, World2Lobby = pcall(require, script.World2Lobby)
+	if okLobby then
+		local started, err = pcall(World2Lobby.init)
+		if not started then
+			warn(`[Server] World2Lobby init failed: {err}`)
+		end
+	else
+		warn(`[Server] Could not load World2Lobby: {World2Lobby}`)
 	end
 end
 

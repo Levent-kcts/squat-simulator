@@ -110,6 +110,18 @@ InstanceMT.__index = function(self, key)
 				end,
 			}
 		end,
+		-- Touched: parça dokunma olayı (WorldsGate geçit tetiği, raf pedleri); taklitte dinleyici saklanır, çağrılmaz
+		Touched = {
+			Connect = function(_, f)
+				local list = rawget(self, "_touched")
+				if not list then
+					list = {}
+					rawset(self, "_touched", list)
+				end
+				table.insert(list, f)
+				return { Disconnect = function() end }
+			end,
+		},
 		-- Destroy: ebeveynin _children tablosundan çıkarır (süs kurup kaldıran modüllerin testi için)
 		Destroy = function(s)
 			local parent = rawget(s, "Parent")

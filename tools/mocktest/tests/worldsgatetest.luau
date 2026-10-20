@@ -19,7 +19,7 @@ Shelf.build({
 	frame = Shelf.backWallFrame(),
 	title = "PET EGGS",
 	signColor = Config.Eggs[1].color,
-	items = Config.Eggs,
+	items = require("./Catalog").forWorld(Config.Eggs, 1),
 	layout = EggShop.Layout,
 	buildDisplay = function() end,
 })
@@ -38,7 +38,7 @@ for name in egg do
 		pads += 1
 	end
 end
-assert(pads == #Config.Eggs, "ped sayısı yumurta sayısı olmalı: " .. pads)
+assert(pads == #require("./Catalog").forWorld(Config.Eggs, 1), "ped sayısı World 1 yumurta sayısı olmalı: " .. pads)
 -- Raf köşelerinde çıkıntılar birbirine girmez: ön çıkıntı iki yan çıkıntının arasında biter (köşede aynı yükseklikte iki studlu üst yüz çakışıp titreşiyordu)
 for _, row in { 1, 2, 3 } do
 	assert(egg["Rim_" .. row].Size.X == egg["Lane_" .. row].Size.X - 2 * egg["SideRim_" .. row .. "_1"].Size.X, "ön çıkıntı yan çıkıntıların arasında bitmeli: şerit " .. row)
@@ -68,7 +68,12 @@ local function labelTexts(plate)
 	return out
 end
 assert(labelTexts(gate.GateTitle)[Config.Worlds.Title], "başlık yazısı Config.Worlds.Title olmalı")
-assert(labelTexts(gate.GateSoon)[Config.Worlds.SoonText], "yüzdeki yazı Config.Worlds.SoonText olmalı")
+-- World 2 varken (2026-10-20) geçit World 2'ye açılır: yüzde dünyanın adı, önünde tetik, klasörde hedef dünya
+local Layout = require("./Layout")
+assert(labelTexts(gate.GateSoon)[string.upper(Layout.world(2).name)], "yüzdeki yazı World 2'nin adı olmalı")
+assert(gate.GateTrigger, "geçidin önünde tetik parçası yok")
+assert(rawget(gate.GateTrigger, "CanCollide") == false, "tetik çarpışmasız olmalı")
+assert(rawget(children.WorldsGate, "_attrs").TargetWorld == 2, "geçit World 2'yi hedeflemeli")
 -- (Taklitte Position CFrame ile dünyaya çevrilmez: terasın üstünde durma ve kemerin şekli tools/worlds_gate_preview.py ile çizilerek denetlenir)
 
 -- Enabled = false: geçit kurulmaz (teras kalır)

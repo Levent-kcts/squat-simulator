@@ -5,10 +5,21 @@ local Config = require(script.Parent.Config)
 
 local ShoeModel = {}
 
--- Ayakkabının güç kademesi: Config.Items zayıftan güçlüye sıralıdır; 0 = en zayıf, 1 = en güçlü
+-- Ayakkabının güç kademesi: Config.Items zayıftan güçlüye sıralıdır; 0 = en zayıf, 1 = en güçlü. DÜNYALAR (World 2): kademe ve iz her dünyanın KENDİ
+-- listesinde hesaplanır (World 1'in görünümü World 2 ayakkabıları eklenince değişmesin).
+local worldLists = {} -- [dünya] = o dünyanın ayakkabıları (sıralı)
+local worldOf = {} -- [id] = dünya
+for _, item in Config.Items do
+	local world = item.world or 1
+	worldLists[world] = worldLists[world] or {}
+	table.insert(worldLists[world], item)
+	worldOf[item.id] = world
+end
 local tierById = {}
-for index, item in Config.Items do
-	tierById[item.id] = (index - 1) / math.max(1, #Config.Items - 1)
+for _, list in worldLists do
+	for index, item in list do
+		tierById[item.id] = (index - 1) / math.max(1, #list - 1)
+	end
 end
 
 -- Parlaklık Config.MaxGlowShoeId'ye (Neon Kicks) kadar artar, daha güçlü ayakkabılar aynı parlaklıkta kalır
@@ -20,13 +31,15 @@ end
 
 -- En güçlü ayakkabı mı (listenin sonu)? Biraz daha parlak olur (Config.ShoeGlow.TopBonus)
 function ShoeModel.isTop(item)
-	return item.id == Config.Items[#Config.Items].id
+	local list = worldLists[worldOf[item.id] or 1]
+	return list ~= nil and item.id == list[#list].id
 end
 
 -- Yürürken iz bırakan ayakkabılar (Config.ShoeTrail.Count adet, listenin sonundan): 1 = bunların en zayıfı ... Count = en güçlüsü; iz bırakmıyorsa nil
 function ShoeModel.trailLevel(item)
-	local total = #Config.Items
-	for index, other in Config.Items do
+	local list = worldLists[worldOf[item.id] or 1] or {}
+	local total = #list
+	for index, other in list do
 		if other.id == item.id then
 			local level = index - (total - Config.ShoeTrail.Count)
 			return if level >= 1 then level else nil

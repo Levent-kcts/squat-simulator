@@ -1,131 +1,131 @@
 # Graph Report - gracious-gagarin-a4500c  (2026-10-20)
 
 ## Corpus Check
-- 262 files · ~356,547 words
+- 265 files · ~365,475 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .toml 2)
 
 ## Summary
-- 1810 nodes · 4075 edges · 117 communities (91 shown, 26 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 395 edges (avg confidence: 0.85)
+- 1822 nodes · 4097 edges · 118 communities (92 shown, 26 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 402 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f5600cb7`
+- Built from commit: `b3458045`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - coaches.py
-- replicatedstorage_waitforchild
+- pets_space.py
 - Module wiring (init scripts)
-- Character appearance and shoes
-- Walls, stages and rewards
+- AppearanceCleaner.luau
+- WallService.luau
 - Sound and music
-- Moves, kick and performance
-- Balance simulation tools
-- GuideTour.luau
+- Moves.luau
+- Player
+- guidetourtest.luau
 - Blender shoe models
 - SeasonEvent.luau
 - Blender scene helpers
 - Claude Memory Index
-- Mock test stubs
+- pets.py
 - Project rules (CLAUDE.md)
-- pets_space.py
-- UI style and old theme
-- Rising games and Faz B
+- sys
+- ctest.luau
+- 07a Rising Games Analysis
 - Client test stubs
-- Daily wheel and project status
+- pets_more.py
 - Integer multipliers and catalog
 - math
 - Power Hour music generator
-- UI redesign research (archived)
+- UIStyle.luau
 - Pass icon renderer
-- Juice effects
-- Power Hour events
-- Lobby layout and lighting
-- PlayerStats core
-- sys
-- Blender model library
-- pets.py
-- WallClient.luau
-- Level and rebirth progression
-- Mock Test Tool (memory)
-- Design analysis sprints
-- Skins, training and policy
-- Icon cutout tool
-- subprocess
-- Pet followers and models
-- Trail effects
-- Blender potion models
-- Panel manager
-- Marketing plan phases
-- Discovery and growth research
-- Competitor analysis
-- Solo dev cases and World 2
-- Mock test runner
+- Juice.luau
+- UI agents shared rules (00_shared)
 - shoes_space.py
+- PlayerStats core
+- 07 Marketing Execution Plan
+- Blender model library
+- simulate.py
+- shared_waitforchild
+- Shelf.luau
+- Dev tooling and Studio MCP
+- Design analysis (OYUN_TASARIM_ANALIZI)
+- TrainingArea.luau
+- Icon cutout tool
+- Project Status (memory)
+- Trail effects
+- potions.py
+- Panel manager
+- 07b Solo Developer Case Studies
+- 02 Discovery and Growth Research
+- Competitor analysis
+- 07c Short Video and Creators
+- Mock test runner
+- Progression.luau
 - Egg sound generator
 - Robux passes and IDs
-- Stats panel and formatting
+- StatsPanel.init
 - common.py
 - Growth plan and HEP gate
-- Event decor and mannequins
-- HappyMoments (favorite, clips)
+- EventDecor.luau
+- LegGrowth.luau
 - Pets panel
 - Loading screen
-- guidetourtest.luau
-- Cosmetics and Pet Index panels
+- EggRules.luau
+- Performance.luau
 - Lobby grade preview
-- Egg rules and passes
-- LegGrowth.luau
+- client/EggShop.luau
+- SettingsPanel.luau
 - Level-up sound generator
-- Egg shop and hatch reveal
-- Playtime gift state
-- Settings
+- re
+- script_parent_uistyle
 - Wheel image generator
-- Marketing visuals research
-- 04 Retention and Monetization Playbook
-- Spooky panel
+- Blender Models Then Robux Last (memory)
+- giftstest.luau
+- SpookyPanel.luau
 - Offline earnings panel
 - Right HUD circles
-- Build helpers and Worlds gate
+- WallClient.luau
 - Global feed
-- Leaderboards
+- Faz A: Creator Hub foundation
 - Robux ID setter
-- Daily quests panel
+- BoostHud.luau
 - Price cuts and trails
 - Lua structure checker
-- Gifts tests
+- ShoeModel.luau
 - Lobby plan SVG
-- README project handover notes
-- Overhead tags
-- Blender Models Then Robux Last (memory)
+- README handover
+- OverheadTags.luau
 - ServerEvents.luau
-- script_parent_playerstats
-- Speech bubbles
-- Barbell image
-- Referrals.luau
-- Type checker
+- WheelService.luau
+- SpeechBubble.luau
+- 07d Platform Levers 2026
+- 04 Retention and Monetization Playbook
+- ModelLibrary.luau
+- Layout.luau
 - Top games trends
-- Aura service
-- Reveal tests
-- WhatsNewCard.luau
-- Feed HUD
-- LabelScaler.register
-- Referral tests
+- AuraService.luau
+- WheelPanel.luau
+- WorldsGate.luau
+- Leaderboards.luau
+- stubs.luau
+- make_barbell.py
 - MCP config
-- Auto pass tests
+- shoetrailtest.luau
 - Memory copy README
-- DevTools.luau
-- StarterOffer.luau
-- GroupReward.luau
-- DEV test panel and screenshot mode
-- BoostHud.luau
-- Analytics.luau
-- AutoClickPass.luau
-- EggPasses.luau
+- replicatedstorage_waitforchild
+- perftest.luau
+- Hub.luau
+- referraltest.luau
 - shopbadgetest.luau
+- CosmeticPanel.luau
+- AreaPasses.luau
+- padsim.py
+- WorldsGateClient.luau
+- PetFollowers.luau
+- loginpaneltest.luau
 
 ## God Nodes (most connected - your core abstractions)
 1. `CLAUDE.md project instructions` - 84 edges
@@ -140,16 +140,16 @@
 10. `06 Modern UI Research` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `Moves.play()` --calls--> `on()`  [INFERRED]
+  src/client/Moves.luau → tools/mocktest/tests/perftest.luau
 - `Sfx.playMusicOverride()` --calls--> `tick()`  [INFERRED]
   src/client/Sfx.luau → tools/mocktest/tests/perftest.luau
 - `newPanel()` --calls--> `GiftsPanel.init()`  [INFERRED]
   tools/mocktest/tests/giftstest.luau → src/client/GiftsPanel.luau
 - `Moves.play()` --calls--> `descendants()`  [INFERRED]
   src/client/Moves.luau → tools/mocktest/tests/giftstest.luau
-- `Moves.play()` --calls--> `on()`  [INFERRED]
-  src/client/Moves.luau → tools/mocktest/tests/perftest.luau
-- `StatsPanel.init()` --calls--> `Progression.levelMultiplier()`  [INFERRED]
-  src/client/StatsPanel.luau → src/shared/Progression.luau
+- `PetFollowers.init()` --calls--> `ModelLibrary.cframe()`  [INFERRED]
+  src/client/PetFollowers.luau → src/shared/ModelLibrary.luau
 
 ## Import Cycles
 - None detected.
@@ -166,43 +166,43 @@
 - **16+ gate and HEP threshold mechanics** — research_02_discovery_growth_sixteen_plus_gate, research_02_discovery_growth_highly_engaged_player, research_07_pazarlama_plani_hep_threshold_100, research_07d_platform_kaldiraclari_2026_gate_crossing_reports, research_02_discovery_growth_ads_manager_engagement [INFERRED 0.85]
 - **Static + mock + Studio verification toolchain** — docs_claude_memory_roblox_syntax_check_lesson_syntax_check_rule, docs_claude_memory_roblox_mocktest_tool_mock_roblox_testing, docs_claude_memory_roblox_dev_tooling_2026_10_20_studio_mcp, tools_typecheck [INFERRED 0.85]
 
-## Communities (117 total, 26 thin omitted)
+## Communities (118 total, 26 thin omitted)
 
 ### Community 0 - "coaches.py"
 Cohesion: 0.17
 Nodes (22): aim(), blaze(), blush(), box_at(), brows(), ember(), eyes(), figure() (+14 more)
 
-### Community 1 - "replicatedstorage_waitforchild"
-Cohesion: 0.29
-Nodes (5): makeLabel(), ShelfClient.fmtMultiplier(), ShelfClient.init(), ShoeShop.init(), SkinShop.init()
+### Community 1 - "pets_space.py"
+Cohesion: 0.08
+Nodes (43): lighter(), antenna(), astercrab(), asteroidgolem(), astrocat(), body_only(), cloudsquid(), cometbird() (+35 more)
 
 ### Community 2 - "Module wiring (init scripts)"
 Cohesion: 0.06
-Nodes (14): addOutlinedIcon(), autoLocked(), create(), loadOptional(), makeGridButton(), makeMenuButton(), makeSquareButton(), makeStatChip() (+6 more)
+Nodes (13): addOutlinedIcon(), autoLocked(), create(), loadOptional(), makeGridButton(), makeMenuButton(), makeSquareButton(), makeStatChip() (+5 more)
 
-### Community 3 - "Character appearance and shoes"
-Cohesion: 0.13
-Nodes (24): addShoeTrail(), AppearanceCleaner.init(), applyPants(), applyShirt(), applyShoes(), captureOriginals(), clean(), clearShoeGlow() (+16 more)
+### Community 3 - "AppearanceCleaner.luau"
+Cohesion: 0.26
+Nodes (13): AppearanceCleaner.init(), applyPants(), applyShirt(), captureOriginals(), clean(), equippedShoe(), onCharacter(), paint() (+5 more)
 
-### Community 4 - "Walls, stages and rewards"
-Cohesion: 0.09
-Nodes (35): addLabel(), buildStageSigns(), newGui(), Purchases.init(), addLabel(), advanceFrontier(), createSign(), createWinButton() (+27 more)
+### Community 4 - "WallService.luau"
+Cohesion: 0.27
+Nodes (9): addLabel(), createWinButton(), isVip(), newRun(), playerWorld(), resetRun(), teleportToSpawn(), vipEnabled() (+1 more)
 
 ### Community 5 - "Sound and music"
-Cohesion: 0.10
-Nodes (31): create(), MusicPlayer.init(), text(), triangle(), acquire(), applyMusicVolume(), musicMaxLevel(), newSound() (+23 more)
+Cohesion: 0.08
+Nodes (33): create(), MusicPlayer.init(), text(), triangle(), acquire(), applyMusicVolume(), musicMaxLevel(), newSound() (+25 more)
 
-### Community 6 - "Moves, kick and performance"
+### Community 6 - "Moves.luau"
+Cohesion: 0.29
+Nodes (12): apply(), currentBase(), getRig(), heightScaleOf(), isWalking(), Moves.play(), playAnimation(), ratioOf() (+4 more)
+
+### Community 7 - "Player"
+Cohesion: 0.17
+Nodes (3): Player, run(), taps_needed()
+
+### Community 8 - "guidetourtest.luau"
 Cohesion: 0.06
-Nodes (31): apply(), currentBase(), getRig(), heightScaleOf(), isWalking(), Moves.play(), playAnimation(), ratioOf() (+23 more)
-
-### Community 7 - "Balance simulation tools"
-Cohesion: 0.16
-Nodes (3): run(), Player, run()
-
-### Community 8 - "GuideTour.luau"
-Cohesion: 0.15
-Nodes (3): buildArrow(), create(), label()
+Nodes (13): buildArrow(), create(), label(), create(), makeText(), QuestPanel.claimable(), QuestPanel.read(), QuestPanel.readStarter() (+5 more)
 
 ### Community 9 - "Blender shoe models"
 Cohesion: 0.08
@@ -213,324 +213,328 @@ Cohesion: 0.55
 Nodes (10): ensure(), itemById(), keysToString(), publish(), SeasonEvent.active(), SeasonEvent.addCandy(), SeasonEvent.buy(), SeasonEvent.claim() (+2 more)
 
 ### Community 11 - "Blender scene helpers"
-Cohesion: 0.26
-Nodes (24): main(), add_floor(), add_lights(), argv_after_dashes(), export_fbx(), render_view(), reset(), save_blend() (+16 more)
+Cohesion: 0.25
+Nodes (25): main(), add_floor(), add_lights(), argv_after_dashes(), export_fbx(), render_view(), reset(), save_blend() (+17 more)
 
 ### Community 12 - "Claude Memory Index"
-Cohesion: 0.16
-Nodes (8): Claude Memory Index, Growth Push 2026-10-14 (memory), Highly Engaged Players (HEP) Threshold, Milestone Promo Codes (100VISITS, 1KVISITS), Owner Approvals 2026-10-14 (memory), Owner Design Feedback (memory), Measure From Reference Screenshots, Keep the Old UI Theme (memory)
-
-### Community 15 - "pets_space.py"
-Cohesion: 0.06
-Nodes (61): darker(), lighter(), mix(), alien(), camel(), chick(), deer(), frog() (+53 more)
-
-### Community 16 - "UI style and old theme"
-Cohesion: 0.16
-Nodes (15): drawEgg(), makeEggVisual(), dot(), loopSettle(), modelViewportIcon(), softenUnsafe(), UIStyle.calm(), UIStyle.darken() (+7 more)
-
-### Community 17 - "Rising games and Faz B"
 Cohesion: 0.18
-Nodes (12): B1 Reward-free favorite prompt, B3 Milestone codes (100VISITS, 1KVISITS, WORLD2), B5 Owner is here hour (dropped), B6 First 3 minutes funnel check, Faz B: In-game growth features, 07a Rising Games Analysis, Admin Abuse / Owner is here event, Code listing sites and codes YouTube channels (+4 more)
+Nodes (8): Claude Memory Index, Growth Push 2026-10-14 (memory), Owner Approvals 2026-10-14 (memory), Owner Design Feedback (memory), Measure From Reference Screenshots, Studio Turkish UI (memory), Roblox Workflow Preferences (memory), Turkish Chat, English Game Text, Turkish Comments
+
+### Community 13 - "pets.py"
+Cohesion: 0.28
+Nodes (24): base(), bunny(), cat(), cheeks(), dog(), dragon(), ears_point(), ears_round() (+16 more)
+
+### Community 16 - "ctest.luau"
+Cohesion: 0.19
+Nodes (8): activeCount(), allButtonsWith(), buttonNamed(), buttonWith(), countText(), hasPattern(), textsUnder(), wallGui()
+
+### Community 17 - "07a Rising Games Analysis"
+Cohesion: 0.07
+Nodes (39): 05 Marketing Visuals Zero-Budget Plan, Captures API, Estimated HEP conversion funnel model, 15 short video ideas, Thumbnail gallery audit, Gemini asset prompts (icons, thumbnails), Roblox Moments, B1 Reward-free favorite prompt (+31 more)
 
 ### Community 18 - "Client test stubs"
-Cohesion: 0.10
-Nodes (7): walk(), collectNames(), imageCount(), newCharacter(), newLeg(), countNamed(), countFx()
+Cohesion: 0.08
+Nodes (12): walk(), collectNames(), imageCount(), newCharacter(), newLeg(), countNamed(), findText(), findNamed() (+4 more)
 
-### Community 19 - "Daily wheel and project status"
-Cohesion: 0.14
-Nodes (14): Project Status (memory), Rojo Live API Debugging Recipe, safeInit(loadOptional()) Guarded Module Loading, WheelController.init(), buildFace(), create(), makeText(), panel.open() (+6 more)
+### Community 19 - "pets_more.py"
+Cohesion: 0.17
+Nodes (18): darker(), mix(), alien(), camel(), chick(), deer(), frog(), golem() (+10 more)
+
+### Community 20 - "Integer multipliers and catalog"
+Cohesion: 0.09
+Nodes (4): Video Shoot 2026-10-19 (memory), Creator Hub Thumbnail Upload Via React Handlers, Purchases.init(), add()
 
 ### Community 21 - "math"
 Cohesion: 0.06
-Nodes (52): build(), cframe_xml(), matrix(), nref(), pose_xml(), arm(), attach(), empty() (+44 more)
+Nodes (54): build(), cframe_xml(), matrix(), nref(), pose_xml(), arm(), attach(), empty() (+46 more)
 
 ### Community 22 - "Power Hour music generator"
 Cohesion: 0.19
 Nodes (17): base_phase(), bass_note(), brass_chord(), clap(), crash(), env(), finish(), finish_loop() (+9 more)
 
-### Community 23 - "UI redesign research (archived)"
-Cohesion: 0.20
-Nodes (21): 06 Modern UI Research, UIStyle.Theme tokens (colors, fonts, radius, tween), UI agents shared rules (00_shared), Design system (UIStyle) agent prompt, UIStyle modern helpers (Theme, panel, header, card, button, label, chip, badge, progressBar, tabs, input, press, pop, countTo, fadeScaleIn), Backpack Trails & Auras panel prompt, Daily login reward panel prompt, Gifts / Playtime Rewards panel prompt (+13 more)
+### Community 23 - "UIStyle.luau"
+Cohesion: 0.16
+Nodes (14): Keep the Old UI Theme (memory), dot(), loopSettle(), modelViewportIcon(), softenUnsafe(), UIStyle.calm(), UIStyle.darken(), UIStyle.eggModelIcon() (+6 more)
 
 ### Community 24 - "Pass icon renderer"
 Cohesion: 0.14
 Nodes (15): add_lights(), background(), box_blur(), build_text(), compose(), draw_ring(), lerp_color(), load_models() (+7 more)
 
-### Community 25 - "Juice effects"
+### Community 25 - "Juice.luau"
 Cohesion: 0.18
 Nodes (15): flushPop(), Juice.banner(), Juice.brickChunks(), Juice.burst(), Juice.celebrate(), Juice.evolve(), Juice.floatText(), Juice.screenPop() (+7 more)
 
-### Community 26 - "Power Hour events"
-Cohesion: 0.27
-Nodes (9): calm(), clock(), create(), iconInto(), outlined(), PowerHourHud.init(), render(), findNamed() (+1 more)
+### Community 26 - "UI agents shared rules (00_shared)"
+Cohesion: 0.15
+Nodes (19): 06 Modern UI Research, UIStyle.Theme tokens (colors, fonts, radius, tween), UI agents shared rules (00_shared), Design system (UIStyle) agent prompt, UIStyle modern helpers (Theme, panel, header, card, button, label, chip, badge, progressBar, tabs, input, press, pop, countTo, fadeScaleIn), Daily login reward panel prompt, HUD redesign prompt, Pet Index panel prompt (+11 more)
 
-### Community 27 - "Lobby layout and lighting"
-Cohesion: 0.14
-Nodes (4): tint(), wallRuns(), block(), Shelf.rightWallFrame()
+### Community 27 - "shoes_space.py"
+Cohesion: 0.19
+Nodes (14): e_bigbang(), e_comet(), e_darkmatter(), e_galaxy(), e_moon(), e_nebula(), e_nova(), e_pulsar() (+6 more)
 
 ### Community 28 - "PlayerStats core"
 Cohesion: 0.14
 Nodes (17): refresh(), fuseOnce(), pickWheelPrize(), PlayerStats.buyAura(), PlayerStats.buyTrail(), PlayerStats.deletePet(), PlayerStats.dev(), PlayerStats.equipAura() (+9 more)
 
-### Community 29 - "sys"
-Cohesion: 0.14
-Nodes (10): block(), fmt(), ladder(), num(), reward(), robux_value(), stage_hp(), taps_needed() (+2 more)
+### Community 29 - "07 Marketing Execution Plan"
+Cohesion: 0.18
+Nodes (10): Dev Tooling 2026-10-20 (memory), Free Dev Toolchain (Rokit, Selene, StyLua, luau-lsp, Studio MCP, OBS, CapCut), Roblox Studio Built-in MCP, Marketing Plan 2026-10-20 (memory), Highly Engaged Players (HEP) Threshold, Marketing Plan Phases A>B>C>D, Milestone Promo Codes (100VISITS, 1KVISITS), Pumpkin Title Tag (remove Nov 9) (+2 more)
 
-### Community 31 - "pets.py"
-Cohesion: 0.28
-Nodes (24): base(), bunny(), cat(), cheeks(), dog(), dragon(), ears_point(), ears_round() (+16 more)
-
-### Community 33 - "Level and rebirth progression"
+### Community 31 - "simulate.py"
 Cohesion: 0.15
-Nodes (6): Progression.cumulativeMuscle(), Progression.levelFromMuscle(), Progression.levelMultiplier(), Progression.maxLevel(), Progression.rebirthMultiplier(), Progression.tapsNeeded()
+Nodes (9): block(), fmt(), ladder(), num(), reward(), robux_value(), stage_hp(), fmt() (+1 more)
 
-### Community 34 - "Mock Test Tool (memory)"
-Cohesion: 0.20
-Nodes (8): Dev Tooling 2026-10-20 (memory), Free Dev Toolchain (Rokit, Selene, StyLua, luau-lsp, Studio MCP, OBS, CapCut), Roblox Studio Built-in MCP, Mock Test Tool (memory), Syntax Check Lesson (memory), Video Shoot 2026-10-19 (memory), Creator Hub Thumbnail Upload Via React Handlers, Promo Shoot Recipe (Studio MCP camera, ffmpeg gdigrab, H hides UI)
+### Community 33 - "Shelf.luau"
+Cohesion: 0.27
+Nodes (11): EggShop.init(), block(), hall(), Shelf.backWallFrame(), Shelf.leftWallFrame(), Shelf.rightWallFrame(), Shelf.worldLobby(), ShoeShop.init() (+3 more)
 
-### Community 36 - "Skins, training and policy"
-Cohesion: 0.15
-Nodes (7): AreaPasses.prompt(), Shelf.leftWallFrame(), ShoeShop.init(), buildDummy(), SkinShop.init(), setActive(), TrainingArea.init()
+### Community 34 - "Dev tooling and Studio MCP"
+Cohesion: 0.13
+Nodes (7): run_analyzer(), run_structure(), main(), get_json(), read(), run(), main()
+
+### Community 36 - "TrainingArea.luau"
+Cohesion: 0.18
+Nodes (4): AreaPasses.prompt(), buildDummy(), setActive(), TrainingArea.init()
 
 ### Community 37 - "Icon cutout tool"
 Cohesion: 0.22
 Nodes (10): background_mask(), bbox(), blur3(), cutout(), erode(), flood(), load_rgb(), main() (+2 more)
 
-### Community 38 - "subprocess"
-Cohesion: 0.13
-Nodes (7): run_analyzer(), run_structure(), main(), get_json(), read(), run(), main()
-
-### Community 39 - "Pet followers and models"
-Cohesion: 0.23
-Nodes (7): PetFollowers.init(), buildEgg(), buildShoes(), findSource(), ModelLibrary.cframe(), ModelLibrary.create(), ModelLibrary.has()
+### Community 38 - "Project Status (memory)"
+Cohesion: 0.29
+Nodes (5): Mock Test Tool (memory), Project Status (memory), Rojo Live API Debugging Recipe, safeInit(loadOptional()) Guarded Module Loading, Syntax Check Lesson (memory)
 
 ### Community 40 - "Trail effects"
 Cohesion: 0.23
 Nodes (12): apply(), bindMovement(), brickEmitters(), buildEmitter(), buildRibbon(), clear(), colorSeq(), flat() (+4 more)
 
-### Community 41 - "Blender potion models"
-Cohesion: 0.17
-Nodes (12): apply_modifiers(), join(), srgb(), badge(), boolean(), build(), cylinder(), mat() (+4 more)
+### Community 41 - "potions.py"
+Cohesion: 0.15
+Nodes (13): apply_modifiers(), join(), srgb(), tint(), badge(), boolean(), build(), cylinder() (+5 more)
 
 ### Community 42 - "Panel manager"
-Cohesion: 0.22
-Nodes (14): calm(), offscreen(), PanelManager.hide(), PanelManager.isOpen(), PanelManager.register(), PanelManager.show(), PanelManager.toggle(), create() (+6 more)
+Cohesion: 0.19
+Nodes (16): Rebirth confirm screen prompt, Shop panel prompt, calm(), offscreen(), PanelManager.hide(), PanelManager.isOpen(), PanelManager.register(), PanelManager.show() (+8 more)
 
-### Community 43 - "Marketing plan phases"
-Cohesion: 0.20
-Nodes (10): Faz A: Creator Hub foundation, 07d Platform Levers 2026, Automatic translation (Use Translated Content), Events & Updates announcements, Late 2026 free pass trials / Home pass showcase, Missed settings checklist, OpenCloud personal notifications, Share Links per Channel (+2 more)
+### Community 43 - "07b Solo Developer Case Studies"
+Cohesion: 0.14
+Nodes (13): Faz C: Content rhythm (weekly update, World 2), World 2 (5 stages / 25 walls), +1 Venom Evolution (direct rival), Same engine, new verb second game, 07b Solo Developer Case Studies, Balloon Pop Simulator (ad failure case), Checklocked (16+ era case), Fixed update cadence (Update Party) (+5 more)
 
-### Community 44 - "Discovery and growth research"
+### Community 44 - "02 Discovery and Growth Research"
 Cohesion: 0.22
-Nodes (8): 02 Discovery and Growth Research, Ads Manager Engagement objective, Gameplay video on game page, Highly Engaged Player (HEP), 16+ Audience Reach gate, Thumbnail Personalization, HEP threshold drops to 100 (Nov 2026), 16+ gate crossing reports (Aug-Oct 2026)
+Nodes (7): 02 Discovery and Growth Research, Ads Manager Engagement objective, First-play bounce rate (<60s, 61-180s), Gameplay video on game page, Recommended For You (RFY) signals, Thumbnail Personalization, Co-play days and spend days signals
 
 ### Community 45 - "Competitor analysis"
-Cohesion: 0.15
-Nodes (11): 03 Competitor Analysis, Cheap convenience passes (Auto Click 25-49 R$), Gym League, Muscle Legends, +1 Karate Evolution, +1 Muscle Evolution (name twin), +1 Muscle to Break Walls (closest competitor), +1 Strength for Eggs (+3 more)
+Cohesion: 0.14
+Nodes (11): 03 Competitor Analysis, Badge gap (rivals use Welcome badge), Cheap convenience passes (Auto Click 25-49 R$), Gym League, Muscle Legends, +1 Karate Evolution, +1 Muscle Evolution (name twin), +1 Muscle to Break Walls (closest competitor) (+3 more)
 
-### Community 46 - "Solo dev cases and World 2"
-Cohesion: 0.09
-Nodes (25): Marketing Plan 2026-10-20 (memory), Marketing Plan Phases A>B>C>D, Pumpkin Title Tag (remove Nov 9), 07 Marketing Execution Plan, Faz C: Content rhythm (weekly update, World 2), Faz D: After gate opens (YouTuber outreach, notifications), World 2 (5 stages / 25 walls), +1 Venom Evolution (direct rival) (+17 more)
+### Community 46 - "07c Short Video and Creators"
+Cohesion: 0.20
+Nodes (8): Faz D: After gate opens (YouTuber outreach, notifications), 07c Short Video and Creators, Creator email/DM template, 'Every Second +1 X' long video format, 10 hook sentences, Level 1 vs MAX Shorts format, Quaaacks (creator; +1 STRENGTH to Smash Walls), Solo devlog story (TyLen)
 
 ### Community 47 - "Mock test runner"
-Cohesion: 0.21
-Nodes (8): source_files(), build(), convert(), main(), module_names(), read(), write(), main()
+Cohesion: 0.23
+Nodes (9): source_files(), build(), convert(), main(), module_names(), read(), write(), main() (+1 more)
 
-### Community 48 - "shoes_space.py"
-Cohesion: 0.19
-Nodes (14): e_bigbang(), e_comet(), e_darkmatter(), e_galaxy(), e_moon(), e_nebula(), e_nova(), e_pulsar() (+6 more)
+### Community 48 - "Progression.luau"
+Cohesion: 0.15
+Nodes (6): Progression.cumulativeMuscle(), Progression.levelFromMuscle(), Progression.levelMultiplier(), Progression.maxLevel(), Progression.rebirthMultiplier(), Progression.tapsNeeded()
 
 ### Community 49 - "Egg sound generator"
 Cohesion: 0.29
 Nodes (9): build_dum(), build_puf(), finish(), report(), save(), soft_attack(), spectral_filter(), t_axis() (+1 more)
 
 ### Community 51 - "Robux passes and IDs"
-Cohesion: 0.23
-Nodes (6): Robux product/game pass ID file, Robux products list (ROBUX_URUNLERI), AreaPasses.init(), attributeName(), paidAreas(), publish()
+Cohesion: 0.21
+Nodes (4): Robux product/game pass ID file, Robux products list (ROBUX_URUNLERI), EggPasses.init(), publish()
 
-### Community 52 - "Stats panel and formatting"
-Cohesion: 0.25
-Nodes (11): GiftsPanel.rewardInfo(), refreshSpooky(), bonus(), create(), mult(), StatsPanel.init(), text(), Format.compact() (+3 more)
+### Community 52 - "StatsPanel.init"
+Cohesion: 0.20
+Nodes (14): describe(), GiftsPanel.rewardInfo(), describeReward(), refreshSpooky(), bonus(), create(), mult(), StatsPanel.init() (+6 more)
 
 ### Community 53 - "common.py"
-Cohesion: 0.07
-Nodes (21): cone(), cylinder(), finish(), material(), rounded_box(), sphere(), tube(), mat() (+13 more)
+Cohesion: 0.10
+Nodes (16): cone(), cylinder(), finish(), material(), rounded_box(), sphere(), tube(), by_name_of() (+8 more)
 
-### Community 55 - "Event decor and mannequins"
+### Community 55 - "EventDecor.luau"
 Cohesion: 0.32
 Nodes (9): ball(), buildGhost(), buildPumpkin(), offset(), part(), addExtraFx(), band(), emitter() (+1 more)
 
-### Community 56 - "HappyMoments (favorite, clips)"
-Cohesion: 0.38
-Nodes (11): askFavorite(), create(), HappyMoments.init(), HappyMoments.trigger(), hideCard(), offerClip(), player(), saveCapture() (+3 more)
+### Community 56 - "LegGrowth.luau"
+Cohesion: 0.24
+Nodes (10): addMuscle(), addShortsPart(), apply(), applyBodyScale(), buildMuscles(), buildShorts(), levelOf(), watch() (+2 more)
 
 ### Community 57 - "Pets panel"
-Cohesion: 0.27
-Nodes (5): addSparkles(), addTrashIcon(), create(), makeButton(), makeText()
+Cohesion: 0.24
+Nodes (6): Pets inventory/team/merge panel prompt, addSparkles(), addTrashIcon(), create(), makeButton(), makeText()
 
 ### Community 58 - "Loading screen"
 Cohesion: 0.24
 Nodes (5): addText(), LoadingScreen.build(), LoadingScreen.collectAssets(), LoadingScreen.dots(), LoadingScreen.iconImage()
 
-### Community 59 - "guidetourtest.luau"
-Cohesion: 0.15
-Nodes (4): calloutText(), cardHas(), find(), hasText()
+### Community 59 - "EggRules.luau"
+Cohesion: 0.33
+Nodes (7): cycleMulti(), EggShop.checkPasses(), EggRules.autoPass(), EggRules.owns(), EggRules.pass(), EggRules.passForCount(), EggRules.step()
 
-### Community 60 - "Cosmetics and Pet Index panels"
-Cohesion: 0.15
-Nodes (9): button(), create(), makeText(), create(), text(), create(), text(), countNamed() (+1 more)
+### Community 60 - "Performance.luau"
+Cohesion: 0.30
+Nodes (9): anchorPart(), applyLow(), cull(), kindOf(), Performance.init(), Performance.setLow(), scan(), track() (+1 more)
 
 ### Community 61 - "Lobby grade preview"
 Cohesion: 0.36
 Nodes (7): grade(), hsv_to_rgb(), load(), luma_of(), rgb_to_hsv(), save(), smooth()
 
-### Community 62 - "Egg rules and passes"
-Cohesion: 0.20
-Nodes (12): Fixed-order egg for restricted accounts, cycleMulti(), EggShop.checkPasses(), EggShop.init(), PaidRandomPolicy.check(), PaidRandomPolicy.isRestricted(), Shelf.backWallFrame(), EggRules.autoPass() (+4 more)
+### Community 62 - "client/EggShop.luau"
+Cohesion: 0.14
+Nodes (10): Egg pet-chance panel prompt, create(), EggShop.init(), makeText(), drawEgg(), makeEggVisual(), UIStyle.soften(), create() (+2 more)
 
-### Community 63 - "LegGrowth.luau"
-Cohesion: 0.23
-Nodes (11): addMuscle(), addMuscleModel(), addShortsPart(), apply(), applyBodyScale(), buildMuscles(), buildShorts(), levelOf() (+3 more)
+### Community 63 - "SettingsPanel.luau"
+Cohesion: 0.29
+Nodes (6): Settings panel prompt, PlayerSettings.get(), PlayerSettings.set(), create(), SettingsPanel.init(), text()
 
 ### Community 64 - "Level-up sound generator"
 Cohesion: 0.24
 Nodes (5): build(), mix(), note(), report(), save()
 
-### Community 65 - "Egg shop and hatch reveal"
-Cohesion: 0.20
-Nodes (4): Egg pet-chance panel prompt, create(), EggShop.init(), makeText()
+### Community 65 - "re"
+Cohesion: 0.60
+Nodes (4): luau_lsp(), run(), selene(), tool()
 
-### Community 66 - "Playtime gift state"
-Cohesion: 0.38
-Nodes (3): GiftState.elapsed(), GiftState.nextRemaining(), GiftState.ready()
-
-### Community 67 - "Settings"
-Cohesion: 0.33
-Nodes (5): PlayerSettings.get(), PlayerSettings.set(), create(), SettingsPanel.init(), text()
+### Community 66 - "script_parent_uistyle"
+Cohesion: 0.22
+Nodes (9): create(), GiftsPanel.init(), makeText(), create(), findProduct(), outlined(), StarterOffer.init(), UIStyle.safePetIcon() (+1 more)
 
 ### Community 68 - "Wheel image generator"
-Cohesion: 0.36
-Nodes (4): main(), prize_colors(), render(), write_png()
+Cohesion: 0.26
+Nodes (5): main(), prize_colors(), render(), write_png(), world_of()
 
-### Community 69 - "Marketing visuals research"
-Cohesion: 0.20
-Nodes (9): 05 Marketing Visuals Zero-Budget Plan, Captures API, Estimated HEP conversion funnel model, 15 short video ideas, Thumbnail gallery audit, Gemini asset prompts (icons, thumbnails), Roblox Moments, B2 Moments clip prompt (Save this moment!) (+1 more)
-
-### Community 70 - "04 Retention and Monetization Playbook"
-Cohesion: 0.18
-Nodes (9): First-play bounce rate (<60s, 61-180s), Recommended For You (RFY) signals, 04 Retention and Monetization Playbook, Co-play days and spend days signals, Creator Rewards, D1/D7/D30 benchmarks (GameAnalytics 2026), Live-ops seasonal event templates (Halloween/Winter), Roblox Subscriptions (+1 more)
-
-### Community 72 - "Spooky panel"
+### Community 69 - "Blender Models Then Robux Last (memory)"
 Cohesion: 0.22
-Nodes (4): create(), text(), countNamed(), findText()
+Nodes (6): Blender Models Then Robux Last (memory), Pet Simulator 2 Style Box Pets, Each Pet Belongs To Exactly One Egg, Per-Click Leg Muscle, Kick Waits For Contact, Cancelled UI Items + Next Plan (memory), Game Balance Targets (end in 10-15 days at 1h/day)
+
+### Community 70 - "giftstest.luau"
+Cohesion: 0.17
+Nodes (10): Gifts / Playtime Rewards panel prompt, GiftState.elapsed(), GiftState.nextRemaining(), GiftState.ready(), click(), countNamed(), descendants(), findButton() (+2 more)
+
+### Community 72 - "SpookyPanel.luau"
+Cohesion: 0.18
+Nodes (5): Spooky Gym event panel prompt, create(), text(), create(), text()
 
 ### Community 73 - "Offline earnings panel"
 Cohesion: 0.31
 Nodes (5): bigButton(), create(), duration(), show(), text()
 
 ### Community 74 - "Right HUD circles"
-Cohesion: 0.17
-Nodes (4): create(), RightHud.init(), text(), UIStyle.soften()
+Cohesion: 0.25
+Nodes (3): create(), RightHud.init(), text()
 
-### Community 75 - "Build helpers and Worlds gate"
-Cohesion: 0.36
-Nodes (5): Build.block(), glowPart(), place(), stone(), textPlate()
+### Community 75 - "WallClient.luau"
+Cohesion: 0.24
+Nodes (3): addFrame(), darker(), decorateBrick()
 
 ### Community 76 - "Global feed"
 Cohesion: 0.39
 Nodes (5): clean(), deliver(), GlobalFeed.announce(), GlobalFeed.receive(), underLimit()
 
-### Community 77 - "Leaderboards"
-Cohesion: 0.39
-Nodes (6): boardValue(), buildBoard(), iconLabel(), Leaderboards.init(), pillar(), textLabel()
+### Community 77 - "Faz A: Creator Hub foundation"
+Cohesion: 0.29
+Nodes (6): Faz A: Creator Hub foundation, Seasonal title prefix [pumpkin]/[W2], Automatic translation (Use Translated Content), Share Links per Channel, Per-channel Share Links (TikTok, YouTube, Group, DevForum, Reddit, Chat Server, Reels), Text filter rejects platform names in campaign names
 
 ### Community 78 - "Robux ID setter"
 Cohesion: 0.33
 Nodes (4): apply_ids(), block(), read_products(), write_template()
 
-### Community 79 - "Daily quests panel"
-Cohesion: 0.39
-Nodes (6): create(), makeText(), QuestPanel.claimable(), QuestPanel.read(), QuestPanel.readStarter(), QuestPanel.starterClaimable()
+### Community 79 - "BoostHud.luau"
+Cohesion: 0.27
+Nodes (5): BoostHud.init(), clock(), create(), AutoClickPass.init(), publish()
 
 ### Community 81 - "Lua structure checker"
-Cohesion: 0.47
+Cohesion: 0.36
 Nodes (5): check(), check_tokens(), run(), tokenize(), read_interp()
 
-### Community 82 - "Gifts tests"
-Cohesion: 0.20
-Nodes (12): create(), describe(), GiftsPanel.init(), makeText(), UIStyle.safePetIcon(), click(), countNamed(), descendants() (+4 more)
+### Community 82 - "ShoeModel.luau"
+Cohesion: 0.33
+Nodes (8): addShoeTrail(), applyShoes(), clearShoeGlow(), ShoeModel.isTop(), ShoeModel.neonColor(), ShoeModel.parts(), ShoeModel.tier(), ShoeModel.trailLevel()
 
 ### Community 83 - "Lobby plan SVG"
 Cohesion: 0.54
 Nodes (6): arrow(), circle(), px(), pz(), rect(), text()
 
-### Community 84 - "README project handover notes"
-Cohesion: 0.24
-Nodes (4): Studio Turkish UI (memory), Roblox Workflow Preferences (memory), Turkish Chat, English Game Text, Turkish Comments, README project handover notes
+### Community 85 - "OverheadTags.luau"
+Cohesion: 0.28
+Nodes (4): attach(), OverheadTags.init(), styledLabel(), track()
 
-### Community 85 - "Overhead tags"
-Cohesion: 0.18
-Nodes (5): Badge gap (rivals use Welcome badge), attach(), OverheadTags.init(), styledLabel(), track()
-
-### Community 86 - "Blender Models Then Robux Last (memory)"
-Cohesion: 0.22
-Nodes (6): Blender Models Then Robux Last (memory), Pet Simulator 2 Style Box Pets, Each Pet Belongs To Exactly One Egg, Per-Click Leg Muscle, Kick Waits For Contact, Cancelled UI Items + Next Plan (memory), Game Balance Targets (end in 10-15 days at 1h/day)
-
-### Community 87 - "ServerEvents.luau"
+### Community 86 - "ServerEvents.luau"
 Cohesion: 0.42
 Nodes (7): applyPowerHour(), ServerEvents.currentState(), ServerEvents.devToggle(), ServerEvents.init(), ServerEvents.powerHourState(), ServerEvents.seasonActive(), serverNow()
 
-### Community 90 - "Barbell image"
-Cohesion: 0.38
-Nodes (3): cylinder(), smooth(), torus()
+### Community 88 - "WheelService.luau"
+Cohesion: 0.36
+Nodes (5): textLabel(), WheelService.init(), create(), text(), WheelFace.build()
 
-### Community 91 - "Referrals.luau"
-Cohesion: 0.47
-Nodes (8): addPending(), key(), Referrals.addPlaytime(), Referrals.claimForInviter(), Referrals.init(), Referrals.onLoaded(), Referrals.payOut(), takePending()
+### Community 90 - "07d Platform Levers 2026"
+Cohesion: 0.22
+Nodes (9): Highly Engaged Player (HEP), 16+ Audience Reach gate, HEP threshold drops to 100 (Nov 2026), 07d Platform Levers 2026, Events & Updates announcements, Late 2026 free pass trials / Home pass showcase, 16+ gate crossing reports (Aug-Oct 2026), Missed settings checklist (+1 more)
 
-### Community 92 - "Type checker"
-Cohesion: 0.39
-Nodes (5): ensure_types(), luau_lsp(), run(), selene(), tool()
+### Community 91 - "04 Retention and Monetization Playbook"
+Cohesion: 0.18
+Nodes (10): 04 Retention and Monetization Playbook, Creator Rewards, D1/D7/D30 benchmarks (GameAnalytics 2026), Fixed-order egg for restricted accounts, Live-ops seasonal event templates (Halloween/Winter), Roblox Subscriptions, Starter pack, What's New update log UX (+2 more)
+
+### Community 92 - "ModelLibrary.luau"
+Cohesion: 0.36
+Nodes (7): buildEgg(), addMuscleModel(), buildShoes(), findSource(), ModelLibrary.cframe(), ModelLibrary.create(), ModelLibrary.has()
 
 ### Community 94 - "Top games trends"
 Cohesion: 0.33
 Nodes (5): 01 Top Games Trend Report, Format cloning speed (Steal An Egg clones), +1 / for Eggs genre cluster, Short average session length (8-19 min), The Hollow platform Halloween event
 
-### Community 95 - "Aura service"
+### Community 95 - "AuraService.luau"
 Cohesion: 0.53
 Nodes (4): apply(), build(), clear(), watch()
 
-### Community 97 - "WhatsNewCard.luau"
-Cohesion: 0.36
-Nodes (6): What's New update log UX, create(), text(), WhatsNewCard.init(), countNamed(), findNamed()
+### Community 96 - "WheelPanel.luau"
+Cohesion: 0.28
+Nodes (6): WheelController.init(), buildFace(), create(), makeText(), panel.open(), panel.place()
 
-### Community 98 - "Feed HUD"
-Cohesion: 0.83
-Nodes (3): accent(), create(), FeedHud.init()
+### Community 97 - "WorldsGate.luau"
+Cohesion: 0.20
+Nodes (11): Build.block(), Build.ceilingLight(), World2Lobby.bounds(), World2Lobby.init(), glowPart(), onEnter(), place(), stone() (+3 more)
 
-### Community 100 - "LabelScaler.register"
-Cohesion: 0.33
-Nodes (3): LabelScaler.register(), LabelScaler.start(), titleColor()
+### Community 98 - "Leaderboards.luau"
+Cohesion: 0.39
+Nodes (6): boardValue(), buildBoard(), iconLabel(), Leaderboards.init(), pillar(), textLabel()
 
-### Community 107 - "StarterOffer.luau"
-Cohesion: 0.48
-Nodes (5): create(), findProduct(), outlined(), StarterOffer.init(), findNamed()
+### Community 100 - "stubs.luau"
+Cohesion: 0.07
+Nodes (4): blank(), encode(), fakePlayer(), join()
 
-### Community 108 - "GroupReward.luau"
-Cohesion: 0.40
-Nodes (4): B4 Group reward (dropped), Climb For Animals Eggs, check(), GroupReward.init()
+### Community 102 - "make_barbell.py"
+Cohesion: 0.38
+Nodes (3): cylinder(), smooth(), torus()
 
-### Community 109 - "DEV test panel and screenshot mode"
-Cohesion: 0.50
-Nodes (3): create(), DevPanel.init(), update()
+### Community 104 - "shoetrailtest.luau"
+Cohesion: 0.60
+Nodes (3): child(), makeCharacter(), setup()
 
-### Community 111 - "BoostHud.luau"
-Cohesion: 0.83
-Nodes (3): BoostHud.init(), clock(), create()
+### Community 106 - "replicatedstorage_waitforchild"
+Cohesion: 0.05
+Nodes (34): create(), DevPanel.init(), LabelScaler.register(), LabelScaler.start(), update(), calm(), clock(), create() (+26 more)
 
-### Community 112 - "Analytics.luau"
-Cohesion: 0.83
-Nodes (3): allow(), Analytics.economy(), Analytics.event()
+### Community 109 - "Hub.luau"
+Cohesion: 0.43
+Nodes (4): addLabel(), buildStageSigns(), buildWorldSigns(), newGui()
+
+### Community 112 - "CosmeticPanel.luau"
+Cohesion: 0.53
+Nodes (4): Backpack Trails & Auras panel prompt, button(), create(), makeText()
+
+### Community 113 - "AreaPasses.luau"
+Cohesion: 0.53
+Nodes (4): AreaPasses.init(), attributeName(), paidAreas(), publish()
+
+### Community 115 - "WorldsGateClient.luau"
+Cohesion: 0.80
+Nodes (4): refreshAll(), refreshGate(), unlockedSet(), WorldsGateClient.init()
 
 ## Ambiguous Edges - Review These
 - `Evolution 'Form-Up' moment` → `Game theory reading (reinforcement schedules, SDT, Bartle, Hooked)`  [AMBIGUOUS]
@@ -539,23 +543,23 @@ Nodes (3): allow(), Analytics.economy(), Analytics.event()
   CLAUDE.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **47 isolated node(s):** `cmd.exe`, `Creator Rewards`, `D1/D7/D30 benchmarks (GameAnalytics 2026)`, `Roblox Subscriptions`, `Claude Memory Copy README` (+42 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 442 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **47 isolated node(s):** `cmd.exe`, `Claude Memory Copy README`, `Each Pet Belongs To Exactly One Egg`, `Per-Click Leg Muscle, Kick Waits For Contact`, `Measure From Reference Screenshots` (+42 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 449 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Blender Models Then Robux Last (memory)` connect `Blender Models Then Robux Last (memory)` to `coaches.py`, `Skins, training and policy`, `Moves, kick and performance`, `Blender potion models`, `Claude Memory Index`, `BoostHud.luau`, `UI style and old theme`, `pets_space.py`, `Daily wheel and project status`, `README project handover notes`, `Integer multipliers and catalog`, `math`, `Event decor and mannequins`, `common.py`, `pets.py`?**
-  _High betweenness centrality (0.282) - this node is a cross-community bridge._
-- **What connects `cmd.exe`, `Creator Rewards`, `D1/D7/D30 benchmarks (GameAnalytics 2026)` to the rest of the system?**
+- **Why does `Blender Models Then Robux Last (memory)` connect `Blender Models Then Robux Last (memory)` to `coaches.py`, `TrainingArea.luau`, `Moves.luau`, `Project Status (memory)`, `potions.py`, `Claude Memory Index`, `pets.py`, `BoostHud.luau`, `sys`, `pets_more.py`, `README handover`, `EventDecor.luau`, `Integer multipliers and catalog`, `UIStyle.luau`, `math`, `common.py`?**
+  _High betweenness centrality (0.270) - this node is a cross-community bridge._
+- **What connects `cmd.exe`, `Claude Memory Copy README`, `Each Pet Belongs To Exactly One Egg` to the rest of the system?**
   _47 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `pets_space.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.07922077922077922 - nodes in this community are weakly interconnected._
+- **Why does `CLAUDE.md project instructions` connect `Project rules (CLAUDE.md)` to `AppearanceCleaner.luau`, `Sound and music`, `Moves.luau`, `guidetourtest.luau`, `Claude Memory Index`, `07a Rising Games Analysis`, `UIStyle.luau`, `UI agents shared rules (00_shared)`, `Design analysis (OYUN_TASARIM_ANALIZI)`, `TrainingArea.luau`, `Project Status (memory)`, `Paid random items policy`, `Panel manager`, `Analytics, friends and referrals`, `Robux passes and IDs`, `Growth plan and HEP gate`, `LegGrowth.luau`, `Loading screen`, `client/EggShop.luau`, `SettingsPanel.luau`, `Offline earnings panel`, `Right HUD circles`, `BoostHud.luau`, `Price cuts and trails`, `README handover`, `OverheadTags.luau`, `WheelService.luau`, `Layout.luau`, `WorldsGate.luau`, `TapFilter.luau`, `replicatedstorage_waitforchild`?**
+  _High betweenness centrality (0.140) - this node is a cross-community bridge._
 - **Should `Module wiring (init scripts)` be split into smaller, more focused modules?**
   _Cohesion score 0.05550416281221091 - nodes in this community are weakly interconnected._
-- **Why does `CLAUDE.md project instructions` connect `Project rules (CLAUDE.md)` to `Walls, stages and rewards`, `Sound and music`, `Moves, kick and performance`, `GuideTour.luau`, `UI style and old theme`, `Daily wheel and project status`, `Integer multipliers and catalog`, `UI redesign research (archived)`, `Lobby layout and lighting`, `WallClient.luau`, `Design analysis sprints`, `Skins, training and policy`, `Panel manager`, `Analytics, friends and referrals`, `Robux passes and IDs`, `Growth plan and HEP gate`, `Loading screen`, `Cosmetics and Pet Index panels`, `LegGrowth.luau`, `Egg shop and hatch reveal`, `Settings`, `Offline earnings panel`, `Right HUD circles`, `Daily quests panel`, `Price cuts and trails`, `README project handover notes`, `Overhead tags`, `script_parent_playerstats`, `LabelScaler.register`, `GroupReward.luau`, `DEV test panel and screenshot mode`?**
-  _High betweenness centrality (0.134) - this node is a cross-community bridge._
-- **Should `Character appearance and shoes` be split into smaller, more focused modules?**
-  _Cohesion score 0.1330049261083744 - nodes in this community are weakly interconnected._
 
 ### Low-confidence Hints
 _AMBIGUOUS edges — the extractor was unsure. Verify before acting on these._
