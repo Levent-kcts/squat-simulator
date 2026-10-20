@@ -210,10 +210,10 @@
     "semantic_hash": "792bf2084af71c1faa3184f06fbefa5a"
   },
   "src/client/ShoeShop.luau": {
-    "mtime": 1791245395.859962,
-    "seen": 1792500530.5851934,
-    "ast_hash": "714c95ed2ed7fcaf7fc69a7c1e3af1e1",
-    "semantic_hash": "714c95ed2ed7fcaf7fc69a7c1e3af1e1"
+    "mtime": 1792525618.4787238,
+    "seen": 1792525762.2129216,
+    "ast_hash": "28fb5b3bfe4aecae0cfa909e499b3b41",
+    "semantic_hash": ""
   },
   "src/client/ShopPanel.luau": {
     "mtime": 1792242081.7311997,
@@ -222,10 +222,10 @@
     "semantic_hash": "293b58598999f053ded44823d3c7e3c8"
   },
   "src/client/SkinShop.luau": {
-    "mtime": 1791211761.785676,
-    "seen": 1792500530.5851963,
-    "ast_hash": "852cb036717ba85af0617e6003813060",
-    "semantic_hash": "852cb036717ba85af0617e6003813060"
+    "mtime": 1792525618.5057614,
+    "seen": 1792525762.2129257,
+    "ast_hash": "107c162c0da1481c816230af827d5338",
+    "semantic_hash": ""
   },
   "src/client/SpeechBubble.luau": {
     "mtime": 1792156391.397823,
@@ -462,22 +462,22 @@
     "semantic_hash": "57a2bd7f8cdc17534cd16f307ddd5520"
   },
   "src/server/Shelf.luau": {
-    "mtime": 1791579029.2415159,
-    "seen": 1792500530.5852504,
-    "ast_hash": "e3b4110ebd82230ad025e39c5bc6b283",
-    "semantic_hash": "e3b4110ebd82230ad025e39c5bc6b283"
+    "mtime": 1792525606.2497163,
+    "seen": 1792525762.2130013,
+    "ast_hash": "07a4e04f68bcdb6e8612690d3b8e6c2a",
+    "semantic_hash": ""
   },
   "src/server/ShoeShop.luau": {
-    "mtime": 1791385572.5859332,
-    "seen": 1792500530.585252,
-    "ast_hash": "f40643fe8964cb8e8738264a9efdace1",
-    "semantic_hash": "f40643fe8964cb8e8738264a9efdace1"
+    "mtime": 1792525618.3730185,
+    "seen": 1792525762.213003,
+    "ast_hash": "bb5466a3317129d567ea0331332fa1ff",
+    "semantic_hash": ""
   },
   "src/server/SkinShop.luau": {
-    "mtime": 1791131810.714757,
-    "seen": 1792500530.5852537,
-    "ast_hash": "c0fc12c8c54168d8912808096ef21a40",
-    "semantic_hash": "c0fc12c8c54168d8912808096ef21a40"
+    "mtime": 1792525618.3999295,
+    "seen": 1792525762.2130048,
+    "ast_hash": "e4859587c78b5bce18f49f75d8d3a2a0",
+    "semantic_hash": ""
   },
   "src/server/TrailService.luau": {
     "mtime": 1791994124.8150597,
@@ -516,15 +516,15 @@
     "semantic_hash": ""
   },
   "src/shared/Catalog.luau": {
-    "mtime": 1791993871.9588556,
-    "seen": 1792500530.5852644,
-    "ast_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5",
-    "semantic_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5"
+    "mtime": 1792525606.2461982,
+    "seen": 1792525762.2130194,
+    "ast_hash": "fba0b7d9d469873babee985fbc0c3853",
+    "semantic_hash": ""
   },
   "src/shared/Config.luau": {
-    "mtime": 1792522771.46644,
-    "seen": 1792523559.0152833,
-    "ast_hash": "c9050828c8ceca73676d171afca559a7",
+    "mtime": 1792525618.5783117,
+    "seen": 1792525762.213021,
+    "ast_hash": "a34c08cc0dabb84d56bfb69c401db0ba",
     "semantic_hash": ""
   },
   "src/shared/EggRules.luau": {
@@ -570,10 +570,10 @@
     "semantic_hash": "d02108572091e344648b2b66d93b4bda"
   },
   "src/shared/ShoeModel.luau": {
-    "mtime": 1791213694.2474606,
-    "seen": 1792500530.5852764,
-    "ast_hash": "f89e187b9e458ada2f7ea9f6de7ed704",
-    "semantic_hash": "f89e187b9e458ada2f7ea9f6de7ed704"
+    "mtime": 1792525606.248196,
+    "seen": 1792525762.2130344,
+    "ast_hash": "4f2798c035899b80dbd42bac7ebd1afe",
+    "semantic_hash": ""
   },
   "src/shared/WheelFace.luau": {
     "mtime": 1791466894.855114,

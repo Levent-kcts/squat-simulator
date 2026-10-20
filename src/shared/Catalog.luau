@@ -18,6 +18,17 @@ local Catalog = {
 for _, item in Config.Items do
 	Catalog.ItemById[item.id] = item
 end
+
+-- DÜNYALAR: bir listenin (Config.Items / Skins / Eggs) o dünyaya ait satırları; 'world' alanı yoksa World 1 sayılır. Sıra korunur.
+function Catalog.forWorld(list, worldId)
+	local out = {}
+	for _, entry in list do
+		if (entry.world or 1) == worldId then
+			table.insert(out, entry)
+		end
+	end
+	return out
+end
 for _, potion in Config.Potions.List do
 	Catalog.PotionByKind[potion.kind] = potion
 	Catalog.PotionById[potion.id] = potion

@@ -690,7 +690,8 @@ return {
 				name = "Space World",
 				originX = 1200, -- World 1'in salonundan (x -62..96) ve koridorundan çok uzak
 				unlock = { world = 1, stage = 20 },
-				lobby = { WidthLeft = 60, WidthRight = 60, BackZ = 45, Height = 44 }, -- küçük salon (120 x ~110)
+				-- küçük salon (128 x ~110): sol duvar ayakkabı rafı, sağ duvar skin rafı (ShelfZ = rafların ortası), arka duvar yumurtalar; raflar ~26 derin, yumurta standı x +-27
+				lobby = { WidthLeft = 64, WidthRight = 64, BackZ = 45, Height = 44, ShelfZ = -14 },
 				wall = {
 					HealthGrowthAfter = 4.9, -- World 2 aşamaları arası can büyümesi (denge: tools/simulate.py)
 					CorridorTint = Color3.fromRGB(150, 150, 200), -- koridor yan duvar/tavan tonu: uzayda biraz daha koyu lavanta
@@ -852,6 +853,22 @@ return {
 		{ id = "crystal", name = "Crystal Kicks", price = 56000, damage = 150, color = Color3.fromRGB(150, 240, 255) },
 		{ id = "thunder", name = "Thunder Boots", price = 110000, damage = 200, color = Color3.fromRGB(170, 90, 255) },
 		{ id = "radiant", name = "Radiant Shoes", price = 220000, damage = 250, color = Color3.fromRGB(255, 255, 140) },
+		-- WORLD 2 (uzay) ayakkabıları: World 2 lobisinin rafında (world = 2), World 1'in en güçlüsünden devam eder (geçici fiyatlar: World 1 fiyatı x 2^20; denge tools/simulate.py)
+		{ id = "moonboots", name = "Moon Boots", price = 3100000, damage = 300, color = Color3.fromRGB(220, 225, 240), world = 2 },
+		{ id = "rocketkicks", name = "Rocket Kicks", price = 16000000, damage = 400, color = Color3.fromRGB(255, 110, 70), world = 2 },
+		{ id = "cometrunners", name = "Comet Runners", price = 42000000, damage = 500, color = Color3.fromRGB(130, 220, 255), world = 2 },
+		{ id = "nebulasteps", name = "Nebula Steps", price = 94000000, damage = 650, color = Color3.fromRGB(220, 120, 255), world = 2 },
+		{ id = "plasmasoles", name = "Plasma Soles", price = 210000000, damage = 800, color = Color3.fromRGB(255, 80, 200), world = 2 },
+		{ id = "gravitygrips", name = "Gravity Grips", price = 470000000, damage = 1000, color = Color3.fromRGB(90, 255, 170), world = 2 },
+		{ id = "quasarkicks", name = "Quasar Kicks", price = 940000000, damage = 1300, color = Color3.fromRGB(60, 180, 255), world = 2 },
+		{ id = "pulsarboots", name = "Pulsar Boots", price = 1900000000, damage = 1600, color = Color3.fromRGB(120, 255, 230), world = 2 },
+		{ id = "novasneakers", name = "Nova Sneakers", price = 3800000000, damage = 2000, color = Color3.fromRGB(255, 170, 50), world = 2 },
+		{ id = "darkmattertreads", name = "Dark Matter Treads", price = 7300000000, damage = 2500, color = Color3.fromRGB(140, 110, 255), world = 2 },
+		{ id = "wormholewalkers", name = "Wormhole Walkers", price = 15000000000, damage = 3200, color = Color3.fromRGB(70, 130, 255), world = 2 },
+		{ id = "galaxygliders", name = "Galaxy Gliders", price = 29000000000, damage = 4000, color = Color3.fromRGB(255, 140, 240), world = 2 },
+		{ id = "starforge", name = "Star Forge Boots", price = 59000000000, damage = 5000, color = Color3.fromRGB(255, 120, 60), world = 2 },
+		{ id = "voidstompers", name = "Void Stompers", price = 120000000000, damage = 6500, color = Color3.fromRGB(170, 90, 255), world = 2 },
+		{ id = "bigbangboots", name = "Big Bang Boots", price = 230000000000, damage = 8000, color = Color3.fromRGB(255, 250, 170), world = 2 },
 	},
 
 	-- Skinler (Lobi sol duvar, ayakkabı rafının yanındaki raf): Win ile alınır, karakter o renge boyanır.
@@ -875,6 +892,22 @@ return {
 		{ id = "ice", name = "Frozen", price = 56000, bonus = 1100, color = Color3.fromRGB(150, 235, 255) },
 		{ id = "magma", name = "Magma", price = 110000, bonus = 1700, color = Color3.fromRGB(255, 90, 20) },
 		{ id = "galaxy", name = "Galaxy", price = 220000, bonus = 2600, color = Color3.fromRGB(70, 45, 150) },
+		-- WORLD 2 (uzay) skinleri: World 2 lobisinin rafında (world = 2); fiyatlar World 2 ayakkabılarıyla AYNI, bonus fiyatın ~0.7. kuvvetiyle sürer
+		{ id = "moondust", name = "Moon Dust", price = 3100000, bonus = 17000, color = Color3.fromRGB(225, 225, 240), world = 2 },
+		{ id = "stardust", name = "Stardust", price = 16000000, bonus = 54000, color = Color3.fromRGB(255, 230, 140), world = 2 },
+		{ id = "cometice", name = "Comet Ice", price = 42000000, bonus = 110000, color = Color3.fromRGB(150, 230, 255), world = 2 },
+		{ id = "nebula", name = "Nebula Pink", price = 94000000, bonus = 190000, color = Color3.fromRGB(240, 130, 230), world = 2 },
+		{ id = "plasma", name = "Plasma", price = 210000000, bonus = 330000, color = Color3.fromRGB(255, 80, 200), world = 2 },
+		{ id = "aurora", name = "Aurora", price = 470000000, bonus = 580000, color = Color3.fromRGB(110, 250, 170), world = 2 },
+		{ id = "quasar", name = "Quasar Blue", price = 940000000, bonus = 940000, color = Color3.fromRGB(70, 170, 255), world = 2 },
+		{ id = "solarflare", name = "Solar Flare", price = 1900000000, bonus = 1500000, color = Color3.fromRGB(255, 160, 40), world = 2 },
+		{ id = "cosmicteal", name = "Cosmic Teal", price = 3800000000, bonus = 2500000, color = Color3.fromRGB(40, 220, 200), world = 2 },
+		{ id = "meteor", name = "Meteor Red", price = 7300000000, bonus = 3900000, color = Color3.fromRGB(235, 70, 70), world = 2 },
+		{ id = "astral", name = "Astral Silver", price = 15000000000, bonus = 6500000, color = Color3.fromRGB(210, 215, 235), world = 2 },
+		{ id = "voidpurple", name = "Void Purple", price = 29000000000, bonus = 10000000, color = Color3.fromRGB(120, 70, 220), world = 2 },
+		{ id = "supernova", name = "Supernova", price = 59000000000, bonus = 17000000, color = Color3.fromRGB(255, 120, 80), world = 2 },
+		{ id = "darkmatter", name = "Dark Matter", price = 120000000000, bonus = 28000000, color = Color3.fromRGB(60, 45, 120), world = 2 },
+		{ id = "bigbang", name = "Big Bang", price = 230000000000, bonus = 44000000, color = Color3.fromRGB(255, 245, 190), world = 2 },
 	},
 
 	-- Antrenman alanı (SAĞ duvar, 3 basamakta 4 + 3 + 3 = 10 büyük ped): pede girince karakter otomatik squat yapar ve kazanç o pedin
