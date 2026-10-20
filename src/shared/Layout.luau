@@ -61,9 +61,10 @@ function Layout.sectionEndZ(stage)
 	return Layout.wallZ(stage * cfg.GroupSize) - cfg.ButtonGap + 2
 end
 
--- Win pedlerinin Z konumu: sonraki aşamanın ilk duvarının hemen önü
+-- Win pedlerinin Z konumu: Win odasının ORTASI (2026-10-20: eskiden sonraki aşamanın ilk duvarının 6 stud önündeydi, yani tekme menzilinin
+-- [HitRange] içinde: sonraki duvara tekme atan oyuncu pede kazara basıyordu, sahibi şikayet etti). Ortada sonraki duvarın tekme menzilinden uzak kalır.
 function Layout.padZ(stage)
-	return Layout.wallZ(stage * cfg.GroupSize) - cfg.ButtonGap + 6
+	return Layout.wallZ(stage * cfg.GroupSize) - cfg.ButtonGap / 2
 end
 
 -- Win pedlerinin yatay konumu (sağda normal ped +padX, solda VIP pedi -padX): oda genişse köşelere yaklaşır, koridor genişliğinde eski yerinde kalır

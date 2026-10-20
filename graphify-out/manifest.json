@@ -366,10 +366,10 @@
     "semantic_hash": "768971d9966c67a7125baa6438e1278d"
   },
   "src/server/EnvironmentService.luau": {
-    "mtime": 1792150880.5710523,
-    "seen": 1792500530.5852287,
-    "ast_hash": "4467ddec1bb26ba0bb16a00dd85efe3f",
-    "semantic_hash": "4467ddec1bb26ba0bb16a00dd85efe3f"
+    "mtime": 1792501089.6381435,
+    "seen": 1792501262.8036277,
+    "ast_hash": "8fcd1eb62c2b516fdaebdca75d9a975d",
+    "semantic_hash": ""
   },
   "src/server/EventDecor.luau": {
     "mtime": 1791994281.5618696,
@@ -522,10 +522,10 @@
     "semantic_hash": "fcbb5e21e8d7af2fa1c5e3447be16ad5"
   },
   "src/shared/Config.luau": {
-    "mtime": 1792483341.0713716,
-    "seen": 1792500530.5852656,
-    "ast_hash": "dfa98fdfd1bf1a588f31b2f89da7c6c7",
-    "semantic_hash": "dfa98fdfd1bf1a588f31b2f89da7c6c7"
+    "mtime": 1792501089.6356263,
+    "seen": 1792501262.8036747,
+    "ast_hash": "86496dd4327001b651795559cc1e12d4",
+    "semantic_hash": ""
   },
   "src/shared/EggRules.luau": {
     "mtime": 1791584122.9358087,
@@ -540,10 +540,10 @@
     "semantic_hash": "6bbfe9692f23a5d8ca9729f21d2ae49f"
   },
   "src/shared/Layout.luau": {
-    "mtime": 1792322719.1894505,
-    "seen": 1792500530.5852697,
-    "ast_hash": "4b58a39e8b9d7fc1364b4570b25de4b2",
-    "semantic_hash": "4b58a39e8b9d7fc1364b4570b25de4b2"
+    "mtime": 1792501089.6371336,
+    "seen": 1792501262.8036795,
+    "ast_hash": "8f2bd1430239bebbe2eae65246c6f9b7",
+    "semantic_hash": ""
   },
   "src/shared/LoadingScreen.luau": {
     "mtime": 1791731269.5617323,
@@ -1242,10 +1242,10 @@
     "semantic_hash": "9aa6c179d303c987327c8bf2fa9e5067"
   },
   "README.md": {
-    "mtime": 1792483782.224061,
-    "seen": 1792500530.5854359,
-    "ast_hash": "1d734ae92be34986f6b60a4d48484908",
-    "semantic_hash": "1d734ae92be34986f6b60a4d48484908"
+    "mtime": 1792500562.2607465,
+    "seen": 1792501262.803877,
+    "ast_hash": "e92a5c6c144d2898641d556f5c35751c",
+    "semantic_hash": ""
   },
   "ROBUX_FIYAT_DEGISIKLIGI.md": {
     "mtime": 1792233673.3467333,
@@ -1272,8 +1272,8 @@
     "semantic_hash": "bd6daac4ae38ee904e7f37794968e62c"
   },
   "docs/claude_memory/MEMORY.md": {
-    "mtime": 1792484614.3132412,
-    "seen": 1792500530.5854423,
+    "mtime": 1792500563.7629766,
+    "seen": 1792501262.803885,
     "ast_hash": "435e9402d9076335566a2e199a2abd15",
     "semantic_hash": "435e9402d9076335566a2e199a2abd15"
   },
@@ -1284,86 +1284,86 @@
     "semantic_hash": "4158f198ee822790c85b12983946c013"
   },
   "docs/claude_memory/roblox-blender-models-last.md": {
-    "mtime": 1792484614.327556,
-    "seen": 1792500530.5854452,
+    "mtime": 1792500563.7985487,
+    "seen": 1792501262.8038883,
     "ast_hash": "d473617a3966b883a6d060a8555ae07f",
     "semantic_hash": "d473617a3966b883a6d060a8555ae07f"
   },
   "docs/claude_memory/roblox-cancelled-ui-items.md": {
-    "mtime": 1792484614.3788362,
-    "seen": 1792500530.5854464,
+    "mtime": 1792500563.8309278,
+    "seen": 1792501262.8038902,
     "ast_hash": "919d2d63606353edc1657b2815fb1996",
     "semantic_hash": "919d2d63606353edc1657b2815fb1996"
   },
   "docs/claude_memory/roblox-dev-tooling-2026-10-20.md": {
-    "mtime": 1792484614.4024482,
-    "seen": 1792500530.585448,
-    "ast_hash": "405e2face68848162a3295a1e81b264c",
-    "semantic_hash": "405e2face68848162a3295a1e81b264c"
+    "mtime": 1792500572.8447223,
+    "seen": 1792501262.8038917,
+    "ast_hash": "1f94a5b95b62a4a0a9e8e25cf8383c69",
+    "semantic_hash": ""
   },
   "docs/claude_memory/roblox-growth-push-2026-10-14.md": {
-    "mtime": 1792484614.419921,
-    "seen": 1792500530.5854492,
+    "mtime": 1792500563.8844676,
+    "seen": 1792501262.8038936,
     "ast_hash": "77f5bddba395b056cd05ceed70c12957",
     "semantic_hash": "77f5bddba395b056cd05ceed70c12957"
   },
   "docs/claude_memory/roblox-marketing-plan-2026-10-20.md": {
-    "mtime": 1792484614.4419396,
-    "seen": 1792500530.5854504,
+    "mtime": 1792500563.9094777,
+    "seen": 1792501262.8038952,
     "ast_hash": "ca34acfbdd9a6ea187d854b84358d5bc",
     "semantic_hash": "ca34acfbdd9a6ea187d854b84358d5bc"
   },
   "docs/claude_memory/roblox-mocktest-tool.md": {
-    "mtime": 1792484614.4732018,
-    "seen": 1792500530.5854518,
+    "mtime": 1792500563.9390342,
+    "seen": 1792501262.8038967,
     "ast_hash": "85c02af770256eba6b775fae85e773bf",
     "semantic_hash": "85c02af770256eba6b775fae85e773bf"
   },
   "docs/claude_memory/roblox-owner-approvals-2026-10-14.md": {
-    "mtime": 1792484614.5139546,
-    "seen": 1792500530.5854533,
+    "mtime": 1792500563.970035,
+    "seen": 1792501262.8038983,
     "ast_hash": "9a321d34fec46113e700265659c6416b",
     "semantic_hash": "9a321d34fec46113e700265659c6416b"
   },
   "docs/claude_memory/roblox-owner-design-feedback.md": {
-    "mtime": 1792484614.5532105,
-    "seen": 1792500530.5854547,
+    "mtime": 1792500563.9995806,
+    "seen": 1792501262.8039,
     "ast_hash": "f28cff678cd2695a1775aa30f0c5f30b",
     "semantic_hash": "f28cff678cd2695a1775aa30f0c5f30b"
   },
   "docs/claude_memory/roblox-project-status.md": {
-    "mtime": 1792484614.6005442,
-    "seen": 1792500530.585456,
+    "mtime": 1792500564.0409336,
+    "seen": 1792501262.8039014,
     "ast_hash": "176017a1d164d5672a3f247395fb277b",
     "semantic_hash": "176017a1d164d5672a3f247395fb277b"
   },
   "docs/claude_memory/roblox-studio-turkish-ui.md": {
-    "mtime": 1792484614.6618617,
-    "seen": 1792500530.585457,
+    "mtime": 1792500564.0895154,
+    "seen": 1792501262.8039029,
     "ast_hash": "59bb589c66e9cf89f240c4ae518ed5ab",
     "semantic_hash": "59bb589c66e9cf89f240c4ae518ed5ab"
   },
   "docs/claude_memory/roblox-syntax-check-lesson.md": {
-    "mtime": 1792484614.7091837,
-    "seen": 1792500530.5854588,
+    "mtime": 1792500564.117089,
+    "seen": 1792501262.8039045,
     "ast_hash": "e13022cf9fcd7e391092e18d181a6c49",
     "semantic_hash": "e13022cf9fcd7e391092e18d181a6c49"
   },
   "docs/claude_memory/roblox-ui-keep-old-theme.md": {
-    "mtime": 1792484614.7558372,
-    "seen": 1792500530.58546,
+    "mtime": 1792500564.1477938,
+    "seen": 1792501262.803906,
     "ast_hash": "1b1375f2b6be326874c5d8278035e859",
     "semantic_hash": "1b1375f2b6be326874c5d8278035e859"
   },
   "docs/claude_memory/roblox-video-shoot-2026-10-19.md": {
-    "mtime": 1792484614.7779598,
-    "seen": 1792500530.5854611,
+    "mtime": 1792500564.1577895,
+    "seen": 1792501262.8039076,
     "ast_hash": "b4f39f7c4cf077f29171601d9fdaa82b",
     "semantic_hash": "b4f39f7c4cf077f29171601d9fdaa82b"
   },
   "docs/claude_memory/roblox-workflow-preferences.md": {
-    "mtime": 1792484614.798342,
-    "seen": 1792500530.5854626,
+    "mtime": 1792500564.1777894,
+    "seen": 1792501262.8039093,
     "ast_hash": "3c57772f2cda269cac0a44d121de986b",
     "semantic_hash": "3c57772f2cda269cac0a44d121de986b"
   },

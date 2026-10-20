@@ -659,7 +659,7 @@ return {
 			InnerBeamHeight = 1.4, -- ışık panelleri arasındaki kirişler
 			InnerBeamWidth = 2.2,
 			PathCurb = true, -- koridor ağzından yumurta standına giden yolun kenar çıkıntıları
-			PathHalfWidth = 16, -- koridorun yarı genişliği (koridor 32 geniş)
+			PathHalfWidth = 16, -- lobideki yol kenarlarının x'i (koridor 2026-10-20'de 42'ye genişledi ama yol 32 kalır: antrenman alanı x > 18'de başlar, kenar oraya girmesin)
 			PathCurbWidth = 1.2,
 			PathCurbHeight = 0.5,
 		},
@@ -698,13 +698,13 @@ return {
 		-- Güncel süreler (simülasyon): 5. aşama 6.3 dk, 10. aşama 47 dk, 15. aşama 4.05 sa, 20. aşama 10.2 sa (27. rebirth);
 		-- Eskiden 5 idi (20. aşama 83 saat), ondan önce 12; tools/simulate.py hp_growth= max_hits=
 
-		Width = 32, -- koridorun ve duvarın genişliği (stud)
+		Width = 42, -- koridorun ve duvarın genişliği (stud). 2026-10-20: 32'den 42'ye (sahibi 'duvar çok küçük, oynarken sağdaki soldaki Win pedlerine yanlışlıkla dokunuyoruz, duvarı ve haritayı büyüt' dedi)
 		Height = 23.8, -- kırılan duvarın yüksekliği: zemin üstü (0.2) + 23.8 = 24 = tavanın alt yüzü. CeilingHeight'i değiştirirsen bunu da (CeilingHeight - 0.2) yap, yoksa duvarın üstünde boşluk kalır
 		CeilingHeight = 24, -- yan duvarların, tavanın ve lobinin yüksekliği
 		Thickness = 3,
-		ChamberExtra = 10, -- her aşama sonundaki Win odası koridordan her yana bu kadar (stud) geniştir (0 = koridor genişliğinde); oda 52 stud
+		ChamberExtra = 14, -- her aşama sonundaki Win odası koridordan her yana bu kadar (stud) geniştir (0 = koridor genişliğinde); oda 70 stud (2026-10-20: 10'dan 14'e)
 		Spacing = 8, -- aynı gruptaki duvarlar arası mesafe (stud)
-		ButtonGap = 34, -- grubun son duvarı ile sonraki grubun ilk duvarı arası (Win pedleri ve tabelalar buraya gelir)
+		ButtonGap = 40, -- grubun son duvarı ile sonraki grubun ilk duvarı arası (Win pedleri ve tabelalar buraya gelir; 2026-10-20: 34'ten 40'a, pedler odanın ortasında tekme menzilinin dışında kalsın)
 		StartZ = -66.5, -- ilk duvarın Z konumu (salonun ön duvarı Z = -65 olacak şekilde; spawn salonun tam ortasında, 0)
 
 		HitRange = 9, -- ilk sağlam duvarın ÖN YÜZÜNE bu mesafeden yakınsan tekme atar ve hasar verirsin (stud)

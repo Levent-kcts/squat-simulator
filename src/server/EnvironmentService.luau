@@ -214,7 +214,7 @@ function EnvironmentService.init()
 	end
 
 	-- LEGO BLOK KULELERİ: koridor girişinin iki yanında, ön duvara yakın. Raflar (sol duvarda x < -38) ve antrenman alanı
-	-- (sağ duvarda x > 18, z > -39) bu köşelere uzanmaz; spawn'dan koridora giden yol (|x| < 17) da açık kalır.
+	-- (sağ duvarda x > 18, z > -39) bu köşelere uzanmaz; koridor ağzı (|x| < 22) açık kalır.
 	-- Sol/sağ yansıma değil, hafif farklı renk ve yükseklik: oyuncu 'elle dizilmiş' gibi görsün.
 	local function brick(cx, baseY, cz, sx, sy, sz, color, yaw)
 		local part = Build.block(folder, "LegoBrick", Vector3.new(sx, sy, sz), Vector3.new(cx, baseY + sy / 2, cz), color, Enum.Material.Plastic)
@@ -232,11 +232,11 @@ function EnvironmentService.init()
 	end
 	-- Sadece SAĞ taraftaki kule kaldı. Sağın ikinci kulesi ve yerdeki tuğlası önce kaldırıldı (antrenman rampasına giriyordu); SOL taraftaki yığın (4 katlı kule, 2 katlı kule,
 	-- yerdeki turuncu tuğla) da 2026-10-16'da sahibi ekran görüntüsüyle 'bunu sil' dedi diye KALDIRILDI, geri ekleme.
-	tower(23.5, -58, 4, 4, 0.4)
+	tower(28, -58, 4, 4, 0.4) -- 2026-10-20: koridor 42'ye genişleyince 23.5'ten dışa alındı (koridor ağzı x +-22)
 	-- SOL tarafta eski yığının yerine KÜÇÜK bir köşe (2026-10-16, sahibi 'tekrar lego ekle ama eskisi kadar yer kaplamasın' dedi): 2 katlı alçak kule + yanında tek tuğla
 	-- (eski 4 + 2 katlı kule ve öndeki dağınık tuğla gibi büyütme)
-	tower(-23.5, -58, 2, 1, -0.3)
-	brick(-30, floorTop, -59, 4, 3, 4, BRICK_COLORS[4 % #BRICK_COLORS + 1], -0.35)
+	tower(-28, -58, 2, 1, -0.3)
+	brick(-34.5, floorTop, -59, 4, 3, 4, BRICK_COLORS[4 % #BRICK_COLORS + 1], -0.35)
 
 	-- SAĞ ARKA KÖŞE (x > 56, z 36-64) ve çarkın arkası: çarkın eski yeri. Çark yumurta standının yanına taşındı (sahibi 'uzak kısma legolar falan olsun' dedi): köşe lego kuleleri ve tek parçalarla dolar.
 	-- Antrenman alanı z = 31'de biter, çark x <= 60 olduğu için çakışma yok. Konumlar sağ duvara göre ayarlanır (widthRight).
