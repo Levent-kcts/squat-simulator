@@ -7,6 +7,8 @@ Auto Click KAPALI ve antrenman pedindeyken pedin kendi otomatik squat'ı hareket
 `cps=2` pasif ped oyuncusu, `cps=12` elle hızlı tıklayan. Duvar seferinde tekme hareket başına bir kez kas verir. `boost=1.3` ortalama iksir/2x güçlendirme etkisi (zaman ortalaması) demektir.
 HARCAMA (2026-10-09): oyuncu önce en iyi ayakkabıyı (Win'in %60'ına kadar; duvar hasarı), sonra yumurtayı (Win'in yarısını geçmeyen en pahalı) ve skini alır, aura'yı fiyatı yetince alır (`spend=old` eski sıra: ayakkabıyı neredeyse hiç almazdı,
 `shoe_share=`, `egg_share=`). Çıktının son satırları aşama KİLOMETRE TAŞLARIDIR (5/10/15/20. aşamaya ilk ulaşılan zaman ve rebirth sayısı): 20. aşama = oyunun sonu.
+DÜNYALAR (2026-10-20, World 2): aşamalar GLOBAL numaralıdır (World 2'nin 1. aşaması = 21). World 1'in 20. aşaması bitince World 2 açılır; açık olan oyuncu World 2'nin ilk
+aşamasını kırabildiği an duvar seferini World 2'de yapar. World 2 eşyaları (world = 2 satırları: ayakkabı, skin, yumurta) ancak World 2 açılınca alınır. `w2_growth=` World 2'nin can büyümesini geçersiz kılar.
 Hedef (aktif oyuncu = Auto Click'li): oyunun sonu (20. aşama) günde 1 saat oynayan için 10-15 günde, yani ~10-14 saat; 5. aşama ~5-8 dk, 10. ~1 sa, 15. ~5 sa, 20. ~10 sa; 1. rebirth ~5 dk, 5. ~1.4 sa, 20. ~10 sa.
 Denge denemeleri için ek geçersiz kılmalar (2026-10-13 tam sayı çarpan dengelemesi): `hp_scale=` (aşama tabanı canlarını katlar), `hp1=`/`hp2=`/`hp3=` (ilk üç aşamanın tabanı), `pet_scale=` (pet çarpanlarını katlar), `rebirth=old` (eski rebirth: Win/ayakkabı/skin sıfırlanır).
 `max_hits=` oyuncunun bir aşamayı kırmak için katlanacağı en çok tekme sayısıdır (varsayılan 40: sınırdaki duvar başına ~8 tekme); küçük değer duvarları 'zayıf' hissettirir.
@@ -21,18 +23,26 @@ CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SRC = open(CONFIG_PATH, encoding="utf-8").read()
 
 
-def block(name):
-    """Config.luau içindeki `name = {` ... eşleşen `}` bloğunun metnini verir."""
-    start = SRC.index(f"\t{name} = {{")
-    depth, i = 0, SRC.index("{", start)
-    for j in range(i, len(SRC)):
-        if SRC[j] == "{":
+def block(name, source=None):
+    """Config.luau içindeki ÜST DÜZEY `name = {` (satır başında TEK sekme) ... eşleşen `}` bloğunun metnini verir.
+    (2026-10-20 düzeltmesi: eskiden '\tItems = {' etkinliğin iç içe 'Items' tablosunu da bulup ayakkabı yerine onu okuyordu.)"""
+    text = source or SRC
+    start = text.index(f"\n\t{name} = {{") + 1
+    depth, i = 0, text.index("{", start)
+    for j in range(i, len(text)):
+        if text[j] == "{":
             depth += 1
-        elif SRC[j] == "}":
+        elif text[j] == "}":
             depth -= 1
             if depth == 0:
-                return SRC[i : j + 1]
+                return text[i : j + 1]
     raise ValueError(name)
+
+
+def world_of(line):
+    """Config satırının dünyası ('world = 2'; yoksa 1)."""
+    m = re.search(r"\bworld = (\d+)", line)
+    return int(m.group(1)) if m else 1
 
 
 def num(text, key, default=None):
@@ -53,8 +63,8 @@ MAX_LEVEL_PER_REBIRTH = num(LEVEL, "MaxLevelPerRebirth")
 LEVEL_MULT = num(LEVEL, "MultiplierPerLevel")
 REBIRTH_MULT = num(REBIRTH, "MultiplierPerRebirth")
 
-ITEMS = [(num(l, "price"), num(l, "damage")) for l in block("Items").splitlines() if "price =" in l]
-SKINS = [(num(l, "price"), num(l, "bonus")) for l in block("Skins").splitlines() if "price =" in l]
+ITEMS = [(num(l, "price"), num(l, "damage"), world_of(l)) for l in block("Items").splitlines() if "price =" in l]
+SKINS = [(num(l, "price"), num(l, "bonus"), world_of(l)) for l in block("Skins").splitlines() if "price =" in l]
 PETS = {m.group(1): float(m.group(2)) for m in re.finditer(r'id = "(\w+)", name = "[^"]+", mult = ([\d\.]+)', block("Pets"))}
 AURAS = [(num(l, "winPrice"), num(l, "mult")) for l in block("Auras").splitlines() if "winPrice =" in l]
 # Fiyat merdiveni çıktısı için (id, fiyat): iz ve aura'lar
@@ -71,9 +81,9 @@ FUSION_MAX = int(num(FUSION, "MaxTier", 4))
 FUSION_FACTOR = num(FUSION, "PowerFactor", 3.3)
 
 EGGS = []
-for m in re.finditer(r'\{ id = "(\w+)", name = "[^"]+", price = (\d+),.*?pets = \{(.*?)\} \}', block("Eggs"), re.S):
-    pets = [(p.group(1), float(p.group(2))) for p in re.finditer(r'id = "(\w+)", weight = (\d+)', m.group(3))]
-    EGGS.append((float(m.group(2)), pets))
+for m in re.finditer(r'\{ id = "(\w+)", name = "[^"]+", price = (\d+),(.*?)pets = \{(.*?)\} \}', block("Eggs"), re.S):
+    pets = [(p.group(1), float(p.group(2))) for p in re.finditer(r'id = "(\w+)", weight = (\d+)', m.group(4))]
+    EGGS.append((float(m.group(2)), pets, world_of(m.group(3))))
 
 TRAINING = block("Training")
 ZONES = [(num(l, "rebirths", 0), num(l, "mult")) for l in TRAINING.splitlines() if "mult =" in l and "id =" in l and "robuxOnly" not in l]  # robuxOnly (Coach Shadow) pedi rebirth ile açılmaz: simülasyona girmez
@@ -85,6 +95,12 @@ _steps = re.search(r"GroupHealthSteps = \{([^}]*)\}", WALL)
 GROUP_STEPS = [float(x) for x in _steps.group(1).split(",") if x.strip()] if _steps else [1.0] * 5
 REWARD_GROWTH = num(WALL, "RewardGrowth")
 STAGE_COUNT = int(num(WALL, "Count") // num(WALL, "GroupSize"))
+# World 2: aynı sayıda aşama, can büyümesi kendi HealthGrowthAfter'ı (Config.Worlds.List[2].wall)
+_worlds = block("Worlds")
+_w2 = re.search(r"id = 2,.*?HealthGrowthAfter = ([\d\.]+)", _worlds, re.S)
+W2_GROWTH = float(_w2.group(1)) if _w2 else None
+W1_STAGES = STAGE_COUNT
+TOTAL_STAGES = STAGE_COUNT * (2 if W2_GROWTH else 1)
 SPACING = num(WALL, "Spacing")
 BUTTON_GAP = num(WALL, "ButtonGap")
 
@@ -117,6 +133,8 @@ if "levels_per_rebirth" in OVERRIDES:
     MAX_LEVEL_PER_REBIRTH = float(OVERRIDES["levels_per_rebirth"])
 if "hp_growth" in OVERRIDES:
     HEALTH_GROWTH = float(OVERRIDES["hp_growth"])
+if "w2_growth" in OVERRIDES:
+    W2_GROWTH = float(OVERRIDES["w2_growth"])
 if "hp_scale" in OVERRIDES:  # aşama tabanı canlarını (GroupHealth) bu kadar katla (2026-10-13 tam sayı çarpan dengelemesi)
     GROUP_HEALTH = [x * float(OVERRIDES["hp_scale"]) for x in GROUP_HEALTH]
 for _index in (1, 2, 3):  # hp1 / hp2 / hp3: aşama tabanı canlarını tek tek belirle (ilk üç aşama: Config.Wall.GroupHealth)
@@ -126,10 +144,10 @@ if "pet_scale" in OVERRIDES:  # pet çarpanlarını bu kadar katla (deneme amaç
     PETS = {k: v * float(OVERRIDES["pet_scale"]) for k, v in PETS.items()}
 if "price_scale" in OVERRIDES:
     scale = float(OVERRIDES["price_scale"])
-    ITEMS = [(p * scale, d) for p, d in ITEMS]
-    SKINS = [(p * scale, m) for p, m in SKINS]
+    ITEMS = [(p * scale, d, w) for p, d, w in ITEMS]
+    SKINS = [(p * scale, m, w) for p, m, w in SKINS]
     AURAS = [(p * scale, m) for p, m in AURAS]
-    EGGS = [(p * scale, pets) for p, pets in EGGS]
+    EGGS = [(p * scale, pets, w) for p, pets, w in EGGS]
 
 
 POLY_P = float(OVERRIDES["poly"]) if "poly" in OVERRIDES else CONFIG_POWER
@@ -145,9 +163,12 @@ def taps_needed(level):
 
 
 def stage_hp(stage):
+    """GLOBAL aşamanın taban canı (shared/Layout ile aynı: World 1 büyümesi 20. aşamaya kadar, sonra World 2 büyümesi)."""
     if stage <= len(GROUP_HEALTH):
         return GROUP_HEALTH[stage - 1]
-    return GROUP_HEALTH[-1] * HEALTH_GROWTH ** (stage - len(GROUP_HEALTH))
+    w1 = min(stage, W1_STAGES) - len(GROUP_HEALTH)
+    w2 = max(0, stage - W1_STAGES)
+    return GROUP_HEALTH[-1] * HEALTH_GROWTH ** w1 * (W2_GROWTH or HEALTH_GROWTH) ** w2
 
 
 def reward(stage):
@@ -181,7 +202,8 @@ class Player:
         self.last_hits = 0  # ulaşılan en yüksek aşamayı kırmak için gereken tekme (5 duvar toplam)
         self.next_hits = 0
         self.fronts = {}  # rebirth -> (aşama, o aşama için tekme, sonraki aşama için tekme)
-        self.milestones = {}  # aşama -> (ilk ulaşma zamanı sn, o anki rebirth sayısı)
+        self.milestones = {}  # GLOBAL aşama -> (ilk ulaşma zamanı sn, o anki rebirth sayısı)
+        self.world2 = False  # World 1'in son aşaması bitti mi (World 2 açık)
 
     def cap(self):
         return BASE_MAX_LEVEL + self.rebirths * MAX_LEVEL_PER_REBIRTH
@@ -217,11 +239,14 @@ class Player:
         if self.level >= cap:
             self.progress = 0
 
+    def unlocked(self, world):
+        return world == 1 or self.world2
+
     def buy_egg(self):
-        eggs = [e for e in EGGS if e[0] <= self.wins * EGG_SHARE]
+        eggs = [e for e in EGGS if self.unlocked(e[2]) and e[0] <= self.wins * EGG_SHARE]
         if not eggs:
             return False
-        price, pool = eggs[-1]
+        price, pool, _ = eggs[-1]
         self.wins -= price
         total = sum(w for _, w in pool)
         roll = rng.random() * total
@@ -250,24 +275,24 @@ class Player:
             if bought:
                 continue
             if SPEND_STRATEGY == "new":
-                shoes = [x for x in ITEMS if x[1] > self.shoe and x[0] <= self.wins * SHOE_SHARE]
+                shoes = [x for x in ITEMS if self.unlocked(x[2]) and x[1] > self.shoe and x[0] <= self.wins * SHOE_SHARE]
                 if shoes:
-                    price, damage = shoes[-1]
+                    price, damage, _ = shoes[-1]
                     self.wins -= price
                     self.shoe = damage
                     continue
             if self.buy_egg():
                 continue
-            skins = [x for x in SKINS if x[1] > self.skin and x[0] <= self.wins * 0.5]
+            skins = [x for x in SKINS if self.unlocked(x[2]) and x[1] > self.skin and x[0] <= self.wins * 0.5]
             if skins:
-                price, bonus = skins[-1]
+                price, bonus, _ = skins[-1]
                 self.wins -= price
                 self.skin = bonus
                 continue
             if SPEND_STRATEGY != "new":
-                shoes = [x for x in ITEMS if x[1] > self.shoe and x[0] <= self.wins * 0.5]
+                shoes = [x for x in ITEMS if self.unlocked(x[2]) and x[1] > self.shoe and x[0] <= self.wins * 0.5]
                 if shoes:
-                    price, damage = shoes[-1]
+                    price, damage, _ = shoes[-1]
                     self.wins -= price
                     self.shoe = damage
                     continue
@@ -306,12 +331,16 @@ class Player:
     def wall_trip(self):
         """Duvarlara bir sefer: spawn'dan koşar, gücün yettiği en yüksek aşamaya kadar vurur, Win pedine basar. Süre ve kazancı uygular."""
         damage = self.muscle * self.shoe
+        # Dünya seçimi: World 2 açıksa ve ilk aşamasını kırabiliyorsa sefer World 2'de (global 21..40), değilse World 1'de
+        first, last = 1, W1_STAGES
+        if self.world2 and math.ceil(sum(GROUP_STEPS) * stage_hp(W1_STAGES + 1) / max(damage, 1)) <= MAX_HITS:
+            first, last = W1_STAGES + 1, TOTAL_STAGES
         stage = 0
         self.last_hits = 0
         self.next_hits = 0
         trip_time = 4.0  # lobiden ilk duvara yürüme
         hits_total = 0
-        for s in range(1, STAGE_COUNT + 1):
+        for s in range(first, last + 1):
             total_hp = sum(GROUP_STEPS) * stage_hp(s)  # aşamadaki 5 duvarın toplam canı (duvarlar kendi içinde de artar)
             hits = max(1, math.ceil(total_hp / max(damage, 1)))
             if hits > MAX_HITS:
@@ -325,6 +354,8 @@ class Player:
         for milestone in range(self.best_stage + 1, stage + 1):
             self.milestones[milestone] = (self.t, self.rebirths)
         self.best_stage = max(self.best_stage, stage)
+        if stage >= W1_STAGES and W2_GROWTH:
+            self.world2 = True  # World 1'in son aşama Win pedi: World 2 açılır
         if stage == 0:
             self.last_won = 0
             return 0.0, 0.0
@@ -386,14 +417,14 @@ if __name__ == "__main__":
         if r <= 12 or r % 5 == 0:
             print(f"{r:7d} | {fmt(t)} | x{zone:<5g} | x{pm:<5.1f}| x{aura:<3g} | +{skin:<5g} | x{shoe:<6g} | {muscle:15,.0f}   | {stage:5d} | {won:9,.0f} | {wins:9,.0f} | {earned:,.0f}")
     print("Sınırdaki duvar (rebirth anı: aşama, o aşamayı kırmak için tekme [5 duvar, duvar başına ~/5], sonraki aşama için tekme): " + "; ".join(f"r{r}: S{st}, {h}, {nh:,.0f}" for r, (st, h, nh) in sorted(p.fronts.items()) if r in (1, 3, 5, 8, 12, 16, 20, 25)))
-    print("Aşama kilometre taşları (ilk ulaşılan zaman, rebirth sayısı): " + ", ".join(f"{s}: {fmt(t).strip()} (r{r})" for s, (t, r) in sorted(p.milestones.items()) if s % 5 == 0 or s == STAGE_COUNT))
+    print("Aşama kilometre taşları (ilk ulaşılan zaman, rebirth sayısı): " + ", ".join(f"{s}: {fmt(t).strip()} (r{r})" for s, (t, r) in sorted(p.milestones.items()) if s % 5 == 0 or s == TOTAL_STAGES))
     print(f"{HOURS:g} saat sonunda: {p.rebirths} rebirth, pet çarpanı x{p.pet_mult():.1f}, aura x{p.aura}, bölge x{p.zone():g}")
 
     # Fiyat merdiveni: bir fiyatı TEK sefer ödülüyle karşılayan ilk aşama ve oraya ilk ulaşma zamanı (biriktirerek daha erken de alınabilir)
     def ladder(name, prices):
         parts = []
         for item_id, price in prices:
-            stage = next((s for s in range(1, STAGE_COUNT + 1) if reward(s) >= price), None)
+            stage = next((s for s in range(1, TOTAL_STAGES + 1) if reward(s) >= price), None)
             when = fmt(p.milestones[stage][0]).strip() if stage in p.milestones else "ulaşılmadı"
             parts.append(f"{item_id} {price:,.0f} (aşama {stage}, {when})")
         print(f"{name}: " + "; ".join(parts))
@@ -406,7 +437,7 @@ if __name__ == "__main__":
         rate, floor = num(WIN_VALUE, rate_key), num(WIN_VALUE, "Floor")
         parts = []
         for item_id, price in prices:
-            stage = next((s for s in range(1, STAGE_COUNT + 1) if reward(s) >= price), None)
+            stage = next((s for s in range(1, TOTAL_STAGES + 1) if reward(s) >= price), None)
             minutes = p.milestones[stage][0] / 60 if stage in p.milestones else float("nan")
             parts.append(f"{item_id} {max(floor, minutes * rate):.0f} (şimdi {robux[item_id]:.0f})")
         print(f"Robux değeri, {name}: " + "; ".join(parts))

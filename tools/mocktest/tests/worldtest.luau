@@ -20,7 +20,7 @@ end
 -- 2) World 2: koridor yana kayık, Z aynı, 20 aşama; can ve ödül World 1'in sonundan DEVAM eder
 assert(W2.originX > 600 and W2.StageCount == 20 and W2.wallZ(1) == W1.wallZ(1), "World 2 koridoru yana kayık ve 20 aşama olmalı")
 assert(W2.wallPosition(1).X == W2.originX and W2.spawn.X == Config.SpawnPosition.X + W2.originX, "World 2 duvarları ve doğma yeri kendi koridorunda olmalı")
-assert(W2.maxHp(1) > W1.maxHp(cfg.Count), "World 2'nin ilk duvarı World 1'in son duvarından dayanıklı olmalı")
+assert(W2.maxHp(1) > W1.maxHp(cfg.Count - cfg.GroupSize + 1), "World 2'nin 1. aşaması World 1'in 20. aşamasından dayanıklı olmalı (aşamaların ilk duvarları)")
 assert(W2.reward(1) > W1.reward(W1.StageCount) * 2, "World 2'nin 1. aşama ödülü World 1'in son aşamasını iki kez yapmaktan fazla olmalı")
 for stage = 2, W2.StageCount do
 	assert(W2.reward(stage) > W2.reward(stage - 1) * 2, "ödül kuralı World 2'de de geçerli: aşama " .. stage)

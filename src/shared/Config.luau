@@ -702,7 +702,9 @@ return {
 				-- küçük salon (128 x ~110): sol duvar ayakkabı rafı, sağ duvar skin rafı (ShelfZ = rafların ortası), arka duvar yumurtalar; raflar ~26 derin, yumurta standı x +-27
 				lobby = { WidthLeft = 64, WidthRight = 64, BackZ = 45, Height = 44, ShelfZ = -14 },
 				wall = {
-					HealthGrowthAfter = 4.9, -- World 2 aşamaları arası can büyümesi (denge: tools/simulate.py)
+					-- World 2 aşamaları arası can büyümesi (tools/simulate.py, 2026-10-20: Auto Click'li oyuncu World 1'i ~8.4 sa (r23), World 2'yi ~17.6 sa (r46) bitirir;
+					-- W2 aşama 5: +2.7 sa, 10: +5.3 sa, 15: +7.6 sa, 20: +9.2 sa. 4.9 ile 40 saatte W2'nin 3. aşaması bile zordu: güç World 2'de yeni eşyalarla gelir, büyüme düşük tutulur)
+					HealthGrowthAfter = 1.6,
 					CorridorTint = Color3.fromRGB(150, 150, 200), -- koridor yan duvar/tavan tonu: uzayda biraz daha koyu lavanta
 					FinalWallText = "COMING SOON",
 					-- 20 uzay teması, ZAYIFTAN GÜÇLÜYE (World 1 Blackhole ile biter, World 2 Ay tozundan Big Bang'e çıkar). Saydamlık YOK.
