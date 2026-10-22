@@ -44,6 +44,19 @@ Dil kuralları:
    - Önceki projeden kurulu olanlar: Rokit (rojo 7.7.1, selene, StyLua, lune, wally, luau-lsp), `%USERPROFILE%\.luau\` (luau-analyze, luau.exe), Python (`py`), Git, Blender 5.2, ffmpeg (`C:/Users/leven/tools_dl/...`), OBS, Chrome + Claude eklentisi.
    - Kurulum winget ya da resmi GitHub sürümlerinden yapılır.
    - Kurulum sırasında sorun çıkarsa (yönetici izni, form) bana tek liste ver.
+2b. EKLENTİLER (önceki oyunda kullanılanların hepsi; kurulu olanı tekrar kurma, eksik olanı kur ve çalıştığını doğrula):
+   - Roblox Studio eklentileri (`%LOCALAPPDATA%\Roblox\Plugins`):
+     - **Rojo** eklentisi: `rojo plugin install` ile kurulur, `RojoManagedPlugin.rbxm` olarak görünür. Sürümü Rojo CLI ile aynı olmalı (7.7.1).
+     - **UI Labs** (`UILabs.rbxm`, GitHub sürümü): arayüz önizleme.
+   - **Studio MCP** (Studio'nun kendi içinde gelir): `.mcp.json` ile Claude'a bağlanır, Studio'da bir kez açılır (adım 5).
+   - **Claude in Chrome** eklentisi (Chrome'da): Creator Hub ve Gemini işleri için. Bende kurulu; bağlı olduğunu doğrula.
+   - Claude Code proje eklentileri:
+     - **graphify** becerisi (`.claude/skills/graphify/`).
+     - `.claude/settings.json` içindeki graphify kancaları.
+     - `graphify` CLI (`uv tool install graphifyy`).
+     - Önceki projedeki `C:\Users\leven\OneDrive\Masaüstü\RobloxOyun\.claude\` klasöründen kopyala. Grafiği kod birikince ilk kez kur (`/graphify`).
+   - VS Code eklentileri: `evaera.vscode-rojo`, `johnnymorganz.luau-lsp`, `johnnymorganz.stylua`, `kampfkarren.selene-vscode`. Kurmak için `code --install-extension <ad>`.
+   - Sahibin hesabıyla alınanlar: Creator Store'dan F3X Building Tools ve Archimedes Two. Gerekirse bana Türkçe menü adlarıyla tarif et (Araç Kutusu > Eklentiler). Moon Animator ücretli, kurma.
 3. Rehber §2'deki iskeleti kur:
    - `default.project.json`, `rokit.toml`, `selene.toml`, `.mcp.json`, `.gitignore`, `src/{loading,shared,server,client}`, `tools/`.
    - Önceki projeden şu araçları UYARLAYARAK kopyala: `check.py`, `mocktest.py` + `mocktest/` (stub'lar), `typecheck.py`, `preflight.py`, `studio_mcp.py`, `tools/icons/cutout.py`.

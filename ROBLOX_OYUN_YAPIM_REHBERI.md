@@ -33,7 +33,9 @@ Bu rehber "+1 Squat Evolution: Smash Walls" projesinden (4-22 Ekim 2026, 375+ co
 | **Gemini** (web) | Simge, kapak ve küçük resim çizimi | Sahibin hesabı. Claude promptu yazar ve Chrome'dan üretir, indirir. |
 | **Roblox Studio MCP** (resmi) | Claude'un Studio'da Play'e basması, Output okuması, ekran görüntüsü alması, Lua çalıştırması | Proje kökünde `.mcp.json` (§2). Studio'da BİR KEZ: Assistant (sağ üst parıltı simgesi) > `…` > Ayarlar > MCP Sunucuları > "Enable Studio as MCP server". Sonra Studio ve Claude yeniden başlatılır. |
 | **graphify** (isteğe bağlı) | Büyük kod tabanında bilgi grafiği | `uv tool install graphifyy`. Proje büyüyünce faydalı. |
-| Studio eklentileri | Rojo (zorunlu), UI Labs (isteğe bağlı) | F3X / Archimedes sahibinin hesabıyla Araç Kutusu'ndan. Moon Animator ücretli, gerek yok. |
+| Studio eklentileri | Rojo (zorunlu; `rojo plugin install`, `RojoManagedPlugin.rbxm`), UI Labs (`UILabs.rbxm`, GitHub) | Klasör `%LOCALAPPDATA%\Roblox\Plugins`. F3X / Archimedes sahibinin hesabıyla Araç Kutusu'ndan alınır. Moon Animator ücretli, gerek yok. |
+| VS Code eklentileri | Kod görüntüleme | `evaera.vscode-rojo`, `johnnymorganz.luau-lsp`, `johnnymorganz.stylua`, `kampfkarren.selene-vscode` (`code --install-extension <ad>`) |
+| Claude Code proje eklentileri | graphify becerisi ve kancaları | `.claude/skills/graphify/` ve `.claude/settings.json` (PreToolUse kancaları) önceki projeden kopyalanır. |
 
 **Kurulmayanlar ve nedeni:**
 - Topluluk Studio MCP'leri: resmi olan yetiyor, ayrıca güvenilmez.
