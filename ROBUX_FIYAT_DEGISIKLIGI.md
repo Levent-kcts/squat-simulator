@@ -1,3 +1,32 @@
+# Robux fiyat indirimi 2 (2026-10-22): iz ve aura ürünleri, Creator Hub'da güncellenecek
+
+**DURUM: OYUNDA (Config.luau) YAPILDI, Creator Hub'da BEKLİYOR.** Sahibi 'iz ve aura Robux fiyatlarını orta bir adımla düşür, simülatör değerlerine kadar değil, yarı yolda' dedi.
+Neden: hızlı oyun dengesiyle (2026-10-20) Win ödülleri x2 oldu ve oyun kısaldı; tools/simulate.py 'Robux değeri' (Win ile almanın oyun süresi x dakika başı kur) üst iz/auraları çok daha ucuz gösteriyor
+(ör. Rainbow Aura 28, Rainbow Legend 21). Yeni fiyat = eski fiyatla simülatör değerinin yaklaşık ORTASI, tam sayı, aile içinde artan sırada; en az 9 R$ kalır. pricetest (Win paketi sepeti en çok x1.3, artan sıra) geçti.
+Creator Hub > oyun > Monetization (Para Kazanma) > Developer Products > ürün > Price. Ürün kimlikleri ve adları DEĞİŞMEDİ, sadece fiyat. Güncellenene kadar Roblox'un satın alma penceresindeki (gerçek) fiyat geçerlidir.
+
+| Tür | Ürün | Product ID | Eski | YENİ |
+|---|---|---|---|---|
+| Trail | Brick Dust | 3717469051 | 9 | **9** | (aynı)
+| Trail | Sweat Drops | 3717469165 | 12 | **10** |
+| Trail | Protein Powder | 3717469247 | 15 | **12** |
+| Trail | Brick Confetti | 3717469350 | 19 | **14** |
+| Trail | Pet Paws | 3717469457 | 22 | **15** |
+| Trail | Win Trophies | 3717469540 | 25 | **18** |
+| Trail | Muscle Power | 3717469639 | 29 | **21** |
+| Trail | Kick Sparks | 3717469790 | 35 | **25** |
+| Trail | Rainbow Legend | 3717470574 | 45 | **33** |
+| Aura | Red Aura | 3717470773 | 9 | **9** | (aynı)
+| Aura | Green Aura | 3717470881 | 12 | **10** |
+| Aura | Blue Aura | 3717470983 | 15 | **12** |
+| Aura | Purple Aura | 3717471055 | 25 | **17** |
+| Aura | Gold Aura | 3717471158 | 49 | **33** |
+| Aura | Rainbow Aura | 3717471243 | 85 | **55** |
+
+Değişecek ürün sayısı: 13 (Brick Dust ve Red Aura zaten 9).
+
+---
+
 # Robux fiyat indirimi (2026-10-14): Creator Hub'da güncellenecekler
 
 **DURUM (2026-10-16): YAPILDI.** Sahibi tam yetki verdi; Claude Creator Hub'da 6 game pass + 33 Developer Product'ın fiyatını ve 9 iz ürününün adını değiştirdi, iki liste sayfasından tek tek doğrulandı (hepsi aşağıdaki YENİ değerlerde). Oyunda gösterilen fiyatlar (Config.luau) ile Roblox'taki gerçek fiyatlar artık aynı. Kullanılmayan eski 'VIP' Developer Product'ı (3717471559) 2026-10-17'de SATIŞTAN KALDIRILDI (Roblox ürün silmeye izin vermez; VIP game pass'tir). Developer Product GÖRSELLERİ: 6 game pass'in görseli zaten vardı; 34 Developer Product'ın görseli 2026-10-17'de Claude tarafından Claude in Chrome ile YÜKLENDİ ve her ürün sayfasından tek tek doğrulandı (kaynaklar `assets/cover/UPLOAD/URUN_GORSELLERI/`: izler ve auralar ortak Trails/Auras simgesi, +Power ve Double Offline bacak kası simgesi; Roblox moderasyonundan sonra satın alma penceresinde görünür). Starter Pack ürünü de OLUŞTURULDU ve oyuna bağlandı (ID 3718993924, 49 R$, Managed pricing kapalı).

@@ -1219,25 +1219,25 @@ return {
 	-- değişince Creator Hub'daki Developer Product'ın gerçek fiyatını da aynı yapmak sahibe düşer (ROBUX_FIYAT_DEGISIKLIGI.md).
 	Trails = {
 		{ id = "red", name = "Brick Dust", fx = "dust", icon = "Trail_red", emoji = "💨", speed = 5, winPrice = 60, robuxPrice = 9, robuxProductId = 3717469051, color = Color3.fromRGB(222, 98, 72) },
-		{ id = "orange", name = "Sweat Drops", fx = "drops", icon = "Trail_orange", emoji = "💧", speed = 8, winPrice = 120, robuxPrice = 12, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
-		{ id = "yellow", name = "Protein Powder", fx = "powder", icon = "Trail_yellow", emoji = "✨", speed = 11, winPrice = 500, robuxPrice = 15, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
-		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "Trail_green", emoji = "🧱", speed = 14, winPrice = 2000, robuxPrice = 19, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
-		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Trail_cyan", emoji = "🐾", speed = 17, winPrice = 4000, robuxPrice = 22, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
-		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Trail_blue", emoji = "🏆", speed = 20, winPrice = 8000, robuxPrice = 25, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
-		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "Trail_purple", emoji = "💪", speed = 23, winPrice = 16000, robuxPrice = 29, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "pink", name = "Kick Sparks", fx = "sparks", icon = "Trail_pink", emoji = "💥", speed = 26, winPrice = 32000, robuxPrice = 35, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
-		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", icon = "Trail_rainbow", emoji = "🌈", speed = 32, winPrice = 64000, robuxPrice = 45, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "orange", name = "Sweat Drops", fx = "drops", icon = "Trail_orange", emoji = "💧", speed = 8, winPrice = 120, robuxPrice = 10, robuxProductId = 3717469165, color = Color3.fromRGB(90, 190, 255) },
+		{ id = "yellow", name = "Protein Powder", fx = "powder", icon = "Trail_yellow", emoji = "✨", speed = 11, winPrice = 500, robuxPrice = 12, robuxProductId = 3717469247, color = Color3.fromRGB(255, 226, 110) },
+		{ id = "green", name = "Brick Confetti", fx = "bricks", icon = "Trail_green", emoji = "🧱", speed = 14, winPrice = 2000, robuxPrice = 14, robuxProductId = 3717469350, color = Color3.fromRGB(84, 214, 100) },
+		{ id = "cyan", name = "Pet Paws", fx = "paws", icon = "Trail_cyan", emoji = "🐾", speed = 17, winPrice = 4000, robuxPrice = 15, robuxProductId = 3717469457, color = Color3.fromRGB(60, 220, 255) },
+		{ id = "blue", name = "Win Trophies", fx = "trophies", icon = "Trail_blue", emoji = "🏆", speed = 20, winPrice = 8000, robuxPrice = 18, robuxProductId = 3717469540, color = Color3.fromRGB(255, 200, 50) },
+		{ id = "purple", name = "Muscle Power", fx = "muscle", icon = "Trail_purple", emoji = "💪", speed = 23, winPrice = 16000, robuxPrice = 21, robuxProductId = 3717469639, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "pink", name = "Kick Sparks", fx = "sparks", icon = "Trail_pink", emoji = "💥", speed = 26, winPrice = 32000, robuxPrice = 25, robuxProductId = 3717469790, color = Color3.fromRGB(255, 100, 200) },
+		{ id = "rainbow", name = "Rainbow Legend", fx = "legend", icon = "Trail_rainbow", emoji = "🌈", speed = 32, winPrice = 64000, robuxPrice = 33, robuxProductId = 3717470574, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Aura efektleri (Backpack > Auras): karakterin etrafında renkli parıltı. mult = bacak kası kazancı çarpanı.
 	-- Win (winPrice) ile alınır; Robux butonu robuxProductId 0 iken "yakında" olarak kalır. Fiyatlar geçicidir.
 	Auras = {
 		{ id = "red", name = "Red Aura", mult = 2, winPrice = 30, robuxPrice = 9, robuxProductId = 3717470773, color = Color3.fromRGB(255, 60, 60) },
-		{ id = "green", name = "Green Aura", mult = 4, winPrice = 200, robuxPrice = 12, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
-		{ id = "blue", name = "Blue Aura", mult = 6, winPrice = 800, robuxPrice = 15, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
-		{ id = "purple", name = "Purple Aura", mult = 8, winPrice = 3200, robuxPrice = 25, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
-		{ id = "gold", name = "Gold Aura", mult = 10, winPrice = 13000, robuxPrice = 49, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
-		{ id = "rainbow", name = "Rainbow Aura", mult = 14, winPrice = 52000, robuxPrice = 85, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
+		{ id = "green", name = "Green Aura", mult = 4, winPrice = 200, robuxPrice = 10, robuxProductId = 3717470881, color = Color3.fromRGB(70, 220, 90) },
+		{ id = "blue", name = "Blue Aura", mult = 6, winPrice = 800, robuxPrice = 12, robuxProductId = 3717470983, color = Color3.fromRGB(70, 130, 255) },
+		{ id = "purple", name = "Purple Aura", mult = 8, winPrice = 3200, robuxPrice = 17, robuxProductId = 3717471055, color = Color3.fromRGB(170, 80, 255) },
+		{ id = "gold", name = "Gold Aura", mult = 10, winPrice = 13000, robuxPrice = 33, robuxProductId = 3717471158, color = Color3.fromRGB(255, 205, 50) },
+		{ id = "rainbow", name = "Rainbow Aura", mult = 14, winPrice = 52000, robuxPrice = 55, robuxProductId = 3717471243, color = Color3.fromRGB(255, 255, 255), rainbow = true },
 	},
 
 	-- Oyun süresi ödülleri (Gifts > Playtime Rewards): oyuna girdikten time saniye sonra alınabilir.

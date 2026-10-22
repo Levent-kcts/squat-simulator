@@ -24,21 +24,21 @@ Toplam: 39 ürün (33 Developer Product + 6 Game Pass).
 | 12 | `potion:wins60` | Developer Product | Wins Potion (60 min) | 99 | Doubles every Win you earn. Lasts 60 minutes. |
 | 13 | `potion:rainbow15` | Developer Product | Rainbow Potion (15 min) | 79 | Counts as ALL potions: 2x luck, 2x muscle and 2x Wins. Lasts 15 minutes. |
 | 14 | `potion:rainbow60` | Developer Product | Rainbow Potion (60 min) | 149 | Counts as ALL potions: 2x luck, 2x muscle and 2x Wins. Lasts 60 minutes. |
-| 15 | `trail:red` | Developer Product | Brick Dust | 15 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 16 | `trail:orange` | Developer Product | Sweat Drops | 20 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 17 | `trail:yellow` | Developer Product | Protein Powder | 25 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 18 | `trail:green` | Developer Product | Brick Confetti | 30 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 19 | `trail:cyan` | Developer Product | Pet Paws | 35 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 20 | `trail:blue` | Developer Product | Win Trophies | 40 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 21 | `trail:purple` | Developer Product | Muscle Power | 50 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 22 | `trail:pink` | Developer Product | Kick Sparks | 60 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 23 | `trail:rainbow` | Developer Product | Rainbow Legend | 75 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
-| 24 | `aura:red` | Developer Product | Red Aura | 15 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 25 | `aura:green` | Developer Product | Green Aura | 20 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 26 | `aura:blue` | Developer Product | Blue Aura | 25 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 27 | `aura:purple` | Developer Product | Purple Aura | 40 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 28 | `aura:gold` | Developer Product | Gold Aura | 85 | Unlocks this aura forever: multiplies your leg muscle gain. |
-| 29 | `aura:rainbow` | Developer Product | Rainbow Aura | 145 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 15 | `trail:red` | Developer Product | Brick Dust | 9 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 16 | `trail:orange` | Developer Product | Sweat Drops | 10 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 17 | `trail:yellow` | Developer Product | Protein Powder | 12 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 18 | `trail:green` | Developer Product | Brick Confetti | 14 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 19 | `trail:cyan` | Developer Product | Pet Paws | 15 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 20 | `trail:blue` | Developer Product | Win Trophies | 18 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 21 | `trail:purple` | Developer Product | Muscle Power | 21 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 22 | `trail:pink` | Developer Product | Kick Sparks | 25 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 23 | `trail:rainbow` | Developer Product | Rainbow Legend | 33 | Unlocks this trail forever: leaves a themed effect behind you and makes you run faster. |
+| 24 | `aura:red` | Developer Product | Red Aura | 9 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 25 | `aura:green` | Developer Product | Green Aura | 10 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 26 | `aura:blue` | Developer Product | Blue Aura | 12 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 27 | `aura:purple` | Developer Product | Purple Aura | 17 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 28 | `aura:gold` | Developer Product | Gold Aura | 33 | Unlocks this aura forever: multiplies your leg muscle gain. |
+| 29 | `aura:rainbow` | Developer Product | Rainbow Aura | 55 | Unlocks this aura forever: multiplies your leg muscle gain. |
 | 30 | `skip` | Developer Product | Rebirth Skip | 119 | Skip the level requirement and rebirth right now. |
 | 31 | `double` | Developer Product | Double Offline Earnings | 29 | Doubles the offline earnings waiting for you. |
 | 32 | `giftnext` | Developer Product | Unlock Next Gift | 49 | Instantly unlocks and claims the next locked Playtime Reward. |
