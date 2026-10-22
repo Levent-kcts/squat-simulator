@@ -1,6 +1,6 @@
 # Robux fiyat indirimi 2 (2026-10-22): iz ve aura ürünleri, Creator Hub'da güncellenecek
 
-**DURUM: OYUNDA (Config.luau) YAPILDI, Creator Hub'da BEKLİYOR.** Sahibi 'iz ve aura Robux fiyatlarını orta bir adımla düşür, simülatör değerlerine kadar değil, yarı yolda' dedi.
+**DURUM (2026-10-22): YAPILDI.** Oyunda (Config.luau) ve Creator Hub'da: Claude sahibinin isteğiyle 13 ürünün fiyatını Creator Hub'da değiştirdi, 15 iz/aura ürününün gerçek fiyatı Roblox API'sinden (developer-products/v1/.../details) okunup tek tek doğrulandı. Oyunda yazan fiyatların canlıda görünmesi için Studio'dan yayın gerekir. Sahibi 'iz ve aura Robux fiyatlarını orta bir adımla düşür, simülatör değerlerine kadar değil, yarı yolda' dedi.
 Neden: hızlı oyun dengesiyle (2026-10-20) Win ödülleri x2 oldu ve oyun kısaldı; tools/simulate.py 'Robux değeri' (Win ile almanın oyun süresi x dakika başı kur) üst iz/auraları çok daha ucuz gösteriyor
 (ör. Rainbow Aura 28, Rainbow Legend 21). Yeni fiyat = eski fiyatla simülatör değerinin yaklaşık ORTASI, tam sayı, aile içinde artan sırada; en az 9 R$ kalır. pricetest (Win paketi sepeti en çok x1.3, artan sıra) geçti.
 Creator Hub > oyun > Monetization (Para Kazanma) > Developer Products > ürün > Price. Ürün kimlikleri ve adları DEĞİŞMEDİ, sadece fiyat. Güncellenene kadar Roblox'un satın alma penceresindeki (gerçek) fiyat geçerlidir.
